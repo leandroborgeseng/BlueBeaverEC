@@ -20,9 +20,11 @@ async function bootstrap() {
   });
 
   const port = Number(process.env.API_PORT ?? process.env.PORT ?? 3001);
-  await app.listen(port, "0.0.0.0");
+  // `::` = dual-stack (IPv4+IPv6). Necessário para railway.internal (IPv6).
+  const host = process.env.HOST ?? "::";
+  await app.listen(port, host);
   // eslint-disable-next-line no-console
-  console.log(`Nexo API listening on :${port}`);
+  console.log(`Nexo API listening on [${host}]:${port}`);
 }
 
 void bootstrap();

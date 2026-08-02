@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Agent, fetch as undiciFetch } from "undici";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const DEFAULT_API_PORT = "3001";
 
-/** Normaliza URL interna; Railway costuma deixar `:PORT` vazio na referência cruzada. */
+/** Dual-stack: rede privada Railway (legado) é IPv6; undici/fetch padrão falha fácil. */
+const upstreamAgent = new Agent({
+  connect: { family: 0 },
+  connectTimeout: 10_000,
+});
+
 function backendBase() {
   const fromHost = process.env.API_INTERNAL_HOST?.trim();
   const port =
@@ -27,54 +33,55 @@ function backendBase() {
 
   try {
     const u = new URL(raw);
-    if (!u.port) {
-      u.port = port;
-    }
-    // http://host: → URL parser may drop empty port; restore explicitly
+    if (!u.port) u.port = port;
     return u.toString().replace(/\/$/, "");
   } catch {
-    // http://host: ou http://host
     const m = raw.match(/^(https?:\/\/[^/:]+)(?::(\d*))?$/);
-    if (m) {
-      return `${m[1]}:${m[2] || port}`;
-    }
+    if (m) return `${m[1]}:${m[2] || port}`;
     return raw;
   }
+}
+
+function errorDetail(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const cause = (err as Error & { cause?: { code?: string; message?: string } }).cause;
+  const code = cause?.code ? ` [${cause.code}]` : "";
+  const extra = cause?.message && cause.message !== err.message ? ` (${cause.message})` : "";
+  return `${err.message}${code}${extra}`;
 }
 
 async function proxy(req: NextRequest, path: string[]) {
   const base = backendBase();
   const target = `${base}/api/${path.join("/")}${req.nextUrl.search}`;
-  const headers = new Headers();
+  const headers: Record<string, string> = {};
   const contentType = req.headers.get("content-type");
   const authorization = req.headers.get("authorization");
-  if (contentType) headers.set("content-type", contentType);
-  if (authorization) headers.set("authorization", authorization);
+  if (contentType) headers["content-type"] = contentType;
+  if (authorization) headers.authorization = authorization;
 
-  const init: RequestInit = {
-    method: req.method,
-    headers,
-    redirect: "manual",
-  };
-
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = await req.arrayBuffer();
-  }
+  const method = req.method;
+  const body =
+    method !== "GET" && method !== "HEAD" ? Buffer.from(await req.arrayBuffer()) : undefined;
 
   try {
-    const upstream = await fetch(target, init);
-    const body = await upstream.arrayBuffer();
-    const out = new NextResponse(body, { status: upstream.status });
+    const upstream = await undiciFetch(target, {
+      method,
+      headers,
+      body,
+      dispatcher: upstreamAgent,
+      redirect: "manual",
+    });
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    const out = new NextResponse(buf, { status: upstream.status });
     const upstreamType = upstream.headers.get("content-type");
     const disposition = upstream.headers.get("content-disposition");
     if (upstreamType) out.headers.set("content-type", upstreamType);
     if (disposition) out.headers.set("content-disposition", disposition);
     return out;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "proxy error";
     return NextResponse.json(
       {
-        message: `API inacessível (${base}): ${message}. No web use API_INTERNAL_HOST + API_INTERNAL_PORT=3001 (e na API defina PORT=3001).`,
+        message: `API inacessível (${base}): ${errorDetail(err)}. Confirme API no ar (PORT=3001, HOST=::) ou use a URL pública HTTPS da API em API_INTERNAL_URL.`,
       },
       { status: 502 },
     );
