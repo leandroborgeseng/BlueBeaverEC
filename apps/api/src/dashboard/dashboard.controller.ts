@@ -32,6 +32,11 @@ export class DashboardController {
     return this.dashboard.osRecentes(user.estabelecimentoId, limit ? Number(limit) : 5);
   }
 
+  @Get("os-atrasadas")
+  osAtrasadas(@CurrentUser() user: AuthUser) {
+    return this.dashboard.osAtrasadas(user.estabelecimentoId);
+  }
+
   @Get("contratos-vencendo")
   contratosVencendo(@CurrentUser() user: AuthUser, @Query("dias") dias?: string) {
     return this.contratos.vencendo(user.estabelecimentoId, dias ?? "30");

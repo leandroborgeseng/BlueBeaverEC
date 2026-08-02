@@ -13,7 +13,9 @@ interface Me {
   nome: string;
   email: string;
   perfil: string;
+  estabelecimentoId: string;
   estabelecimentoNome: string;
+  estabelecimentos: Array<{ id: string; nome: string; perfil: string }>;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -42,7 +44,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div style={{ minHeight: "100vh", display: "flex", background: "var(--nexo-bg)" }}>
       <SideRail />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <TopBar nome={me.nome} estabelecimentoNome={me.estabelecimentoNome} perfil={me.perfil} />
+        <TopBar
+          nome={me.nome}
+          estabelecimentoId={me.estabelecimentoId}
+          estabelecimentoNome={me.estabelecimentoNome}
+          perfil={me.perfil}
+          estabelecimentos={me.estabelecimentos}
+        />
         <main style={{ flex: 1, padding: 20, position: "relative" }}>{children}</main>
       </div>
       <FloatingWindowLayer />

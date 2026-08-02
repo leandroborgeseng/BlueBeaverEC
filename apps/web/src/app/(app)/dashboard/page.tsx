@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [osSituacao, setOsSituacao] = useState<Array<{ situacao: string; total: number }>>([]);
   const [recentes, setRecentes] = useState<Array<{ codigo: string; status: string; equipamento: { tag: string } }>>([]);
   const [contratos, setContratos] = useState<Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>>([]);
+  const [atrasadas, setAtrasadas] = useState<Array<{ codigo: string | null; prioridade: string; tag: string }>>([]);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,12 +24,14 @@ export default function DashboardPage() {
       api<Array<{ situacao: string; total: number }>>("/dashboard/os-por-situacao"),
       api<Array<{ codigo: string; status: string; equipamento: { tag: string } }>>("/dashboard/os-recentes?limit=5"),
       api<Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>>("/dashboard/contratos-vencendo?dias=30"),
+      api<Array<{ codigo: string | null; prioridade: string; tag: string }>>("/dashboard/os-atrasadas"),
     ])
-      .then(([k, s, r, c]) => {
+      .then(([k, s, r, c, a]) => {
         setKpis(k);
         setOsSituacao(s);
         setRecentes(r);
         setContratos(c);
+        setAtrasadas(a);
       })
       .catch((e) => setErro(e.message));
   }, []);
@@ -42,11 +45,12 @@ export default function DashboardPage() {
 
       {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 12 }}>
         <Kpi label="Equipamentos ativos" value={kpis?.equipamentosAtivos ?? "—"} />
         <Kpi label="OS abertas" value={kpis?.osAbertas ?? "—"} />
+        <Kpi label="OS atrasadas" value={atrasadas.length} danger={atrasadas.length > 0} />
         <Kpi label="MTTR médio (h)" value={kpis?.mttrMedioHoras ?? "—"} />
-        <Kpi label="Disponibilidade" value={kpis?.disponibilidadePct ? `${kpis.disponibilidadePct}%` : "—"} />
+        <Kpi label="Disponibilidade" value={kpis?.disponibilidadePct != null ? `${kpis.disponibilidadePct}%` : "—"} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginTop: 18 }}>
@@ -73,6 +77,34 @@ export default function DashboardPage() {
             </ul>
           )}
         </Panel>
+        <Panel title="OS atrasadas (SLA)">
+          {atrasadas.length === 0 ? (
+            <Empty />
+          ) : (
+            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              {atrasadas.slice(0, 8).map((os) => (
+                <li
+                  key={`${os.codigo}-${os.tag}`}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "10px 0",
+                    borderBottom: "1px solid var(--nexo-border)",
+                    fontSize: 13,
+                  }}
+                >
+                  <span>
+                    {os.codigo} · {os.tag}
+                  </span>
+                  <span style={{ color: "var(--nexo-danger)", fontWeight: 700 }}>{os.prioridade}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
         <Panel title="OS recentes">
           {recentes.length === 0 ? (
             <Empty />
@@ -98,9 +130,6 @@ export default function DashboardPage() {
             </ul>
           )}
         </Panel>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
         <Panel title="Contratos a vencer (≤30 dias)">
           {contratos.length === 0 ? (
             <Empty />
@@ -133,7 +162,7 @@ export default function DashboardPage() {
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string | number }) {
+function Kpi({ label, value, danger }: { label: string; value: string | number; danger?: boolean }) {
   return (
     <div
       style={{
@@ -144,7 +173,7 @@ function Kpi({ label, value }: { label: string; value: string | number }) {
       }}
     >
       <div style={{ fontSize: 12, color: "var(--nexo-muted)", marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800 }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: danger ? "var(--nexo-danger)" : "inherit" }}>{value}</div>
     </div>
   );
 }

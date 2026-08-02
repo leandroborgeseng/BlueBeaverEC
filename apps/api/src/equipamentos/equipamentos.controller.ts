@@ -114,6 +114,22 @@ class UpdateEquipamentoDto {
   @IsOptional()
   @IsBoolean()
   checklistRecebimentoPendente?: boolean;
+
+  @IsOptional()
+  @IsString()
+  registroAnvisa?: string;
+
+  @IsOptional()
+  @IsString()
+  validadeAnvisa?: string;
+
+  @IsOptional()
+  @IsString()
+  dataEndOfService?: string;
+
+  @IsOptional()
+  @IsString()
+  dataEndOfLife?: string;
 }
 
 @Controller("equipamentos")

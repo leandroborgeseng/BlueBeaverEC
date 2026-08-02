@@ -95,6 +95,12 @@ function WindowFrame({
       <div style={{ padding: 16, overflow: "auto", flex: 1, fontSize: 13 }}>
         {win.kind === "equipamento" && win.payload?.tag ? (
           <EquipamentoEditor tag={String(win.payload.tag)} onDone={onClose} />
+        ) : win.kind === "os" && win.payload?.numero != null ? (
+          <OsEditor
+            numero={Number(win.payload.numero)}
+            codigo={String(win.payload.codigo ?? win.title)}
+            onDone={onClose}
+          />
         ) : win.payload ? (
           <pre style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--nexo-text)" }}>
             {JSON.stringify(win.payload, null, 2)}
@@ -113,6 +119,10 @@ function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void })
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [nome, setNome] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [registroAnvisa, setRegistroAnvisa] = useState("");
+  const [validadeAnvisa, setValidadeAnvisa] = useState("");
+  const [dataEndOfService, setDataEndOfService] = useState("");
+  const [dataEndOfLife, setDataEndOfLife] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -122,6 +132,10 @@ function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void })
         setData(eq);
         setNome(String(eq.nome ?? ""));
         setObservacao(String(eq.observacao ?? ""));
+        setRegistroAnvisa(String(eq.registroAnvisa ?? ""));
+        setValidadeAnvisa(eq.validadeAnvisa ? String(eq.validadeAnvisa).slice(0, 10) : "");
+        setDataEndOfService(eq.dataEndOfService ? String(eq.dataEndOfService).slice(0, 10) : "");
+        setDataEndOfLife(eq.dataEndOfLife ? String(eq.dataEndOfLife).slice(0, 10) : "");
       })
       .catch((e) => setErro(e.message));
   }, [tag]);
@@ -136,7 +150,14 @@ function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void })
     try {
       const updated = await api<Record<string, unknown>>(`/equipamentos/${encodeURIComponent(tag)}`, {
         method: "PATCH",
-        body: JSON.stringify({ nome, observacao }),
+        body: JSON.stringify({
+          nome,
+          observacao,
+          registroAnvisa,
+          validadeAnvisa: validadeAnvisa || null,
+          dataEndOfService: dataEndOfService || null,
+          dataEndOfLife: dataEndOfLife || null,
+        }),
       });
       setData(updated);
       setMsg("Salvo");
@@ -185,20 +206,28 @@ function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void })
       )}
 
       <label style={{ fontSize: 12, fontWeight: 600, color: "var(--nexo-muted)" }}>Nome</label>
-      <input
-        value={nome}
-        disabled={readonly}
-        onChange={(e) => setNome(e.target.value)}
-        style={input}
-      />
+      <input value={nome} disabled={readonly} onChange={(e) => setNome(e.target.value)} style={input} />
       <label style={{ fontSize: 12, fontWeight: 600, color: "var(--nexo-muted)" }}>Observação</label>
-      <textarea
-        value={observacao}
-        disabled={readonly}
-        onChange={(e) => setObservacao(e.target.value)}
-        rows={4}
-        style={input}
-      />
+      <textarea value={observacao} disabled={readonly} onChange={(e) => setObservacao(e.target.value)} rows={3} style={input} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <label style={{ fontSize: 12 }}>
+          Registro Anvisa
+          <input value={registroAnvisa} disabled={readonly} onChange={(e) => setRegistroAnvisa(e.target.value)} style={input} />
+        </label>
+        <label style={{ fontSize: 12 }}>
+          Validade Anvisa
+          <input type="date" value={validadeAnvisa} disabled={readonly} onChange={(e) => setValidadeAnvisa(e.target.value)} style={input} />
+        </label>
+        <label style={{ fontSize: 12 }}>
+          End of Service
+          <input type="date" value={dataEndOfService} disabled={readonly} onChange={(e) => setDataEndOfService(e.target.value)} style={input} />
+        </label>
+        <label style={{ fontSize: 12 }}>
+          End of Life
+          <input type="date" value={dataEndOfLife} disabled={readonly} onChange={(e) => setDataEndOfLife(e.target.value)} style={input} />
+        </label>
+      </div>
 
       <div style={{ display: "flex", gap: 8 }}>
         <button type="button" disabled={readonly} onClick={() => void salvar()} style={primary}>
@@ -209,6 +238,48 @@ function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void })
         </button>
       </div>
       {msg && <div style={{ color: "var(--nexo-success)" }}>{msg}</div>}
+    </div>
+  );
+}
+
+function OsEditor({ numero, codigo, onDone }: { numero: number; codigo: string; onDone: () => void }) {
+  const [msg, setMsg] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function acao(acao: "fechar" | "cancelar" | "reabrir") {
+    let justificativa: string | undefined;
+    if (acao !== "fechar") {
+      justificativa = window.prompt(`Justificativa para ${acao}:`) || undefined;
+      if (!justificativa) return;
+    }
+    try {
+      await api(`/os/${numero}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ acao, justificativa }),
+      });
+      setMsg(`OS ${acao}`);
+      onDone();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
+    }
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div>
+        <strong>{codigo}</strong>
+        <div style={{ color: "var(--nexo-muted)", fontSize: 12 }}>OS #{numero}</div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <button type="button" onClick={() => void acao("fechar")} style={primary}>Fechar</button>
+        <button type="button" onClick={() => void acao("cancelar")} style={ghost}>Cancelar</button>
+        <button type="button" onClick={() => void acao("reabrir")} style={ghost}>Reabrir</button>
+        <a href={`/mobile/os/${numero}`} style={{ ...ghost, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          Abrir no campo
+        </a>
+      </div>
+      {msg && <div style={{ color: "var(--nexo-success)" }}>{msg}</div>}
+      {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
     </div>
   );
 }

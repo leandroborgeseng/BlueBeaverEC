@@ -84,4 +84,30 @@ export class DashboardService {
       take: limit,
     });
   }
+
+  async osAtrasadas(estabelecimentoId: string) {
+    const rows = await this.prisma.ordemServico.findMany({
+      where: {
+        estabelecimentoId,
+        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+      },
+      include: { equipamento: true },
+      orderBy: { abertura: "asc" },
+      take: 50,
+    });
+    const slaHoras: Record<string, number> = { URGENTE: 4, ALTA: 24, MEDIA: 72, BAIXA: 168 };
+    const now = Date.now();
+    return rows
+      .filter((os) => {
+        const lim = (slaHoras[os.prioridade] ?? 72) * 3600_000;
+        return now - os.abertura.getTime() > lim;
+      })
+      .map((os) => ({
+        numero: os.numero,
+        codigo: os.codigo,
+        prioridade: os.prioridade,
+        tag: os.equipamento.tag,
+        abertura: os.abertura,
+      }));
+  }
 }

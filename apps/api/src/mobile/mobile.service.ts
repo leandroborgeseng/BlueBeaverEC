@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -155,24 +156,43 @@ export class MobileService {
     const os = await this.findOs(user.estabelecimentoId, numero);
     await this.assertPodeExecutar(user, os);
 
-    return this.prisma.ordemServico.update({
-      where: { id: os.id },
-      data: {
-        status: StatusOS.CONCLUIDA,
-        fechamento: new Date(),
-        logs: {
-          create: {
-            usuarioId: user.userId,
-            acao: "FECHAMENTO_MOBILE",
-            justificativa: [
-              body.observacoes,
-              `assinatura:${body.assinaturaBase64.slice(0, 80)}`,
-            ]
-              .filter(Boolean)
-              .join(" | "),
+    if (os.pendencia?.trim()) {
+      throw new ConflictException("Não é possível finalizar OS com pendência aberta");
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const reservas = await tx.estoqueReserva.findMany({
+        where: { ordemServicoId: os.id, ativa: true },
+      });
+      for (const r of reservas) {
+        await tx.estoqueItem.update({
+          where: { id: r.estoqueItemId },
+          data: { qtdAtual: { decrement: r.quantidade } },
+        });
+      }
+      await tx.estoqueReserva.updateMany({
+        where: { ordemServicoId: os.id, ativa: true },
+        data: { ativa: false },
+      });
+      return tx.ordemServico.update({
+        where: { id: os.id },
+        data: {
+          status: StatusOS.CONCLUIDA,
+          fechamento: new Date(),
+          logs: {
+            create: {
+              usuarioId: user.userId,
+              acao: "FECHAMENTO_MOBILE",
+              justificativa: [
+                body.observacoes,
+                `assinatura:${body.assinaturaBase64.slice(0, 80)}`,
+              ]
+                .filter(Boolean)
+                .join(" | "),
+            },
           },
         },
-      },
+      });
     });
   }
 

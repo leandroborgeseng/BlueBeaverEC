@@ -295,11 +295,23 @@ export class EstrategicoService {
     user: AuthUser,
     body: { codigo: string; titulo: string; versao?: string; procedimentoLaudoId?: string },
   ) {
-    if (body.procedimentoLaudoId) {
+    let procedimentoLaudoId = body.procedimentoLaudoId;
+    if (procedimentoLaudoId) {
       const existing = await this.prisma.pop.findUnique({
-        where: { procedimentoLaudoId: body.procedimentoLaudoId },
+        where: { procedimentoLaudoId },
       });
       if (existing) throw new BadRequestException("Procedimento já vinculado a outro POP (relação 1:1)");
+    } else {
+      const proc = await this.prisma.procedimentoLaudo.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          nome: `Proc. ${body.titulo}`,
+          tipo: "PREVENTIVA",
+          validadeMeses: 12,
+          itens: [{ id: "1", pergunta: `Conforme POP ${body.codigo}` }],
+        },
+      });
+      procedimentoLaudoId = proc.id;
     }
     return this.prisma.pop.create({
       data: {
@@ -307,8 +319,9 @@ export class EstrategicoService {
         codigo: body.codigo,
         titulo: body.titulo,
         versao: body.versao ?? "1.0",
-        procedimentoLaudoId: body.procedimentoLaudoId,
+        procedimentoLaudoId,
       },
+      include: { procedimentoLaudo: true },
     });
   }
 

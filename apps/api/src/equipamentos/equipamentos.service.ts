@@ -156,6 +156,10 @@ export class EquipamentosService {
       valorAquisicao?: number;
       valorSubstituicao?: number;
       checklistRecebimentoPendente?: boolean;
+      registroAnvisa?: string;
+      validadeAnvisa?: string | null;
+      dataEndOfService?: string | null;
+      dataEndOfLife?: string | null;
     },
   ) {
     if (!podeEditarCadastros(user.perfil)) {
@@ -186,6 +190,16 @@ export class EquipamentosService {
         ...(data.valorSubstituicao != null ? { valorSubstituicao: data.valorSubstituicao } : {}),
         ...(data.checklistRecebimentoPendente != null
           ? { checklistRecebimentoPendente: data.checklistRecebimentoPendente }
+          : {}),
+        ...(data.registroAnvisa != null ? { registroAnvisa: data.registroAnvisa } : {}),
+        ...(data.validadeAnvisa !== undefined
+          ? { validadeAnvisa: data.validadeAnvisa ? new Date(data.validadeAnvisa) : null }
+          : {}),
+        ...(data.dataEndOfService !== undefined
+          ? { dataEndOfService: data.dataEndOfService ? new Date(data.dataEndOfService) : null }
+          : {}),
+        ...(data.dataEndOfLife !== undefined
+          ? { dataEndOfLife: data.dataEndOfLife ? new Date(data.dataEndOfLife) : null }
           : {}),
       },
       include: {
