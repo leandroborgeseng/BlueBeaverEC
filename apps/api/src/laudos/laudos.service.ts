@@ -304,6 +304,57 @@ export class LaudosService {
       );
   }
 
+  async certificadoDocumento(estabelecimentoId: string, id: string) {
+    const l = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId },
+      include: {
+        equipamento: { include: { setor: true, fabricante: true, modelo: true } },
+        procedimento: true,
+        responsavelTecnico: true,
+      },
+    });
+    if (!l) throw new NotFoundException("Certificado não encontrado");
+    return {
+      ...l,
+      statusCertificado: this.statusCertificado(l.validadeAte),
+      documento: {
+        titulo: `Certificado ${l.tipo} ${l.numero}`,
+        emitidoEm: l.dataExecucao,
+        validadeAte: l.validadeAte,
+        equipamento: `${l.equipamento.tag} — ${l.equipamento.nome}`,
+        setor: l.equipamento.setor.nome,
+        resultado: l.resultado,
+        procedimento: l.procedimento?.nome,
+        responsavel: l.responsavelTecnico?.nome,
+        respostas: l.respostas,
+      },
+    };
+  }
+
+  async reabrirCertificado(user: AuthUser, id: string, justificativa: string) {
+    if (!justificativa?.trim()) throw new BadRequestException("Justificativa obrigatória");
+    const l = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!l) throw new NotFoundException("Certificado não encontrado");
+    const meta = (l.metadados as Record<string, unknown>) ?? {};
+    return this.prisma.laudo.update({
+      where: { id },
+      data: {
+        resultado: null,
+        validadeAte: null,
+        metadados: {
+          ...meta,
+          reabertura: {
+            em: new Date().toISOString(),
+            por: user.userId,
+            justificativa: justificativa.trim(),
+          },
+        },
+      },
+    });
+  }
+
   private statusCertificado(validadeAte: Date | null) {
     if (!validadeAte) return "VALIDO";
     const dias = (validadeAte.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
