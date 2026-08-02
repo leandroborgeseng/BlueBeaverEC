@@ -12,7 +12,7 @@ packages/shared   tipos e regras compartilhadas
 
 ## Pré-requisitos locais
 
-- Node.js 20+
+- Node.js 20+ (ou use `.tools/node-v22.17.0-darwin-arm64` no PATH)
 - pnpm 10 (`corepack enable && corepack prepare pnpm@10.14.0 --activate`)
 - Docker (opcional, para Postgres / Coolify-like)
 
@@ -39,6 +39,14 @@ pnpm dev
 | tecnico@nexo.local | nexo1234 | Técnico |
 | solicitante@nexo.local | nexo1234 | Solicitante |
 
+## Fases entregues (MVP)
+
+1. **Núcleo operacional** — Auth, shell, cadastros, equipamentos, OS, estoque, portal/triagem  
+2. **Conformidade técnica** — Laudos, procedimentos, instrumentos, certificados, ficha vida  
+3. **Gestão de suporte** — Contratos, pessoas/equipes, componentes recuperados, quadro Kanban  
+4. **Estratégico + mobile** — Maturidade, dashboard executivo, indicadores, auditorias/NC, PWA com sync IndexedDB  
+5. **Complementar** — Financeiro agregado, CAPEX/substituição/plano diretor, relatórios, configurações  
+
 ## Deploy no Coolify (recomendado)
 
 Use **Docker Compose** apontando para `docker-compose.yml` na raiz.
@@ -60,15 +68,6 @@ docker compose exec api pnpm prisma:seed
 ```
 
 O compose sobe `db` + `api` + `web`. A API aplica migrations no start.
-
-## O que já está na Fase 0 / início Fase 1
-
-- Auth JWT, sessão `/api/session/me`, troca de estabelecimento
-- Shell desktop (`SideRail`, `TopBar`, `FloatingWindow`, `Dock`)
-- Cadastros base (leitura), Equipamentos (lista/ficha/TAG/arquivar)
-- OS (lista, fila não atribuídas, criar, atribuir, status + SLA atrasada)
-- Dashboard KPIs
-- PWA `/mobile` em paralelo: início, minhas OS, execução/finalizar, QR, solicitar, fila offline simulada + sync idempotente
 
 ## Docs de produto
 

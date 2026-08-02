@@ -113,4 +113,14 @@ export class AuthService {
       },
     };
   }
+
+  async logout(usuarioId: string) {
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId,
+        acao: "LOGOUT",
+      },
+    });
+    return { ok: true };
+  }
 }

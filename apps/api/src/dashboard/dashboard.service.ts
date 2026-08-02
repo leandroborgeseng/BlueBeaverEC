@@ -7,7 +7,7 @@ export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async kpis(estabelecimentoId: string) {
-    const [equipamentosAtivos, osAbertas, osConcluidas] = await Promise.all([
+    const [equipamentosAtivos, totalEquip, osAbertas, osConcluidas] = await Promise.all([
       this.prisma.equipamento.count({
         where: {
           estabelecimentoId,
@@ -19,6 +19,9 @@ export class DashboardService {
             ],
           },
         },
+      }),
+      this.prisma.equipamento.count({
+        where: { estabelecimentoId, situacao: { not: SituacaoEquipamento.ARQUIVADO } },
       }),
       this.prisma.ordemServico.count({
         where: {
@@ -50,7 +53,8 @@ export class DashboardService {
       equipamentosAtivos,
       osAbertas,
       mttrMedioHoras: mttrHoras === null ? null : Number(mttrHoras.toFixed(1)),
-      disponibilidadePct: equipamentosAtivos === 0 ? null : 98.5,
+      disponibilidadePct:
+        totalEquip === 0 ? null : Number(((equipamentosAtivos / totalEquip) * 100).toFixed(1)),
     };
   }
 

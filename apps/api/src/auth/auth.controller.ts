@@ -36,4 +36,10 @@ export class AuthController {
   switchEstabelecimento(@Req() req: Request & { user: { userId: string } }, @Body() body: SwitchDto) {
     return this.auth.switchEstabelecimento(req.user.userId, body.estabelecimentoId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("logout")
+  logout(@Req() req: Request & { user: { userId: string } }) {
+    return this.auth.logout(req.user.userId);
+  }
 }

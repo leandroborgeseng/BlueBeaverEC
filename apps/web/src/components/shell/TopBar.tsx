@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { clearToken } from "@/lib/api";
+import { api, clearToken } from "@/lib/api";
 
 interface TopBarProps {
   nome?: string;
@@ -55,8 +55,10 @@ export function TopBar({ nome, estabelecimentoNome, perfil }: TopBarProps) {
         <button
           type="button"
           onClick={() => {
-            clearToken();
-            window.location.href = "/login";
+            void api("/auth/logout", { method: "POST" }).catch(() => undefined).finally(() => {
+              clearToken();
+              window.location.href = "/login";
+            });
           }}
           style={{
             border: "1px solid var(--nexo-border)",
