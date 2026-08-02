@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start --hostname 0.0.0.0 --port ${PORT:-3000}",
+    "start": "node scripts/start-prod.mjs",
     "lint": "next lint"
   },
   "dependencies": {
