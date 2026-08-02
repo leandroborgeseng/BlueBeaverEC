@@ -66,24 +66,42 @@ enum StatusSolicitacao {
 }
 
 model Estabelecimento {
-  id        String   @id @default(cuid())
-  nome      String
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  nome            String
+  cnpj            String?
+  fusoHorario     String   @default("America/Sao_Paulo")
+  slaUrgenteHoras Int      @default(4)
+  ativo           Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  usuarios           UsuarioEstabelecimento[]
-  setores            Setor[]
-  fabricantes        Fabricante[]
-  fornecedores       Fornecedor[]
-  planosDescricao    PlanoDescricao[]
-  equipamentos       Equipamento[]
-  ordensServico      OrdemServico[]
-  solicitacoes       SolicitacaoServico[]
-  estoqueItens       EstoqueItem[]
-  procedimentosLaudo ProcedimentoLaudo[]
-  instrumentos       InstrumentoPadrao[]
-  laudos             Laudo[]
+  usuarios               UsuarioEstabelecimento[]
+  setores                Setor[]
+  fabricantes            Fabricante[]
+  fornecedores           Fornecedor[]
+  planosDescricao        PlanoDescricao[]
+  equipamentos           Equipamento[]
+  ordensServico          OrdemServico[]
+  solicitacoes           SolicitacaoServico[]
+  estoqueItens           EstoqueItem[]
+  procedimentosLaudo     ProcedimentoLaudo[]
+  instrumentos           InstrumentoPadrao[]
+  laudos                 Laudo[]
+  contratos              Contrato[]
+  equipes                Equipe[]
+  componentesRecuperados ComponenteRecuperado[]
+  auditorias             Auditoria[]
+  naoConformidades       NaoConformidade[]
+  avaliacoesMaturidade   AvaliacaoMaturidade[]
+  jornadaEvolucao        JornadaEvolucao?
+  evidenciasConformidade EvidenciaConformidade[]
+  pops                   Pop[]
+  recomendacoes          RecomendacaoInstitucional[]
+  indicadores            Indicador[]
+  planosDiretor          PlanoDiretorItem[]
+  capexItens             CapexItem[]
+  relatorioAgendamentos  RelatorioAgendamento[]
+  perfisCustom           PerfilCustom[]
 }
 
 model Usuario {
@@ -173,6 +191,7 @@ model Fornecedor {
 
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]
+  contratos       Contrato[]
 
   @@unique([estabelecimentoId, nome])
 }
@@ -216,6 +235,9 @@ model Colaborador {
   usuario          Usuario?       @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
   osResponsavel    OrdemServico[] @relation("OSResponsavel")
   laudosResponsavel Laudo[]       @relation("LaudoResponsavelTecnico")
+  equipes          EquipeMembro[]
+  competencias     Competencia[]
+  auditoriasResp   Auditoria[]    @relation("AuditoriaResponsavel")
 
   @@unique([estabelecimentoId, matricula])
 }
@@ -257,6 +279,9 @@ model Equipamento {
   ordensServico   OrdemServico[]
   solicitacoes    SolicitacaoServico[]
   laudos          Laudo[]
+  contratos       ContratoEquipamento[]
+  componentesOrigem ComponenteRecuperado[] @relation("CompOrigem")
+  componentesDestino ComponenteRecuperado[] @relation("CompDestino")
 
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
@@ -292,6 +317,7 @@ model OrdemServico {
   pendencia          String?
   observacaoRequisicao String?
   solicitacaoId      String?      @unique
+  contratoId         String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -302,6 +328,8 @@ model OrdemServico {
   logs            LogOrdemServico[]
   itens           OrdemServicoItem[]
   reservas        EstoqueReserva[]
+  contrato        Contrato?           @relation(fields: [contratoId], references: [id])
+  naoConformidades NaoConformidade[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
@@ -439,6 +467,7 @@ model ProcedimentoLaudo {
   estabelecimento Estabelecimento      @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   modelos         ProcedimentoModelo[]
   laudos          Laudo[]
+  pop             Pop?
 
   @@index([estabelecimentoId, tipo])
 }
@@ -506,4 +535,415 @@ model Laudo {
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, tipo])
   @@index([equipamentoId])
+}
+
+enum SituacaoContrato {
+  VIGENTE
+  A_VENCER
+  VENCIDO
+}
+
+enum IndiceReajuste {
+  IPCA
+  IGP_M
+}
+
+model Contrato {
+  id                    String           @id @default(cuid())
+  estabelecimentoId     String
+  numero                String
+  fornecedorId          String
+  descricao             String
+  situacao              SituacaoContrato @default(VIGENTE)
+  vigenciaInicio        DateTime
+  vigenciaFim           DateTime
+  valor                 Decimal          @db.Decimal(14, 2)
+  slaAtendimentoHoras   Int?
+  slaSolucaoHoras       Int?
+  indiceReajuste        IndiceReajuste?
+  dataReajusteAniversario DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  estabelecimento Estabelecimento        @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  fornecedor      Fornecedor             @relation(fields: [fornecedorId], references: [id])
+  equipamentos    ContratoEquipamento[]
+  glosas          ContratoGlosa[]
+  ordensServico   OrdemServico[]
+
+  @@unique([estabelecimentoId, numero])
+  @@index([estabelecimentoId, situacao])
+}
+
+model ContratoEquipamento {
+  id            String @id @default(cuid())
+  contratoId    String
+  equipamentoId String
+
+  contrato    Contrato    @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+
+  @@unique([contratoId, equipamentoId])
+}
+
+model ContratoGlosa {
+  id         String   @id @default(cuid())
+  contratoId String
+  data       DateTime @default(now())
+  valor      Decimal  @db.Decimal(14, 2)
+  motivo     String
+
+  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+}
+
+model Equipe {
+  id                 String  @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  turno              String?
+  liderId            String?
+  ativo              Boolean @default(true)
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  membros         EquipeMembro[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model EquipeMembro {
+  id             String @id @default(cuid())
+  equipeId       String
+  colaboradorId  String
+
+  equipe      Equipe      @relation(fields: [equipeId], references: [id], onDelete: Cascade)
+  colaborador Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+
+  @@unique([equipeId, colaboradorId])
+}
+
+model Competencia {
+  id             String    @id @default(cuid())
+  colaboradorId  String
+  nome           String
+  nivel          String?
+  validade       DateTime?
+
+  colaborador Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+}
+
+enum SituacaoComponenteRecuperado {
+  EM_RASTREAMENTO
+  REAPROVEITADO
+  DESCARTADO
+}
+
+model ComponenteRecuperado {
+  id                    String                       @id @default(cuid())
+  estabelecimentoId     String
+  itemDescricao         String
+  equipamentoOrigemId   String
+  dataRetirada          DateTime                     @default(now())
+  situacao              SituacaoComponenteRecuperado @default(EM_RASTREAMENTO)
+  equipamentoDestinoId  String?
+  osDestinoNumero       Int?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+
+  estabelecimento    Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamentoOrigem  Equipamento     @relation("CompOrigem", fields: [equipamentoOrigemId], references: [id])
+  equipamentoDestino Equipamento?    @relation("CompDestino", fields: [equipamentoDestinoId], references: [id])
+}
+
+enum StatusAuditoria {
+  PLANEJADA
+  EM_EXECUCAO
+  CONCLUIDA
+}
+
+enum StatusNC {
+  ABERTA
+  EM_ACAO
+  FECHADA
+}
+
+model Auditoria {
+  id                 String         @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  escopo             String
+  responsavelId      String?
+  data               DateTime       @default(now())
+  status             StatusAuditoria @default(PLANEJADA)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  estabelecimento Estabelecimento  @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  responsavel     Colaborador?     @relation("AuditoriaResponsavel", fields: [responsavelId], references: [id])
+  achados         NaoConformidade[]
+}
+
+model NaoConformidade {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  descricao          String
+  origem             String
+  status             StatusNC @default(ABERTA)
+  auditoriaId        String?
+  ordemServicoId     String?
+  justificativaFechamento String?
+  justificativaReabertura String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  auditoria       Auditoria?      @relation(fields: [auditoriaId], references: [id])
+  ordemServico    OrdemServico?   @relation(fields: [ordemServicoId], references: [id])
+  planosAcao      PlanoAcao[]
+
+  @@unique([estabelecimentoId, codigo])
+}
+
+model PlanoAcao {
+  id                 String    @id @default(cuid())
+  naoConformidadeId  String
+  descricao          String
+  responsavelNome    String?
+  prazo              DateTime?
+  concluidoEm        DateTime?
+  escalonadoEm       DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  naoConformidade NaoConformidade @relation(fields: [naoConformidadeId], references: [id], onDelete: Cascade)
+}
+
+// ——— Fase 4/5: Estratégico, Indicadores, CAPEX, Relatórios, Config ———
+
+model DominioMaturidade {
+  id     String @id @default(cuid())
+  codigo String @unique
+  nome   String
+  ordem  Int
+  peso   Float  @default(1)
+
+  avaliacoes AvaliacaoMaturidade[]
+}
+
+model AvaliacaoMaturidade {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  dominioId          String
+  nivel              Int // 1-5
+  gaps               Json     @default("[]")
+  evidencias         Json     @default("[]")
+  planoAcao          String?
+  avaliadoEm         DateTime @default(now())
+  avaliadoPorId      String?
+  updatedAt          DateTime @updatedAt
+
+  estabelecimento Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  dominio         DominioMaturidade  @relation(fields: [dominioId], references: [id], onDelete: Cascade)
+
+  @@unique([estabelecimentoId, dominioId])
+}
+
+enum EtapaJornada {
+  DIAGNOSTICO
+  PRIORIZACAO
+  PLANO
+  IMPLANTACAO
+  EVIDENCIAS
+  AVALIACAO
+  MELHORIA_CONTINUA
+}
+
+model JornadaEvolucao {
+  id                 String       @id @default(cuid())
+  estabelecimentoId  String       @unique
+  etapaAtual         EtapaJornada @default(DIAGNOSTICO)
+  notas              Json         @default("{}")
+  updatedAt          DateTime     @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+}
+
+model RequisitoNormativo {
+  id        String  @id @default(cuid())
+  codigo    String  @unique
+  norma     String
+  texto     String
+  categoria String
+  ativo     Boolean @default(true)
+
+  evidencias EvidenciaConformidade[]
+}
+
+enum StatusConformidade {
+  CONFORME
+  PARCIAL
+  NAO_CONFORME
+  SEM_EVIDENCIA
+}
+
+model EvidenciaConformidade {
+  id                 String             @id @default(cuid())
+  estabelecimentoId  String
+  requisitoId        String
+  tipo               String
+  descricao          String?
+  arquivoUrl         String?
+  status             StatusConformidade @default(SEM_EVIDENCIA)
+  dataUpload         DateTime           @default(now())
+  uploadedById       String?
+
+  estabelecimento Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  requisito       RequisitoNormativo @relation(fields: [requisitoId], references: [id], onDelete: Cascade)
+
+  @@index([estabelecimentoId, requisitoId])
+}
+
+model Pop {
+  id                   String   @id @default(cuid())
+  estabelecimentoId    String
+  codigo               String
+  titulo               String
+  versao               String   @default("1.0")
+  status               String   @default("VIGENTE")
+  procedimentoLaudoId  String?  @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  estabelecimento   Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  procedimentoLaudo ProcedimentoLaudo? @relation(fields: [procedimentoLaudoId], references: [id])
+
+  @@unique([estabelecimentoId, codigo])
+}
+
+model RecomendacaoInstitucional {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  titulo             String
+  origem             String
+  prioridade         String   @default("MEDIA")
+  responsavelNome    String?
+  concluida          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+}
+
+enum FormulaIndicador {
+  PERCENTUAL
+  CONTAGEM
+  MEDIA
+  SOMA
+}
+
+model Indicador {
+  id                 String           @id @default(cuid())
+  estabelecimentoId  String?
+  codigo             String           @unique
+  nome               String
+  categoria          String
+  metaTexto          String?
+  metaNum            Float?
+  formula            FormulaIndicador @default(CONTAGEM)
+  campos             Json             @default("[]")
+  sistema            Boolean          @default(false)
+  ativo              Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+
+  estabelecimento Estabelecimento?     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  snapshots       IndicadorSnapshot[]
+}
+
+model IndicadorSnapshot {
+  id          String   @id @default(cuid())
+  indicadorId String
+  periodo     String // YYYY-MM
+  valor       Float
+  createdAt   DateTime @default(now())
+
+  indicador Indicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+
+  @@unique([indicadorId, periodo])
+}
+
+model PlanoDiretorItem {
+  id                   String   @id @default(cuid())
+  estabelecimentoId    String
+  iniciativa           String
+  horizonteTexto       String?
+  investimentoPrevisto Decimal? @db.Decimal(14, 2)
+  status               String   @default("Em andamento")
+  atualizadoEm         DateTime @default(now())
+  createdAt            DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+}
+
+enum StatusCapex {
+  PROPOSTO
+  APROVADO
+  EXECUTADO
+}
+
+enum OrigemCapex {
+  SUBSTITUICAO
+  MANUAL
+}
+
+model CapexItem {
+  id                   String      @id @default(cuid())
+  estabelecimentoId    String
+  descricao            String
+  valorEstimado        Decimal     @db.Decimal(14, 2)
+  justificativa        String
+  status               StatusCapex @default(PROPOSTO)
+  origem               OrigemCapex @default(MANUAL)
+  equipamentoOrigemId  String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+}
+
+enum FrequenciaRelatorio {
+  SEMANAL
+  MENSAL
+  TRIMESTRAL
+}
+
+model RelatorioAgendamento {
+  id                 String              @id @default(cuid())
+  estabelecimentoId  String
+  template           String
+  frequencia         FrequenciaRelatorio @default(MENSAL)
+  destinatarios      String[]
+  proximoEnvio       DateTime?
+  ativo              Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+}
+
+enum NivelPermissaoModulo {
+  NENHUM
+  LEITURA
+  EDICAO
+  EDICAO_APROVACAO
+}
+
+model PerfilCustom {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  permissoes         Json     @default("{}")
+  ativo              Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+
+  @@unique([estabelecimentoId, nome])
 }

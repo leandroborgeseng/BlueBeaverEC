@@ -7,6 +7,7 @@ import {
 import { PrioridadeOS, ResultadoLaudo, TipoLaudo, TipoOS } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
+import { ContratosService } from "../contratos/contratos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
 type RespostaItem = {
@@ -26,6 +27,7 @@ export class LaudosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly os: OsService,
+    private readonly contratos: ContratosService,
   ) {}
 
   list(estabelecimentoId: string, tipo?: TipoLaudo, equipamentoTag?: string) {
@@ -228,6 +230,14 @@ export class LaudosService {
       );
     }, 0);
 
+    const totalContrato = await this.contratos.rateioPorEquipamento(
+      estabelecimentoId,
+      eq.id,
+    );
+    const nContratos = await this.prisma.contratoEquipamento.count({
+      where: { equipamentoId: eq.id },
+    });
+
     return {
       equipamento: {
         tag: eq.tag,
@@ -245,9 +255,9 @@ export class LaudosService {
       },
       custos: {
         totalOS: Number(totalOS.toFixed(2)),
-        totalContrato: 0,
+        totalContrato: Number(totalContrato.toFixed(2)),
         nOS: eq.ordensServico.length,
-        nContratos: 0,
+        nContratos,
       },
       historico: [
         ...eq.ordensServico.map((o) => ({

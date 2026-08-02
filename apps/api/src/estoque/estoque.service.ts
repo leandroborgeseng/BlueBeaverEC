@@ -152,4 +152,81 @@ export class EstoqueService {
       data: { ativa: false },
     });
   }
+
+  listComponentes(estabelecimentoId: string) {
+    return this.prisma.componenteRecuperado.findMany({
+      where: { estabelecimentoId },
+      include: {
+        equipamentoOrigem: true,
+        equipamentoDestino: true,
+      },
+      orderBy: { dataRetirada: "desc" },
+    });
+  }
+
+  async createComponente(
+    user: AuthUser,
+    data: { itemDescricao: string; equipamentoOrigemTag: string; dataRetirada?: string },
+  ) {
+    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    const origem = await this.prisma.equipamento.findUnique({
+      where: {
+        estabelecimentoId_tag: {
+          estabelecimentoId: user.estabelecimentoId,
+          tag: data.equipamentoOrigemTag,
+        },
+      },
+    });
+    if (!origem) throw new NotFoundException("Equipamento de origem não encontrado");
+
+    return this.prisma.componenteRecuperado.create({
+      data: {
+        estabelecimentoId: user.estabelecimentoId,
+        itemDescricao: data.itemDescricao.trim(),
+        equipamentoOrigemId: origem.id,
+        dataRetirada: data.dataRetirada ? new Date(data.dataRetirada) : new Date(),
+      },
+      include: { equipamentoOrigem: true },
+    });
+  }
+
+  async updateComponente(
+    user: AuthUser,
+    id: string,
+    data: {
+      situacao: "EM_RASTREAMENTO" | "REAPROVEITADO" | "DESCARTADO";
+      equipamentoDestinoTag?: string;
+      osDestinoNumero?: number;
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    const comp = await this.prisma.componenteRecuperado.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!comp) throw new NotFoundException();
+
+    let destinoId: string | undefined;
+    if (data.equipamentoDestinoTag) {
+      const dest = await this.prisma.equipamento.findUnique({
+        where: {
+          estabelecimentoId_tag: {
+            estabelecimentoId: user.estabelecimentoId,
+            tag: data.equipamentoDestinoTag,
+          },
+        },
+      });
+      if (!dest) throw new NotFoundException("Equipamento destino não encontrado");
+      destinoId = dest.id;
+    }
+
+    return this.prisma.componenteRecuperado.update({
+      where: { id },
+      data: {
+        situacao: data.situacao,
+        equipamentoDestinoId: destinoId,
+        osDestinoNumero: data.osDestinoNumero,
+      },
+      include: { equipamentoOrigem: true, equipamentoDestino: true },
+    });
+  }
 }

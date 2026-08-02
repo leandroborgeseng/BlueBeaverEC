@@ -78,6 +78,22 @@ class AtribuirDto {
 export class OsController {
   constructor(private readonly os: OsService) {}
 
+  @Get("quadro-processos")
+  async quadro(@CurrentUser() user: AuthUser) {
+    const [abertas, andamento, concluidas, canceladas] = await Promise.all([
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.ABERTA, page: 1 }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.EM_ANDAMENTO, page: 1 }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CONCLUIDA, page: 1 }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CANCELADA, page: 1 }),
+    ]);
+    return {
+      ABERTA: abertas.items,
+      EM_ANDAMENTO: andamento.items,
+      CONCLUIDA: concluidas.items,
+      CANCELADA: canceladas.items,
+    };
+  }
+
   @Get()
   list(
     @CurrentUser() user: AuthUser,

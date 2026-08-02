@@ -12,15 +12,28 @@ interface Item {
   qtdReservada: number;
   disponivel: number;
   status: string;
-  valorUnitario: string | number;
+}
+
+interface Comp {
+  id: string;
+  itemDescricao: string;
+  situacao: string;
+  equipamentoOrigem: { tag: string };
+  equipamentoDestino?: { tag: string } | null;
 }
 
 export default function EstoquePage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [comps, setComps] = useState<Comp[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
 
   async function load() {
-    setItems(await api<Item[]>("/estoque/itens"));
+    const [i, c] = await Promise.all([
+      api<Item[]>("/estoque/itens"),
+      api<Comp[]>("/estoque/componentes-recuperados"),
+    ]);
+    setItems(i);
+    setComps(c);
   }
 
   useEffect(() => {
@@ -49,11 +62,30 @@ export default function EstoquePage() {
     }
   }
 
+  async function onComp(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      await api("/estoque/componentes-recuperados", {
+        method: "POST",
+        body: JSON.stringify({
+          itemDescricao: String(fd.get("itemDescricao")),
+          equipamentoOrigemTag: String(fd.get("equipamentoOrigemTag")),
+        }),
+      });
+      e.currentTarget.reset();
+      setMsg("Componente recuperado em rastreamento (fora do estoque comum)");
+      await load();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
   return (
     <div>
       <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Estoque</h1>
       <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Baixa imediata · saldo negativo permitido · abaixo do mínimo só alerta
+        Baixa imediata · saldo negativo permitido · componentes recuperados em lista separada
       </p>
       {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
 
@@ -75,12 +107,10 @@ export default function EstoquePage() {
         <input name="qtdAtual" type="number" placeholder="Qtd" style={input} />
         <input name="qtdMinima" type="number" placeholder="Mín." style={input} />
         <input name="valorUnitario" type="number" step="0.01" placeholder="R$" style={input} />
-        <button type="submit" style={btn}>
-          + Item
-        </button>
+        <button type="submit" style={btn}>+ Item</button>
       </form>
 
-      <div style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12 }}>
+      <div style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, marginBottom: 18 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: "left", background: "oklch(0.97 0.01 250)" }}>
@@ -107,6 +137,21 @@ export default function EstoquePage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <h2 style={{ fontSize: 16 }}>Componentes Recuperados</h2>
+      <form onSubmit={(e) => void onComp(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 8, marginBottom: 12 }}>
+        <input name="itemDescricao" placeholder="Descrição da peça" required style={input} />
+        <input name="equipamentoOrigemTag" placeholder="TAG origem" required style={input} />
+        <button type="submit" style={btn}>Rastrear</button>
+      </form>
+      <div style={{ display: "grid", gap: 8 }}>
+        {comps.map((c) => (
+          <div key={c.id} style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 10, padding: 12, fontSize: 13 }}>
+            <strong>{c.itemDescricao}</strong> · origem {c.equipamentoOrigem.tag} · {c.situacao}
+            {c.equipamentoDestino ? ` · destino ${c.equipamentoDestino.tag}` : ""}
+          </div>
+        ))}
       </div>
     </div>
   );

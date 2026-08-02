@@ -2,11 +2,15 @@ import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { DashboardService } from "./dashboard.service";
+import { ContratosService } from "../contratos/contratos.service";
 
 @Controller("dashboard")
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
-  constructor(private readonly dashboard: DashboardService) {}
+  constructor(
+    private readonly dashboard: DashboardService,
+    private readonly contratos: ContratosService,
+  ) {}
 
   @Get("kpis")
   kpis(@CurrentUser() user: AuthUser) {
@@ -29,8 +33,7 @@ export class DashboardController {
   }
 
   @Get("contratos-vencendo")
-  contratosVencendo() {
-    // Contratos entram na Fase 3 — endpoint já reservado.
-    return [];
+  contratosVencendo(@CurrentUser() user: AuthUser, @Query("dias") dias?: string) {
+    return this.contratos.vencendo(user.estabelecimentoId, dias ?? "30");
   }
 }

@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [osSituacao, setOsSituacao] = useState<Array<{ situacao: string; total: number }>>([]);
   const [recentes, setRecentes] = useState<Array<{ codigo: string; status: string; equipamento: { tag: string } }>>([]);
+  const [contratos, setContratos] = useState<Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>>([]);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,11 +22,13 @@ export default function DashboardPage() {
       api<Kpis>("/dashboard/kpis"),
       api<Array<{ situacao: string; total: number }>>("/dashboard/os-por-situacao"),
       api<Array<{ codigo: string; status: string; equipamento: { tag: string } }>>("/dashboard/os-recentes?limit=5"),
+      api<Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>>("/dashboard/contratos-vencendo?dias=30"),
     ])
-      .then(([k, s, r]) => {
+      .then(([k, s, r, c]) => {
         setKpis(k);
         setOsSituacao(s);
         setRecentes(r);
+        setContratos(c);
       })
       .catch((e) => setErro(e.message));
   }, []);
@@ -90,6 +93,36 @@ export default function DashboardPage() {
                     {os.codigo} · {os.equipamento.tag}
                   </span>
                   <span style={{ color: "var(--nexo-muted)" }}>{os.status}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <Panel title="Contratos a vencer (≤30 dias)">
+          {contratos.length === 0 ? (
+            <Empty />
+          ) : (
+            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              {contratos.map((c) => (
+                <li
+                  key={c.numero}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "10px 0",
+                    borderBottom: "1px solid var(--nexo-border)",
+                    fontSize: 13,
+                  }}
+                >
+                  <span>
+                    {c.numero} · {c.fornecedor.nome}
+                  </span>
+                  <span style={{ color: "var(--nexo-warning)", fontWeight: 700 }}>
+                    {new Date(c.vigenciaFim).toLocaleDateString("pt-BR")}
+                  </span>
                 </li>
               ))}
             </ul>

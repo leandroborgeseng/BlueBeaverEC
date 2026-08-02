@@ -15,6 +15,7 @@ const RAIL = [
       { href: "/os/nova", label: "Abrir OS" },
       { href: "/os/nao-atribuidas", label: "Fila Não Atribuídas" },
       { href: "/os/triagem-solicitacoes", label: "Triagem de Solicitações" },
+      { href: "/os/quadro-processos", label: "Quadro de Processos" },
     ],
   },
   {
@@ -23,10 +24,28 @@ const RAIL = [
     items: [
       { href: "/cadastros", label: "Cadastros base" },
       { href: "/estoque", label: "Estoque" },
+      { href: "/contratos", label: "Contratos" },
+      { href: "/pessoas", label: "Pessoas e Equipes" },
       { href: "/procedimentos-laudo", label: "Procedimentos de Laudo" },
       { href: "/instrumentos", label: "Instrumentos e Padrões" },
       { href: "/certificados", label: "Certificados" },
       { href: "/laudos/novo", label: "Novo Laudo" },
+    ],
+  },
+  {
+    key: "gest",
+    label: "Gestão",
+    items: [
+      { href: "/gestao/dashboard-executivo", label: "Dashboard Executivo" },
+      { href: "/gestao/avaliacao-maturidade", label: "Avaliação Maturidade" },
+      { href: "/gestao/jornada-evolucao", label: "Jornada de Evolução" },
+      { href: "/gestao/conformidade", label: "Conformidade / POPs" },
+      { href: "/gestao/indicadores", label: "Indicadores" },
+      { href: "/auditorias", label: "Auditorias / NC" },
+      { href: "/gestao/capex", label: "CAPEX / Plano Diretor" },
+      { href: "/gestao/relatorios", label: "Relatórios" },
+      { href: "/financeiro", label: "Financeiro" },
+      { href: "/config", label: "Configurações" },
     ],
   },
   {
@@ -103,13 +122,15 @@ export function SideRail() {
             position: "absolute",
             left: 72,
             top: 70,
-            width: 240,
+            width: 250,
             background: "var(--nexo-surface)",
             color: "var(--nexo-text)",
             border: "1px solid var(--nexo-border)",
             borderRadius: 12,
             boxShadow: "0 18px 40px -24px rgba(0,0,0,.45)",
             padding: 10,
+            maxHeight: "70vh",
+            overflow: "auto",
           }}
         >
           <div style={{ fontSize: 11, fontWeight: 700, color: "var(--nexo-muted)", padding: "6px 8px" }}>

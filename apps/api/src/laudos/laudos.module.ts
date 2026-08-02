@@ -8,9 +8,10 @@ import { InstrumentosService } from "./instrumentos.service";
 import { CertificadosController } from "./certificados.controller";
 import { FichaVidaController } from "./ficha-vida.controller";
 import { OsModule } from "../os/os.module";
+import { ContratosModule } from "../contratos/contratos.module";
 
 @Module({
-  imports: [OsModule],
+  imports: [OsModule, ContratosModule],
   controllers: [
     ProcedimentosController,
     LaudosController,

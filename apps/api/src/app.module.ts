@@ -13,6 +13,15 @@ import { MobileModule } from "./mobile/mobile.module";
 import { SolicitacoesModule } from "./solicitacoes/solicitacoes.module";
 import { EstoqueModule } from "./estoque/estoque.module";
 import { LaudosModule } from "./laudos/laudos.module";
+import { ContratosModule } from "./contratos/contratos.module";
+import { PessoasModule } from "./pessoas/pessoas.module";
+import { AuditoriasModule } from "./auditorias/auditorias.module";
+import { EstrategicoModule } from "./estrategico/estrategico.module";
+import { IndicadoresModule } from "./indicadores/indicadores.module";
+import { FinanceiroModule } from "./financeiro/financeiro.module";
+import { GestaoModule } from "./gestao/gestao.module";
+import { RelatoriosModule } from "./relatorios/relatorios.module";
+import { ConfigAppModule } from "./config/config.module";
 
 @Module({
   imports: [
@@ -30,6 +39,15 @@ import { LaudosModule } from "./laudos/laudos.module";
     SolicitacoesModule,
     EstoqueModule,
     LaudosModule,
+    ContratosModule,
+    PessoasModule,
+    AuditoriasModule,
+    EstrategicoModule,
+    IndicadoresModule,
+    FinanceiroModule,
+    GestaoModule,
+    RelatoriosModule,
+    ConfigAppModule,
   ],
 })
 export class AppModule {}

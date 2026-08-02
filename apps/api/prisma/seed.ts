@@ -331,6 +331,48 @@ async function main() {
 
   void instrumento;
 
+  const dominios = [
+    ["GOV", "Governança", 1],
+    ["ATIVOS", "Gestão de Ativos", 2],
+    ["MANUT", "Manutenção", 3],
+    ["METRO", "Metrologia", 4],
+    ["CONTR", "Contratos", 5],
+    ["ESTOQ", "Estoque", 6],
+    ["PESSOAS", "Pessoas", 7],
+    ["QUAL", "Qualidade e Conformidade", 8],
+    ["TI", "Tecnologia da Informação", 9],
+    ["SUST", "Sustentabilidade", 10],
+  ] as const;
+
+  for (const [codigo, nome, ordem] of dominios) {
+    await prisma.dominioMaturidade.upsert({
+      where: { codigo },
+      update: { nome, ordem },
+      create: { codigo, nome, ordem, peso: 1 },
+    });
+  }
+
+  const requisitos = [
+    ["RDC-509-01", "RDC 509/2021", "Programa de gerenciamento de equipamentos", "Anvisa"],
+    ["NR-32-01", "NR-32", "Capacitação de profissionais em exposição a riscos biológicos", "Trabalho"],
+    ["ISO-13485-01", "ISO 13485", "Controle de documentos e registros de manutenção", "Qualidade"],
+    ["RDC-16-01", "RDC 16/2013", "Boas práticas de fabricação — rastreabilidade", "Anvisa"],
+  ] as const;
+
+  for (const [codigo, norma, texto, categoria] of requisitos) {
+    await prisma.requisitoNormativo.upsert({
+      where: { codigo },
+      update: { norma, texto, categoria },
+      create: { codigo, norma, texto, categoria },
+    });
+  }
+
+  await prisma.jornadaEvolucao.upsert({
+    where: { estabelecimentoId: hospital.id },
+    update: {},
+    create: { estabelecimentoId: hospital.id, etapaAtual: "DIAGNOSTICO" },
+  });
+
   console.log("Seed OK");
   console.log("Logins: engenheiro@nexo.local / tecnico@nexo.local / solicitante@nexo.local");
   console.log("Senha: nexo1234");
