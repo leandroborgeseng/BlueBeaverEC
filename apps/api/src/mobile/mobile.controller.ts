@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
-import { IsArray, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+  ValidateNested,
+} from "class-validator";
 import { Type } from "class-transformer";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
@@ -13,6 +22,50 @@ class FinalizarDto {
   @IsString()
   @MinLength(1)
   assinaturaBase64!: string;
+}
+
+class ChecklistItemDto {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  label!: string;
+
+  @IsBoolean()
+  ok!: boolean;
+}
+
+class ChecklistDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChecklistItemDto)
+  itens!: ChecklistItemDto[];
+}
+
+class FotoDto {
+  @IsString()
+  dataUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  legenda?: string;
+}
+
+class FotosDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FotoDto)
+  fotos!: FotoDto[];
+}
+
+class PecasDto {
+  @IsString()
+  @MinLength(1)
+  itemCodigo!: string;
+
+  @IsNumber()
+  @Min(0.01)
+  qtd!: number;
 }
 
 class SyncItemDto {
@@ -42,6 +95,11 @@ export class MobileController {
     return this.mobile.minhasOs(user);
   }
 
+  @Get("proximos")
+  proximos(@CurrentUser() user: AuthUser, @Query("limit") limit?: string) {
+    return this.mobile.proximos(user, limit ? Number(limit) : 5);
+  }
+
   @Get("kpis-hoje")
   kpis(@CurrentUser() user: AuthUser) {
     return this.mobile.kpisHoje(user);
@@ -50,6 +108,38 @@ export class MobileController {
   @Get("equipamento/qr/:codigo")
   qr(@CurrentUser() user: AuthUser, @Param("codigo") codigo: string) {
     return this.mobile.equipamentoQr(user, codigo);
+  }
+
+  @Get("os/:numero")
+  detalhe(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    return this.mobile.detalheOs(user, Number(numero));
+  }
+
+  @Post("os/:numero/checklist")
+  checklist(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: ChecklistDto,
+  ) {
+    return this.mobile.checklist(user, Number(numero), body.itens);
+  }
+
+  @Post("os/:numero/fotos")
+  fotos(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: FotosDto,
+  ) {
+    return this.mobile.fotos(user, Number(numero), body.fotos);
+  }
+
+  @Post("os/:numero/pecas")
+  pecas(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: PecasDto,
+  ) {
+    return this.mobile.pecas(user, Number(numero), body);
   }
 
   @Post("os/:numero/finalizar")

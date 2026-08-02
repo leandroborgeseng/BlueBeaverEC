@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useOfflineQueue } from "@/lib/offline-queue";
 
 export function MobileFrame({
   title,
@@ -13,8 +15,20 @@ export function MobileFrame({
   children: React.ReactNode;
   online: boolean;
   pending: number;
-  onSync?: () => void;
+  onSync?: () => void | Promise<void>;
 }) {
+  const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
+
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (!lastSyncMsg) return;
+    const t = setTimeout(() => clearSyncMsg(), 4000);
+    return () => clearTimeout(t);
+  }, [lastSyncMsg, clearSyncMsg]);
+
   return (
     <div
       style={{
@@ -41,7 +55,7 @@ export function MobileFrame({
         {pending > 0 && online && onSync && (
           <button
             type="button"
-            onClick={onSync}
+            onClick={() => void onSync()}
             style={{
               border: "none",
               background: "var(--nexo-brand)",
@@ -56,6 +70,21 @@ export function MobileFrame({
           </button>
         )}
       </div>
+      {lastSyncMsg && (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: "oklch(0.93 0.05 145)",
+            color: "oklch(0.35 0.1 145)",
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
+          {lastSyncMsg}
+        </div>
+      )}
       {children}
       <nav
         style={{
@@ -71,6 +100,7 @@ export function MobileFrame({
           gridTemplateColumns: "repeat(4, 1fr)",
           padding: 8,
           boxShadow: "0 12px 30px -18px rgba(0,0,0,.4)",
+          zIndex: 30,
         }}
       >
         {[

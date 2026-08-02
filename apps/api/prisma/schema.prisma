@@ -102,6 +102,7 @@ model Estabelecimento {
   capexItens             CapexItem[]
   relatorioAgendamentos  RelatorioAgendamento[]
   perfisCustom           PerfilCustom[]
+  mobileSyncIds          MobileSyncIdempotency[]
 }
 
 model Usuario {
@@ -330,6 +331,8 @@ model OrdemServico {
   reservas        EstoqueReserva[]
   contrato        Contrato?           @relation(fields: [contratoId], references: [id])
   naoConformidades NaoConformidade[]
+  checklistMobile OsChecklistMobile?
+  fotosMobile     OsFotoMobile[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
@@ -946,4 +949,38 @@ model PerfilCustom {
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
 
   @@unique([estabelecimentoId, nome])
+}
+
+model OsChecklistMobile {
+  id             String   @id @default(cuid())
+  ordemServicoId String   @unique
+  itens          Json     @default("[]")
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+}
+
+model OsFotoMobile {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  dataUrl        String
+  legenda        String?
+  createdAt      DateTime @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+
+  @@index([ordemServicoId])
+}
+
+model MobileSyncIdempotency {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  clientId           String
+  tipo               String
+  createdAt          DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+
+  @@unique([estabelecimentoId, clientId])
 }
