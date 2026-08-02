@@ -21,12 +21,18 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
       });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message ?? "Falha no login");
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.message ?? `Falha no login (${res.status})`);
       setToken(body.accessToken);
       router.push("/dashboard");
     } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro");
+      const msg = err instanceof Error ? err.message : "Erro";
+      const target = API_URL || "/api (proxy)";
+      setErro(
+        /load failed|failed to fetch|networkerror/i.test(msg)
+          ? `Sem conexão com a API (${target}). Confira se @nexo/api está online e se o web tem API_INTERNAL_URL.`
+          : msg,
+      );
     } finally {
       setLoading(false);
     }

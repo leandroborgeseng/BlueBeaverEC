@@ -12,7 +12,8 @@ COPY apps/web/package.json ./apps/web/
 RUN pnpm install --frozen-lockfile=false
 
 FROM deps AS build
-ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+# Vazio = same-origin (proxy). Passe URL só se a API for chamada direto do browser.
+ARG NEXT_PUBLIC_API_URL=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
