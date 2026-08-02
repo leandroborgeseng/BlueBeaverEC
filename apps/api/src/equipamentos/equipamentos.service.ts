@@ -94,6 +94,109 @@ export class EquipamentosService {
     return this.byTag(estabelecimentoId, codigo, false);
   }
 
+  async create(
+    user: AuthUser,
+    data: {
+      tag: string;
+      nome: string;
+      descricaoId: string;
+      fabricanteId: string;
+      modeloId: string;
+      setorId: string;
+      fornecedorId?: string;
+      centroCustoId?: string;
+      patrimonio?: string;
+      nSerie?: string;
+      dataAquisicao?: string;
+      valorAquisicao?: number;
+      situacao?: SituacaoEquipamento;
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil)) {
+      throw new ForbiddenException("Somente Engenheiro/Gestor pode cadastrar equipamentos");
+    }
+    return this.prisma.equipamento.create({
+      data: {
+        estabelecimentoId: user.estabelecimentoId,
+        tag: data.tag.trim(),
+        nome: data.nome.trim(),
+        descricaoId: data.descricaoId,
+        fabricanteId: data.fabricanteId,
+        modeloId: data.modeloId,
+        setorId: data.setorId,
+        fornecedorId: data.fornecedorId,
+        centroCustoId: data.centroCustoId,
+        patrimonio: data.patrimonio,
+        nSerie: data.nSerie,
+        dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
+        valorAquisicao: data.valorAquisicao,
+        situacao: data.situacao ?? SituacaoEquipamento.ATIVO,
+      },
+      include: {
+        setor: true,
+        fabricante: true,
+        modelo: true,
+        descricao: true,
+      },
+    });
+  }
+
+  async update(
+    user: AuthUser,
+    tag: string,
+    data: {
+      nome?: string;
+      setorId?: string;
+      fornecedorId?: string | null;
+      centroCustoId?: string | null;
+      patrimonio?: string;
+      nSerie?: string;
+      observacao?: string;
+      situacao?: SituacaoEquipamento;
+      valorAquisicao?: number;
+      valorSubstituicao?: number;
+      checklistRecebimentoPendente?: boolean;
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil)) {
+      throw new ForbiddenException("Somente Engenheiro pode salvar alterações");
+    }
+    const eq = await this.prisma.equipamento.findUnique({
+      where: {
+        estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag },
+      },
+    });
+    if (!eq) throw new NotFoundException();
+    if (eq.situacao === SituacaoEquipamento.ARQUIVADO || eq.situacao === SituacaoEquipamento.INATIVO) {
+      throw new ForbiddenException("Equipamento arquivado/inativo está somente leitura");
+    }
+
+    return this.prisma.equipamento.update({
+      where: { id: eq.id },
+      data: {
+        ...(data.nome != null ? { nome: data.nome.trim() } : {}),
+        ...(data.setorId != null ? { setorId: data.setorId } : {}),
+        ...(data.fornecedorId !== undefined ? { fornecedorId: data.fornecedorId } : {}),
+        ...(data.centroCustoId !== undefined ? { centroCustoId: data.centroCustoId } : {}),
+        ...(data.patrimonio != null ? { patrimonio: data.patrimonio } : {}),
+        ...(data.nSerie != null ? { nSerie: data.nSerie } : {}),
+        ...(data.observacao != null ? { observacao: data.observacao } : {}),
+        ...(data.situacao != null ? { situacao: data.situacao } : {}),
+        ...(data.valorAquisicao != null ? { valorAquisicao: data.valorAquisicao } : {}),
+        ...(data.valorSubstituicao != null ? { valorSubstituicao: data.valorSubstituicao } : {}),
+        ...(data.checklistRecebimentoPendente != null
+          ? { checklistRecebimentoPendente: data.checklistRecebimentoPendente }
+          : {}),
+      },
+      include: {
+        setor: true,
+        fabricante: true,
+        modelo: true,
+        descricao: true,
+      },
+    });
+  }
+
   async updateTag(user: AuthUser, tag: string, novaTag: string, justificativa: string) {
     if (!podeEditarCadastros(user.perfil)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode alterar TAG");

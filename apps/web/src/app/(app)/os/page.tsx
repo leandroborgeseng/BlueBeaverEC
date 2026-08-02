@@ -28,10 +28,28 @@ export default function OsPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Ordens de Serviço</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Lista colorida por prioridade · SLA visual (Atrasada)
-      </p>
+      <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Ordens de Serviço</h1>
+          <p style={{ margin: 0, color: "var(--nexo-muted)", fontSize: 13 }}>
+            Lista colorida por prioridade · SLA visual (Atrasada)
+          </p>
+        </div>
+        <a
+          href="/os/nova"
+          style={{
+            border: "none",
+            borderRadius: 10,
+            padding: "10px 14px",
+            background: "var(--nexo-primary)",
+            color: "white",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          + Abrir OS
+        </a>
+      </div>
       {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
 
       <div

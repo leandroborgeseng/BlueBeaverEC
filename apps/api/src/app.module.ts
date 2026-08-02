@@ -10,6 +10,8 @@ import { EquipamentosModule } from "./equipamentos/equipamentos.module";
 import { OsModule } from "./os/os.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { MobileModule } from "./mobile/mobile.module";
+import { SolicitacoesModule } from "./solicitacoes/solicitacoes.module";
+import { EstoqueModule } from "./estoque/estoque.module";
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { MobileModule } from "./mobile/mobile.module";
     OsModule,
     DashboardModule,
     MobileModule,
+    SolicitacoesModule,
+    EstoqueModule,
   ],
 })
 export class AppModule {}

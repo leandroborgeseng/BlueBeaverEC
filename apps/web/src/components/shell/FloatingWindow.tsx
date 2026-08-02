@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 import { useWindowStore, type FloatingWin } from "@/store/windows";
 
 export function FloatingWindowLayer() {
@@ -91,15 +92,132 @@ function WindowFrame({
           </button>
         </div>
       </div>
-      <div style={{ padding: 16, overflow: "auto", flex: 1, fontSize: 13, color: "var(--nexo-muted)" }}>
-        {win.payload ? (
+      <div style={{ padding: 16, overflow: "auto", flex: 1, fontSize: 13 }}>
+        {win.kind === "equipamento" && win.payload?.tag ? (
+          <EquipamentoEditor tag={String(win.payload.tag)} onDone={onClose} />
+        ) : win.payload ? (
           <pre style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--nexo-text)" }}>
             {JSON.stringify(win.payload, null, 2)}
           </pre>
         ) : (
-          <p>Janela `{win.kind}` — conteúdo será ligado às fichas reais nas próximas sprints.</p>
+          <p style={{ color: "var(--nexo-muted)" }}>
+            Janela `{win.kind}` — conteúdo será ligado às fichas reais nas próximas sprints.
+          </p>
         )}
       </div>
+    </div>
+  );
+}
+
+function EquipamentoEditor({ tag, onDone }: { tag: string; onDone: () => void }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [nome, setNome] = useState("");
+  const [observacao, setObservacao] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    api<Record<string, unknown>>(`/equipamentos/${encodeURIComponent(tag)}`)
+      .then((eq) => {
+        setData(eq);
+        setNome(String(eq.nome ?? ""));
+        setObservacao(String(eq.observacao ?? ""));
+      })
+      .catch((e) => setErro(e.message));
+  }, [tag]);
+
+  if (erro) return <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>;
+  if (!data) return <div style={{ color: "var(--nexo-muted)" }}>Carregando ficha…</div>;
+
+  const readonly =
+    data.situacao === "ARQUIVADO" || data.situacao === "INATIVO";
+
+  async function salvar() {
+    try {
+      const updated = await api<Record<string, unknown>>(`/equipamentos/${encodeURIComponent(tag)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ nome, observacao }),
+      });
+      setData(updated);
+      setMsg("Salvo");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
+    }
+  }
+
+  async function arquivar() {
+    try {
+      await api(`/equipamentos/${encodeURIComponent(tag)}/arquivar`, { method: "POST" });
+      setMsg("Arquivado");
+      onDone();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
+    }
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <Field label="TAG" value={String(data.tag)} />
+        <Field label="Situação" value={String(data.situacao)} />
+        <Field
+          label="Tipo"
+          value={String((data.descricao as { nome?: string } | undefined)?.nome ?? "—")}
+        />
+        <Field
+          label="Criticidade"
+          value={String((data.descricao as { criticidade?: string } | undefined)?.criticidade ?? "—")}
+        />
+        <Field
+          label="Setor"
+          value={String((data.setor as { nome?: string } | undefined)?.nome ?? "—")}
+        />
+        <Field
+          label="Fabricante / Modelo"
+          value={`${(data.fabricante as { nome?: string } | undefined)?.nome ?? ""} / ${(data.modelo as { nome?: string } | undefined)?.nome ?? ""}`}
+        />
+      </div>
+
+      {Boolean(data.checklistRecebimentoPendente) && (
+        <div style={{ color: "var(--nexo-warning)", fontWeight: 700 }}>
+          Checklist de recebimento pendente
+        </div>
+      )}
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--nexo-muted)" }}>Nome</label>
+      <input
+        value={nome}
+        disabled={readonly}
+        onChange={(e) => setNome(e.target.value)}
+        style={input}
+      />
+      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--nexo-muted)" }}>Observação</label>
+      <textarea
+        value={observacao}
+        disabled={readonly}
+        onChange={(e) => setObservacao(e.target.value)}
+        rows={4}
+        style={input}
+      />
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="button" disabled={readonly} onClick={() => void salvar()} style={primary}>
+          Salvar
+        </button>
+        <button type="button" disabled={readonly} onClick={() => void arquivar()} style={ghost}>
+          Arquivar
+        </button>
+      </div>
+      {msg && <div style={{ color: "var(--nexo-success)" }}>{msg}</div>}
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: "var(--nexo-muted)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontWeight: 600 }}>{value}</div>
     </div>
   );
 }
@@ -111,4 +229,25 @@ const btn: React.CSSProperties = {
   border: "1px solid var(--nexo-border)",
   background: "white",
   cursor: "pointer",
+};
+const input: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid var(--nexo-border)",
+  borderRadius: 10,
+  padding: "10px 12px",
+};
+const primary: React.CSSProperties = {
+  border: "none",
+  borderRadius: 10,
+  padding: "10px 14px",
+  background: "var(--nexo-primary)",
+  color: "white",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+const ghost: React.CSSProperties = {
+  ...primary,
+  background: "white",
+  color: "var(--nexo-text)",
+  border: "1px solid var(--nexo-border)",
 };

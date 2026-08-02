@@ -80,6 +80,7 @@ model Estabelecimento {
   equipamentos       Equipamento[]
   ordensServico      OrdemServico[]
   solicitacoes       SolicitacaoServico[]
+  estoqueItens       EstoqueItem[]
 }
 
 model Usuario {
@@ -293,6 +294,8 @@ model OrdemServico {
   responsavel     Colaborador?        @relation("OSResponsavel", fields: [responsavelId], references: [id])
   solicitacao     SolicitacaoServico? @relation(fields: [solicitacaoId], references: [id])
   logs            LogOrdemServico[]
+  itens           OrdemServicoItem[]
+  reservas        EstoqueReserva[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
@@ -341,4 +344,52 @@ model ContadorSequencia {
   valor              Int    @default(0)
 
   @@unique([estabelecimentoId, chave])
+}
+
+enum TipoItemOS {
+  MATERIAL
+  MAO_DE_OBRA
+}
+
+model OrdemServicoItem {
+  id             String     @id @default(cuid())
+  ordemServicoId String
+  tipo           TipoItemOS @default(MATERIAL)
+  descricao      String
+  quantidade     Decimal    @db.Decimal(12, 2) @default(1)
+  valorUnitario  Decimal?   @db.Decimal(14, 2)
+  estoqueItemId  String?
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  estoqueItem  EstoqueItem? @relation(fields: [estoqueItemId], references: [id])
+}
+
+model EstoqueItem {
+  id                 String  @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  descricao          String
+  almoxarifado       String  @default("Principal")
+  qtdAtual           Decimal @db.Decimal(12, 2) @default(0)
+  qtdMinima          Decimal @db.Decimal(12, 2) @default(0)
+  valorUnitario      Decimal @db.Decimal(14, 2) @default(0)
+  ativo              Boolean @default(true)
+
+  estabelecimento Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  reservas        EstoqueReserva[]
+  itensOS         OrdemServicoItem[]
+
+  @@unique([estabelecimentoId, codigo])
+}
+
+model EstoqueReserva {
+  id            String   @id @default(cuid())
+  estoqueItemId String
+  ordemServicoId String
+  quantidade    Decimal  @db.Decimal(12, 2)
+  ativa         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  estoqueItem  EstoqueItem  @relation(fields: [estoqueItemId], references: [id], onDelete: Cascade)
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
 }

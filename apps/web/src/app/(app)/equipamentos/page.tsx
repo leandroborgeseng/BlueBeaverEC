@@ -48,6 +48,9 @@ export default function EquipamentosPage() {
             Inventário com alerta de checklist de recebimento pendente
           </p>
         </div>
+        <a href="/os/nova" style={{ ...primaryBtn, display: "inline-block", textDecoration: "none" }}>
+          Abrir OS
+        </a>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}

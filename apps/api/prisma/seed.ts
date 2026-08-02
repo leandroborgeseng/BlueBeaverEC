@@ -232,6 +232,62 @@ async function main() {
   // silencia unused var warning in strict tooling
   void colabEng;
 
+  await prisma.estoqueItem.upsert({
+    where: {
+      estabelecimentoId_codigo: { estabelecimentoId: hospital.id, codigo: "PEC-SENSOR-01" },
+    },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      codigo: "PEC-SENSOR-01",
+      descricao: "Sensor de fluxo",
+      almoxarifado: "Principal",
+      qtdAtual: 12,
+      qtdMinima: 5,
+      valorUnitario: 450,
+    },
+  });
+
+  await prisma.estoqueItem.upsert({
+    where: {
+      estabelecimentoId_codigo: { estabelecimentoId: hospital.id, codigo: "PEC-FILTRO-02" },
+    },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      codigo: "PEC-FILTRO-02",
+      descricao: "Filtro bacteriano",
+      almoxarifado: "Principal",
+      qtdAtual: 2,
+      qtdMinima: 10,
+      valorUnitario: 85,
+    },
+  });
+
+  await prisma.contadorSequencia.upsert({
+    where: { estabelecimentoId_chave: { estabelecimentoId: hospital.id, chave: "SOL" } },
+    update: {},
+    create: { estabelecimentoId: hospital.id, chave: "SOL", valor: 1 },
+  });
+
+  await prisma.solicitacaoServico.upsert({
+    where: {
+      estabelecimentoId_protocolo: { estabelecimentoId: hospital.id, protocolo: "SOL-0001" },
+    },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      protocolo: "SOL-0001",
+      equipamentoId: eq1.id,
+      setorNome: "UTI Adulto",
+      descricao: "Equipamento com alarme intermitente desde o plantão da manhã",
+      urgencia: "ALTA",
+      solicitanteNome: "Maria Solicitante",
+      ramal: "2045",
+      status: "PENDENTE",
+    },
+  });
+
   console.log("Seed OK");
   console.log("Logins: engenheiro@nexo.local / tecnico@nexo.local / solicitante@nexo.local");
   console.log("Senha: nexo1234");

@@ -12,7 +12,17 @@ const RAIL = [
       { href: "/dashboard", label: "Dashboard" },
       { href: "/equipamentos", label: "Equipamentos" },
       { href: "/os", label: "Ordens de Serviço" },
+      { href: "/os/nova", label: "Abrir OS" },
       { href: "/os/nao-atribuidas", label: "Fila Não Atribuídas" },
+      { href: "/os/triagem-solicitacoes", label: "Triagem de Solicitações" },
+    ],
+  },
+  {
+    key: "cad",
+    label: "Cadastros",
+    items: [
+      { href: "/cadastros", label: "Cadastros base" },
+      { href: "/estoque", label: "Estoque" },
     ],
   },
   {
@@ -28,7 +38,6 @@ const RAIL = [
 export function SideRail() {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>("ops");
-
   const active = useMemo(() => pathname, [pathname]);
 
   return (
@@ -90,7 +99,7 @@ export function SideRail() {
             position: "absolute",
             left: 72,
             top: 70,
-            width: 220,
+            width: 240,
             background: "var(--nexo-surface)",
             color: "var(--nexo-text)",
             border: "1px solid var(--nexo-border)",

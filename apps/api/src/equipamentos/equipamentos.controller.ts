@@ -1,5 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import { IsString, MinLength } from "class-validator";
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator";
 import { SituacaoEquipamento } from "@prisma/client";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
@@ -13,6 +20,100 @@ class ChangeTagDto {
   @IsString()
   @MinLength(3)
   justificativa!: string;
+}
+
+class CreateEquipamentoDto {
+  @IsString()
+  tag!: string;
+
+  @IsString()
+  nome!: string;
+
+  @IsString()
+  descricaoId!: string;
+
+  @IsString()
+  fabricanteId!: string;
+
+  @IsString()
+  modeloId!: string;
+
+  @IsString()
+  setorId!: string;
+
+  @IsOptional()
+  @IsString()
+  fornecedorId?: string;
+
+  @IsOptional()
+  @IsString()
+  centroCustoId?: string;
+
+  @IsOptional()
+  @IsString()
+  patrimonio?: string;
+
+  @IsOptional()
+  @IsString()
+  nSerie?: string;
+
+  @IsOptional()
+  @IsString()
+  dataAquisicao?: string;
+
+  @IsOptional()
+  @IsNumber()
+  valorAquisicao?: number;
+
+  @IsOptional()
+  @IsEnum(SituacaoEquipamento)
+  situacao?: SituacaoEquipamento;
+}
+
+class UpdateEquipamentoDto {
+  @IsOptional()
+  @IsString()
+  nome?: string;
+
+  @IsOptional()
+  @IsString()
+  setorId?: string;
+
+  @IsOptional()
+  @IsString()
+  fornecedorId?: string;
+
+  @IsOptional()
+  @IsString()
+  centroCustoId?: string;
+
+  @IsOptional()
+  @IsString()
+  patrimonio?: string;
+
+  @IsOptional()
+  @IsString()
+  nSerie?: string;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+
+  @IsOptional()
+  @IsEnum(SituacaoEquipamento)
+  situacao?: SituacaoEquipamento;
+
+  @IsOptional()
+  @IsNumber()
+  valorAquisicao?: number;
+
+  @IsOptional()
+  @IsNumber()
+  valorSubstituicao?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  checklistRecebimentoPendente?: boolean;
 }
 
 @Controller("equipamentos")
@@ -40,10 +141,24 @@ export class EquipamentosController {
     });
   }
 
+  @Post()
+  create(@CurrentUser() user: AuthUser, @Body() body: CreateEquipamentoDto) {
+    return this.equipamentos.create(user, body);
+  }
+
   @Get(":tag")
   byTag(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     const verValores = ["ENGENHEIRO", "GESTOR", "ADMIN"].includes(user.perfil);
     return this.equipamentos.byTag(user.estabelecimentoId, tag, verValores);
+  }
+
+  @Patch(":tag")
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param("tag") tag: string,
+    @Body() body: UpdateEquipamentoDto,
+  ) {
+    return this.equipamentos.update(user, tag, body);
   }
 
   @Patch(":tag/tag")

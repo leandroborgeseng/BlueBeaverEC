@@ -100,6 +100,8 @@ export class OsService {
       observacaoRequisicao?: string;
       pendencia?: string;
       responsavelId?: string;
+      solicitacaoId?: string;
+      pecas?: Array<{ itemCodigo: string; qtd: number }>;
     },
   ) {
     const equipamento = await this.prisma.equipamento.findUnique({
@@ -109,6 +111,7 @@ export class OsService {
           tag: data.equipamentoTag,
         },
       },
+      include: { descricao: true },
     });
     if (!equipamento) {
       throw new NotFoundException("Equipamento não encontrado");
@@ -120,33 +123,75 @@ export class OsService {
         ? `Já existe OS #${ativas.map((a) => a.numero).join(", ")} em aberto para este equipamento`
         : null;
 
+    const alertaCriticoUrgente =
+      data.prioridade === PrioridadeOS.URGENTE && equipamento.descricao.criticidade === "ALTA"
+        ? "Prioridade URGENTE em equipamento de criticidade ALTA"
+        : null;
+
     const numero = await this.nextNumero(user.estabelecimentoId);
     const status = data.responsavelId ? StatusOS.ABERTA : StatusOS.NAO_ATRIBUIDA;
 
-    const os = await this.prisma.ordemServico.create({
-      data: {
-        estabelecimentoId: user.estabelecimentoId,
-        numero,
-        codigo: `OS-${String(numero).padStart(5, "0")}`,
-        equipamentoId: equipamento.id,
-        tipo: data.tipo ?? TipoOS.CORRETIVA,
-        prioridade: data.prioridade ?? PrioridadeOS.MEDIA,
-        oficina: data.oficina,
-        observacaoRequisicao: data.observacaoRequisicao,
-        pendencia: data.pendencia,
-        responsavelId: data.responsavelId,
-        status,
-        logs: {
-          create: {
-            usuarioId: user.userId,
-            acao: "ABERTURA",
+    const os = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.ordemServico.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          numero,
+          codigo: `OS-${String(numero).padStart(5, "0")}`,
+          equipamentoId: equipamento.id,
+          tipo: data.tipo ?? TipoOS.CORRETIVA,
+          prioridade: data.prioridade ?? PrioridadeOS.MEDIA,
+          oficina: data.oficina,
+          observacaoRequisicao: data.observacaoRequisicao,
+          pendencia: data.pendencia,
+          responsavelId: data.responsavelId,
+          solicitacaoId: data.solicitacaoId,
+          status,
+          logs: {
+            create: {
+              usuarioId: user.userId,
+              acao: "ABERTURA",
+            },
           },
         },
-      },
-      include: { equipamento: true, responsavel: true },
+        include: { equipamento: true, responsavel: true },
+      });
+
+      for (const peca of data.pecas ?? []) {
+        const item = await tx.estoqueItem.findUnique({
+          where: {
+            estabelecimentoId_codigo: {
+              estabelecimentoId: user.estabelecimentoId,
+              codigo: peca.itemCodigo,
+            },
+          },
+        });
+        if (!item) {
+          throw new NotFoundException(`Peça ${peca.itemCodigo} não encontrada no estoque`);
+        }
+        await tx.ordemServicoItem.create({
+          data: {
+            ordemServicoId: created.id,
+            tipo: "MATERIAL",
+            descricao: item.descricao,
+            quantidade: peca.qtd,
+            valorUnitario: item.valorUnitario,
+            estoqueItemId: item.id,
+          },
+        });
+        await tx.estoqueReserva.create({
+          data: {
+            estoqueItemId: item.id,
+            ordemServicoId: created.id,
+            quantidade: peca.qtd,
+            ativa: true,
+          },
+        });
+      }
+
+      return created;
     });
 
-    return { ...os, avisoDuplicidade };
+    return { ...os, avisoDuplicidade, alertaCriticoUrgente };
   }
 
   async atribuir(user: AuthUser, numero: number, responsavelId: string) {
@@ -182,13 +227,28 @@ export class OsService {
       if (os.pendencia?.trim()) {
         throw new ConflictException("Não é possível fechar OS com pendência aberta");
       }
-      return this.prisma.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: StatusOS.CONCLUIDA,
-          fechamento: new Date(),
-          logs: { create: { usuarioId: user.userId, acao: "FECHAMENTO", justificativa } },
-        },
+      return this.prisma.$transaction(async (tx) => {
+        const reservas = await tx.estoqueReserva.findMany({
+          where: { ordemServicoId: os.id, ativa: true },
+        });
+        for (const r of reservas) {
+          await tx.estoqueItem.update({
+            where: { id: r.estoqueItemId },
+            data: { qtdAtual: { decrement: r.quantidade } },
+          });
+        }
+        await tx.estoqueReserva.updateMany({
+          where: { ordemServicoId: os.id, ativa: true },
+          data: { ativa: false },
+        });
+        return tx.ordemServico.update({
+          where: { id: os.id },
+          data: {
+            status: StatusOS.CONCLUIDA,
+            fechamento: new Date(),
+            logs: { create: { usuarioId: user.userId, acao: "FECHAMENTO", justificativa } },
+          },
+        });
       });
     }
 
@@ -196,19 +256,25 @@ export class OsService {
       if (!justificativa?.trim()) {
         throw new BadRequestException("Justificativa obrigatória para cancelar");
       }
-      return this.prisma.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: StatusOS.CANCELADA,
-          fechamento: new Date(),
-          logs: {
-            create: {
-              usuarioId: user.userId,
-              acao: "CANCELAMENTO",
-              justificativa: justificativa.trim(),
+      return this.prisma.$transaction(async (tx) => {
+        await tx.estoqueReserva.updateMany({
+          where: { ordemServicoId: os.id, ativa: true },
+          data: { ativa: false },
+        });
+        return tx.ordemServico.update({
+          where: { id: os.id },
+          data: {
+            status: StatusOS.CANCELADA,
+            fechamento: new Date(),
+            logs: {
+              create: {
+                usuarioId: user.userId,
+                acao: "CANCELAMENTO",
+                justificativa: justificativa.trim(),
+              },
             },
           },
-        },
+        });
       });
     }
 

@@ -1,9 +1,28 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import { IsEnum, IsIn, IsOptional, IsString, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import {
+  IsArray,
+  IsEnum,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from "class-validator";
 import { PrioridadeOS, StatusOS, TipoOS } from "@prisma/client";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { OsService } from "./os.service";
+
+class PecaDto {
+  @IsString()
+  itemCodigo!: string;
+
+  @IsNumber()
+  @Min(0.01)
+  qtd!: number;
+}
 
 class CreateOsDto {
   @IsString()
@@ -32,6 +51,12 @@ class CreateOsDto {
   @IsOptional()
   @IsString()
   responsavelId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PecaDto)
+  pecas?: PecaDto[];
 }
 
 class StatusDto {
