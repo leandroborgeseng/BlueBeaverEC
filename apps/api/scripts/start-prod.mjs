@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Resolve DATABASE_URL before Prisma/Nest start.
- * On Railway, discrete PG* vars can be fresher than a stale DATABASE_URL reference.
+ * Start production: migrate + API.
+ * Prefers DATABASE_URL as provided by the host (Railway).
+ * Assembles from PG* only when DATABASE_URL is missing.
  */
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -9,50 +10,43 @@ import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+function assembleFromPgVars() {
+  const { PGHOST, PGPORT = "5432", PGUSER, PGPASSWORD, PGDATABASE } = process.env;
+  if (!PGHOST || !PGUSER || !PGPASSWORD || !PGDATABASE) return undefined;
+
+  const user = encodeURIComponent(PGUSER);
+  const pass = encodeURIComponent(PGPASSWORD);
+  const db = encodeURIComponent(PGDATABASE);
+  return `postgresql://${user}:${pass}@${PGHOST}:${PGPORT}/${db}?schema=public`;
+}
+
 function resolveDatabaseUrl() {
-  const {
-    DATABASE_URL,
-    PGHOST,
-    PGPORT,
-    PGUSER,
-    PGPASSWORD,
-    PGDATABASE,
-  } = process.env;
+  const raw = process.env.DATABASE_URL?.trim();
+  if (raw) return raw;
+  return assembleFromPgVars();
+}
 
-  if (PGUSER && PGPASSWORD && PGDATABASE) {
-    let host = PGHOST;
-    let port = PGPORT || "5432";
-
-    if (!host && DATABASE_URL) {
-      try {
-        const parsed = new URL(DATABASE_URL);
-        host = parsed.hostname;
-        if (parsed.port) port = parsed.port;
-      } catch {
-        // keep falling through
-      }
-    }
-
-    if (host) {
-      const user = encodeURIComponent(PGUSER);
-      const pass = encodeURIComponent(PGPASSWORD);
-      const db = encodeURIComponent(PGDATABASE);
-      return `postgresql://${user}:${pass}@${host}:${port}/${db}?schema=public`;
-    }
+function logTarget(url) {
+  try {
+    const u = new URL(url);
+    console.log(
+      `[nexo] DB target user=${decodeURIComponent(u.username)} host=${u.hostname} port=${u.port || "5432"} db=${u.pathname.replace(/^\//, "")}`,
+    );
+  } catch {
+    console.log("[nexo] DB target: (URL inválida)");
   }
-
-  return DATABASE_URL;
 }
 
 const url = resolveDatabaseUrl();
 if (!url) {
   console.error(
-    "DATABASE_URL ausente. Defina DATABASE_URL ou PGUSER/PGPASSWORD/PGDATABASE (+ PGHOST).",
+    "DATABASE_URL ausente. Defina DATABASE_URL (recomendado) ou PGHOST/PGUSER/PGPASSWORD/PGDATABASE.",
   );
   process.exit(1);
 }
 
 process.env.DATABASE_URL = url;
+logTarget(url);
 
 function run(cmd, args) {
   const result = spawnSync(cmd, args, {
