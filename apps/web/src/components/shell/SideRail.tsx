@@ -13,9 +13,11 @@ const RAIL = [
       { href: "/equipamentos", label: "Equipamentos" },
       { href: "/os", label: "Ordens de Serviço" },
       { href: "/os/nova", label: "Abrir OS" },
+      { href: "/os/rapida", label: "OS Rápida" },
       { href: "/os/nao-atribuidas", label: "Fila Não Atribuídas" },
       { href: "/os/triagem-solicitacoes", label: "Triagem de Solicitações" },
       { href: "/os/quadro-processos", label: "Quadro de Processos" },
+      { href: "/os/auditoria", label: "Auditoria de OS" },
     ],
   },
   {

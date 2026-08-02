@@ -90,6 +90,36 @@ export class OsService {
     });
   }
 
+  async log(estabelecimentoId: string, numero: number) {
+    const os = await this.findByNumero(estabelecimentoId, numero);
+    return this.prisma.logOrdemServico.findMany({
+      where: { ordemServicoId: os.id },
+      include: { usuario: { select: { nome: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async auditoria(
+    estabelecimentoId: string,
+    filtros: { acao?: string; numero?: number } = {},
+  ) {
+    return this.prisma.logOrdemServico.findMany({
+      where: {
+        ordemServico: {
+          estabelecimentoId,
+          ...(filtros.numero ? { numero: filtros.numero } : {}),
+        },
+        ...(filtros.acao ? { acao: filtros.acao } : {}),
+      },
+      include: {
+        usuario: { select: { nome: true, email: true } },
+        ordemServico: { select: { numero: true, codigo: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    });
+  }
+
   async create(
     user: AuthUser,
     data: {
@@ -102,6 +132,9 @@ export class OsService {
       responsavelId?: string;
       solicitacaoId?: string;
       pecas?: Array<{ itemCodigo: string; qtd: number }>;
+      maoDeObra?: { descricao: string; horas: number; valorHora?: number };
+      deslocamentoKm?: number;
+      servicoExecutado?: string;
     },
   ) {
     const equipamento = await this.prisma.equipamento.findUnique({
@@ -188,10 +221,78 @@ export class OsService {
         });
       }
 
+      if (data.maoDeObra?.descricao) {
+        await tx.ordemServicoItem.create({
+          data: {
+            ordemServicoId: created.id,
+            tipo: "MAO_DE_OBRA",
+            descricao: data.maoDeObra.descricao,
+            quantidade: data.maoDeObra.horas || 1,
+            valorUnitario: data.maoDeObra.valorHora ?? 0,
+          },
+        });
+      }
+
+      if (data.deslocamentoKm && data.deslocamentoKm > 0) {
+        await tx.ordemServicoItem.create({
+          data: {
+            ordemServicoId: created.id,
+            tipo: "MAO_DE_OBRA",
+            descricao: `Deslocamento ${data.deslocamentoKm} km`,
+            quantidade: data.deslocamentoKm,
+            valorUnitario: 0,
+          },
+        });
+      }
+
+      if (data.servicoExecutado) {
+        await tx.logOrdemServico.create({
+          data: {
+            ordemServicoId: created.id,
+            usuarioId: user.userId,
+            acao: "SERVICO_EXECUTADO",
+            justificativa: data.servicoExecutado,
+          },
+        });
+      }
+
       return created;
     });
 
     return { ...os, avisoDuplicidade, alertaCriticoUrgente };
+  }
+
+  /** Abertura + execução em um passo (§4.3). */
+  async rapida(
+    user: AuthUser,
+    data: {
+      equipamentoTag: string;
+      tipo?: TipoOS;
+      prioridade?: PrioridadeOS;
+      oficina?: string;
+      observacaoRequisicao?: string;
+      responsavelId?: string;
+      pecas?: Array<{ itemCodigo: string; qtd: number }>;
+      maoDeObra?: { descricao: string; horas: number; valorHora?: number };
+      deslocamentoKm?: number;
+      servicoExecutado?: string;
+      fechar?: boolean;
+    },
+  ) {
+    const created = await this.create(user, {
+      ...data,
+      responsavelId: data.responsavelId,
+    });
+
+    if (data.fechar) {
+      if (!data.responsavelId) {
+        throw new BadRequestException("Informe responsável para fechar a OS Rápida");
+      }
+      const fechada = await this.changeStatus(user, created.numero, "fechar", data.servicoExecutado);
+      return { ...fechada, avisoDuplicidade: created.avisoDuplicidade, alertaCriticoUrgente: created.alertaCriticoUrgente, fechada: true };
+    }
+
+    return { ...created, fechada: false };
   }
 
   async atribuir(user: AuthUser, numero: number, responsavelId: string) {

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
 import { FrequenciaRelatorio } from "@prisma/client";
 import { IsArray, IsEnum, IsOptional, IsString, MinLength } from "class-validator";
+import type { Response } from "express";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { RelatoriosService } from "./relatorios.service";
@@ -38,8 +39,22 @@ export class RelatoriosController {
   }
 
   @Post("gerar")
-  gerar(@CurrentUser() user: AuthUser, @Body() body: GerarDto) {
-    return this.relatorios.gerar(user.estabelecimentoId, body.template, body.formato ?? "json");
+  async gerar(
+    @CurrentUser() user: AuthUser,
+    @Body() body: GerarDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const formato = body.formato ?? "json";
+    const out = await this.relatorios.gerar(user.estabelecimentoId, body.template, formato);
+
+    if (out.formato === "json") {
+      return out;
+    }
+
+    res.setHeader("Content-Type", out.mime);
+    res.setHeader("Content-Disposition", `attachment; filename="${out.filename}"`);
+    res.setHeader("Content-Length", String(out.buffer.length));
+    res.send(out.buffer);
   }
 
   @Get("agendamentos")

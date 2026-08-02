@@ -35,4 +35,15 @@ export class FinanceiroController {
     res.setHeader("Content-Disposition", 'attachment; filename="extrato-financeiro.csv"');
     res.send(csv);
   }
+
+  @Get("export-xlsx")
+  async exportXlsx(@CurrentUser() user: AuthUser, @Res() res: Response) {
+    const buf = await this.financeiro.exportXlsx(user.estabelecimentoId);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="extrato-financeiro.xlsx"');
+    res.send(buf);
+  }
 }

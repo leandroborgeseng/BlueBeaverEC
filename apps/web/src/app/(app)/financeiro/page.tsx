@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, downloadApi } from "@/lib/api";
 
 export default function FinanceiroPage() {
   const [dash, setDash] = useState<{
@@ -39,32 +39,28 @@ export default function FinanceiroPage() {
             {a}
           </button>
         ))}
-        <a href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/financeiro/export`} style={{ ...btn, textDecoration: "none", display: "inline-flex", alignItems: "center" }} onClick={(e) => {
-          e.preventDefault();
-          void api<string>("/financeiro/export").then((csv) => {
-            const blob = new Blob([typeof csv === "string" ? csv : String(csv)], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "extrato.csv";
-            a.click();
-          }).catch(() => {
-            // export retorna texto puro — usar fetch com token
-            const token = localStorage.getItem("nexo_token");
-            fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/financeiro/export`, {
-              headers: token ? { Authorization: `Bearer ${token}` } : {},
-            }).then((r) => r.text()).then((t) => {
-              const blob = new Blob([t], { type: "text/csv" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "extrato.csv";
-              a.click();
-            });
-          });
-        }}>
+        <button
+          type="button"
+          onClick={() =>
+            void downloadApi("/financeiro/export-xlsx", { method: "GET" }, "extrato-financeiro.xlsx").catch((err) =>
+              setErro(err.message),
+            )
+          }
+          style={{ ...btn, background: "var(--nexo-brand)", color: "white" }}
+        >
+          Exportar Excel
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            void downloadApi("/financeiro/export", { method: "GET" }, "extrato-financeiro.csv").catch((err) =>
+              setErro(err.message),
+            )
+          }
+          style={{ ...btn, background: "var(--nexo-surface)", color: "inherit", border: "1px solid var(--nexo-border)" }}
+        >
           Exportar CSV
-        </a>
+        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginBottom: 16 }}>

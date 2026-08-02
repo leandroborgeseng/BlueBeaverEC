@@ -36,6 +36,21 @@ export default function OsPage() {
           </p>
         </div>
         <a
+          href="/os/rapida"
+          style={{
+            border: "1px solid var(--nexo-border)",
+            borderRadius: 10,
+            padding: "10px 14px",
+            background: "white",
+            color: "var(--nexo-text)",
+            fontWeight: 700,
+            textDecoration: "none",
+            marginRight: 8,
+          }}
+        >
+          OS Rápida
+        </a>
+        <a
           href="/os/nova"
           style={{
             border: "none",

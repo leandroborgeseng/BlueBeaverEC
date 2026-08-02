@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@ne
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsIn,
   IsNumber,
@@ -59,6 +60,67 @@ class CreateOsDto {
   pecas?: PecaDto[];
 }
 
+class MaoDeObraDto {
+  @IsString()
+  descricao!: string;
+
+  @IsNumber()
+  @Min(0.01)
+  horas!: number;
+
+  @IsOptional()
+  @IsNumber()
+  valorHora?: number;
+}
+
+class RapidaDto {
+  @IsString()
+  equipamentoTag!: string;
+
+  @IsOptional()
+  @IsEnum(TipoOS)
+  tipo?: TipoOS;
+
+  @IsOptional()
+  @IsEnum(PrioridadeOS)
+  prioridade?: PrioridadeOS;
+
+  @IsOptional()
+  @IsString()
+  oficina?: string;
+
+  @IsOptional()
+  @IsString()
+  observacaoRequisicao?: string;
+
+  @IsOptional()
+  @IsString()
+  responsavelId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PecaDto)
+  pecas?: PecaDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MaoDeObraDto)
+  maoDeObra?: MaoDeObraDto;
+
+  @IsOptional()
+  @IsNumber()
+  deslocamentoKm?: number;
+
+  @IsOptional()
+  @IsString()
+  servicoExecutado?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  fechar?: boolean;
+}
+
 class StatusDto {
   @IsIn(["fechar", "cancelar", "reabrir"])
   acao!: "fechar" | "cancelar" | "reabrir";
@@ -113,14 +175,36 @@ export class OsController {
     return this.os.naoAtribuidas(user.estabelecimentoId);
   }
 
+  @Get("auditoria")
+  auditoria(
+    @CurrentUser() user: AuthUser,
+    @Query("acao") acao?: string,
+    @Query("numero") numero?: string,
+  ) {
+    return this.os.auditoria(user.estabelecimentoId, {
+      acao,
+      numero: numero ? Number(numero) : undefined,
+    });
+  }
+
   @Get("equipamento/:tag/ativas")
   ativas(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     return this.os.ativasDoEquipamento(user.estabelecimentoId, tag);
   }
 
+  @Get(":numero/log")
+  log(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    return this.os.log(user.estabelecimentoId, Number(numero));
+  }
+
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateOsDto) {
     return this.os.create(user, body);
+  }
+
+  @Post("rapida")
+  rapida(@CurrentUser() user: AuthUser, @Body() body: RapidaDto) {
+    return this.os.rapida(user, body);
   }
 
   @Patch(":numero/atribuir")

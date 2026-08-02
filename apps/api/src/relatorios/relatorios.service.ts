@@ -1,9 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { FrequenciaRelatorio } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { EstrategicoService } from "../estrategico/estrategico.service";
 import { FinanceiroService } from "../financeiro/financeiro.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { buildPdfBuffer, buildXlsxBuffer, type ReportPayload } from "./report-export";
 
 const TEMPLATES = [
   {
@@ -40,12 +41,11 @@ export class RelatoriosService {
     return TEMPLATES;
   }
 
-  async gerar(estabelecimentoId: string, template: string, formato: "pdf" | "xlsx" | "json" = "json") {
-    let payload: unknown;
+  async buildPayload(estabelecimentoId: string, template: string): Promise<ReportPayload> {
     switch (template) {
       case "resumo_mensal": {
         const dash = await this.estrategico.dashboardExecutivo(estabelecimentoId);
-        payload = {
+        return {
           template,
           geradoEm: new Date().toISOString(),
           maturidade: dash.indiceMaturidadePct,
@@ -53,48 +53,59 @@ export class RelatoriosService {
           disponibilidade: dash.disponibilidadePct,
           riscos: dash.riscosCriticos,
           prioridades: dash.prioridadesMes,
+          recomendacoes: dash.recomendacoes,
+          contratosVencendo: dash.contratosVencendo,
         };
-        break;
       }
       case "conformidade":
-        payload = {
+        return {
           template,
           geradoEm: new Date().toISOString(),
           itens: await this.estrategico.centralConformidade(estabelecimentoId),
         };
-        break;
       case "custos_manutencao":
-        payload = {
+        return {
           template,
           geradoEm: new Date().toISOString(),
           ...(await this.financeiro.dashboard(estabelecimentoId)),
         };
-        break;
       case "maturidade":
-        payload = {
+        return {
           template,
           geradoEm: new Date().toISOString(),
           indice: await this.estrategico.indiceMaturidade(estabelecimentoId),
           dominios: await this.estrategico.listMaturidade(estabelecimentoId),
           recomendacoes: await this.estrategico.listRecomendacoes(estabelecimentoId),
         };
-        break;
       default:
-        payload = { erro: "Template desconhecido", template };
+        throw new BadRequestException(`Template desconhecido: ${template}`);
+    }
+  }
+
+  async gerar(estabelecimentoId: string, template: string, formato: "pdf" | "xlsx" | "json" = "json") {
+    const payload = await this.buildPayload(estabelecimentoId, template);
+
+    if (formato === "json") {
+      return { formato: "json" as const, dados: payload };
     }
 
-    if (formato === "xlsx" || formato === "pdf") {
-      // MVP: retorna JSON + representação textual exportável (CSV-like) sem libs pesadas
-      const texto = typeof payload === "object" ? JSON.stringify(payload, null, 2) : String(payload);
+    if (formato === "pdf") {
+      const buffer = await buildPdfBuffer(payload);
       return {
-        formato,
-        mime: formato === "xlsx" ? "text/csv" : "text/plain",
-        filename: `${template}.${formato === "xlsx" ? "csv" : "txt"}`,
-        conteudo: texto,
-        dados: payload,
+        formato: "pdf" as const,
+        mime: "application/pdf",
+        filename: `${template}.pdf`,
+        buffer,
       };
     }
-    return { formato: "json", dados: payload };
+
+    const buffer = await buildXlsxBuffer(payload);
+    return {
+      formato: "xlsx" as const,
+      mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      filename: `${template}.xlsx`,
+      buffer,
+    };
   }
 
   listAgendamentos(estabelecimentoId: string) {

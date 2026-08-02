@@ -157,4 +157,36 @@ export class FinanceiroService {
     );
     return [header, ...lines].join("\n");
   }
+
+  async exportXlsx(estabelecimentoId: string) {
+    const ExcelJS = (await import("exceljs")).default;
+    const rows = await this.extrato(estabelecimentoId);
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Extrato");
+    ws.columns = [
+      { header: "Tipo", key: "tipo", width: 14 },
+      { header: "Data", key: "data", width: 12 },
+      { header: "Descrição", key: "descricao", width: 48 },
+      { header: "Valor", key: "valor", width: 14 },
+      { header: "Equipamento", key: "equipamentoTag", width: 14 },
+      { header: "Setor", key: "setor", width: 18 },
+      { header: "Centro de Custo", key: "centroCusto", width: 18 },
+      { header: "Origem", key: "origem", width: 14 },
+    ];
+    ws.getRow(1).font = { bold: true };
+    for (const r of rows) {
+      ws.addRow({
+        tipo: r.tipo,
+        data: r.data.toISOString().slice(0, 10),
+        descricao: r.descricao,
+        valor: r.valor,
+        equipamentoTag: r.equipamentoTag ?? "",
+        setor: r.setor ?? "",
+        centroCusto: r.centroCusto ?? "",
+        origem: r.origem,
+      });
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    return Buffer.from(buf);
+  }
 }

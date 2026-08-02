@@ -45,7 +45,7 @@ pnpm dev
 2. **Conformidade técnica** — Laudos, procedimentos, instrumentos, certificados, ficha vida  
 3. **Gestão de suporte** — Contratos, pessoas/equipes, componentes recuperados, quadro Kanban  
 4. **Estratégico + mobile** — Maturidade, dashboard executivo, indicadores, auditorias/NC, PWA com sync IndexedDB  
-5. **Complementar** — Financeiro agregado, CAPEX/substituição/plano diretor, relatórios, configurações  
+5. **Complementar** — Financeiro agregado, CAPEX/substituição/plano diretor, relatórios **PDF (pdfkit) + Excel (exceljs)**, configurações  
 
 ## Deploy no Coolify (recomendado)
 
