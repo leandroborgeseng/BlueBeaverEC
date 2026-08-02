@@ -12,6 +12,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
 import { MobileModule } from "./mobile/mobile.module";
 import { SolicitacoesModule } from "./solicitacoes/solicitacoes.module";
 import { EstoqueModule } from "./estoque/estoque.module";
+import { LaudosModule } from "./laudos/laudos.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EstoqueModule } from "./estoque/estoque.module";
     MobileModule,
     SolicitacoesModule,
     EstoqueModule,
+    LaudosModule,
   ],
 })
 export class AppModule {}

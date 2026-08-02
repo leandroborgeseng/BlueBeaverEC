@@ -288,6 +288,49 @@ async function main() {
     },
   });
 
+  const instrumento = await prisma.instrumentoPadrao.upsert({
+    where: {
+      estabelecimentoId_nSerie: { estabelecimentoId: hospital.id, nSerie: "FLUKE-ESA615-001" },
+    },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      nome: "Analisador de Segurança Elétrica Fluke ESA615",
+      nSerie: "FLUKE-ESA615-001",
+      certificadoNumero: "RBC-99881",
+      certificadoEmissao: new Date("2025-09-01"),
+      certificadoValidade: new Date("2027-09-01"),
+      laboratorioEmissor: "Lab Metrologia Sul",
+    },
+  });
+
+  const procPrev = await prisma.procedimentoLaudo.upsert({
+    where: { id: "proc_prev_vent" },
+    update: {},
+    create: {
+      id: "proc_prev_vent",
+      estabelecimentoId: hospital.id,
+      nome: "Preventiva Ventilador Pulmonar",
+      tipo: "PREVENTIVA",
+      validadeMeses: 6,
+      itens: [
+        { id: "1", pergunta: "Filtros limpos/substituídos" },
+        { id: "2", pergunta: "Sensores calibrados" },
+        { id: "3", pergunta: "Alarmes funcionais" },
+      ],
+    },
+  });
+
+  await prisma.procedimentoModelo.upsert({
+    where: {
+      procedimentoId_modeloId: { procedimentoId: procPrev.id, modeloId: modelo.id },
+    },
+    update: {},
+    create: { procedimentoId: procPrev.id, modeloId: modelo.id },
+  });
+
+  void instrumento;
+
   console.log("Seed OK");
   console.log("Logins: engenheiro@nexo.local / tecnico@nexo.local / solicitante@nexo.local");
   console.log("Senha: nexo1234");

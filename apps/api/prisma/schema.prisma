@@ -81,6 +81,9 @@ model Estabelecimento {
   ordensServico      OrdemServico[]
   solicitacoes       SolicitacaoServico[]
   estoqueItens       EstoqueItem[]
+  procedimentosLaudo ProcedimentoLaudo[]
+  instrumentos       InstrumentoPadrao[]
+  laudos             Laudo[]
 }
 
 model Usuario {
@@ -156,6 +159,7 @@ model Modelo {
 
   fabricante   Fabricante    @relation(fields: [fabricanteId], references: [id], onDelete: Cascade)
   equipamentos Equipamento[]
+  procedimentos ProcedimentoModelo[]
 
   @@unique([fabricanteId, nome])
 }
@@ -211,6 +215,7 @@ model Colaborador {
 
   usuario          Usuario?       @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
   osResponsavel    OrdemServico[] @relation("OSResponsavel")
+  laudosResponsavel Laudo[]       @relation("LaudoResponsavelTecnico")
 
   @@unique([estabelecimentoId, matricula])
 }
@@ -251,6 +256,7 @@ model Equipamento {
   historicoTags   HistoricoTag[]
   ordensServico   OrdemServico[]
   solicitacoes    SolicitacaoServico[]
+  laudos          Laudo[]
 
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
@@ -392,4 +398,112 @@ model EstoqueReserva {
 
   estoqueItem  EstoqueItem  @relation(fields: [estoqueItemId], references: [id], onDelete: Cascade)
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+}
+
+enum TipoLaudo {
+  RECEBIMENTO
+  PREVENTIVA
+  CALIBRACAO
+  TSE
+}
+
+enum ResultadoLaudo {
+  APROVADO
+  REPROVADO
+  APROVADO_COM_RESSALVAS
+}
+
+enum NormaTse {
+  FABRICA
+  EC
+}
+
+enum StatusCertificado {
+  VALIDO
+  A_VENCER
+  VENCIDO
+}
+
+model ProcedimentoLaudo {
+  id                 String    @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  tipo               TipoLaudo
+  validadeMeses      Int       @default(12)
+  /// Itens do procedimento: perguntas | pontos | testes (JSON conforme tipo)
+  itens              Json      @default("[]")
+  ativo              Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  estabelecimento Estabelecimento      @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  modelos         ProcedimentoModelo[]
+  laudos          Laudo[]
+
+  @@index([estabelecimentoId, tipo])
+}
+
+model ProcedimentoModelo {
+  id              String @id @default(cuid())
+  procedimentoId  String
+  modeloId        String
+
+  procedimento ProcedimentoLaudo @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+  modelo       Modelo            @relation(fields: [modeloId], references: [id], onDelete: Cascade)
+
+  @@unique([procedimentoId, modeloId])
+  @@index([modeloId])
+}
+
+model InstrumentoPadrao {
+  id                 String    @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  nSerie             String
+  certificadoNumero  String?
+  certificadoEmissao DateTime?
+  certificadoValidade DateTime?
+  laboratorioEmissor String?
+  ativo              Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  laudos          Laudo[]
+
+  @@unique([estabelecimentoId, nSerie])
+}
+
+model Laudo {
+  id                   String         @id @default(cuid())
+  estabelecimentoId    String
+  tipo                 TipoLaudo
+  numero               String
+  equipamentoId        String
+  osNumero             Int?
+  dataExecucao         DateTime       @default(now())
+  tecnicoNome          String?
+  responsavelTecnicoId String?
+  procedimentoId       String?
+  instrumentoId        String?
+  resultado            ResultadoLaudo?
+  justificativaRessalva String?
+  validadeMeses        Int?
+  validadeAte          DateTime?
+  /// Checklist / pontos / testes preenchidos
+  respostas            Json           @default("[]")
+  /// Campos extras por tipo (NF, norma TSE, critério %, próxima preventiva...)
+  metadados            Json           @default("{}")
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  estabelecimento    Estabelecimento   @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento        Equipamento       @relation(fields: [equipamentoId], references: [id])
+  procedimento       ProcedimentoLaudo? @relation(fields: [procedimentoId], references: [id])
+  instrumento        InstrumentoPadrao? @relation(fields: [instrumentoId], references: [id])
+  responsavelTecnico Colaborador?      @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
+
+  @@unique([estabelecimentoId, numero])
+  @@index([estabelecimentoId, tipo])
+  @@index([equipamentoId])
 }

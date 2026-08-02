@@ -23,6 +23,10 @@ const RAIL = [
     items: [
       { href: "/cadastros", label: "Cadastros base" },
       { href: "/estoque", label: "Estoque" },
+      { href: "/procedimentos-laudo", label: "Procedimentos de Laudo" },
+      { href: "/instrumentos", label: "Instrumentos e Padrões" },
+      { href: "/certificados", label: "Certificados" },
+      { href: "/laudos/novo", label: "Novo Laudo" },
     ],
   },
   {
