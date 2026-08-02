@@ -1,0 +1,247 @@
+import { PrismaClient, PerfilAcesso, PrioridadeOS, SituacaoEquipamento, StatusOS, TipoOS } from "@prisma/client";
+import * as bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const senhaHash = await bcrypt.hash("nexo1234", 10);
+
+  const hospital = await prisma.estabelecimento.upsert({
+    where: { id: "estab_modelo" },
+    update: {},
+    create: {
+      id: "estab_modelo",
+      nome: "Hospital e Maternidade Modelo",
+    },
+  });
+
+  const engenheiro = await prisma.usuario.upsert({
+    where: { email: "engenheiro@nexo.local" },
+    update: {},
+    create: {
+      email: "engenheiro@nexo.local",
+      nome: "Ana Engenheira",
+      senhaHash,
+    },
+  });
+
+  const tecnico = await prisma.usuario.upsert({
+    where: { email: "tecnico@nexo.local" },
+    update: {},
+    create: {
+      email: "tecnico@nexo.local",
+      nome: "Carlos Técnico",
+      senhaHash,
+    },
+  });
+
+  const solicitante = await prisma.usuario.upsert({
+    where: { email: "solicitante@nexo.local" },
+    update: {},
+    create: {
+      email: "solicitante@nexo.local",
+      nome: "Maria Solicitante",
+      senhaHash,
+    },
+  });
+
+  for (const [usuarioId, perfil] of [
+    [engenheiro.id, PerfilAcesso.ENGENHEIRO],
+    [tecnico.id, PerfilAcesso.TECNICO],
+    [solicitante.id, PerfilAcesso.SOLICITANTE],
+  ] as const) {
+    await prisma.usuarioEstabelecimento.upsert({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId,
+          estabelecimentoId: hospital.id,
+        },
+      },
+      update: { perfil },
+      create: {
+        usuarioId,
+        estabelecimentoId: hospital.id,
+        perfil,
+      },
+    });
+  }
+
+  const uti = await prisma.setor.upsert({
+    where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "UTI Adulto" } },
+    update: {},
+    create: { estabelecimentoId: hospital.id, nome: "UTI Adulto" },
+  });
+
+  const cc = await prisma.setor.upsert({
+    where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "Centro Cirúrgico" } },
+    update: {},
+    create: { estabelecimentoId: hospital.id, nome: "Centro Cirúrgico" },
+  });
+
+  const fabricante = await prisma.fabricante.upsert({
+    where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "Dräger" } },
+    update: {},
+    create: { estabelecimentoId: hospital.id, nome: "Dräger" },
+  });
+
+  const modelo = await prisma.modelo.upsert({
+    where: { fabricanteId_nome: { fabricanteId: fabricante.id, nome: "Evita V300" } },
+    update: {},
+    create: { fabricanteId: fabricante.id, nome: "Evita V300" },
+  });
+
+  const plano = await prisma.planoDescricao.upsert({
+    where: {
+      estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "Ventilador Pulmonar" },
+    },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      nome: "Ventilador Pulmonar",
+      criticidade: "ALTA",
+      vidaUtilAnos: 10,
+    },
+  });
+
+  const fornecedor = await prisma.fornecedor.upsert({
+    where: {
+      estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "MedSupply Brasil" },
+    },
+    update: {},
+    create: { estabelecimentoId: hospital.id, nome: "MedSupply Brasil" },
+  });
+
+  await prisma.centroCusto.upsert({
+    where: { estabelecimentoId_codigo: { estabelecimentoId: hospital.id, codigo: "CC-UTI" } },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      codigo: "CC-UTI",
+      nome: "UTI Adulto",
+    },
+  });
+
+  const colabEng = await prisma.colaborador.upsert({
+    where: {
+      estabelecimentoId_matricula: { estabelecimentoId: hospital.id, matricula: "ENG-001" },
+    },
+    update: { usuarioId: engenheiro.id },
+    create: {
+      estabelecimentoId: hospital.id,
+      usuarioId: engenheiro.id,
+      matricula: "ENG-001",
+      nome: "Ana Engenheira",
+      cargo: "Engenheira Clínica",
+      registroProfissional: "CREA-12345",
+    },
+  });
+
+  const colabTec = await prisma.colaborador.upsert({
+    where: {
+      estabelecimentoId_matricula: { estabelecimentoId: hospital.id, matricula: "TEC-001" },
+    },
+    update: { usuarioId: tecnico.id },
+    create: {
+      estabelecimentoId: hospital.id,
+      usuarioId: tecnico.id,
+      matricula: "TEC-001",
+      nome: "Carlos Técnico",
+      cargo: "Técnico em Equipamentos",
+    },
+  });
+
+  const eq1 = await prisma.equipamento.upsert({
+    where: { estabelecimentoId_tag: { estabelecimentoId: hospital.id, tag: "EQ-0001" } },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      tag: "EQ-0001",
+      nome: "Ventilador UTI 01",
+      descricaoId: plano.id,
+      fabricanteId: fabricante.id,
+      modeloId: modelo.id,
+      setorId: uti.id,
+      fornecedorId: fornecedor.id,
+      patrimonio: "PAT-1001",
+      nSerie: "SN-DRG-88991",
+      dataAquisicao: new Date("2022-03-15"),
+      valorAquisicao: 185000,
+      situacao: SituacaoEquipamento.ATIVO,
+      checklistRecebimentoPendente: true,
+    },
+  });
+
+  await prisma.equipamento.upsert({
+    where: { estabelecimentoId_tag: { estabelecimentoId: hospital.id, tag: "EQ-0002" } },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      tag: "EQ-0002",
+      nome: "Ventilador CC 01",
+      descricaoId: plano.id,
+      fabricanteId: fabricante.id,
+      modeloId: modelo.id,
+      setorId: cc.id,
+      patrimonio: "PAT-1002",
+      nSerie: "SN-DRG-88992",
+      dataAquisicao: new Date("2021-08-01"),
+      valorAquisicao: 175000,
+      situacao: SituacaoEquipamento.EM_GARANTIA,
+      checklistRecebimentoPendente: false,
+    },
+  });
+
+  await prisma.contadorSequencia.upsert({
+    where: { estabelecimentoId_chave: { estabelecimentoId: hospital.id, chave: "OS" } },
+    update: {},
+    create: { estabelecimentoId: hospital.id, chave: "OS", valor: 2 },
+  });
+
+  await prisma.ordemServico.upsert({
+    where: { estabelecimentoId_numero: { estabelecimentoId: hospital.id, numero: 1 } },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      numero: 1,
+      codigo: "OS-00001",
+      equipamentoId: eq1.id,
+      tipo: TipoOS.CORRETIVA,
+      prioridade: PrioridadeOS.URGENTE,
+      status: StatusOS.EM_ANDAMENTO,
+      responsavelId: colabTec.id,
+      observacaoRequisicao: "Alarme de pressão persistente",
+      abertura: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.ordemServico.upsert({
+    where: { estabelecimentoId_numero: { estabelecimentoId: hospital.id, numero: 2 } },
+    update: {},
+    create: {
+      estabelecimentoId: hospital.id,
+      numero: 2,
+      codigo: "OS-00002",
+      equipamentoId: eq1.id,
+      tipo: TipoOS.PREVENTIVA,
+      prioridade: PrioridadeOS.MEDIA,
+      status: StatusOS.NAO_ATRIBUIDA,
+      observacaoRequisicao: "Preventiva mensal",
+    },
+  });
+
+  // silencia unused var warning in strict tooling
+  void colabEng;
+
+  console.log("Seed OK");
+  console.log("Logins: engenheiro@nexo.local / tecnico@nexo.local / solicitante@nexo.local");
+  console.log("Senha: nexo1234");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

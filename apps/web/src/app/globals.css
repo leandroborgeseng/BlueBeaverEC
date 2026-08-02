@@ -1,0 +1,42 @@
+:root {
+  --nexo-bg: oklch(0.98 0.003 250);
+  --nexo-surface: oklch(1 0 0);
+  --nexo-border: oklch(0.88 0.01 250);
+  --nexo-text: oklch(0.25 0.02 250);
+  --nexo-muted: oklch(0.5 0.02 250);
+  --nexo-primary: oklch(0.64 0.19 38);
+  --nexo-brand: oklch(0.45 0.14 255);
+  --nexo-brand-deep: oklch(0.32 0.12 258);
+  --nexo-success: oklch(0.4 0.13 150);
+  --nexo-danger: oklch(0.45 0.15 25);
+  --nexo-warning: oklch(0.45 0.13 85);
+  --nexo-rail: oklch(0.28 0.08 255);
+  --nexo-radius: 8px;
+  --nexo-font: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--nexo-bg);
+  color: var(--nexo-text);
+  font-family: var(--nexo-font);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

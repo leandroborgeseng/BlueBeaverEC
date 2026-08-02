@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<style>
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes scan-line { 0% { top: 6%; } 50% { top: 92%; } 100% { top: 6%; } }
+  body { margin: 0; }
+  a { color: oklch(0.55 0.16 255); }
+  a:hover { color: oklch(0.45 0.16 255); }
+</style>
+</helmet>
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="390px,844px" title="{{ headerTitle }}">
+  <div style="display:flex; flex-direction:column; height:100%; background:oklch(0.965 0.004 255); font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+    <!-- SYNC/OFFLINE BANNER -->
+    <sc-if value="{{ isOffline }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ toggleOffline }}" style="flex-shrink:0; background:oklch(0.55 0.16 38); color:white; padding:7px 14px; display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:600;">
+        <div style="width:7px; height:7px; border-radius:50%; background:white; animation:pulse-dot 1.5s infinite; flex-shrink:0;"></div>
+        <span style="flex:1;">Sem conexão — {{ pendingSyncCount }} ação(ões) na fila</span>
+        <span style="opacity:0.85;">Toque p/ simular</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isOffline }}" hint-placeholder-val="{{ true }}">
+      <sc-if value="{{ showSyncedFlash }}" hint-placeholder-val="{{ false }}">
+        <div style="flex-shrink:0; background:oklch(0.93 0.09 150); color:oklch(0.4 0.13 150); padding:6px 14px; display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="oklch(0.4 0.13 150)" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>
+          Sincronizado — {{ pendingSyncCount }} ação(ões) enviadas
+        </div>
+      </sc-if>
+      <div onClick="{{ toggleOffline }}" style="flex-shrink:0; background:white; border-bottom:1px solid oklch(0.93 0.005 255); color:oklch(0.55 0.02 250); padding:5px 14px; display:flex; align-items:center; gap:7px; font-size:10.5px; font-weight:600;">
+        <div style="width:6px; height:6px; border-radius:50%; background:oklch(0.6 0.14 150);"></div>
+        Online
+      </div>
+    </sc-if>
+
+    <div style="flex:1; overflow-y:auto; padding:14px;">
+
+      <!-- INÍCIO -->
+      <sc-if value="{{ isInicio }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showInstallBanner }}" hint-placeholder-val="{{ true }}">
+          <div style="background:oklch(0.22 0.03 255); border-radius:12px; padding:12px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:oklch(0.64 0.19 38); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:15px;">N</div>
+            <div style="flex:1;">
+              <div style="font-size:12.5px; font-weight:700; color:white;">Instalar Nexo Campo</div>
+              <div style="font-size:11px; color:oklch(0.8 0.01 255);">Acesse offline direto da tela inicial</div>
+            </div>
+            <div onClick="{{ onInstallApp }}" style="background:white; color:oklch(0.22 0.03 255); padding:7px 12px; border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">Instalar</div>
+            <div onClick="{{ onDismissInstall }}" style="color:oklch(0.65 0.01 255); font-size:16px; cursor:pointer; padding:0 2px;">×</div>
+          </div>
+        </sc-if>
+
+        <div style="font-size:13px; color:oklch(0.5 0.02 250); margin-bottom:2px;">{{ saudacao }}</div>
+        <div style="font-size:21px; font-weight:800; color:oklch(0.18 0.015 255); margin-bottom:16px;">Weston Franco</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:18px;">
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:12px 10px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:oklch(0.4 0.16 255);">{{ statAbertas }}</div>
+            <div style="font-size:10.5px; color:oklch(0.5 0.02 250); font-weight:600; margin-top:2px;">Abertas</div>
+          </div>
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:12px 10px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:oklch(0.5 0.16 38);">{{ statUrgentes }}</div>
+            <div style="font-size:10.5px; color:oklch(0.5 0.02 250); font-weight:600; margin-top:2px;">Urgentes</div>
+          </div>
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:12px 10px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:oklch(0.4 0.13 150);">{{ statConcluidas }}</div>
+            <div style="font-size:10.5px; color:oklch(0.5 0.02 250); font-weight:600; margin-top:2px;">Hoje</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-size:14.5px; font-weight:700; color:oklch(0.2 0.02 250);">Próximos atendimentos</div>
+          <div onClick="{{ onVerTodasOS }}" style="font-size:12px; font-weight:600; color:oklch(0.55 0.16 255); cursor:pointer;">Ver todas ›</div>
+        </div>
+        <sc-for list="{{ osUrgentesHome }}" as="o" hint-placeholder-count="2">
+          <div onClick="{{ o.onClick }}" style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:13px; margin-bottom:9px; cursor:pointer; display:flex; align-items:center; gap:11px;">
+            <div style="width:38px; height:38px; border-radius:9px; background:{{ o.prioBg }}; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ o.prioColor }}" stroke-width="2" dangerouslySetInnerHTML="{{ o.iconHtml }}"></svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13.5px; font-weight:700; color:oklch(0.22 0.02 250); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ o.equipamento }}</div>
+              <div style="font-size:11.5px; color:oklch(0.55 0.02 250);">{{ o.setor }} · há {{ o.horasAtras }}h</div>
+            </div>
+            <span style="font-size:10px; font-weight:700; padding:3px 7px; border-radius:5px; background:{{ o.prioBg }}; color:{{ o.prioColor }}; white-space:nowrap;">{{ o.prioridade }}</span>
+          </div>
+        </sc-for>
+
+        <div style="font-size:14.5px; font-weight:700; color:oklch(0.2 0.02 250); margin:18px 0 10px;">Acesso rápido</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div onClick="{{ onGoQR }}" style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; cursor:pointer;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(0.55 0.16 255)" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span style="font-size:12.5px; font-weight:700; color:oklch(0.28 0.02 250);">Ler QR do Equipamento</span>
+          </div>
+          <div onClick="{{ onGoSolic }}" style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; cursor:pointer;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="oklch(0.55 0.16 255)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+            <span style="font-size:12.5px; font-weight:700; color:oklch(0.28 0.02 250);">Abrir Solicitação</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- LISTA DE OS -->
+      <sc-if value="{{ isListaOS }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:20px; font-weight:800; color:oklch(0.18 0.015 255); margin-bottom:2px;">Minhas OS</div>
+        <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:14px;">{{ osCount }} atribuída(s) para hoje</div>
+        <div style="display:flex; gap:6px; margin-bottom:14px;">
+          <sc-for list="{{ osFiltroTabs }}" as="ft" hint-placeholder-count="3">
+            <div onClick="{{ ft.onClick }}" style="padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; background:{{ ft.active && 'oklch(0.64 0.19 38)' }}; color:{{ ft.active && 'white' }}; border:1px solid {{ ft.active && 'oklch(0.64 0.19 38)' }};">{{ ft.label }}</div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ minhasOS }}" as="o" hint-placeholder-count="4">
+          <div onClick="{{ o.onClick }}" style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:14px; margin-bottom:10px; cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+              <div style="font-size:14.5px; font-weight:700; color:oklch(0.22 0.02 250); flex:1;">{{ o.equipamento }}</div>
+              <span style="font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:5px; background:{{ o.prioBg }}; color:{{ o.prioColor }}; white-space:nowrap; margin-left:8px;">{{ o.prioridade }}</span>
+            </div>
+            <div style="font-size:12px; color:oklch(0.5 0.02 250); margin-bottom:8px;">{{ o.numero }} · {{ o.tipo }} · {{ o.setor }} · há {{ o.horasAtras }}h</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:5px; background:{{ o.statusBg }}; color:{{ o.statusColor }};">{{ o.status }}</span>
+              <span style="font-size:16px; color:oklch(0.6 0.02 250);">›</span>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <!-- EXECUÇÃO DE OS -->
+      <sc-if value="{{ isExecucaoOS }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ voltarLista }}" style="font-size:13px; font-weight:600; color:oklch(0.55 0.16 255); margin-bottom:10px; cursor:pointer;">‹ Minhas OS</div>
+        <div style="font-size:18px; font-weight:800; color:oklch(0.18 0.015 255); margin-bottom:2px;">{{ execOS.equipamento }}</div>
+        <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:14px;">{{ execOS.numero }} · {{ execOS.setor }}</div>
+
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:16px;">
+          <sc-for list="{{ execProgress }}" as="p" hint-placeholder-count="3">
+            <div style="flex:1; height:4px; border-radius:2px; background:{{ p.filled && 'oklch(0.64 0.19 38)' }};"></div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; gap:4px; margin-bottom:16px; background:white; border-radius:10px; padding:4px; border:1px solid oklch(0.91 0.006 255);">
+          <sc-for list="{{ execTabs }}" as="t" hint-placeholder-count="3">
+            <div onClick="{{ t.onClick }}" style="flex:1; text-align:center; padding:8px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; background:{{ t.active && 'oklch(0.64 0.19 38)' }}; color:{{ t.active && 'white' }};">{{ t.label }}</div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ isExecTabChecklist }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:11.5px; color:oklch(0.5 0.02 250); margin-bottom:10px;">{{ checklistProgresso }}</div>
+          <sc-for list="{{ execChecklist }}" as="c" hint-placeholder-count="5">
+            <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:10px; padding:12px; margin-bottom:8px;">
+              <div style="font-size:13px; font-weight:600; color:oklch(0.25 0.02 250); margin-bottom:8px; line-height:1.4;">{{ c.pergunta }}</div>
+              <div style="display:flex; gap:6px;">
+                <div onClick="{{ c.onSim }}" style="flex:1; text-align:center; padding:8px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; background:{{ c.simBg }}; color:{{ c.simColor }}; border:1px solid {{ c.simBorder }};">Sim</div>
+                <div onClick="{{ c.onNao }}" style="flex:1; text-align:center; padding:8px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; background:{{ c.naoBg }}; color:{{ c.naoColor }}; border:1px solid {{ c.naoBorder }};">Não</div>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isExecTabFotos }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:12px;">Fotos e evidências do serviço executado.</div>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
+            <sc-for list="{{ execFotos }}" as="f" hint-placeholder-count="3">
+              <div style="aspect-ratio:1; background:oklch(0.93 0.01 255); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(0.6 0.02 250)" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+              </div>
+            </sc-for>
+            <div onClick="{{ onAddFoto }}" style="aspect-ratio:1; background:white; border:2px dashed oklch(0.85 0.008 255); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:oklch(0.5 0.16 255); font-size:26px;">+</div>
+          </div>
+
+          <div style="font-size:12.5px; font-weight:700; color:oklch(0.25 0.02 250); margin-bottom:10px;">Peças Utilizadas</div>
+          <sc-for list="{{ execPecas }}" as="pc" hint-placeholder-count="2">
+            <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:10px; padding:11px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+              <div style="flex:1;">
+                <div style="font-size:13px; font-weight:600; color:oklch(0.25 0.02 250);">{{ pc.descricao }}</div>
+                <div style="font-size:11px; color:oklch(0.55 0.02 250);">{{ pc.codigo }} · {{ pc.disponivel }} disponível</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div onClick="{{ pc.onMenos }}" style="width:26px; height:26px; border-radius:7px; background:oklch(0.95 0.004 255); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:oklch(0.4 0.02 250); cursor:pointer;">−</div>
+                <span style="font-size:13.5px; font-weight:700; color:oklch(0.25 0.02 250); min-width:14px; text-align:center;">{{ pc.qtd }}</span>
+                <div onClick="{{ pc.onMais }}" style="width:26px; height:26px; border-radius:7px; background:oklch(0.64 0.19 38); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:white; cursor:pointer;">+</div>
+              </div>
+            </div>
+          </sc-for>
+          <div onClick="{{ onAddPeca }}" style="text-align:center; padding:10px; border:1.5px dashed oklch(0.85 0.008 255); border-radius:10px; font-size:12.5px; font-weight:600; color:oklch(0.55 0.16 255); cursor:pointer;">+ Adicionar peça do estoque</div>
+        </sc-if>
+
+        <sc-if value="{{ isExecTabFinalizar }}" hint-placeholder-val="{{ false }}">
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:10px; padding:14px; margin-bottom:10px;">
+            <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 250); margin-bottom:6px;">OBSERVAÇÕES DO ATENDIMENTO</div>
+            <textarea value="{{ execObs }}" onChange="{{ onExecObsChange }}" placeholder="Descreva o serviço executado..." style="width:100%; box-sizing:border-box; border:1px solid oklch(0.88 0.008 255); border-radius:8px; padding:10px; font-size:13.5px; font-family:inherit; min-height:80px; resize:vertical;"></textarea>
+          </div>
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:10px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 250); margin-bottom:8px;">ASSINATURA DO RESPONSÁVEL DO SETOR</div>
+            <sc-if value="{{ temAssinatura }}" hint-placeholder-val="{{ false }}">
+              <div style="height:90px; border-radius:8px; background:oklch(0.96 0.01 255); display:flex; align-items:center; justify-content:center; font-family:cursive; font-size:22px; color:oklch(0.3 0.1 255); border:1px solid oklch(0.91 0.006 255);">{{ assinaturaNome }}</div>
+              <div onClick="{{ onLimparAssinatura }}" style="text-align:center; margin-top:6px; font-size:12px; color:oklch(0.55 0.16 25); cursor:pointer;">Limpar assinatura</div>
+            </sc-if>
+            <sc-if value="{{ temAssinatura }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ onAssinar }}" style="height:90px; border-radius:8px; border:2px dashed oklch(0.85 0.008 255); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; color:oklch(0.55 0.02 250); gap:4px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="oklch(0.55 0.16 255)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"></path><path d="M17 3h4v4"></path></svg>
+                <span style="font-size:12.5px; font-weight:600;">Toque para assinar</span>
+              </div>
+            </sc-if>
+          </div>
+          <div onClick="{{ onFinalizarOS }}" style="background:oklch(0.64 0.19 38); color:white; text-align:center; padding:14px; border-radius:10px; font-size:14.5px; font-weight:700; cursor:pointer;">Finalizar Atendimento</div>
+          <sc-if value="{{ osFinalizada }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center; margin-top:10px; font-size:12.5px; font-weight:600; color:oklch(0.4 0.13 150);">✓ OS finalizada com sucesso{{ finalizadaOfflineNota }}</div>
+          </sc-if>
+        </sc-if>
+      </sc-if>
+
+      <!-- FICHA DO EQUIPAMENTO (QR) -->
+      <sc-if value="{{ isFichaEquip }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ qrEscaneado }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center; padding:40px 10px;">
+            <div style="width:220px; height:220px; margin:0 auto 20px; border-radius:16px; border:3px solid oklch(0.55 0.16 255); position:relative; background:oklch(0.15 0.01 255); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+              <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="oklch(0.4 0.02 250)" stroke-width="1.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"></path></svg>
+              <div style="position:absolute; left:6%; right:6%; height:2px; background:oklch(0.7 0.19 145); box-shadow:0 0 8px oklch(0.7 0.19 145); animation:scan-line 2s ease-in-out infinite;"></div>
+            </div>
+            <div style="font-size:14px; font-weight:600; color:oklch(0.3 0.02 250); margin-bottom:4px;">Aponte a câmera para o QR Code</div>
+            <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:20px;">Etiqueta de identificação no equipamento</div>
+            <div onClick="{{ onEscanearQR }}" style="display:inline-block; background:oklch(0.64 0.19 38); color:white; padding:10px 20px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer;">Simular Leitura</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ qrEscaneado }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ onNovaLeitura }}" style="font-size:13px; font-weight:600; color:oklch(0.55 0.16 255); margin-bottom:10px; cursor:pointer;">‹ Nova leitura</div>
+          <div style="background:white; border-radius:12px; padding:16px; border:1px solid oklch(0.91 0.006 255); margin-bottom:12px;">
+            <div style="font-size:17px; font-weight:800; color:oklch(0.18 0.015 255);">{{ equipQR.nome }}</div>
+            <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:14px;">{{ equipQR.tag }} · {{ equipQR.setor }}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div><div style="font-size:10.5px; font-weight:600; color:oklch(0.5 0.02 250);">FABRICANTE/MODELO</div><div style="font-size:13px; font-weight:600; color:oklch(0.28 0.02 250);">{{ equipQR.fabricanteModelo }}</div></div>
+              <div><div style="font-size:10.5px; font-weight:600; color:oklch(0.5 0.02 250);">SITUAÇÃO</div><div style="font-size:13px; font-weight:600; color:oklch(0.28 0.02 250);">{{ equipQR.situacao }}</div></div>
+              <div><div style="font-size:10.5px; font-weight:600; color:oklch(0.5 0.02 250);">PRÓXIMA MANUTENÇÃO</div><div style="font-size:13px; font-weight:600; color:oklch(0.28 0.02 250);">{{ equipQR.proximaManutencao }}</div></div>
+              <div><div style="font-size:10.5px; font-weight:600; color:oklch(0.5 0.02 250);">PATRIMÔNIO</div><div style="font-size:13px; font-weight:600; color:oklch(0.28 0.02 250);">{{ equipQR.patrimonio }}</div></div>
+            </div>
+          </div>
+          <div onClick="{{ onAbrirSolicitacaoDoEquip }}" style="background:white; border:1px solid oklch(0.64 0.19 38); color:oklch(0.64 0.19 38); text-align:center; padding:12px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer;">Abrir Solicitação para este Equipamento</div>
+        </sc-if>
+      </sc-if>
+
+      <!-- ABRIR SOLICITAÇÃO -->
+      <sc-if value="{{ isAbrirSolic }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ solicEnviada }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center; padding:50px 10px;">
+            <div style="width:52px; height:52px; border-radius:50%; background:oklch(0.93 0.09 150); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="oklch(0.4 0.13 150)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+            <div style="font-size:15px; font-weight:700; color:oklch(0.2 0.02 250); margin-bottom:4px;">Solicitação enviada</div>
+            <div style="font-size:12.5px; color:oklch(0.5 0.02 250); margin-bottom:18px;">Protocolo {{ solicProtocolo }}</div>
+            <div onClick="{{ onNovaSolicMobile }}" style="display:inline-block; background:oklch(0.64 0.19 38); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Nova Solicitação</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ solicEnviada }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:20px; font-weight:800; color:oklch(0.18 0.015 255); margin-bottom:14px;">Abrir Solicitação</div>
+          <div style="background:white; border:1px solid oklch(0.91 0.006 255); border-radius:12px; padding:14px;">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 250); margin-bottom:5px;">EQUIPAMENTO</div>
+              <select value="{{ solicMEquip }}" onChange="{{ onSolicMEquipChange }}" style="width:100%; box-sizing:border-box; border:1px solid oklch(0.87 0.008 255); border-radius:8px; padding:10px; font-size:13.5px; background:white;">
+                <option value="">Selecionar...</option>
+                <sc-for list="{{ solicMEquipOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+              </select>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 250); margin-bottom:5px;">PROBLEMA</div>
+              <textarea value="{{ solicMDescricao }}" onChange="{{ onSolicMDescricaoChange }}" placeholder="Descreva o problema..." style="width:100%; box-sizing:border-box; border:1px solid oklch(0.87 0.008 255); border-radius:8px; padding:10px; font-size:13.5px; font-family:inherit; min-height:70px; resize:vertical;"></textarea>
+            </div>
+            <div style="margin-bottom:16px;">
+              <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 250); margin-bottom:6px;">URGÊNCIA</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <sc-for list="{{ solicMUrgenciaOptions }}" as="u" hint-placeholder-count="4">
+                  <div onClick="{{ u.onClick }}" style="padding:7px 12px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid {{ u.active && u.activeColor }}; color:{{ u.active && u.activeColor }};">{{ u.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div onClick="{{ onEnviarSolicMobile }}" style="background:oklch(0.64 0.19 38); color:white; text-align:center; padding:13px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;">Enviar Solicitação</div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+    </div>
+
+    <!-- BOTTOM TAB BAR -->
+    <div style="flex-shrink:0; display:flex; border-top:1px solid oklch(0.9 0.005 255); background:white; padding:8px 4px calc(8px + env(safe-area-inset-bottom, 0px));">
+      <sc-for list="{{ tabBarItems }}" as="tb" hint-placeholder-count="4">
+        <div onClick="{{ tb.onClick }}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:4px; position:relative;">
+          <div style="position:relative;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ tb.color }}" stroke-width="{{ tb.strokeW }}" dangerouslySetInnerHTML="{{ tb.iconHtml }}"></svg>
+            <sc-if value="{{ tb.badge }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:-4px; right:-7px; background:oklch(0.55 0.18 25); color:white; font-size:9px; font-weight:700; min-width:15px; height:15px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px;">{{ tb.badge }}</span>
+            </sc-if>
+          </div>
+          <span style="font-size:10px; font-weight:600; color:{{ tb.color }};">{{ tb.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</x-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const OS_MOBILE = [
+  { numero: '20260272', equipamento: 'Bomba de Infusão', setor: 'Internação 3º andar', tipo: 'Corretiva', prioridade: 'Urgente', status: 'Aberta', horasAtras: 1 },
+  { numero: '20260270', equipamento: 'Monitor Multiparâmetro', setor: 'UTI Adulto', tipo: 'Calibração', prioridade: 'Alta', status: 'Em Andamento', horasAtras: 3 },
+  { numero: '20260269', equipamento: 'Bisturi Elétrico', setor: 'Centro Cirúrgico', tipo: 'Preventiva', prioridade: 'Média', status: 'Aberta', horasAtras: 5 },
+  { numero: '20260266', equipamento: 'Ventilador Pulmonar', setor: 'UTI Adulto', tipo: 'Corretiva', prioridade: 'Alta', status: 'Concluída', horasAtras: 8 },
+];
+const PRIO_STYLE = { 'Urgente': { bg: 'oklch(0.93 0.08 25)', color: 'oklch(0.45 0.15 25)' }, 'Alta': { bg: 'oklch(0.94 0.1 38)', color: 'oklch(0.5 0.16 38)' }, 'Média': { bg: 'oklch(0.95 0.09 85)', color: 'oklch(0.5 0.13 85)' } };
+const STATUS_STYLE = { 'Aberta': { bg: 'oklch(0.94 0.05 255)', color: 'oklch(0.4 0.16 255)' }, 'Em Andamento': { bg: 'oklch(0.95 0.09 85)', color: 'oklch(0.5 0.13 85)' }, 'Concluída': { bg: 'oklch(0.93 0.09 150)', color: 'oklch(0.4 0.13 150)' } };
+const CHECKLIST_PADRAO = [
+  { pergunta: 'Equipamento ligado e funcionando corretamente', resposta: '' },
+  { pergunta: 'Cabos e conectores íntegros', resposta: '' },
+  { pergunta: 'Alarmes sonoros e visuais funcionando', resposta: '' },
+  { pergunta: 'Limpeza externa realizada', resposta: '' },
+];
+const PECAS_DISPONIVEIS = [
+  { codigo: 'PC-1088', descricao: 'Bateria Recarregável 11.1V', disponivel: 6 },
+  { codigo: 'PC-1203', descricao: 'Filtro Bacteriológico', disponivel: 2 },
+];
+const EQUIP_QR = { nome: 'Monitor Multiparâmetro', tag: 'EQ-0198', setor: 'UTI Adulto', fabricanteModelo: 'Philips · IntelliVue MX450', situacao: 'ATIVO', proximaManutencao: '15/09/2026', patrimonio: '6012' };
+const NAV_ICONS = {
+  home: '<path d="M3 10.5L12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path>',
+  lista: '<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path>',
+  qr: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h7v7h-7z"></path>',
+  solic: '<circle cx="12" cy="12" r="10"></circle><path d="M12 8v8M8 12h8"></path>',
+  wrench: '<path d="M14.7 6.3a4 4 0 10-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 005.4-5.4l-2.8 2.8-2-2z"></path>',
+};
+
+class Component extends DCLogic {
+  state = {
+    tab: 'inicio', osFiltro: 'todas', execOSNumero: null, execTab: 'checklist',
+    checklist: CHECKLIST_PADRAO, execFotosCount: 1, execPecas: [], execObs: '', assinaturaNome: '', osFinalizada: false,
+    qrEscaneado: false, isOffline: false, pendingSyncCount: 0, showSyncedFlash: false, showInstallBanner: true,
+    solicEnviada: null, solicM: { equipamento: '', descricao: '', urgencia: 'Média' },
+  };
+
+  renderVals() {
+    const st = this.state;
+    const setTab = (tab) => () => this.setState({ tab });
+    const activeTabKey = (st.tab === 'execucao') ? 'lista' : st.tab;
+
+    const minhasOSAll = OS_MOBILE.map(o => ({
+      ...o, prioBg: PRIO_STYLE[o.prioridade].bg, prioColor: PRIO_STYLE[o.prioridade].color,
+      statusBg: STATUS_STYLE[o.status].bg, statusColor: STATUS_STYLE[o.status].color, iconHtml: { __html: NAV_ICONS.wrench },
+      onClick: () => this.setState({ tab: 'execucao', execOSNumero: o.numero, execTab: 'checklist' }),
+    }));
+    const urgentesCount = minhasOSAll.filter(o => o.status !== 'Concluída' && (o.prioridade === 'Urgente' || o.prioridade === 'Alta')).length;
+
+    const tabBarItems = [
+      { key: 'inicio', label: 'Início', onClick: setTab('inicio') },
+      { key: 'lista', label: 'Minhas OS', onClick: setTab('lista'), badge: urgentesCount },
+      { key: 'qr', label: 'Ler QR', onClick: () => this.setState({ tab: 'qr', qrEscaneado: false }) },
+      { key: 'solic', label: 'Solicitar', onClick: () => this.setState({ tab: 'solic', solicEnviada: null }) },
+    ].map(t => ({ ...t, iconHtml: { __html: NAV_ICONS[t.key === 'inicio' ? 'home' : t.key] }, color: activeTabKey === t.key ? 'oklch(0.64 0.19 38)' : 'oklch(0.55 0.02 250)', strokeW: activeTabKey === t.key ? 2.3 : 1.8 }));
+
+    const minhasOS = minhasOSAll.filter(o => st.osFiltro === 'todas' || o.status === st.osFiltro);
+
+    const execOS = OS_MOBILE.find(o => o.numero === st.execOSNumero) || OS_MOBILE[0];
+    const execChecklist = st.checklist.map((c, idx) => ({
+      ...c,
+      onSim: () => this.setState(s2 => ({ checklist: s2.checklist.map((x, i) => i === idx ? { ...x, resposta: 'Sim' } : x) })),
+      onNao: () => this.setState(s2 => ({ checklist: s2.checklist.map((x, i) => i === idx ? { ...x, resposta: 'Não' } : x) })),
+      simBg: c.resposta === 'Sim' ? 'oklch(0.55 0.16 255)' : 'white', simColor: c.resposta === 'Sim' ? 'white' : 'oklch(0.4 0.02 250)', simBorder: c.resposta === 'Sim' ? 'oklch(0.55 0.16 255)' : 'oklch(0.88 0.008 255)',
+      naoBg: c.resposta === 'Não' ? 'oklch(0.55 0.16 255)' : 'white', naoColor: c.resposta === 'Não' ? 'white' : 'oklch(0.4 0.02 250)', naoBorder: c.resposta === 'Não' ? 'oklch(0.55 0.16 255)' : 'oklch(0.88 0.008 255)',
+    }));
+    const respondidas = st.checklist.filter(c => c.resposta).length;
+    const execTabs = [['checklist', 'Checklist'], ['fotos', 'Fotos/Peças'], ['finalizar', 'Finalizar']].map(([key, label]) => ({
+      key, label, active: st.execTab === key, onClick: () => this.setState({ execTab: key }),
+    }));
+    const execProgress = ['checklist', 'fotos', 'finalizar'].map((k, idx) => ({ filled: ['checklist', 'fotos', 'finalizar'].indexOf(st.execTab) >= idx }));
+
+    const execPecasList = st.execPecas.map((p, idx) => ({
+      ...p,
+      onMais: () => this.setState(s2 => ({ execPecas: s2.execPecas.map((x, i) => i === idx ? { ...x, qtd: x.qtd + 1 } : x) })),
+      onMenos: () => this.setState(s2 => ({ execPecas: s2.execPecas.map((x, i) => i === idx && x.qtd > 1 ? { ...x, qtd: x.qtd - 1 } : x) })),
+    }));
+
+    const doOfflineAware = (fn) => () => {
+      fn();
+      if (st.isOffline) this.setState(s2 => ({ pendingSyncCount: s2.pendingSyncCount + 1 }));
+    };
+
+    return {
+      headerTitle: st.tab === 'execucao' ? 'Execução de OS' : (st.tab === 'qr' ? 'Ficha do Equipamento' : (st.tab === 'solic' ? 'Nova Solicitação' : (st.tab === 'inicio' ? 'Nexo Campo' : 'Minhas OS'))),
+      isOffline: st.isOffline, pendingSyncCount: st.pendingSyncCount,
+      showSyncedFlash: st.showSyncedFlash,
+      toggleOffline: () => {
+        if (st.isOffline) {
+          this.setState({ isOffline: false, showSyncedFlash: st.pendingSyncCount > 0 });
+          setTimeout(() => this.setState({ showSyncedFlash: false, pendingSyncCount: 0 }), 2200);
+        } else {
+          this.setState({ isOffline: true });
+        }
+      },
+      tabBarItems,
+      isInicio: st.tab === 'inicio',
+      showInstallBanner: st.showInstallBanner,
+      onInstallApp: () => this.setState({ showInstallBanner: false }),
+      onDismissInstall: () => this.setState({ showInstallBanner: false }),
+      saudacao: 'Boa tarde,',
+      statAbertas: minhasOSAll.filter(o => o.status !== 'Concluída').length,
+      statUrgentes: urgentesCount,
+      statConcluidas: minhasOSAll.filter(o => o.status === 'Concluída').length,
+      osUrgentesHome: minhasOSAll.filter(o => o.status !== 'Concluída').slice(0, 2),
+      onVerTodasOS: setTab('lista'),
+      onGoQR: () => this.setState({ tab: 'qr', qrEscaneado: false }),
+      onGoSolic: () => this.setState({ tab: 'solic', solicEnviada: null }),
+      isListaOS: st.tab === 'lista', osCount: minhasOS.length,
+      osFiltroTabs: [['todas', 'Todas'], ['Aberta', 'Abertas'], ['Em Andamento', 'Em And.']].map(([value, label]) => ({
+        value, label, active: st.osFiltro === value, onClick: () => this.setState({ osFiltro: value }),
+      })),
+      minhasOS,
+      isExecucaoOS: st.tab === 'execucao', execOS, execTabs, execProgress,
+      isExecTabChecklist: st.execTab === 'checklist', execChecklist,
+      checklistProgresso: respondidas + ' de ' + st.checklist.length + ' itens respondidos',
+      isExecTabFotos: st.execTab === 'fotos', execFotos: Array.from({ length: st.execFotosCount }),
+      onAddFoto: doOfflineAware(() => this.setState(s2 => ({ execFotosCount: s2.execFotosCount + 1 }))),
+      execPecas: execPecasList,
+      onAddPeca: () => {
+        const proxima = PECAS_DISPONIVEIS.find(p => !st.execPecas.some(x => x.codigo === p.codigo));
+        if (proxima) this.setState(s2 => ({ execPecas: [...s2.execPecas, { ...proxima, qtd: 1 }] }));
+      },
+      isExecTabFinalizar: st.execTab === 'finalizar',
+      execObs: st.execObs, onExecObsChange: (e) => this.setState({ execObs: e.target.value }),
+      temAssinatura: !!st.assinaturaNome, assinaturaNome: st.assinaturaNome,
+      onAssinar: () => this.setState({ assinaturaNome: 'Enf. Camila Duarte' }),
+      onLimparAssinatura: () => this.setState({ assinaturaNome: '' }),
+      onFinalizarOS: doOfflineAware(() => this.setState({ osFinalizada: true })),
+      osFinalizada: st.osFinalizada,
+      finalizadaOfflineNota: st.isOffline ? ' — será sincronizada' : '',
+      voltarLista: () => this.setState({ tab: 'lista', execTab: 'checklist', osFinalizada: false, checklist: CHECKLIST_PADRAO, execObs: '', assinaturaNome: '', execFotosCount: 1, execPecas: [] }),
+      isFichaEquip: st.tab === 'qr', qrEscaneado: st.qrEscaneado,
+      onEscanearQR: () => this.setState({ qrEscaneado: true }),
+      onNovaLeitura: () => this.setState({ qrEscaneado: false }),
+      equipQR: EQUIP_QR,
+      onAbrirSolicitacaoDoEquip: () => this.setState({ tab: 'solic', solicEnviada: null, solicM: { equipamento: EQUIP_QR.tag, descricao: '', urgencia: 'Média' } }),
+      isAbrirSolic: st.tab === 'solic', solicEnviada: st.solicEnviada,
+      solicProtocolo: st.solicEnviada,
+      onNovaSolicMobile: () => this.setState({ solicEnviada: null, solicM: { equipamento: '', descricao: '', urgencia: 'Média' } }),
+      solicMEquipOptions: OS_MOBILE.map(o => ({ value: o.equipamento, label: o.equipamento })).concat([{ value: EQUIP_QR.tag, label: EQUIP_QR.nome + ' · ' + EQUIP_QR.tag }]),
+      solicMEquip: st.solicM.equipamento, onSolicMEquipChange: (e) => this.setState(s2 => ({ solicM: { ...s2.solicM, equipamento: e.target.value } })),
+      solicMDescricao: st.solicM.descricao, onSolicMDescricaoChange: (e) => this.setState(s2 => ({ solicM: { ...s2.solicM, descricao: e.target.value } })),
+      solicMUrgenciaOptions: ['Baixa', 'Média', 'Alta', 'Crítica'].map(u => ({
+        value: u, label: u, active: st.solicM.urgencia === u, activeColor: 'oklch(0.55 0.16 38)',
+        onClick: () => this.setState(s2 => ({ solicM: { ...s2.solicM, urgencia: u } })),
+      })),
+      onEnviarSolicMobile: doOfflineAware(() => {
+        if (!st.solicM.equipamento || !st.solicM.descricao.trim()) return;
+        this.setState({ solicEnviada: 'SOL-' + (2000 + Math.floor(Math.random() * 900)) });
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

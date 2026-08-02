@@ -1,0 +1,344 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PerfilAcesso {
+  ENGENHEIRO
+  GESTOR
+  TECNICO
+  SOLICITANTE
+  AUDITORIA
+  ADMIN
+}
+
+enum SituacaoEquipamento {
+  ATIVO
+  EM_GARANTIA
+  EM_GARANTIA_ESTENDIDA
+  INATIVO
+  ARQUIVADO
+}
+
+enum Criticidade {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum PrioridadeOS {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum StatusOS {
+  NAO_ATRIBUIDA
+  ABERTA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum TipoOS {
+  CORRETIVA
+  PREVENTIVA
+  CALIBRACAO
+  TSE
+}
+
+enum UrgenciaSolicitacao {
+  BAIXA
+  MEDIA
+  ALTA
+  PARADA_CRITICA
+}
+
+enum StatusSolicitacao {
+  PENDENTE
+  CONVERTIDA
+  RECUSADA
+}
+
+model Estabelecimento {
+  id        String   @id @default(cuid())
+  nome      String
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuarios           UsuarioEstabelecimento[]
+  setores            Setor[]
+  fabricantes        Fabricante[]
+  fornecedores       Fornecedor[]
+  planosDescricao    PlanoDescricao[]
+  equipamentos       Equipamento[]
+  ordensServico      OrdemServico[]
+  solicitacoes       SolicitacaoServico[]
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  nome         String
+  senhaHash    String
+  ativo        Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  estabelecimentos UsuarioEstabelecimento[]
+  colaborador      Colaborador?
+  logsAcesso       LogAcesso[]
+  historicoTags    HistoricoTag[]
+  logsOS           LogOrdemServico[]
+}
+
+model UsuarioEstabelecimento {
+  id                 String       @id @default(cuid())
+  usuarioId          String
+  estabelecimentoId  String
+  perfil             PerfilAcesso
+  setorIds           String[]     @default([])
+
+  usuario         Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, estabelecimentoId])
+}
+
+model LogAcesso {
+  id        String   @id @default(cuid())
+  usuarioId String?
+  acao      String
+  detalhe   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+}
+
+model Setor {
+  id                 String @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  ativo              Boolean @default(true)
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamentos    Equipamento[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model Fabricante {
+  id                 String @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  ativo              Boolean @default(true)
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  modelos         Modelo[]
+  equipamentos    Equipamento[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model Modelo {
+  id            String @id @default(cuid())
+  fabricanteId  String
+  nome          String
+  ativo         Boolean @default(true)
+
+  fabricante   Fabricante    @relation(fields: [fabricanteId], references: [id], onDelete: Cascade)
+  equipamentos Equipamento[]
+
+  @@unique([fabricanteId, nome])
+}
+
+model Fornecedor {
+  id                 String @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  cnpj               String?
+  ativo              Boolean @default(true)
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamentos    Equipamento[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model PlanoDescricao {
+  id                 String      @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  criticidade        Criticidade @default(MEDIA)
+  vidaUtilAnos       Int         @default(10)
+  ativo              Boolean     @default(true)
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamentos    Equipamento[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model CentroCusto {
+  id                 String @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  nome               String
+  ativo              Boolean @default(true)
+
+  equipamentos Equipamento[]
+
+  @@unique([estabelecimentoId, codigo])
+}
+
+model Colaborador {
+  id                 String  @id @default(cuid())
+  estabelecimentoId  String
+  usuarioId          String? @unique
+  matricula          String
+  nome               String
+  cargo              String?
+  registroProfissional String?
+  ativo              Boolean @default(true)
+
+  usuario          Usuario?       @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  osResponsavel    OrdemServico[] @relation("OSResponsavel")
+
+  @@unique([estabelecimentoId, matricula])
+}
+
+model Equipamento {
+  id                 String               @id @default(cuid())
+  estabelecimentoId  String
+  tag                String
+  nome               String
+  descricaoId        String
+  fabricanteId       String
+  modeloId           String
+  setorId            String
+  fornecedorId       String?
+  centroCustoId      String?
+  patrimonio         String?
+  nSerie             String?
+  dataAquisicao      DateTime?
+  valorAquisicao     Decimal?             @db.Decimal(14, 2)
+  valorSubstituicao  Decimal?             @db.Decimal(14, 2)
+  situacao           SituacaoEquipamento  @default(ATIVO)
+  checklistRecebimentoPendente Boolean    @default(true)
+  registroAnvisa     String?
+  validadeAnvisa     DateTime?
+  dataEndOfService   DateTime?
+  dataEndOfLife      DateTime?
+  observacao         String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  descricao       PlanoDescricao  @relation(fields: [descricaoId], references: [id])
+  fabricante      Fabricante      @relation(fields: [fabricanteId], references: [id])
+  modelo          Modelo          @relation(fields: [modeloId], references: [id])
+  setor           Setor           @relation(fields: [setorId], references: [id])
+  fornecedor      Fornecedor?     @relation(fields: [fornecedorId], references: [id])
+  centroCusto     CentroCusto?    @relation(fields: [centroCustoId], references: [id])
+  historicoTags   HistoricoTag[]
+  ordensServico   OrdemServico[]
+  solicitacoes    SolicitacaoServico[]
+
+  @@unique([estabelecimentoId, tag])
+  @@index([estabelecimentoId, situacao])
+  @@index([setorId])
+}
+
+model HistoricoTag {
+  id            String   @id @default(cuid())
+  equipamentoId String
+  tagAnterior   String
+  tagNova       String
+  justificativa String
+  usuarioId     String
+  createdAt     DateTime @default(now())
+
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+}
+
+model OrdemServico {
+  id                 String       @id @default(cuid())
+  estabelecimentoId  String
+  numero             Int
+  codigo             String?
+  equipamentoId      String
+  tipo               TipoOS       @default(CORRETIVA)
+  oficina            String?
+  prioridade         PrioridadeOS @default(MEDIA)
+  status             StatusOS     @default(NAO_ATRIBUIDA)
+  abertura            DateTime     @default(now())
+  fechamento         DateTime?
+  responsavelId      String?
+  pendencia          String?
+  observacaoRequisicao String?
+  solicitacaoId      String?      @unique
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  estabelecimento Estabelecimento     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento     Equipamento         @relation(fields: [equipamentoId], references: [id])
+  responsavel     Colaborador?        @relation("OSResponsavel", fields: [responsavelId], references: [id])
+  solicitacao     SolicitacaoServico? @relation(fields: [solicitacaoId], references: [id])
+  logs            LogOrdemServico[]
+
+  @@unique([estabelecimentoId, numero])
+  @@index([estabelecimentoId, status])
+  @@index([equipamentoId])
+}
+
+model LogOrdemServico {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  usuarioId      String?
+  acao           String
+  justificativa  String?
+  createdAt      DateTime @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  usuario      Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+}
+
+model SolicitacaoServico {
+  id                 String              @id @default(cuid())
+  estabelecimentoId  String
+  protocolo          String
+  equipamentoId      String?
+  setorNome          String
+  descricao          String
+  urgencia           UrgenciaSolicitacao @default(MEDIA)
+  solicitanteNome    String
+  ramal              String?
+  status             StatusSolicitacao   @default(PENDENTE)
+  justificativaRecusa String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento     Equipamento?    @relation(fields: [equipamentoId], references: [id])
+  ordemServico    OrdemServico?
+
+  @@unique([estabelecimentoId, protocolo])
+  @@index([estabelecimentoId, status])
+}
+
+model ContadorSequencia {
+  id                 String @id @default(cuid())
+  estabelecimentoId  String
+  chave              String
+  valor              Int    @default(0)
+
+  @@unique([estabelecimentoId, chave])
+}
