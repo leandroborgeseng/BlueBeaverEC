@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "nest build",
-    "start": "node dist/main.js",
-    "start:prod": "node dist/main.js",
+    "build": "pnpm --filter @nexo/shared build && prisma generate && nest build",
+    "start": "prisma migrate deploy && node dist/main.js",
+    "start:prod": "prisma migrate deploy && node dist/main.js",
     "lint": "tsc -p tsconfig.json --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
@@ -29,6 +29,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.19.1",
+    "prisma": "^6.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -40,7 +41,6 @@
     "@types/node": "^22.15.32",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.6",
-    "prisma": "^6.11.1",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
