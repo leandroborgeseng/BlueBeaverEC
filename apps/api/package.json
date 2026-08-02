@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "pnpm --filter @nexo/shared build && prisma generate && nest build",
-    "start": "prisma migrate deploy && node dist/main.js",
-    "start:prod": "prisma migrate deploy && node dist/main.js",
+    "start": "node scripts/start-prod.mjs",
+    "start:prod": "node scripts/start-prod.mjs",
     "lint": "tsc -p tsconfig.json --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",

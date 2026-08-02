@@ -25,7 +25,12 @@ import { ConfigAppModule } from "./config/config.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // Senhas em DATABASE_URL podem conter `$`; expansão corrompe a URL.
+      expandVariables: false,
+      ignoreEnvFile: process.env.NODE_ENV === "production",
+    }),
     PrismaModule,
     HealthModule,
     AuthModule,

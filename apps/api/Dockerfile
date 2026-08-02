@@ -30,4 +30,4 @@ COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/apps/api ./apps/api
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main.js"]
+CMD ["node", "scripts/start-prod.mjs"]
