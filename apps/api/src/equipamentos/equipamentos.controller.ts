@@ -1,13 +1,17 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
   MinLength,
+  ValidateNested,
 } from "class-validator";
+import { Type } from "class-transformer";
 import { SituacaoEquipamento } from "@prisma/client";
+import type { Response } from "express";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { EquipamentosService } from "./equipamentos.service";
@@ -81,6 +85,14 @@ class UpdateEquipamentoDto {
 
   @IsOptional()
   @IsString()
+  fabricanteId?: string;
+
+  @IsOptional()
+  @IsString()
+  modeloId?: string;
+
+  @IsOptional()
+  @IsString()
   fornecedorId?: string;
 
   @IsOptional()
@@ -132,6 +144,66 @@ class UpdateEquipamentoDto {
   dataEndOfLife?: string;
 }
 
+class ImportRowDto {
+  @IsString()
+  tag!: string;
+
+  @IsString()
+  nome!: string;
+
+  @IsString()
+  planoDescricao!: string;
+
+  @IsString()
+  fabricante!: string;
+
+  @IsString()
+  modelo!: string;
+
+  @IsString()
+  setor!: string;
+
+  @IsOptional()
+  @IsString()
+  patrimonio?: string;
+
+  @IsOptional()
+  @IsString()
+  nSerie?: string;
+
+  @IsOptional()
+  @IsString()
+  registroAnvisa?: string;
+
+  @IsOptional()
+  @IsString()
+  validadeAnvisa?: string;
+
+  @IsOptional()
+  @IsString()
+  dataAquisicao?: string;
+
+  @IsOptional()
+  @IsString()
+  dataInstalacao?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  valorAquisicao?: number;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+}
+
+class ImportDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ImportRowDto)
+  rows!: ImportRowDto[];
+}
+
 @Controller("equipamentos")
 @UseGuards(JwtAuthGuard)
 export class EquipamentosController {
@@ -155,6 +227,22 @@ export class EquipamentosController {
       q,
       page: page ? Number(page) : 1,
     });
+  }
+
+  @Get("import/template")
+  async importTemplate(@Res() res: Response) {
+    const buf = await this.equipamentos.importTemplate();
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="template-equipamentos.xlsx"');
+    res.send(buf);
+  }
+
+  @Post("import")
+  importRows(@CurrentUser() user: AuthUser, @Body() body: ImportDto) {
+    return this.equipamentos.importRows(user, body.rows ?? []);
   }
 
   @Post()

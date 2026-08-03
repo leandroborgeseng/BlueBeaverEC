@@ -15,6 +15,7 @@ interface Kpis {
 export default function DashboardPage() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [osSituacao, setOsSituacao] = useState<Array<{ situacao: string; total: number }>>([]);
+  const [equipStatus, setEquipStatus] = useState<Array<{ situacao: string; total: number }>>([]);
   const [recentes, setRecentes] = useState<
     Array<{ codigo: string; status: string; equipamento: { tag: string; nome?: string } }>
   >([]);
@@ -30,6 +31,7 @@ export default function DashboardPage() {
     Promise.all([
       api<Kpis>("/dashboard/kpis"),
       api<Array<{ situacao: string; total: number }>>("/dashboard/os-por-situacao"),
+      api<Array<{ situacao: string; total: number }>>("/dashboard/equipamentos-status"),
       api<Array<{ codigo: string; status: string; equipamento: { tag: string; nome?: string } }>>(
         "/dashboard/os-recentes?limit=5",
       ),
@@ -38,9 +40,10 @@ export default function DashboardPage() {
       >("/dashboard/contratos-vencendo?dias=30"),
       api<Array<{ codigo: string | null; prioridade: string; tag: string }>>("/dashboard/os-atrasadas"),
     ])
-      .then(([k, s, r, c, a]) => {
+      .then(([k, s, es, r, c, a]) => {
         setKpis(k);
         setOsSituacao(s);
+        setEquipStatus(es);
         setRecentes(r);
         setContratos(c);
         setAtrasadas(a);
@@ -49,6 +52,8 @@ export default function DashboardPage() {
   }, []);
 
   const maxBar = Math.max(1, ...osSituacao.map((x) => x.total));
+  const maxEquip = Math.max(1, ...equipStatus.map((x) => x.total));
+  const totalEquip = equipStatus.reduce((s, x) => s + x.total, 0);
   const hoje = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
@@ -71,10 +76,11 @@ export default function DashboardPage() {
           ringPct={atrasadas.length > 0 ? 55 : 40}
         />
         <KpiCard
-          label="Disponibilidade média"
-          value={kpis?.disponibilidadePct != null ? `${kpis.disponibilidadePct}%` : "—"}
-          tone="success"
-          ringPct={kpis?.disponibilidadePct ?? 70}
+          label="MTTR médio"
+          value={kpis?.mttrMedioHoras != null ? `${kpis.mttrMedioHoras.toFixed(1)} h` : "—"}
+          hint="tempo médio de reparo"
+          tone="info"
+          ringPct={kpis?.mttrMedioHoras != null ? Math.min(100, kpis.mttrMedioHoras * 5) : 40}
         />
         <KpiCard
           label="Contratos a vencer"
@@ -85,7 +91,40 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16 }}>
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Equipamentos por situação">
+          {equipStatus.length === 0 ? (
+            <Empty />
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {equipStatus.map((row) => (
+                <div key={row.situacao} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 100, fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                    {prettyStatus(row.situacao)}
+                  </div>
+                  <div style={{ flex: 1, height: 22, background: "oklch(0.94 0.003 255)", borderRadius: 5, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: `${(row.total / maxEquip) * 100}%`,
+                        height: "100%",
+                        background: equipBarColor(row.situacao),
+                        borderRadius: 5,
+                        minWidth: row.total > 0 ? 4 : 0,
+                      }}
+                    />
+                  </div>
+                  <div style={{ width: 36, textAlign: "right", fontSize: 13, fontWeight: 700 }}>{row.total}</div>
+                </div>
+              ))}
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
+                Total: {totalEquip} equipamento(s)
+              </div>
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginBottom: 16 }}>
         <Panel title="Ordens de Serviço por situação">
           {osSituacao.length === 0 ? (
             <Empty />
@@ -139,7 +178,7 @@ export default function DashboardPage() {
         </Panel>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Panel
           title="Ordens de Serviço recentes"
           action={
@@ -165,9 +204,7 @@ export default function DashboardPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>
-                      {os.equipamento.nome ?? os.equipamento.tag}
-                    </div>
+                    <div style={{ fontWeight: 600 }}>{os.equipamento.nome ?? os.equipamento.tag}</div>
                     <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
                       {os.codigo} · {os.equipamento.tag}
                     </div>
@@ -218,5 +255,14 @@ function barColor(situacao: string) {
   if (s.includes("ANDAMENTO")) return "oklch(0.75 0.14 85)";
   if (s.includes("PECA") || s.includes("PEÇA")) return "oklch(0.55 0.14 300)";
   if (s.includes("CONCLU")) return "oklch(0.55 0.14 150)";
+  return "oklch(0.55 0.14 255)";
+}
+
+function equipBarColor(situacao: string) {
+  const s = situacao.toUpperCase();
+  if (s.includes("ATIVO")) return "oklch(0.55 0.14 150)";
+  if (s.includes("GARANTIA")) return "oklch(0.55 0.14 255)";
+  if (s.includes("INATIVO")) return "oklch(0.65 0.01 250)";
+  if (s.includes("ARQUIV")) return "oklch(0.55 0.18 25)";
   return "oklch(0.55 0.14 255)";
 }

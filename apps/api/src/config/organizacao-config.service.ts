@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { PERMISSAO_NIVEL, temPermissao } from "@nexo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -9,9 +10,11 @@ export class OrganizacaoConfigService {
   constructor(private readonly prisma: PrismaService) {}
 
   private assertAdmin(user: AuthUser) {
-    if (user.perfil !== PerfilAcesso.ADMIN && user.perfil !== PerfilAcesso.ENGENHEIRO && user.perfil !== PerfilAcesso.GESTOR) {
-      throw new ForbiddenException("Sem permissão de configuração");
-    }
+    const ok =
+      temPermissao(user.permissoesModulos, "config", PERMISSAO_NIVEL.EDICAO) ||
+      user.perfil === PerfilAcesso.ADMIN ||
+      user.perfil === PerfilAcesso.GESTOR;
+    if (!ok) throw new ForbiddenException("Sem permissão de configuração");
   }
 
   getOrganizacao(estabelecimentoId: string) {
@@ -48,7 +51,15 @@ export class OrganizacaoConfigService {
       (await this.prisma.usuario.create({
         data: { email: body.email, nome: body.nome, senhaHash },
       }));
-    return this.prisma.usuarioEstabelecimento.upsert({
+
+    if (existing) {
+      await this.prisma.usuario.update({
+        where: { id: existing.id },
+        data: { nome: body.nome, senhaHash },
+      });
+    }
+
+    await this.prisma.usuarioEstabelecimento.upsert({
       where: {
         usuarioId_estabelecimentoId: {
           usuarioId: usuario.id,
@@ -61,8 +72,19 @@ export class OrganizacaoConfigService {
         perfil: body.perfil,
       },
       update: { perfil: body.perfil },
-      include: { usuario: true },
     });
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "CRIACAO_USUARIO",
+        detalhe: `${body.email} · ${body.perfil}`,
+      },
+    });
+
+    return this.listUsuarios(user.estabelecimentoId).then((u) =>
+      u.find((x) => x.usuario.email === body.email),
+    );
   }
 
   async patchUsuario(
@@ -71,10 +93,6 @@ export class OrganizacaoConfigService {
     body: Partial<{ nome: string; ativo: boolean; perfil: PerfilAcesso }>,
   ) {
     this.assertAdmin(user);
-    const vinculo = await this.prisma.usuarioEstabelecimento.findFirst({
-      where: { estabelecimentoId: user.estabelecimentoId, usuarioId: id },
-    });
-    if (!vinculo) throw new NotFoundException("Usuário não vinculado");
     if (body.nome != null || body.ativo != null) {
       await this.prisma.usuario.update({
         where: { id },
@@ -84,9 +102,14 @@ export class OrganizacaoConfigService {
         },
       });
     }
-    if (body.perfil) {
+    if (body.perfil != null) {
       await this.prisma.usuarioEstabelecimento.update({
-        where: { id: vinculo.id },
+        where: {
+          usuarioId_estabelecimentoId: {
+            usuarioId: id,
+            estabelecimentoId: user.estabelecimentoId,
+          },
+        },
         data: { perfil: body.perfil },
       });
       await this.prisma.logAcesso.create({
@@ -107,13 +130,33 @@ export class OrganizacaoConfigService {
     });
   }
 
-  createPerfil(user: AuthUser, body: { nome: string; permissoes: Record<string, string> }) {
+  createPerfil(user: AuthUser, body: { nome: string; permissoes: Record<string, string | number> }) {
     this.assertAdmin(user);
     return this.prisma.perfilCustom.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
-        nome: body.nome,
+        nome: body.nome.trim(),
         permissoes: body.permissoes,
+      },
+    });
+  }
+
+  async patchPerfil(
+    user: AuthUser,
+    id: string,
+    body: Partial<{ nome: string; permissoes: Record<string, string | number>; ativo: boolean }>,
+  ) {
+    this.assertAdmin(user);
+    const row = await this.prisma.perfilCustom.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!row) throw new NotFoundException();
+    return this.prisma.perfilCustom.update({
+      where: { id },
+      data: {
+        ...(body.nome != null ? { nome: body.nome.trim() } : {}),
+        ...(body.permissoes != null ? { permissoes: body.permissoes } : {}),
+        ...(body.ativo != null ? { ativo: body.ativo } : {}),
       },
     });
   }

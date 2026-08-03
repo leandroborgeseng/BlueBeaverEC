@@ -133,4 +133,60 @@ export class GestaoService {
     if (!row) throw new NotFoundException();
     return this.prisma.capexItem.update({ where: { id }, data: { status } });
   }
+
+  /**
+   * Gera propostas CAPEX a partir do scoring Anvisa/EoS/EoL/idade/custo OS.
+   * Evita duplicar equipamento já com item PROPOSTO/APROVADO.
+   */
+  async gerarCapexAutomatico(user: AuthUser, minScore = 40) {
+    const candidatos = await this.substituicaoTecnologica(user.estabelecimentoId);
+    const elegiveis = candidatos.filter((c) => c.prioridade >= minScore);
+
+    const existentes = await this.prisma.capexItem.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        status: { in: [StatusCapex.PROPOSTO, StatusCapex.APROVADO] },
+        equipamentoOrigemId: { not: null },
+      },
+      select: { equipamentoOrigemId: true },
+    });
+    const jaTem = new Set(existentes.map((e) => e.equipamentoOrigemId));
+
+    const criados = [];
+    for (const c of elegiveis) {
+      if (jaTem.has(c.equipamentoId)) continue;
+      const valor =
+        c.valorSubstituicao ??
+        (c.valorAquisicao ? Number(c.valorAquisicao) * 1.1 : Math.max(c.custoAcumulado * 2, 10000));
+      const flags = [
+        c.flags.anvisaVencida ? "Anvisa vencida" : null,
+        c.flags.eos ? "EoS" : null,
+        c.flags.eol ? "EoL" : null,
+        `score ${c.prioridade}`,
+        `idade ${c.idadeAnos}a`,
+        `custo OS R$ ${c.custoAcumulado}`,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
+      const row = await this.prisma.capexItem.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          descricao: `Substituição automática ${c.tag} — ${c.nome}`,
+          valorEstimado: Number(valor.toFixed(2)),
+          justificativa: `Scoring automático: ${flags}`,
+          equipamentoOrigemId: c.equipamentoId,
+          origem: OrigemCapex.SUBSTITUICAO,
+        },
+      });
+      criados.push(row);
+    }
+
+    return {
+      candidatos: elegiveis.length,
+      criados: criados.length,
+      itens: criados,
+      minScore,
+    };
+  }
 }

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { IndiceReajuste, SituacaoContrato } from "@prisma/client";
+import { IndiceReajuste, SituacaoContrato, StatusOS } from "@prisma/client";
 import { podeEditarCadastros } from "@nexo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
@@ -25,6 +25,10 @@ export class ContratosService {
     vigenciaFim: Date;
     equipamentos: unknown[];
     glosas: Array<{ valor: unknown }>;
+    slaAtendimentoHoras?: number | null;
+    slaSolucaoHoras?: number | null;
+    indiceReajuste?: IndiceReajuste | null;
+    dataReajusteAniversario?: Date | null;
   }>(c: T) {
     const n = c.equipamentos.length || 1;
     const valor = Number(c.valor);
@@ -34,6 +38,7 @@ export class ContratosService {
       rateioPorEquipamento: Number((valor / n).toFixed(2)),
       totalGlosas: c.glosas.reduce((s, g) => s + Number(g.valor), 0),
       alertaSeveridade: this.alertaSeveridade(c.vigenciaFim),
+      alertaReajuste: this.alertaReajuste(c.dataReajusteAniversario ?? null),
     };
   }
 
@@ -43,6 +48,15 @@ export class ContratosService {
     if (dias <= 30) return "30";
     if (dias <= 60) return "60";
     if (dias <= 90) return "90";
+    return null;
+  }
+
+  private alertaReajuste(data: Date | null) {
+    if (!data) return null;
+    const dias = (data.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    if (dias < -7) return null;
+    if (dias < 0) return { dias: Math.ceil(dias), status: "VENCIDO" as const };
+    if (dias <= 30) return { dias: Math.ceil(dias), status: "PROXIMO" as const };
     return null;
   }
 
@@ -77,7 +91,7 @@ export class ContratosService {
       dataReajusteAniversario?: string;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
 
     const eqs = data.equipamentoTags?.length
       ? await this.prisma.equipamento.findMany({
@@ -123,10 +137,106 @@ export class ContratosService {
       include: {
         equipamentos: { include: { equipamento: { include: { setor: true } } } },
         glosas: true,
+        fornecedor: true,
       },
     });
     if (!c) throw new NotFoundException();
-    return this.withExtras(c);
+
+    const eqIds = c.equipamentos.map((e) => e.equipamentoId);
+    const osAbertas = eqIds.length
+      ? await this.prisma.ordemServico.findMany({
+          where: {
+            estabelecimentoId,
+            equipamentoId: { in: eqIds },
+            status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+          },
+          select: {
+            numero: true,
+            codigo: true,
+            abertura: true,
+            prioridade: true,
+            equipamentoId: true,
+            equipamento: { select: { tag: true } },
+          },
+        })
+      : [];
+
+    const agora = Date.now();
+    const slaHoras = c.slaAtendimentoHoras ?? 24;
+    const osComSla = osAbertas.map((os) => {
+      const horasAberto = (agora - os.abertura.getTime()) / (1000 * 60 * 60);
+      const estourado = horasAberto > slaHoras;
+      return {
+        ...os,
+        horasAberto: Number(horasAberto.toFixed(1)),
+        slaAtendimentoHoras: slaHoras,
+        slaEstourado: estourado,
+      };
+    });
+
+    return {
+      ...this.withExtras(c),
+      cobertura: c.equipamentos.map((link) => ({
+        tag: link.equipamento.tag,
+        nome: link.equipamento.nome,
+        setor: link.equipamento.setor?.nome ?? null,
+        situacao: link.equipamento.situacao,
+      })),
+      osAbertas: osComSla,
+      slaResumo: {
+        atendimentoHoras: c.slaAtendimentoHoras,
+        solucaoHoras: c.slaSolucaoHoras,
+        osAbertas: osComSla.length,
+        osSlaEstourado: osComSla.filter((o) => o.slaEstourado).length,
+      },
+    };
+  }
+
+  async alertas(estabelecimentoId: string) {
+    const rows = await this.list(estabelecimentoId);
+    const reajuste = rows.filter((c) => c.alertaReajuste);
+    const vencimento = rows.filter((c) => c.alertaSeveridade);
+
+    const comSla = rows.filter((c) => c.slaAtendimentoHoras);
+    const slaEstourados: Array<{
+      contratoNumero: string;
+      osCodigo: string | null;
+      osNumero: number;
+      tag: string;
+      horasAberto: number;
+      slaHoras: number;
+    }> = [];
+
+    for (const c of comSla) {
+      const eqIds = (c.equipamentos as Array<{ equipamentoId: string }>).map((e) => e.equipamentoId);
+
+      if (!eqIds.length) continue;
+      const os = await this.prisma.ordemServico.findMany({
+        where: {
+          estabelecimentoId,
+          equipamentoId: { in: eqIds },
+          status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        },
+        include: { equipamento: { select: { tag: true } } },
+      });
+      const slaHoras = c.slaAtendimentoHoras ?? 24;
+      const agora = Date.now();
+      for (const o of os) {
+        const horas = (agora - o.abertura.getTime()) / (1000 * 60 * 60);
+        if (horas > slaHoras) {
+          slaEstourados.push({
+            contratoNumero: c.numero,
+            osCodigo: o.codigo,
+            osNumero: o.numero,
+            tag: o.equipamento.tag,
+            horasAberto: Number(horas.toFixed(1)),
+            slaHoras,
+          });
+        }
+      }
+    }
+
+    return { vencimento, reajuste, slaEstourados };
   }
 
   async vencendo(estabelecimentoId: string, diasCsv = "90,60,30") {
@@ -153,7 +263,7 @@ export class ContratosService {
     numero: string,
     data: { data?: string; valor: number; motivo: string },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const c = await this.prisma.contrato.findUnique({
       where: {
         estabelecimentoId_numero: {

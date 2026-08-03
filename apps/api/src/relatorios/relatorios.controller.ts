@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Res, UseGuards } from "@nestjs/common";
 import { FrequenciaRelatorio } from "@prisma/client";
 import { IsArray, IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import type { Response } from "express";
+import { PERMISSAO_NIVEL } from "@nexo/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { RelatoriosService } from "./relatorios.service";
 
@@ -30,6 +32,7 @@ class AgendamentoDto {
 
 @Controller("relatorios")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
 export class RelatoriosController {
   constructor(private readonly relatorios: RelatoriosService) {}
 
@@ -63,7 +66,20 @@ export class RelatoriosController {
   }
 
   @Post("agendamentos")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   create(@CurrentUser() user: AuthUser, @Body() body: AgendamentoDto) {
     return this.relatorios.createAgendamento(user, body);
+  }
+
+  @Post("agendamentos/:id/disparar")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  disparar(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.relatorios.disparar(user, id);
+  }
+
+  @Post("agendamentos/disparar-pendentes")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  dispararPendentes(@CurrentUser() user: AuthUser) {
+    return this.relatorios.dispararPendentes(user);
   }
 }

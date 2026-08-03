@@ -85,6 +85,16 @@ export default function CapexPage() {
     await load();
   }
 
+  async function gerarAutomatico() {
+    const res = await api<{ criados: number; candidatos: number; minScore: number }>(
+      "/gestao/capex/gerar-automatico",
+      { method: "POST", body: JSON.stringify({ minScore: 40 }) },
+    );
+    setMsg(`CAPEX automático: ${res.criados} criado(s) de ${res.candidatos} candidato(s) (score ≥ ${res.minScore})`);
+    setTab("capex");
+    await load();
+  }
+
   async function createCapex(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -123,9 +133,9 @@ export default function CapexPage() {
 
   return (
     <div>
-      <PageHeader title="CAPEX e Plano Diretor" subtitle="Candidatos por idade, custo e regularidade · CAPEX manual ou de substituição" />
+      <PageHeader title="CAPEX e Plano Diretor" subtitle="Scoring Anvisa/EoS/EoL · custo OS · geração automática" />
       {msg && <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {([
           ["sub", "Substituição"],
           ["capex", "CAPEX"],
@@ -135,6 +145,9 @@ export default function CapexPage() {
             {l}
           </Btn>
         ))}
+        <Btn variant="secondary" onClick={() => void gerarAutomatico()}>
+          Gerar CAPEX automático
+        </Btn>
       </div>
 
       {tab === "sub" && (

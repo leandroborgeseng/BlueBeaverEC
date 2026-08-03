@@ -10,7 +10,9 @@ import {
   MinLength,
 } from "class-validator";
 import { IndiceReajuste, SituacaoContrato } from "@prisma/client";
+import { PERMISSAO_NIVEL } from "@nexo/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { ContratosService } from "./contratos.service";
 
@@ -76,6 +78,7 @@ class GlosaDto {
 
 @Controller("contratos")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("contratos", PERMISSAO_NIVEL.LEITURA)
 export class ContratosController {
   constructor(private readonly contratos: ContratosService) {}
 
@@ -89,17 +92,24 @@ export class ContratosController {
     return this.contratos.vencendo(user.estabelecimentoId, dias ?? "90,60,30");
   }
 
+  @Get("alertas")
+  alertas(@CurrentUser() user: AuthUser) {
+    return this.contratos.alertas(user.estabelecimentoId);
+  }
+
   @Get(":numero/matriz-cobertura")
   matriz(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
     return this.contratos.matrizCobertura(user.estabelecimentoId, numero);
   }
 
   @Post()
+  @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
   create(@CurrentUser() user: AuthUser, @Body() body: CreateContratoDto) {
     return this.contratos.create(user, body);
   }
 
   @Post(":numero/glosas")
+  @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
   glosa(@CurrentUser() user: AuthUser, @Param("numero") numero: string, @Body() body: GlosaDto) {
     return this.contratos.addGlosa(user, numero, body);
   }

@@ -20,7 +20,15 @@ interface Tpl {
 export default function RelatoriosPage() {
   const [templates, setTemplates] = useState<Tpl[]>([]);
   const [agends, setAgends] = useState<
-    Array<{ id: string; template: string; frequencia: string; destinatarios: string[]; proximoEnvio?: string | null }>
+    Array<{
+      id: string;
+      template: string;
+      frequencia: string;
+      destinatarios: string[];
+      proximoEnvio?: string | null;
+      ultimoEnvio?: string | null;
+      ultimoStatus?: string | null;
+    }>
   >([]);
   const [preview, setPreview] = useState<unknown>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -81,8 +89,40 @@ export default function RelatoriosPage() {
       }),
     });
     e.currentTarget.reset();
-    setMsg("Agendamento criado (envio por e-mail via job futuro)");
+    setMsg("Agendamento criado");
     await load();
+  }
+
+  async function disparar(id: string) {
+    setBusy(`disp:${id}`);
+    try {
+      const res = await api<{ mensagem: string }>("/relatorios/agendamentos/" + id + "/disparar", {
+        method: "POST",
+        body: "{}",
+      });
+      setMsg(res.mensagem ?? "E-mail simulado enviado");
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erro ao disparar");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function dispararPendentes() {
+    setBusy("pendentes");
+    try {
+      const res = await api<{ processados: number }>("/relatorios/agendamentos/disparar-pendentes", {
+        method: "POST",
+        body: "{}",
+      });
+      setMsg(`${res.processados} agendamento(s) processado(s)`);
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setBusy(null);
+    }
   }
 
   return (
@@ -110,6 +150,11 @@ export default function RelatoriosPage() {
       </div>
 
       <Panel title="Agendamentos">
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+          <Btn variant="secondary" disabled={!!busy} onClick={() => void dispararPendentes()}>
+            Disparar pendentes
+          </Btn>
+        </div>
         <form onSubmit={(e) => void agendar(e)} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 10, alignItems: "end", marginBottom: 12 }}>
           <div>
             <FieldLabel>Template</FieldLabel>
@@ -136,11 +181,38 @@ export default function RelatoriosPage() {
           <Btn type="submit">Agendar</Btn>
         </form>
         {agends.map((a) => (
-          <div key={a.id} style={{ fontSize: 13, padding: "6px 0", borderTop: "1px solid oklch(0.94 0.005 255)" }}>
-            {a.template} · {a.frequencia} · {a.destinatarios.join(", ")}
-            {a.proximoEnvio && (
-              <span style={{ color: "oklch(0.5 0.02 250)" }}> · próximo {String(a.proximoEnvio).slice(0, 10)}</span>
-            )}
+          <div
+            key={a.id}
+            style={{
+              fontSize: 13,
+              padding: "8px 0",
+              borderTop: "1px solid oklch(0.94 0.005 255)",
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "center",
+            }}
+          >
+            <div>
+              {a.template} · {a.frequencia} · {a.destinatarios.join(", ")}
+              {a.proximoEnvio && (
+                <span style={{ color: "oklch(0.5 0.02 250)" }}> · próximo {String(a.proximoEnvio).slice(0, 10)}</span>
+              )}
+              {a.ultimoEnvio && (
+                <span style={{ color: "oklch(0.45 0.13 150)" }}>
+                  {" "}
+                  · último {String(a.ultimoEnvio).slice(0, 16)} ({a.ultimoStatus})
+                </span>
+              )}
+            </div>
+            <Btn
+              variant="ghost"
+              disabled={!!busy}
+              style={{ fontSize: 12, padding: "4px 10px" }}
+              onClick={() => void disparar(a.id)}
+            >
+              Enviar agora
+            </Btn>
           </div>
         ))}
       </Panel>

@@ -39,6 +39,14 @@ pnpm dev
 | tecnico@nexo.local | nexo1234 | Técnico |
 | solicitante@nexo.local | nexo1234 | Solicitante |
 
+No boot da API (`scripts/start-prod.mjs`) rodam automaticamente:
+
+1. `prisma migrate deploy`
+2. seed demo se não houver usuários (`SEED_ON_BOOT=true` força de novo)
+3. import de `apps/api/scripts/dados/equipamentos-reais.json` se ainda não carregado (`IMPORT_EQUIPAMENTOS_ON_BOOT=true` força)
+
+Não é necessário executar comandos manuais no Railway.
+
 ## Fases entregues (MVP)
 
 1. **Núcleo operacional** — Auth, shell, cadastros, equipamentos, OS, estoque, portal/triagem  

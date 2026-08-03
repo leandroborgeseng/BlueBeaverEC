@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { MODULOS } from "@nexo/shared";
 import { api } from "@/lib/api";
 import {
   Btn,
@@ -15,10 +16,12 @@ import {
   th,
 } from "@/components/ui/nexo-ui";
 
+const NIVEIS = ["NENHUM", "LEITURA", "EDICAO", "EDICAO_APROVACAO"] as const;
+
 export default function ConfigPage() {
   const [org, setOrg] = useState<{ nome: string; cnpj?: string | null; fusoHorario: string; slaUrgenteHoras: number } | null>(null);
   const [usuarios, setUsuarios] = useState<Array<{ id: string; perfil: string; usuario: { id: string; nome: string; email: string; ativo: boolean } }>>([]);
-  const [perfis, setPerfis] = useState<Array<{ id: string; nome: string; permissoes: Record<string, string> }>>([]);
+  const [perfis, setPerfis] = useState<Array<{ id: string; nome: string; permissoes: Record<string, string | number>; ativo?: boolean }>>([]);
   const [logs, setLogs] = useState<Array<{ id: string; acao: string; detalhe?: string | null; createdAt: string; usuario?: { nome: string } | null }>>([]);
   const [tab, setTab] = useState<"org" | "users" | "perfis" | "logs">("org");
   const [msg, setMsg] = useState<string | null>(null);
@@ -76,24 +79,25 @@ export default function ConfigPage() {
   async function createPerfil(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const permissoes: Record<string, string> = {};
+    for (const m of MODULOS) {
+      permissoes[m] = String(fd.get(m) || "NENHUM");
+    }
     await api("/config/perfis", {
       method: "POST",
       body: JSON.stringify({
         nome: String(fd.get("nome")),
-        permissoes: {
-          equipamentos: String(fd.get("equipamentos")),
-          os: String(fd.get("os")),
-          financeiro: String(fd.get("financeiro")),
-        },
+        permissoes,
       }),
     });
     e.currentTarget.reset();
+    setMsg("Perfil custom criado — use o mesmo nome do enum (ex.: ENGENHEIRO) para sobrescrever");
     await load();
   }
 
   return (
     <div>
-      <PageHeader title="Configurações" subtitle="Organização · usuários · perfis custom · logs de acesso" />
+      <PageHeader title="Configurações" subtitle="Organização · usuários · RBAC por módulo · logs de acesso" />
       {msg && <Err>{msg}</Err>}
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {([
@@ -185,23 +189,27 @@ export default function ConfigPage() {
       )}
 
       {tab === "perfis" && (
-        <Panel title="Perfis customizados">
-          <form onSubmit={(e) => void createPerfil(e)} style={{ display: "grid", gap: 10, marginBottom: 14, maxWidth: 520 }}>
+        <Panel title="Perfis customizados (RBAC por módulo)">
+          <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginBottom: 12 }}>
+            Nome igual ao enum do usuário (ex.: TECNICO) sobrescreve a matriz padrão na sessão JWT.
+          </p>
+          <form onSubmit={(e) => void createPerfil(e)} style={{ display: "grid", gap: 10, marginBottom: 14 }}>
             <div>
               <FieldLabel>Nome do perfil</FieldLabel>
-              <input name="nome" placeholder="Nome do perfil" required style={fieldStyle} />
+              <input name="nome" placeholder="ENGENHEIRO / TECNICO / …" required style={fieldStyle} />
             </div>
-            {(["equipamentos", "os", "financeiro"] as const).map((m) => (
-              <div key={m}>
-                <FieldLabel>{m}</FieldLabel>
-                <select name={m} style={fieldStyle}>
-                  <option value="NENHUM">Nenhum</option>
-                  <option value="LEITURA">Leitura</option>
-                  <option value="EDICAO">Edição</option>
-                  <option value="EDICAO_APROVACAO">Edição+Aprovação</option>
-                </select>
-              </div>
-            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
+              {MODULOS.map((m) => (
+                <div key={m}>
+                  <FieldLabel>{m}</FieldLabel>
+                  <select name={m} defaultValue="LEITURA" style={fieldStyle}>
+                    {NIVEIS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
             <Btn type="submit">Criar perfil</Btn>
           </form>
           <DataTable>

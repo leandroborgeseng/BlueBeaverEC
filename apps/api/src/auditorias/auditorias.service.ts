@@ -152,7 +152,7 @@ export class AuditoriasService {
       await this.prisma.logAcesso.create({
         data: {
           acao: "ESCALONAMENTO_PLANO_ACAO",
-          detalhe: `${p.naoConformidade.codigo} · plano ${p.id}`,
+          detalhe: `${estabelecimentoId} · ${p.naoConformidade.codigo} · plano ${p.id} · notificar gestor`,
         },
       });
     }

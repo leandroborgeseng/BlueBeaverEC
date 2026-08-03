@@ -1,7 +1,17 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
-import { IsBoolean, IsEnum, IsNumber, IsObject, IsOptional, IsString, MinLength } from "class-validator";
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator";
+import { PERMISSAO_NIVEL } from "@nexo/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { OrganizacaoConfigService } from "./organizacao-config.service";
 
@@ -59,11 +69,26 @@ class PerfilDto {
   nome!: string;
 
   @IsObject()
-  permissoes!: Record<string, string>;
+  permissoes!: Record<string, string | number>;
+}
+
+class PatchPerfilDto {
+  @IsOptional()
+  @IsString()
+  nome?: string;
+
+  @IsOptional()
+  @IsObject()
+  permissoes?: Record<string, string | number>;
+
+  @IsOptional()
+  @IsBoolean()
+  ativo?: boolean;
 }
 
 @Controller("config")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("config", PERMISSAO_NIVEL.LEITURA)
 export class OrganizacaoConfigController {
   constructor(private readonly config: OrganizacaoConfigService) {}
 
@@ -73,6 +98,7 @@ export class OrganizacaoConfigController {
   }
 
   @Patch("organizacao")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
   patchOrg(@CurrentUser() user: AuthUser, @Body() body: OrgDto) {
     return this.config.patchOrganizacao(user, body);
   }
@@ -83,11 +109,13 @@ export class OrganizacaoConfigController {
   }
 
   @Post("usuarios")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
   createUsuario(@CurrentUser() user: AuthUser, @Body() body: UsuarioDto) {
     return this.config.createUsuario(user, body);
   }
 
   @Patch("usuarios/:id")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
   patchUsuario(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PatchUsuarioDto) {
     return this.config.patchUsuario(user, id, body);
   }
@@ -98,8 +126,15 @@ export class OrganizacaoConfigController {
   }
 
   @Post("perfis")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
   createPerfil(@CurrentUser() user: AuthUser, @Body() body: PerfilDto) {
     return this.config.createPerfil(user, body);
+  }
+
+  @Patch("perfis/:id")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
+  patchPerfil(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PatchPerfilDto) {
+    return this.config.patchPerfil(user, id, body);
   }
 
   @Get("logs-acesso")

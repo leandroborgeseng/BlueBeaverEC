@@ -30,6 +30,9 @@ export default function ProcedimentosPage() {
   const [items, setItems] = useState<Proc[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editJson, setEditJson] = useState("");
+  const [editErro, setEditErro] = useState<string | null>(null);
 
   async function load() {
     const [p, m] = await Promise.all([
@@ -101,6 +104,36 @@ export default function ProcedimentosPage() {
     }
   }
 
+  function abrirEdicaoItens(p: Proc) {
+    setEditId(p.id);
+    setEditJson(JSON.stringify(p.itens ?? [], null, 2));
+    setEditErro(null);
+  }
+
+  async function salvarItens() {
+    if (!editId) return;
+    setEditErro(null);
+    let parsed: unknown[];
+    try {
+      parsed = JSON.parse(editJson) as unknown[];
+      if (!Array.isArray(parsed)) throw new Error("JSON deve ser um array");
+    } catch (err) {
+      setEditErro(err instanceof Error ? err.message : "JSON inválido");
+      return;
+    }
+    try {
+      await api(`/procedimentos-laudo/${editId}/itens`, {
+        method: "PATCH",
+        body: JSON.stringify({ itens: parsed }),
+      });
+      setMsg("Itens atualizados");
+      setEditId(null);
+      await load();
+    } catch (err) {
+      setEditErro(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
   return (
     <div>
       <PageHeader title="Procedimentos de Laudo" subtitle="Base reutilizável · vínculo exclusivo por modelo/tipo" />
@@ -165,6 +198,33 @@ export default function ProcedimentosPage() {
                     .map((m) => `${m.modelo.fabricante.nome} / ${m.modelo.nome}`)
                     .join(" · ")}
             </div>
+            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+              <Btn variant="ghost" size="sm" onClick={() => abrirEdicaoItens(p)}>
+                Editar itens (JSON)
+              </Btn>
+            </div>
+            {editId === p.id && (
+              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                <FieldLabel>Itens do checklist (JSON)</FieldLabel>
+                <textarea
+                  value={editJson}
+                  onChange={(e) => setEditJson(e.target.value)}
+                  rows={8}
+                  style={{ ...fieldStyle, fontFamily: "monospace", fontSize: 12 }}
+                />
+                {editErro && (
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.15 25)" }}>{editErro}</div>
+                )}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn size="sm" onClick={() => void salvarItens()}>
+                    Salvar itens
+                  </Btn>
+                  <Btn variant="ghost" size="sm" onClick={() => setEditId(null)}>
+                    Cancelar
+                  </Btn>
+                </div>
+              </div>
+            )}
           </Surface>
         ))}
       </div>

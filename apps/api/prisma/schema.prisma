@@ -257,6 +257,7 @@ model Equipamento {
   patrimonio         String?
   nSerie             String?
   dataAquisicao      DateTime?
+  dataInstalacao     DateTime?
   valorAquisicao     Decimal?             @db.Decimal(14, 2)
   valorSubstituicao  Decimal?             @db.Decimal(14, 2)
   situacao           SituacaoEquipamento  @default(ATIVO)
@@ -415,8 +416,35 @@ model EstoqueItem {
   estabelecimento Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   reservas        EstoqueReserva[]
   itensOS         OrdemServicoItem[]
+  movimentos      EstoqueMovimento[]
 
   @@unique([estabelecimentoId, codigo])
+}
+
+enum TipoMovimentoEstoque {
+  ENTRADA
+  SAIDA
+  RESERVA
+  BAIXA
+  LIBERACAO
+  REPOSICAO_SOLICITADA
+}
+
+model EstoqueMovimento {
+  id                 String               @id @default(cuid())
+  estabelecimentoId  String
+  estoqueItemId      String
+  tipo               TipoMovimentoEstoque
+  quantidade         Decimal              @db.Decimal(12, 2)
+  motivo             String?
+  osNumero           Int?
+  usuarioId          String?
+  createdAt          DateTime             @default(now())
+
+  estoqueItem EstoqueItem @relation(fields: [estoqueItemId], references: [id], onDelete: Cascade)
+
+  @@index([estabelecimentoId, createdAt])
+  @@index([estoqueItemId])
 }
 
 model EstoqueReserva {

@@ -81,20 +81,33 @@ export default function IndicadoresPage() {
       </div>
 
       {sel && hist && (
-        <Panel title={`${sel.nome} — 6 meses`}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 120 }}>
+        <Panel title={`${sel.nome} — histórico 6 meses`}>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 160, marginBottom: 8 }}>
             {hist.map((h) => {
               const max = Math.max(...hist.map((x) => x.valor), 1);
-              const hgt = Math.max(8, (h.valor / max) * 100);
+              const hgt = Math.max(12, (h.valor / max) * 120);
               return (
                 <div key={h.periodo} style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ height: 100, alignItems: "flex-end", display: "flex" }}>
-                    <div style={{ width: "100%", height: hgt, background: "oklch(0.64 0.19 38)", borderRadius: "6px 6px 0 0" }} title={String(h.valor)} />
+                  <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 4 }}>{h.valor}</div>
+                  <div style={{ height: 120, alignItems: "flex-end", display: "flex" }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: hgt,
+                        background: "linear-gradient(180deg, oklch(0.62 0.16 255), oklch(0.48 0.14 255))",
+                        borderRadius: "6px 6px 0 0",
+                        transition: "height 0.35s ease",
+                      }}
+                      title={`${h.periodo}: ${h.valor}`}
+                    />
                   </div>
-                  <div style={{ fontSize: 10, color: "oklch(0.5 0.02 250)" }}>{h.periodo.slice(5)}</div>
+                  <div style={{ fontSize: 10, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>{h.periodo.slice(5)}</div>
                 </div>
               );
             })}
+          </div>
+          <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+            Meta: {sel.meta ?? "—"} · tendência {sel.tendencia}
           </div>
         </Panel>
       )}

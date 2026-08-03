@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "fonte": "exemplo — substitua pelo JSON real extraído pelo Claude",
+    "totalLinhas": 2,
+    "totalEquipamentos": 2,
+    "avisos": []
+  },
+  "equipamentos": [
+    {
+      "tag": "EQ-0001",
+      "nome": "Monitor multiparamétrico",
+      "planoDescricao": "Monitor",
+      "fabricante": "Philips",
+      "modelo": "IntelliVue MX450",
+      "setor": "UTI Adulto",
+      "patrimonio": "PAT-1001",
+      "nSerie": "MX450-001",
+      "registroAnvisa": "10345678901",
+      "validadeAnvisa": "2028-12-31",
+      "dataAquisicao": "2019-08-12",
+      "dataInstalacao": "2019-09-01",
+      "valorAquisicao": 48500.0,
+      "situacao": "ATIVO",
+      "observacao": null,
+      "laudos": [
+        {
+          "tipo": "CALIBRACAO",
+          "dataExecucao": "2025-05-20",
+          "validadeAte": "2026-05-20",
+          "resultado": "APROVADO",
+          "pdfArquivo": "anexos/EQ-0001-calibracao.pdf"
+        },
+        {
+          "tipo": "TSE",
+          "dataExecucao": "2025-05-20",
+          "validadeAte": "2026-05-20",
+          "resultado": "APROVADO",
+          "pdfArquivo": "anexos/EQ-0001-tse.pdf"
+        }
+      ]
+    },
+    {
+      "tag": "EQ-0002",
+      "nome": "Ventilador pulmonar",
+      "planoDescricao": "Ventilador",
+      "fabricante": "Dräger",
+      "modelo": "Evita V300",
+      "setor": "UTI Neonatal",
+      "patrimonio": "PAT-1002",
+      "nSerie": "EV300-778",
+      "registroAnvisa": "80123456789",
+      "dataAquisicao": "2021-02-10",
+      "dataInstalacao": "2021-02-28",
+      "valorAquisicao": 92000.0,
+      "situacao": "ATIVO",
+      "laudos": [
+        {
+          "tipo": "CALIBRACAO",
+          "dataExecucao": "2025-01-15",
+          "validadeAte": "2026-01-15",
+          "resultado": "APROVADO",
+          "pdfArquivo": "anexos/EQ-0002-calibracao.pdf"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { api, downloadApi } from "@/lib/api";
 import {
   Badge,
   Btn,
@@ -144,6 +144,17 @@ export default function CertificadosPage() {
                 <div style={{ display: "flex", gap: 6 }}>
                   <Btn variant="ghost" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void consultar(c.id)}>
                     Documento
+                  </Btn>
+                  <Btn
+                    variant="ghost"
+                    style={{ padding: "6px 10px", fontSize: 12 }}
+                    onClick={() =>
+                      void downloadApi(`/certificados/${c.id}/documento.pdf`, { method: "GET" }, "certificado.pdf").catch(
+                        (err) => setErro(err instanceof Error ? err.message : "Erro ao baixar PDF"),
+                      )
+                    }
+                  >
+                    PDF
                   </Btn>
                   <Btn variant="secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void reabrir(c.id)}>
                     Reabrir

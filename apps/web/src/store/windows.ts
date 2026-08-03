@@ -44,6 +44,7 @@ interface WindowState {
   minimize: (id: string) => void;
   restore: (id: string) => void;
   move: (id: string, x: number, y: number) => void;
+  update: (id: string, patch: Partial<Pick<FloatingWin, "title" | "payload">>) => void;
 }
 
 let seq = 0;
@@ -84,5 +85,9 @@ export const useWindowStore = create<WindowState>((set) => ({
   move: (id, x, y) =>
     set((s) => ({
       windows: s.windows.map((w) => (w.id === id ? { ...w, x, y } : w)),
+    })),
+  update: (id, patch) =>
+    set((s) => ({
+      windows: s.windows.map((w) => (w.id === id ? { ...w, ...patch, payload: patch.payload ?? w.payload } : w)),
     })),
 }));

@@ -3,101 +3,115 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import type { ModuloPermissao } from "@nexo/shared";
+import { temPermissao } from "@nexo/shared";
+import { useSession } from "@/lib/session";
 import { ICONS, Icon, type IconKey } from "./icons";
 
-type FlyItem = { label: string; href: string; icon: IconKey; group?: boolean };
+type FlyItem = { label: string; href: string; icon: IconKey; group?: boolean; modulo?: ModuloPermissao };
 
 const RAIL: Array<{
   key: string;
   label: string;
   icon: IconKey;
   href?: string;
+  modulo?: ModuloPermissao;
   items?: FlyItem[];
 }> = [
-  { key: "dashboard", label: "Dashboard", icon: "dashboard", href: "/dashboard" },
+  { key: "dashboard", label: "Dashboard", icon: "dashboard", href: "/dashboard", modulo: "dashboard" },
   {
     key: "equip",
     label: "Equipamentos",
     icon: "equip",
+    modulo: "equipamentos",
     items: [
-      { label: "Equipamentos", href: "/equipamentos", icon: "equip" },
-      { label: "Ficha Vida do Equipamento", href: "/equipamentos", icon: "history" },
-      { label: "Plano de Descrições", href: "/cadastros", icon: "clipboard" },
-      { label: "Fabricantes", href: "/cadastros", icon: "factory" },
-      { label: "Modelos", href: "/cadastros", icon: "layers" },
-      { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "clipboard" },
-      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard" },
-      { label: "Certificados", href: "/certificados", icon: "clipboard" },
-      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true },
+      { label: "Equipamentos", href: "/equipamentos", icon: "equip", modulo: "equipamentos" },
+      { label: "Ficha Vida do Equipamento", href: "/equipamentos/ficha-vida", icon: "history", modulo: "equipamentos" },
+      { label: "Novo Laudo", href: "/laudos/novo", icon: "plus", modulo: "laudos" },
+      { label: "Plano de Descrições", href: "/cadastros", icon: "clipboard", modulo: "equipamentos" },
+      { label: "Fabricantes", href: "/cadastros", icon: "factory", modulo: "equipamentos" },
+      { label: "Modelos", href: "/cadastros", icon: "layers", modulo: "equipamentos" },
+      { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "clipboard", modulo: "laudos" },
+      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
+      { label: "Certificados", href: "/certificados", icon: "clipboard", modulo: "laudos" },
+      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
     ],
   },
   {
     key: "os",
     label: "Ordens de\nServiço",
     icon: "os",
+    modulo: "os",
     items: [
-      { label: "Ordens de Serviço", href: "/os", icon: "os" },
-      { label: "Quadro de Processos", href: "/os/quadro-processos", icon: "columns" },
-      { label: "Ordem de Serviço Rápida", href: "/os/rapida", icon: "plus" },
-      { label: "Abrir Ordem de Serviço", href: "/os/nova", icon: "plus" },
-      { label: "Triagem de Solicitações", href: "/os/triagem-solicitacoes", icon: "megaphone" },
-      { label: "Fila Não Atribuídas", href: "/os/nao-atribuidas", icon: "flag" },
-      { label: "Certificados de Calibração", href: "/certificados", icon: "clipboard" },
-      { label: "Auditoria de Ordens de Serviço", href: "/os/auditoria", icon: "users" },
+      { label: "Ordens de Serviço", href: "/os", icon: "os", modulo: "os" },
+      { label: "Quadro de Processos", href: "/os/quadro-processos", icon: "columns", modulo: "os" },
+      { label: "Ordem de Serviço Rápida", href: "/os/rapida", icon: "plus", modulo: "os" },
+      { label: "Abrir Ordem de Serviço", href: "/os/nova", icon: "plus", modulo: "os" },
+      { label: "Triagem de Solicitações", href: "/os/triagem-solicitacoes", icon: "megaphone", modulo: "os" },
+      { label: "Fila Não Atribuídas", href: "/os/nao-atribuidas", icon: "flag", modulo: "os" },
+      { label: "Certificados de Calibração", href: "/certificados", icon: "clipboard", modulo: "laudos" },
+      { label: "Auditoria de Ordens de Serviço", href: "/os/auditoria", icon: "users", modulo: "os" },
     ],
   },
   {
     key: "gestao",
     label: "Gestão da\nManutenção",
     icon: "gestao",
+    modulo: "contratos",
     items: [
-      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos" },
-      { label: "Colaboradores", href: "/pessoas", icon: "users" },
-      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard" },
-      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true },
+      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos", modulo: "contratos" },
+      { label: "Colaboradores", href: "/pessoas", icon: "users", modulo: "pessoas" },
+      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
+      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
     ],
   },
   {
     key: "evolucao",
     label: "Evolução\nEstratégica",
     icon: "evolucao",
+    modulo: "estrategico",
     items: [
-      { label: "Dashboard Executivo", href: "/gestao/dashboard-executivo", icon: "compass" },
-      { label: "Jornada de Evolução", href: "/gestao/jornada-evolucao", icon: "trend" },
-      { label: "Avaliação de Maturidade", href: "/gestao/avaliacao-maturidade", icon: "target" },
-      { label: "Central de Conformidade", href: "/gestao/conformidade", icon: "shield" },
-      { label: "Indicadores", href: "/gestao/indicadores", icon: "trend" },
-      { label: "Auditorias", href: "/auditorias", icon: "shield" },
-      { label: "CAPEX", href: "/gestao/capex", icon: "dollar" },
-      { label: "Relatórios", href: "/gestao/relatorios", icon: "clipboard" },
-      { label: "Configurações da Organização", href: "/config", icon: "settings" },
+      { label: "Dashboard Executivo", href: "/gestao/dashboard-executivo", icon: "compass", modulo: "estrategico" },
+      { label: "Jornada de Evolução", href: "/gestao/jornada-evolucao", icon: "trend", modulo: "estrategico" },
+      { label: "Avaliação de Maturidade", href: "/gestao/avaliacao-maturidade", icon: "target", modulo: "estrategico" },
+      { label: "Central de Conformidade", href: "/gestao/conformidade", icon: "shield", modulo: "estrategico" },
+      { label: "Indicadores", href: "/gestao/indicadores", icon: "trend", modulo: "estrategico" },
+      { label: "Auditorias", href: "/auditorias", icon: "shield", modulo: "auditorias" },
+      { label: "CAPEX", href: "/gestao/capex", icon: "dollar", modulo: "estrategico" },
+      { label: "Relatórios", href: "/gestao/relatorios", icon: "clipboard", modulo: "estrategico" },
+      { label: "Configurações da Organização", href: "/config", icon: "settings", modulo: "config" },
     ],
   },
   {
     key: "estoque",
     label: "Estoque",
     icon: "estoque",
+    modulo: "estoque",
     items: [
-      { label: "Itens em Estoque", href: "/estoque", icon: "archive" },
-      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true },
+      { label: "Itens em Estoque", href: "/estoque", icon: "archive", modulo: "estoque" },
+      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
     ],
   },
   {
     key: "financeiro",
     label: "Financeiro",
     icon: "financeiro",
+    modulo: "financeiro",
     items: [
-      { label: "Financeiro", href: "/financeiro", icon: "dollar" },
-      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos" },
+      { label: "Financeiro", href: "/financeiro", icon: "dollar", modulo: "financeiro" },
+      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos", modulo: "contratos" },
     ],
   },
   {
     key: "portal",
     label: "Portal do\nSolicitante",
     icon: "megaphone",
+    modulo: "portal",
     items: [
-      { label: "Abrir Solicitação de Serviço", href: "/portal/abrir-solicitacao", icon: "plus" },
-      { label: "App Campo (PWA)", href: "/mobile", icon: "equip" },
+      { label: "Abrir Solicitação de Serviço", href: "/portal/abrir-solicitacao", icon: "plus", modulo: "portal" },
+      { label: "Cronograma de Calibração", href: "/portal/cronograma", icon: "clipboard", modulo: "portal" },
+      { label: "Inventário do Setor", href: "/portal/inventario", icon: "equip", modulo: "portal" },
+      { label: "App Campo (PWA)", href: "/mobile", icon: "equip", modulo: "portal" },
     ],
   },
 ];
@@ -107,11 +121,37 @@ const ACCENT = "#ffffff";
 export function SideRail() {
   const pathname = usePathname();
   const router = useRouter();
+  const me = useSession();
   const [openRail, setOpenRail] = useState<string | null>(null);
+
+  const mapa = me?.permissoesModulos;
+  const can = (modulo?: ModuloPermissao) => {
+    if (!modulo) return true;
+    return temPermissao(mapa, modulo, 1);
+  };
+
+  const visibleRail = useMemo(
+    () =>
+      RAIL.map((r) => ({
+        ...r,
+        items: r.items?.filter((i) => can(i.modulo)),
+      })).filter((r) => {
+        if (r.href) return can(r.modulo);
+        return (r.items?.length ?? 0) > 0;
+      }),
+    [mapa],
+  );
 
   const activeCat = useMemo(() => {
     if (pathname.startsWith("/dashboard")) return "dashboard";
-    if (pathname.startsWith("/equipamentos") || pathname.startsWith("/cadastros") || pathname.startsWith("/procedimentos") || pathname.startsWith("/instrumentos") || pathname.startsWith("/certificados") || pathname.startsWith("/laudos"))
+    if (
+      pathname.startsWith("/equipamentos") ||
+      pathname.startsWith("/cadastros") ||
+      pathname.startsWith("/procedimentos") ||
+      pathname.startsWith("/instrumentos") ||
+      pathname.startsWith("/certificados") ||
+      pathname.startsWith("/laudos")
+    )
       return "equip";
     if (pathname.startsWith("/os")) return "os";
     if (pathname.startsWith("/contratos") || pathname.startsWith("/pessoas")) return "gestao";
@@ -155,7 +195,7 @@ export function SideRail() {
           title="Nexo"
         />
 
-        {RAIL.map((r) => {
+        {visibleRail.map((r) => {
           const active = openRail === r.key || activeCat === r.key;
           return (
             <button
@@ -209,10 +249,7 @@ export function SideRail() {
 
       {openRail && (
         <>
-          <div
-            onClick={() => setOpenRail(null)}
-            style={{ position: "fixed", inset: 0, zIndex: 28 }}
-          />
+          <div onClick={() => setOpenRail(null)} style={{ position: "fixed", inset: 0, zIndex: 28 }} />
           <div
             style={{
               position: "fixed",
@@ -228,7 +265,7 @@ export function SideRail() {
               padding: "8px 0",
             }}
           >
-            {(RAIL.find((x) => x.key === openRail)?.items ?? []).map((f) => {
+            {(visibleRail.find((x) => x.key === openRail)?.items ?? []).map((f) => {
               const selected = pathname === f.href;
               return (
                 <Link

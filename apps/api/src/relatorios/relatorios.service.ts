@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { FrequenciaRelatorio } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { EstrategicoService } from "../estrategico/estrategico.service";
@@ -108,10 +108,28 @@ export class RelatoriosService {
     };
   }
 
-  listAgendamentos(estabelecimentoId: string) {
-    return this.prisma.relatorioAgendamento.findMany({
+  async listAgendamentos(estabelecimentoId: string) {
+    const rows = await this.prisma.relatorioAgendamento.findMany({
       where: { estabelecimentoId },
       orderBy: { createdAt: "desc" },
+    });
+
+    const logs = await this.prisma.logAcesso.findMany({
+      where: {
+        acao: "RELATORIO_EMAIL_ENVIADO",
+        detalhe: { contains: estabelecimentoId },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
+    return rows.map((r) => {
+      const last = logs.find((l) => l.detalhe?.includes(r.id));
+      return {
+        ...r,
+        ultimoEnvio: last?.createdAt ?? null,
+        ultimoStatus: last ? "ENVIADO_STUB" : null,
+      };
     });
   }
 
@@ -119,10 +137,10 @@ export class RelatoriosService {
     user: AuthUser,
     body: { template: string; frequencia: FrequenciaRelatorio; destinatarios: string[] },
   ) {
-    const proximo = new Date();
-    if (body.frequencia === FrequenciaRelatorio.SEMANAL) proximo.setDate(proximo.getDate() + 7);
-    else if (body.frequencia === FrequenciaRelatorio.TRIMESTRAL) proximo.setMonth(proximo.getMonth() + 3);
-    else proximo.setMonth(proximo.getMonth() + 1);
+    if (!TEMPLATES.some((t) => t.codigo === body.template)) {
+      throw new BadRequestException(`Template inválido: ${body.template}`);
+    }
+    const proximo = this.nextDate(body.frequencia, new Date());
 
     return this.prisma.relatorioAgendamento.create({
       data: {
@@ -133,5 +151,67 @@ export class RelatoriosService {
         proximoEnvio: proximo,
       },
     });
+  }
+
+  private nextDate(freq: FrequenciaRelatorio, from: Date) {
+    const proximo = new Date(from);
+    if (freq === FrequenciaRelatorio.SEMANAL) proximo.setDate(proximo.getDate() + 7);
+    else if (freq === FrequenciaRelatorio.TRIMESTRAL) proximo.setMonth(proximo.getMonth() + 3);
+    else proximo.setMonth(proximo.getMonth() + 1);
+    return proximo;
+  }
+
+  /**
+   * Stub de envio por e-mail: gera o relatório, registra log e avança próximoEnvio.
+   * Sem SMTP — pronto para plugar provedor depois.
+   */
+  async disparar(user: AuthUser, id: string) {
+    const ag = await this.prisma.relatorioAgendamento.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId, ativo: true },
+    });
+    if (!ag) throw new NotFoundException("Agendamento não encontrado");
+
+    const out = await this.gerar(user.estabelecimentoId, ag.template, "pdf");
+    const size = out.formato === "pdf" ? out.buffer.length : 0;
+    const agora = new Date();
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "RELATORIO_EMAIL_ENVIADO",
+        detalhe: `${user.estabelecimentoId} · ag=${ag.id} · ${ag.template} → ${ag.destinatarios.join(", ")} · ${size}b · stub`,
+      },
+    });
+
+    await this.prisma.relatorioAgendamento.update({
+      where: { id: ag.id },
+      data: { proximoEnvio: this.nextDate(ag.frequencia, agora) },
+    });
+
+    return {
+      enviado: true,
+      stub: true,
+      template: ag.template,
+      destinatarios: ag.destinatarios,
+      bytes: size,
+      mensagem: `E-mail simulado para ${ag.destinatarios.length} destinatário(s)`,
+    };
+  }
+
+  async dispararPendentes(user: AuthUser) {
+    const agora = new Date();
+    const pendentes = await this.prisma.relatorioAgendamento.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        ativo: true,
+        OR: [{ proximoEnvio: null }, { proximoEnvio: { lte: agora } }],
+      },
+    });
+
+    const resultados = [];
+    for (const p of pendentes) {
+      resultados.push(await this.disparar(user, p.id));
+    }
+    return { processados: resultados.length, resultados };
   }
 }

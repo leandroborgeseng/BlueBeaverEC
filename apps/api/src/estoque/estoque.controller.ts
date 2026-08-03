@@ -90,6 +90,34 @@ class UpdateCompDto {
   osDestinoNumero?: number;
 }
 
+class EntradaDto {
+  @IsString()
+  itemCodigo!: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.01)
+  qtd!: number;
+
+  @IsOptional()
+  @IsString()
+  motivo?: string;
+}
+
+class ReposicaoDto {
+  @IsString()
+  itemCodigo!: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.01)
+  qtd!: number;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+}
+
 @Controller("estoque")
 @UseGuards(JwtAuthGuard)
 export class EstoqueController {
@@ -100,9 +128,19 @@ export class EstoqueController {
     return this.estoque.list(user.estabelecimentoId, q);
   }
 
+  @Get("movimentos")
+  movimentos(@CurrentUser() user: AuthUser, @Query("itemCodigo") itemCodigo?: string) {
+    return this.estoque.movimentos(user.estabelecimentoId, itemCodigo);
+  }
+
   @Post("itens")
   create(@CurrentUser() user: AuthUser, @Body() body: CreateItemDto) {
     return this.estoque.create(user, body);
+  }
+
+  @Post("entradas")
+  entrada(@CurrentUser() user: AuthUser, @Body() body: EntradaDto) {
+    return this.estoque.entrada(user, body.itemCodigo, body.qtd, body.motivo);
   }
 
   @Post("baixas")
@@ -113,6 +151,11 @@ export class EstoqueController {
   @Post("reservas")
   reservar(@CurrentUser() user: AuthUser, @Body() body: ReservaDto) {
     return this.estoque.reservar(user, body.itemCodigo, body.qtd, body.osNumero);
+  }
+
+  @Post("reposicoes")
+  reposicao(@CurrentUser() user: AuthUser, @Body() body: ReposicaoDto) {
+    return this.estoque.solicitarRepos(user, body.itemCodigo, body.qtd, body.observacao);
   }
 
   @Get("componentes-recuperados")

@@ -1,5 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { TipoMovimentoEstoque } from "@prisma/client";
 import { podeEditarCadastros } from "@nexo/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
@@ -48,6 +48,20 @@ export class EstoqueService {
     return withReserva;
   }
 
+  async movimentos(estabelecimentoId: string, itemCodigo?: string) {
+    return this.prisma.estoqueMovimento.findMany({
+      where: {
+        estabelecimentoId,
+        ...(itemCodigo
+          ? { estoqueItem: { codigo: { equals: itemCodigo, mode: "insensitive" } } }
+          : {}),
+      },
+      include: { estoqueItem: { select: { codigo: true, descricao: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    });
+  }
+
   async create(
     user: AuthUser,
     data: {
@@ -60,41 +74,62 @@ export class EstoqueService {
     },
   ) {
     if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
-    return this.prisma.estoqueItem.create({
-      data: {
-        estabelecimentoId: user.estabelecimentoId,
-        codigo: data.codigo.trim(),
-        descricao: data.descricao.trim(),
-        almoxarifado: data.almoxarifado ?? "Principal",
-        qtdAtual: data.qtdAtual ?? 0,
-        qtdMinima: data.qtdMinima ?? 0,
-        valorUnitario: data.valorUnitario ?? 0,
-      },
+    const qtd = data.qtdAtual ?? 0;
+    return this.prisma.$transaction(async (tx) => {
+      const item = await tx.estoqueItem.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          codigo: data.codigo.trim(),
+          descricao: data.descricao.trim(),
+          almoxarifado: data.almoxarifado ?? "Principal",
+          qtdAtual: qtd,
+          qtdMinima: data.qtdMinima ?? 0,
+          valorUnitario: data.valorUnitario ?? 0,
+        },
+      });
+      if (qtd > 0) {
+        await tx.estoqueMovimento.create({
+          data: {
+            estabelecimentoId: user.estabelecimentoId,
+            estoqueItemId: item.id,
+            tipo: TipoMovimentoEstoque.ENTRADA,
+            quantidade: qtd,
+            motivo: "Saldo inicial",
+            usuarioId: user.userId,
+          },
+        });
+      }
+      return item;
+    });
+  }
+
+  async entrada(user: AuthUser, itemCodigo: string, qtd: number, motivo?: string) {
+    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (qtd <= 0) throw new BadRequestException("Quantidade inválida");
+    const item = await this.findItem(user.estabelecimentoId, itemCodigo);
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.estoqueItem.update({
+        where: { id: item.id },
+        data: { qtdAtual: { increment: qtd } },
+      });
+      await tx.estoqueMovimento.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          estoqueItemId: item.id,
+          tipo: TipoMovimentoEstoque.ENTRADA,
+          quantidade: qtd,
+          motivo: motivo?.trim() || "Entrada manual",
+          usuarioId: user.userId,
+        },
+      });
+      return updated;
     });
   }
 
   async baixar(user: AuthUser, itemCodigo: string, qtd: number, osNumero: number) {
-    const item = await this.prisma.estoqueItem.findUnique({
-      where: {
-        estabelecimentoId_codigo: {
-          estabelecimentoId: user.estabelecimentoId,
-          codigo: itemCodigo,
-        },
-      },
-    });
-    if (!item) throw new NotFoundException("Item de estoque não encontrado");
+    const item = await this.findItem(user.estabelecimentoId, itemCodigo);
+    const os = await this.findOs(user.estabelecimentoId, osNumero);
 
-    const os = await this.prisma.ordemServico.findUnique({
-      where: {
-        estabelecimentoId_numero: {
-          estabelecimentoId: user.estabelecimentoId,
-          numero: osNumero,
-        },
-      },
-    });
-    if (!os) throw new NotFoundException("OS não encontrada");
-
-    // Baixa imediata — saldo negativo permitido
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.estoqueItem.update({
         where: { id: item.id },
@@ -110,44 +145,67 @@ export class EstoqueService {
           estoqueItemId: item.id,
         },
       });
+      await tx.estoqueMovimento.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          estoqueItemId: item.id,
+          tipo: TipoMovimentoEstoque.BAIXA,
+          quantidade: qtd,
+          motivo: `Baixa OS-${osNumero}`,
+          osNumero,
+          usuarioId: user.userId,
+        },
+      });
       return updated;
     });
   }
 
   async reservar(user: AuthUser, itemCodigo: string, qtd: number, osNumero: number) {
-    const item = await this.prisma.estoqueItem.findUnique({
-      where: {
-        estabelecimentoId_codigo: {
-          estabelecimentoId: user.estabelecimentoId,
-          codigo: itemCodigo,
-        },
-      },
-    });
-    if (!item) throw new NotFoundException("Item de estoque não encontrado");
+    const item = await this.findItem(user.estabelecimentoId, itemCodigo);
+    const os = await this.findOs(user.estabelecimentoId, osNumero);
 
-    const os = await this.prisma.ordemServico.findUnique({
-      where: {
-        estabelecimentoId_numero: {
-          estabelecimentoId: user.estabelecimentoId,
-          numero: osNumero,
+    return this.prisma.$transaction(async (tx) => {
+      const reserva = await tx.estoqueReserva.create({
+        data: {
+          estoqueItemId: item.id,
+          ordemServicoId: os.id,
+          quantidade: qtd,
+          ativa: true,
         },
-      },
-    });
-    if (!os) throw new NotFoundException("OS não encontrada");
-
-    return this.prisma.estoqueReserva.create({
-      data: {
-        estoqueItemId: item.id,
-        ordemServicoId: os.id,
-        quantidade: qtd,
-        ativa: true,
-      },
+      });
+      await tx.estoqueMovimento.create({
+        data: {
+          estabelecimentoId: user.estabelecimentoId,
+          estoqueItemId: item.id,
+          tipo: TipoMovimentoEstoque.RESERVA,
+          quantidade: qtd,
+          motivo: `Reserva OS-${osNumero}`,
+          osNumero,
+          usuarioId: user.userId,
+        },
+      });
+      return reserva;
     });
   }
 
-  async liberarReservasDaOs(ordemServicoId: string, tx?: Prisma.TransactionClient) {
-    const db = tx ?? this.prisma;
-    await db.estoqueReserva.updateMany({
+  async solicitarRepos(user: AuthUser, itemCodigo: string, qtd: number, observacao?: string) {
+    if (qtd <= 0) throw new BadRequestException("Quantidade inválida");
+    const item = await this.findItem(user.estabelecimentoId, itemCodigo);
+    return this.prisma.estoqueMovimento.create({
+      data: {
+        estabelecimentoId: user.estabelecimentoId,
+        estoqueItemId: item.id,
+        tipo: TipoMovimentoEstoque.REPOSICAO_SOLICITADA,
+        quantidade: qtd,
+        motivo: observacao?.trim() || "Solicitação de reposição",
+        usuarioId: user.userId,
+      },
+      include: { estoqueItem: { select: { codigo: true, descricao: true, qtdAtual: true, qtdMinima: true } } },
+    });
+  }
+
+  async liberarReservasDaOs(ordemServicoId: string) {
+    await this.prisma.estoqueReserva.updateMany({
       where: { ordemServicoId, ativa: true },
       data: { ativa: false },
     });
@@ -228,5 +286,21 @@ export class EstoqueService {
       },
       include: { equipamentoOrigem: true, equipamentoDestino: true },
     });
+  }
+
+  private async findItem(estabelecimentoId: string, itemCodigo: string) {
+    const item = await this.prisma.estoqueItem.findUnique({
+      where: { estabelecimentoId_codigo: { estabelecimentoId, codigo: itemCodigo } },
+    });
+    if (!item) throw new NotFoundException("Item de estoque não encontrado");
+    return item;
+  }
+
+  private async findOs(estabelecimentoId: string, osNumero: number) {
+    const os = await this.prisma.ordemServico.findUnique({
+      where: { estabelecimentoId_numero: { estabelecimentoId, numero: osNumero } },
+    });
+    if (!os) throw new NotFoundException("OS não encontrada");
+    return os;
   }
 }

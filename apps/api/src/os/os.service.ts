@@ -25,18 +25,33 @@ export class OsService {
 
   async list(
     estabelecimentoId: string,
-    query: { situacao?: StatusOS; q?: string; page?: number },
+    query: {
+      situacao?: StatusOS;
+      prioridade?: PrioridadeOS;
+      q?: string;
+      setor?: string;
+      oficina?: string;
+      atrasada?: boolean;
+      page?: number;
+      pageSize?: number;
+    },
   ) {
     const page = Math.max(1, query.page ?? 1);
-    const pageSize = 20;
+    const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
     const where: Prisma.OrdemServicoWhereInput = {
       estabelecimentoId,
       ...(query.situacao ? { status: query.situacao } : {}),
+      ...(query.prioridade ? { prioridade: query.prioridade } : {}),
+      ...(query.oficina ? { oficina: { contains: query.oficina, mode: "insensitive" } } : {}),
+      ...(query.setor
+        ? { equipamento: { setor: { nome: { contains: query.setor, mode: "insensitive" } } } }
+        : {}),
       ...(query.q
         ? {
             OR: [
               { codigo: { contains: query.q, mode: "insensitive" } },
               { equipamento: { tag: { contains: query.q, mode: "insensitive" } } },
+              { equipamento: { nome: { contains: query.q, mode: "insensitive" } } },
             ],
           }
         : {}),
@@ -56,15 +71,55 @@ export class OsService {
       }),
     ]);
 
+    let items = rows.map((os) => ({
+      ...os,
+      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+    }));
+    if (query.atrasada === true) {
+      items = items.filter((o) => o.atrasada);
+    }
+
     return {
-      total,
+      total: query.atrasada === true ? items.length : total,
       page,
       pageSize,
-      items: rows.map((os) => ({
-        ...os,
-        atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
-      })),
+      items,
     };
+  }
+
+  async getByNumero(estabelecimentoId: string, numero: number) {
+    const os = await this.prisma.ordemServico.findUnique({
+      where: { estabelecimentoId_numero: { estabelecimentoId, numero } },
+      include: {
+        equipamento: {
+          include: { setor: true, descricao: true, fabricante: true, modelo: true },
+        },
+        responsavel: true,
+        itens: { include: { estoqueItem: true } },
+        solicitacao: true,
+        logs: {
+          include: { usuario: { select: { nome: true, email: true } } },
+          orderBy: { createdAt: "desc" },
+          take: 30,
+        },
+      },
+    });
+    if (!os) throw new NotFoundException(`OS ${numero} não encontrada`);
+    return {
+      ...os,
+      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+    };
+  }
+
+  async updatePendencia(user: AuthUser, numero: number, pendencia: string | null) {
+    if (!podeAlterarStatusOS(user.perfil)) {
+      throw new ForbiddenException("Sem permissão para alterar pendência");
+    }
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    return this.prisma.ordemServico.update({
+      where: { id: os.id },
+      data: { pendencia: pendencia?.trim() || null },
+    });
   }
 
   async naoAtribuidas(estabelecimentoId: string) {

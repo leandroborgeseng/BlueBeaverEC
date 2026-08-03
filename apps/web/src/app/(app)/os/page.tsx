@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
 import {
@@ -13,7 +13,6 @@ import {
   FilterBar,
   PageHeader,
   PriorityBar,
-  ResultCount,
   fieldStyle,
   td,
   th,
@@ -31,39 +30,57 @@ interface OsRow {
   responsavel?: { nome: string } | null;
 }
 
+interface OsListResponse {
+  items: OsRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export default function OsPage() {
   const [items, setItems] = useState<OsRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
   const [erro, setErro] = useState<string | null>(null);
-  const [qNumero, setQNumero] = useState("");
-  const [qEquip, setQEquip] = useState("");
+  const [q, setQ] = useState("");
   const [qStatus, setQStatus] = useState("Todas");
   const [qPrio, setQPrio] = useState("Todas");
+  const [apenasAtrasadas, setApenasAtrasadas] = useState(false);
   const open = useWindowStore((s) => s.open);
 
-  useEffect(() => {
-    api<{ items: OsRow[] }>("/os")
-      .then((d) => setItems(d.items))
-      .catch((e) => setErro(e.message));
-  }, []);
+  const load = useCallback(async (pageOverride?: number) => {
+    const currentPage = pageOverride ?? page;
+    const params = new URLSearchParams();
+    if (q.trim()) params.set("q", q.trim());
+    if (qPrio !== "Todas") params.set("prioridade", qPrio);
+    if (qStatus === "ATRASADA" || apenasAtrasadas) params.set("atrasada", "1");
+    else if (qStatus !== "Todas") params.set("situacao", qStatus);
+    params.set("page", String(currentPage));
+    params.set("pageSize", String(pageSize));
 
-  const filtered = useMemo(() => {
-    return items.filter((os) => {
-      if (qNumero && !String(os.numero).includes(qNumero) && !os.codigo.includes(qNumero)) return false;
-      if (
-        qEquip &&
-        !os.equipamento.tag.toLowerCase().includes(qEquip.toLowerCase()) &&
-        !os.equipamento.nome.toLowerCase().includes(qEquip.toLowerCase())
-      )
-        return false;
-      if (qStatus !== "Todas" && os.status !== qStatus && !(qStatus === "ATRASADA" && os.atrasada))
-        return false;
-      if (qPrio !== "Todas" && os.prioridade !== qPrio) return false;
-      return true;
-    });
-  }, [items, qNumero, qEquip, qStatus, qPrio]);
+    try {
+      const data = await api<OsListResponse>(`/os?${params.toString()}`);
+      setItems(data.items);
+      setTotal(data.total);
+      setErro(null);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
+    }
+  }, [q, qStatus, qPrio, apenasAtrasadas, page, pageSize]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  function aplicarFiltros() {
+    setPage(1);
+    void load(1);
+  }
 
   const abertas = items.filter((o) => o.status !== "CONCLUIDA" && o.status !== "CANCELADA").length;
   const atrasadas = items.filter((o) => o.atrasada).length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div>
@@ -71,7 +88,7 @@ export default function OsPage() {
         title="Ordens de Serviço"
         subtitle={
           <span>
-            <strong>{abertas}</strong> abertas ·{" "}
+            <strong>{total}</strong> registro(s) · <strong>{abertas}</strong> abertas nesta página ·{" "}
             <span style={{ color: atrasadas ? "oklch(0.5 0.17 25)" : undefined, fontWeight: 700 }}>
               {atrasadas} atrasadas
             </span>
@@ -92,21 +109,13 @@ export default function OsPage() {
       {erro && <Err>{erro}</Err>}
 
       <FilterBar>
-        <div>
-          <FieldLabel>Nº OS</FieldLabel>
-          <input
-            value={qNumero}
-            onChange={(e) => setQNumero(e.target.value)}
-            placeholder="Ex: 20260272"
-            style={fieldStyle}
-          />
-        </div>
         <div style={{ gridColumn: "span 2" }}>
-          <FieldLabel>Equipamento</FieldLabel>
+          <FieldLabel>Busca (nº OS ou equipamento)</FieldLabel>
           <input
-            value={qEquip}
-            onChange={(e) => setQEquip(e.target.value)}
-            placeholder="Buscar equipamento…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && aplicarFiltros()}
+            placeholder="Ex: 20260272, EQ-0198, Monitor…"
             style={fieldStyle}
           />
         </div>
@@ -131,9 +140,28 @@ export default function OsPage() {
             <option value="CONCLUIDA">CONCLUÍDA</option>
           </select>
         </div>
+        <div>
+          <FieldLabel>&nbsp;</FieldLabel>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, height: 36 }}>
+            <input
+              type="checkbox"
+              checked={apenasAtrasadas}
+              onChange={(e) => setApenasAtrasadas(e.target.checked)}
+            />
+            Só atrasadas
+          </label>
+        </div>
+        <div>
+          <FieldLabel>&nbsp;</FieldLabel>
+          <Btn onClick={aplicarFiltros} style={{ width: "100%" }}>
+            Filtrar
+          </Btn>
+        </div>
       </FilterBar>
 
-      <ResultCount n={filtered.length} />
+      <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.5 0.02 250)", margin: "0 0 10px" }}>
+        {total} resultado(s) · página {page} de {totalPages}
+      </div>
 
       <DataTable>
         <thead>
@@ -146,14 +174,14 @@ export default function OsPage() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((os) => (
+          {items.map((os) => (
             <tr
               key={os.id}
               onClick={() =>
                 open({
                   kind: "os",
                   title: `${os.codigo} — ${os.equipamento.nome} · ${os.equipamento.tag}`,
-                  payload: os as unknown as Record<string, unknown>,
+                  payload: { numero: os.numero, codigo: os.codigo },
                 })
               }
               style={{ cursor: "pointer" }}
@@ -183,7 +211,7 @@ export default function OsPage() {
               <td style={td}>{os.responsavel?.nome ?? "—"}</td>
             </tr>
           ))}
-          {filtered.length === 0 && (
+          {items.length === 0 && (
             <tr>
               <td colSpan={5}>
                 <Empty />
@@ -192,6 +220,20 @@ export default function OsPage() {
           )}
         </tbody>
       </DataTable>
+
+      {totalPages > 1 && (
+        <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+          <Btn variant="ghost" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+            Anterior
+          </Btn>
+          <span style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
+            Página {page} / {totalPages}
+          </span>
+          <Btn variant="ghost" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+            Próxima
+          </Btn>
+        </div>
+      )}
 
       <div
         style={{

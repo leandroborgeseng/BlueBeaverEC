@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
+import { useWindowStore } from "@/store/windows";
 import {
   Btn,
   FieldLabel,
@@ -31,6 +32,7 @@ interface Inst {
 }
 
 export default function NovoLaudoPage() {
+  const openWindow = useWindowStore((s) => s.open);
   const [tipo, setTipo] = useState("PREVENTIVA");
   const [procs, setProcs] = useState<Proc[]>([]);
   const [cols, setCols] = useState<Colaborador[]>([]);
@@ -122,6 +124,11 @@ export default function NovoLaudoPage() {
       setLaudoId(laudo.id);
       setMsg(`${laudo.numero} salvo · resultado ${laudo.resultado}`);
       setRespostas(computed);
+      openWindow({
+        kind: "laudo",
+        title: `Laudo ${laudo.numero}`,
+        payload: { id: laudo.id },
+      });
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Erro");
     }
@@ -142,7 +149,24 @@ export default function NovoLaudoPage() {
 
   return (
     <div style={{ maxWidth: 820 }}>
-      <PageHeader title="Novo Laudo" subtitle="Recebimento · Preventiva · Calibração · TSE" />
+      <PageHeader
+        title="Novo Laudo"
+        subtitle="Recebimento · Preventiva · Calibração · TSE"
+        actions={
+          <Btn
+            variant="secondary"
+            onClick={() =>
+              openWindow({
+                kind: "laudo",
+                title: "Novo Laudo",
+                payload: { tipo, equipamentoTag: "EQ-0001" },
+              })
+            }
+          >
+            Abrir em janela
+          </Btn>
+        }
+      />
 
       <Surface>
         <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>

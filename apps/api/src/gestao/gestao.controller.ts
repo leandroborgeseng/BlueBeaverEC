@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { OrigemCapex, StatusCapex } from "@prisma/client";
 import { IsEnum, IsNumber, IsOptional, IsString, MinLength } from "class-validator";
+import { PERMISSAO_NIVEL } from "@nexo/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { GestaoService } from "./gestao.service";
 
@@ -49,8 +51,15 @@ class StatusDto {
   status!: StatusCapex;
 }
 
+class CapexAutoDto {
+  @IsOptional()
+  @IsNumber()
+  minScore?: number;
+}
+
 @Controller("gestao")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
 export class GestaoController {
   constructor(private readonly gestao: GestaoService) {}
 
@@ -79,12 +88,20 @@ export class GestaoController {
     return this.gestao.listCapex(user.estabelecimentoId);
   }
 
+  @Post("capex/gerar-automatico")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  gerarAuto(@CurrentUser() user: AuthUser, @Body() body: CapexAutoDto) {
+    return this.gestao.gerarCapexAutomatico(user, body.minScore ?? 40);
+  }
+
   @Post("capex")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   createCapex(@CurrentUser() user: AuthUser, @Body() body: CapexDto) {
     return this.gestao.createCapex(user, body);
   }
 
   @Patch("capex/:id")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   patchCapex(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: StatusDto) {
     return this.gestao.patchCapex(user, id, body.status);
   }

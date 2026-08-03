@@ -108,7 +108,11 @@ export class EquipamentosService {
       patrimonio?: string;
       nSerie?: string;
       dataAquisicao?: string;
+      dataInstalacao?: string;
       valorAquisicao?: number;
+      registroAnvisa?: string;
+      validadeAnvisa?: string;
+      observacao?: string;
       situacao?: SituacaoEquipamento;
     },
   ) {
@@ -129,7 +133,11 @@ export class EquipamentosService {
         patrimonio: data.patrimonio,
         nSerie: data.nSerie,
         dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
+        dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null,
         valorAquisicao: data.valorAquisicao,
+        registroAnvisa: data.registroAnvisa,
+        validadeAnvisa: data.validadeAnvisa ? new Date(data.validadeAnvisa) : null,
+        observacao: data.observacao,
         situacao: data.situacao ?? SituacaoEquipamento.ATIVO,
       },
       include: {
@@ -147,6 +155,8 @@ export class EquipamentosService {
     data: {
       nome?: string;
       setorId?: string;
+      fabricanteId?: string;
+      modeloId?: string;
       fornecedorId?: string | null;
       centroCustoId?: string | null;
       patrimonio?: string;
@@ -180,6 +190,8 @@ export class EquipamentosService {
       data: {
         ...(data.nome != null ? { nome: data.nome.trim() } : {}),
         ...(data.setorId != null ? { setorId: data.setorId } : {}),
+        ...(data.fabricanteId != null ? { fabricanteId: data.fabricanteId } : {}),
+        ...(data.modeloId != null ? { modeloId: data.modeloId } : {}),
         ...(data.fornecedorId !== undefined ? { fornecedorId: data.fornecedorId } : {}),
         ...(data.centroCustoId !== undefined ? { centroCustoId: data.centroCustoId } : {}),
         ...(data.patrimonio != null ? { patrimonio: data.patrimonio } : {}),
@@ -293,5 +305,173 @@ export class EquipamentosService {
       where: { id: eq.id },
       data: { situacao: SituacaoEquipamento.ATIVO },
     });
+  }
+
+  async importTemplate() {
+    const ExcelJS = (await import("exceljs")).default;
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Equipamentos");
+    ws.columns = [
+      { header: "tag", key: "tag", width: 14 },
+      { header: "nome", key: "nome", width: 28 },
+      { header: "planoDescricao", key: "planoDescricao", width: 22 },
+      { header: "fabricante", key: "fabricante", width: 18 },
+      { header: "modelo", key: "modelo", width: 18 },
+      { header: "setor", key: "setor", width: 18 },
+      { header: "patrimonio", key: "patrimonio", width: 14 },
+      { header: "nSerie", key: "nSerie", width: 14 },
+    ];
+    ws.getRow(1).font = { bold: true };
+    ws.addRow({
+      tag: "EQ-EXEMPLO",
+      nome: "Monitor multiparamétrico",
+      planoDescricao: "Monitor",
+      fabricante: "Philips",
+      modelo: "IntelliVue",
+      setor: "UTI Adulto",
+      patrimonio: "PAT-001",
+      nSerie: "SN-001",
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    return Buffer.from(buf);
+  }
+
+  async importRows(
+    user: AuthUser,
+    rows: Array<{
+      tag: string;
+      nome: string;
+      planoDescricao: string;
+      fabricante: string;
+      modelo: string;
+      setor: string;
+      patrimonio?: string;
+      nSerie?: string;
+      registroAnvisa?: string;
+      validadeAnvisa?: string;
+      dataAquisicao?: string;
+      dataInstalacao?: string;
+      valorAquisicao?: number;
+      observacao?: string;
+    }>,
+  ) {
+    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    const resultados: Array<{ tag: string; ok: boolean; erro?: string }> = [];
+
+    for (const row of rows) {
+      const tag = String(row.tag ?? "").trim();
+      try {
+        if (!tag || !row.nome?.trim()) throw new BadRequestException("tag e nome obrigatórios");
+
+        const planoNome = String(row.planoDescricao ?? "Outros").trim() || "Outros";
+        const fabNome = String(row.fabricante ?? "Não informado").trim() || "Não informado";
+        const setorNome = String(row.setor ?? "Geral").trim() || "Geral";
+        const modeloNome = String(row.modelo ?? "Não informado").trim() || "Não informado";
+
+        const [plano, fab, setor] = await Promise.all([
+          this.prisma.planoDescricao.upsert({
+            where: {
+              estabelecimentoId_nome: {
+                estabelecimentoId: user.estabelecimentoId,
+                nome: planoNome,
+              },
+            },
+            update: {},
+            create: {
+              estabelecimentoId: user.estabelecimentoId,
+              nome: planoNome,
+              vidaUtilAnos: 10,
+            },
+          }),
+          this.prisma.fabricante.upsert({
+            where: {
+              estabelecimentoId_nome: {
+                estabelecimentoId: user.estabelecimentoId,
+                nome: fabNome,
+              },
+            },
+            update: {},
+            create: { estabelecimentoId: user.estabelecimentoId, nome: fabNome },
+          }),
+          this.prisma.setor.upsert({
+            where: {
+              estabelecimentoId_nome: {
+                estabelecimentoId: user.estabelecimentoId,
+                nome: setorNome,
+              },
+            },
+            update: {},
+            create: { estabelecimentoId: user.estabelecimentoId, nome: setorNome },
+          }),
+        ]);
+
+        const modelo = await this.prisma.modelo.upsert({
+          where: { fabricanteId_nome: { fabricanteId: fab.id, nome: modeloNome } },
+          update: {},
+          create: { fabricanteId: fab.id, nome: modeloNome },
+        });
+
+        const existing = await this.prisma.equipamento.findUnique({
+          where: {
+            estabelecimentoId_tag: {
+              estabelecimentoId: user.estabelecimentoId,
+              tag,
+            },
+          },
+        });
+
+        if (existing) {
+          await this.update(user, tag, {
+            nome: String(row.nome).trim(),
+            patrimonio: row.patrimonio ? String(row.patrimonio) : undefined,
+            nSerie: row.nSerie ? String(row.nSerie) : undefined,
+            registroAnvisa: row.registroAnvisa,
+            validadeAnvisa: row.validadeAnvisa ?? null,
+            valorAquisicao: row.valorAquisicao,
+            observacao: row.observacao,
+          });
+          if (row.dataAquisicao || row.dataInstalacao) {
+            await this.prisma.equipamento.update({
+              where: { id: existing.id },
+              data: {
+                ...(row.dataAquisicao ? { dataAquisicao: new Date(row.dataAquisicao) } : {}),
+                ...(row.dataInstalacao ? { dataInstalacao: new Date(row.dataInstalacao) } : {}),
+              },
+            });
+          }
+        } else {
+          await this.create(user, {
+            tag,
+            nome: String(row.nome).trim(),
+            descricaoId: plano.id,
+            fabricanteId: fab.id,
+            modeloId: modelo.id,
+            setorId: setor.id,
+            patrimonio: row.patrimonio ? String(row.patrimonio) : undefined,
+            nSerie: row.nSerie ? String(row.nSerie) : undefined,
+            registroAnvisa: row.registroAnvisa,
+            validadeAnvisa: row.validadeAnvisa,
+            dataAquisicao: row.dataAquisicao,
+            dataInstalacao: row.dataInstalacao,
+            valorAquisicao: row.valorAquisicao,
+            observacao: row.observacao,
+          });
+        }
+        resultados.push({ tag, ok: true });
+      } catch (e) {
+        resultados.push({
+          tag: tag || "(vazio)",
+          ok: false,
+          erro: e instanceof Error ? e.message : "Erro",
+        });
+      }
+    }
+
+    return {
+      total: rows.length,
+      ok: resultados.filter((r) => r.ok).length,
+      erros: resultados.filter((r) => !r.ok),
+      resultados,
+    };
   }
 }

@@ -160,13 +160,23 @@ export class OsController {
   list(
     @CurrentUser() user: AuthUser,
     @Query("situacao") situacao?: StatusOS,
+    @Query("prioridade") prioridade?: PrioridadeOS,
     @Query("q") q?: string,
+    @Query("setor") setor?: string,
+    @Query("oficina") oficina?: string,
+    @Query("atrasada") atrasada?: string,
     @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
   ) {
     return this.os.list(user.estabelecimentoId, {
       situacao,
+      prioridade,
       q,
+      setor,
+      oficina,
+      atrasada: atrasada === "1" || atrasada === "true" ? true : undefined,
       page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 20,
     });
   }
 
@@ -192,6 +202,11 @@ export class OsController {
     return this.os.ativasDoEquipamento(user.estabelecimentoId, tag);
   }
 
+  @Get(":numero")
+  detalhe(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    return this.os.getByNumero(user.estabelecimentoId, Number(numero));
+  }
+
   @Get(":numero/log")
   log(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
     return this.os.log(user.estabelecimentoId, Number(numero));
@@ -214,6 +229,15 @@ export class OsController {
     @Body() body: AtribuirDto,
   ) {
     return this.os.atribuir(user, Number(numero), body.responsavelId);
+  }
+
+  @Patch(":numero/pendencia")
+  pendencia(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: { pendencia?: string | null },
+  ) {
+    return this.os.updatePendencia(user, Number(numero), body.pendencia ?? null);
   }
 
   @Patch(":numero/status")

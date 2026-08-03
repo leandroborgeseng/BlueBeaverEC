@@ -22,6 +22,7 @@ import { FinanceiroModule } from "./financeiro/financeiro.module";
 import { GestaoModule } from "./gestao/gestao.module";
 import { RelatoriosModule } from "./relatorios/relatorios.module";
 import { ConfigAppModule } from "./config/config.module";
+import { PortalModule } from "./portal/portal.module";
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ConfigAppModule } from "./config/config.module";
     GestaoModule,
     RelatoriosModule,
     ConfigAppModule,
+    PortalModule,
   ],
 })
 export class AppModule {}

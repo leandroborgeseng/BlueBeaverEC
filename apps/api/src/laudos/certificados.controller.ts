@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { TipoLaudo } from "@prisma/client";
 import { IsString, MinLength } from "class-validator";
+import type { Response } from "express";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { LaudosService } from "./laudos.service";
+import { buildPdfBuffer } from "../relatorios/report-export";
 
 class ReabrirDto {
   @IsString()
@@ -19,6 +21,25 @@ export class CertificadosController {
   @Get()
   list(@CurrentUser() user: AuthUser, @Query("tipo") tipo?: TipoLaudo) {
     return this.laudos.certificados(user.estabelecimentoId, tipo);
+  }
+
+  @Get(":id/documento.pdf")
+  async documentoPdf(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.laudos.certificadoDocumento(user.estabelecimentoId, id);
+    const pdf = await buildPdfBuffer({
+      template: "conformidade",
+      geradoEm: new Date().toISOString(),
+      certificado: doc.documento,
+      respostas: doc.documento.respostas,
+      status: doc.statusCertificado,
+    });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="certificado-${doc.numero ?? id}.pdf"`);
+    res.send(pdf);
   }
 
   @Get(":id/documento")
