@@ -56,7 +56,7 @@ interface EquipDetail {
   historicoTags?: HistoricoTag[];
 }
 
-type Tab = "geral" | "plano" | "regulatorio" | "historico";
+type Tab = "geral" | "plano" | "recebimento" | "regulatorio" | "historico";
 
 const tabStyle = (active: boolean): React.CSSProperties => ({
   padding: "8px 14px",
@@ -216,15 +216,17 @@ export function EquipamentoEditor({
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid oklch(0.91 0.006 255)", marginBottom: 4 }}>
-        {(["geral", "plano", "regulatorio", "historico"] as Tab[]).map((t) => (
+        {(["geral", "plano", "recebimento", "regulatorio", "historico"] as Tab[]).map((t) => (
           <button key={t} type="button" style={tabStyle(tab === t)} onClick={() => setTab(t)}>
             {t === "geral"
               ? "Geral"
               : t === "plano"
                 ? "Plano / POP"
-                : t === "regulatorio"
-                  ? "Regulatório"
-                  : "Histórico TAG"}
+                : t === "recebimento"
+                  ? "Recebimento"
+                  : t === "regulatorio"
+                    ? "Regulatório"
+                    : "Histórico TAG"}
           </button>
         ))}
       </div>
@@ -462,6 +464,39 @@ export function EquipamentoEditor({
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {tab === "recebimento" && (
+        <div style={{ display: "grid", gap: 12 }}>
+          <div style={{ fontSize: 13 }}>
+            Status:{" "}
+            {data.checklistRecebimentoPendente ? (
+              <Badge tone="warning">Pendente</Badge>
+            ) : (
+              <Badge tone="success">Concluído</Badge>
+            )}
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: "oklch(0.45 0.02 250)", lineHeight: 1.45 }}>
+            O checklist de recebimento é um laudo do tipo RECEBIMENTO. Ao salvar o laudo aprovado, a
+            pendência deste equipamento é encerrada automaticamente.
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Btn
+              onClick={() =>
+                open({
+                  kind: "laudo",
+                  title: `Recebimento · ${tag}`,
+                  payload: { tipo: "RECEBIMENTO", equipamentoTag: tag },
+                })
+              }
+            >
+              {data.checklistRecebimentoPendente ? "Preencher checklist" : "Abrir novo recebimento"}
+            </Btn>
+            <Btn href={`/laudos?tag=${encodeURIComponent(tag)}`} variant="secondary">
+              Ver laudos do equipamento
+            </Btn>
+          </div>
         </div>
       )}
 

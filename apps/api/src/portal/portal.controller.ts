@@ -1,12 +1,15 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { TipoLaudo } from "@prisma/client";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { PrismaService } from "../prisma/prisma.service";
 import { SessionService } from "../session/session.service";
 
 @Controller("portal")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
 export class PortalController {
   constructor(
     private readonly prisma: PrismaService,

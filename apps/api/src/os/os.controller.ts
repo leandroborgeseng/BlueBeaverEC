@@ -124,8 +124,8 @@ class RapidaDto {
 }
 
 class StatusDto {
-  @IsIn(["fechar", "cancelar", "reabrir"])
-  acao!: "fechar" | "cancelar" | "reabrir";
+  @IsIn(["fechar", "cancelar", "reabrir", "iniciar", "pausar"])
+  acao!: "fechar" | "cancelar" | "reabrir" | "iniciar" | "pausar";
 
   @IsOptional()
   @IsString()

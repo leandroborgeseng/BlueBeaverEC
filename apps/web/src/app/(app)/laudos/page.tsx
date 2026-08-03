@@ -39,6 +39,12 @@ export default function LaudosPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const t = sp.get("tag");
+    if (t) setTag(t);
+  }, []);
+
   const load = useCallback(async () => {
     setBusy(true);
     setErro(null);

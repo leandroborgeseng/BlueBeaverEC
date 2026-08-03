@@ -370,14 +370,40 @@ export class OsService {
   async changeStatus(
     user: AuthUser,
     numero: number,
-    acao: "fechar" | "cancelar" | "reabrir",
+    acao: "fechar" | "cancelar" | "reabrir" | "iniciar" | "pausar",
     justificativa?: string,
   ) {
-    if (!podeAlterarStatusOS(user.perfil)) {
-      throw new ForbiddenException("Somente o Engenheiro pode alterar o status desta OS");
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para alterar o status desta OS");
     }
 
     const os = await this.findByNumero(user.estabelecimentoId, numero);
+
+    if (acao === "iniciar") {
+      if (os.status !== StatusOS.ABERTA && os.status !== StatusOS.NAO_ATRIBUIDA) {
+        throw new ConflictException("Só é possível iniciar OS aberta ou não atribuída");
+      }
+      return this.prisma.ordemServico.update({
+        where: { id: os.id },
+        data: {
+          status: StatusOS.EM_ANDAMENTO,
+          logs: { create: { usuarioId: user.userId, acao: "INICIO_EXECUCAO", justificativa } },
+        },
+      });
+    }
+
+    if (acao === "pausar") {
+      if (os.status !== StatusOS.EM_ANDAMENTO) {
+        throw new ConflictException("Só é possível pausar OS em andamento");
+      }
+      return this.prisma.ordemServico.update({
+        where: { id: os.id },
+        data: {
+          status: os.responsavelId ? StatusOS.ABERTA : StatusOS.NAO_ATRIBUIDA,
+          logs: { create: { usuarioId: user.userId, acao: "PAUSA", justificativa } },
+        },
+      });
+    }
 
     if (acao === "fechar") {
       if (os.pendencia?.trim()) {

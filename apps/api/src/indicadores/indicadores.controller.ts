@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { FormulaIndicador } from "@prisma/client";
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString, MinLength } from "class-validator";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { IndicadoresService } from "./indicadores.service";
 
@@ -28,6 +30,7 @@ class ConstrutorDto {
 
 @Controller("indicadores")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
 export class IndicadoresController {
   constructor(private readonly indicadores: IndicadoresService) {}
 

@@ -16,3 +16,11 @@ uploads
 *.tsbuildinfo
 .venv-pdf
 apps/api/scripts/dados/pops-biblioteca/_preview
+
+# extratos/mappings duplicados na raiz (fonte canônica: apps/api/scripts/dados/)
+/equipamento_plano_mapping.json
+/planos_manutencao_referencia.json
+/nexo_extract.json
+/nexo_extract_v2.json
+/aion_extract.json
+/aion_extract_v2.json

@@ -116,7 +116,7 @@ async function main() {
     process.exit(1);
   }
   if (!existsSync(v2File)) {
-    console.error(`nexo_extract_v2.json não encontrado: ${v2File}`);
+    console.error(`aion_extract_v2.json não encontrado: ${v2File}`);
     process.exit(1);
   }
 

@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import { StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { SolicitacoesService } from "./solicitacoes.service";
 
@@ -50,6 +52,7 @@ class VincularDto {
 
 @Controller("solicitacoes")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("os", PERMISSAO_NIVEL.LEITURA)
 export class SolicitacoesController {
   constructor(private readonly solicitacoes: SolicitacoesService) {}
 
@@ -58,21 +61,25 @@ export class SolicitacoesController {
     return this.solicitacoes.list(user.estabelecimentoId, status);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateSolicitacaoDto) {
     return this.solicitacoes.create(user, body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post(":id/aprovar")
   aprovar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: AprovarDto) {
     return this.solicitacoes.aprovar(user, id, body.responsavelId);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post(":id/recusar")
   recusar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: RecusarDto) {
     return this.solicitacoes.recusar(user, id, body.justificativa);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Patch(":id/equipamento")
   vincular(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: VincularDto) {
     return this.solicitacoes.vincularEquipamento(user, id, body.equipamentoTag);

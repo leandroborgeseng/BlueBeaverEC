@@ -522,7 +522,9 @@ export function LaudoEditor({
             </>
           )}
 
-          {(displayTipo === "RECEBIMENTO" || displayTipo === "PREVENTIVA") && (
+          {(displayTipo === "RECEBIMENTO" ||
+            displayTipo === "PREVENTIVA" ||
+            displayTipo === "QUALIFICACAO") && (
             <div>
               <FieldLabel>Nome do técnico</FieldLabel>
               {viewMode ? (

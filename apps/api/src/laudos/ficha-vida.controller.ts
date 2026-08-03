@@ -1,10 +1,13 @@
 import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { LaudosService } from "./laudos.service";
 
 @Controller("equipamentos")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("equipamentos", PERMISSAO_NIVEL.LEITURA)
 export class FichaVidaController {
   constructor(private readonly laudos: LaudosService) {}
 
