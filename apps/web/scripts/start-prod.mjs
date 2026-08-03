@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Start Next em produção com host/porta que o Railway espera.
- * Evita expansão de ${PORT} quebrada e o modo standalone do monorepo.
+ * Start Next em produção.
+ * NÃO usar process.env.HOSTNAME — no Railway ele é o nome do container
+ * (ex.: 578165a7528b), e o edge proxy não alcança → 502.
  */
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -9,16 +10,16 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = String(process.env.PORT || "3000");
-const hostname = process.env.HOSTNAME || "0.0.0.0";
+// Só LISTEN_HOST / HOST override; ignora HOSTNAME do container.
+const listenHost = process.env.LISTEN_HOST || process.env.HOST || "0.0.0.0";
 
-process.env.HOSTNAME = hostname;
 process.env.PORT = port;
 
-console.log(`[nexo/web] starting next on ${hostname}:${port}`);
+console.log(`[nexo/web] starting next on ${listenHost}:${port}`);
 
 const child = spawn(
   "pnpm",
-  ["exec", "next", "start", "--hostname", hostname, "--port", port],
+  ["exec", "next", "start", "--hostname", listenHost, "--port", port],
   {
     cwd: root,
     env: process.env,
