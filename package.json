@@ -3,13 +3,13 @@
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "scripts": {
-    "dev": "pnpm -r --parallel --filter @aion/api --filter @aion/web dev",
-    "dev:api": "pnpm --filter @aion/api dev",
-    "dev:web": "pnpm --filter @aion/web dev",
-    "build": "pnpm --filter @aion/shared build && pnpm --filter @aion/api build && pnpm --filter @aion/web build",
-    "db:generate": "pnpm --filter @aion/api prisma:generate",
-    "db:migrate": "pnpm --filter @aion/api prisma:migrate",
-    "db:seed": "pnpm --filter @aion/api prisma:seed",
+    "dev": "pnpm -r --parallel --filter @nexo/api --filter @nexo/web dev",
+    "dev:api": "pnpm --filter @nexo/api dev",
+    "dev:web": "pnpm --filter @nexo/web dev",
+    "build": "pnpm --filter @aion/shared build && pnpm --filter @nexo/api build && pnpm --filter @nexo/web build",
+    "db:generate": "pnpm --filter @nexo/api prisma:generate",
+    "db:migrate": "pnpm --filter @nexo/api prisma:migrate",
+    "db:seed": "pnpm --filter @nexo/api prisma:seed",
     "lint": "pnpm -r lint"
   },
   "engines": {

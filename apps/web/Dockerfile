@@ -19,7 +19,7 @@ COPY apps/web ./apps/web
 # Mantém o workspace pnpm válido (apps/*) sem copiar a api inteira
 COPY apps/api/package.json ./apps/api/package.json
 RUN pnpm --filter @aion/shared build
-RUN pnpm --filter @aion/web build
+RUN pnpm --filter @nexo/web build
 
 FROM base AS runner
 WORKDIR /app

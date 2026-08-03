@@ -30,7 +30,7 @@ export default function LoginPage() {
       const target = API_URL || "/api (proxy)";
       setErro(
         /load failed|failed to fetch|networkerror/i.test(msg)
-          ? `Sem conexão com a API (${target}). Confira se @aion/api está online e se o web tem API_INTERNAL_URL.`
+          ? `Sem conexão com a API (${target}). Confira se a API (@nexo/api) está online e se o web tem API_INTERNAL_URL.`
           : msg,
       );
     } finally {

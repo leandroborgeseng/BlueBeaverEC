@@ -1,9 +1,7 @@
 # Railway — serviço API
+# Package do monorepo: @nexo/api (o serviço Railway aponta para este nome)
 # Root Directory: raiz do monorepo (vazio)
-# Build → Dockerfile path: apps/api/Dockerfile
-#
-# NÃO configure Custom Start com `pnpm --filter @nexo/...`
-# (pacotes renomeados para @aion/*). Deixe o CMD do Dockerfile.
+# Preferir Dockerfile: apps/api/Dockerfile
 
 [build]
 builder = "DOCKERFILE"

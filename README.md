@@ -80,20 +80,23 @@ O compose sobe `db` + `api` + `web`. A API aplica migrations no start.
 
 ## Deploy no Railway
 
-Dois serviços a partir da **raiz do monorepo** (não use Root Directory `apps/api` / `apps/web`).
+Dois serviços a partir da **raiz do monorepo** (Root Directory vazio).
 
-| Serviço | Dockerfile | Start |
-|---------|------------|-------|
-| API | `apps/api/Dockerfile` | `node scripts/start-prod.mjs` (já no Dockerfile) |
-| Web | `apps/web/Dockerfile` | `node scripts/start-prod.mjs` (já no Dockerfile) |
+| Serviço | Package (Railway) | Dockerfile |
+|---------|-------------------|------------|
+| Web | `@nexo/web` | `apps/web/Dockerfile` |
+| API | `@nexo/api` | `apps/api/Dockerfile` |
 
-**Importante após o rebrand Aion:** se o Custom Start/Build ainda tiver `pnpm --filter @nexo/api` ou `@nexo/web`, o container falha com:
+Os nomes `@nexo/web` / `@nexo/api` são só o **package name** do monorepo (Railway já aponta para eles). A marca do produto continua **Aion**; o shared é `@aion/shared`.
 
-```text
-No projects matched the filters in "/app"
+Preferível: build via Dockerfile (CMD já inicia a app). Se usar Nixpacks/custom start:
+
+```bash
+pnpm --filter @nexo/web start
+pnpm --filter @nexo/api start
 ```
 
-Troque para `@aion/api` / `@aion/web`, ou remova o custom command e use só o Dockerfile (recomendado).
+**Não** use `@aion/web` / `@aion/api` no filtro do Railway — esses nomes não existem como package.
 
 ## Docs de produto
 
