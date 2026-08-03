@@ -8,12 +8,21 @@ import { JwtStrategy } from "./jwt.strategy";
 import { PermissionsGuard } from "./permissions.guard";
 import { PrismaModule } from "../prisma/prisma.module";
 
+function resolveJwtSecret() {
+  const secret = process.env.JWT_SECRET?.trim();
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET é obrigatório em produção");
+  }
+  return "dev-secret-change-me";
+}
+
 @Module({
   imports: [
     PrismaModule,
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? "dev-secret-change-me",
+      secret: resolveJwtSecret(),
       signOptions: { expiresIn: "12h" },
     }),
   ],

@@ -105,16 +105,18 @@ export function KpiCard({
   value,
   hint,
   tone = "neutral",
-  ringPct = 72,
+  ringPct,
 }: {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
   tone?: "neutral" | "danger" | "success" | "warning" | "info";
+  /** Só exibe anel quando for métrica real 0–100 (sem default decorativo). */
   ringPct?: number;
 }) {
   const ringColor = TONE_RING[tone] ?? TONE_RING.neutral;
-  const pct = Math.max(0, Math.min(100, ringPct));
+  const showRing = typeof ringPct === "number" && Number.isFinite(ringPct);
+  const pct = showRing ? Math.max(0, Math.min(100, ringPct)) : 0;
   return (
     <Surface
       style={{
@@ -124,26 +126,36 @@ export function KpiCard({
         alignItems: "center",
       }}
     >
-      <div
-        style={{
-          width: 52,
-          height: 52,
-          borderRadius: "50%",
-          flexShrink: 0,
-          background: `conic-gradient(${ringColor} ${pct * 3.6}deg, oklch(0.94 0.003 255) 0deg)`,
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
+      {showRing && (
         <div
           style={{
-            width: 38,
-            height: 38,
+            width: 52,
+            height: 52,
             borderRadius: "50%",
-            background: "white",
+            flexShrink: 0,
+            background: `conic-gradient(${ringColor} ${pct * 3.6}deg, oklch(0.94 0.003 255) 0deg)`,
+            display: "grid",
+            placeItems: "center",
           }}
-        />
-      </div>
+          aria-hidden
+        >
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              background: "white",
+              fontSize: 11,
+              fontWeight: 700,
+              display: "grid",
+              placeItems: "center",
+              color: ringColor,
+            }}
+          >
+            {Math.round(pct)}%
+          </div>
+        </div>
+      )}
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{label}</div>
         <div
@@ -342,10 +354,12 @@ export const formFieldStyle: CSSProperties = {
   borderRadius: 8,
 };
 
-export function FieldLabel({ children }: { children: ReactNode }) {
+export function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: ReactNode }) {
   return (
-    <div
+    <label
+      htmlFor={htmlFor}
       style={{
+        display: "block",
         fontSize: 11.5,
         fontWeight: 600,
         color: "oklch(0.5 0.02 250)",
@@ -353,7 +367,7 @@ export function FieldLabel({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </div>
+    </label>
   );
 }
 
@@ -403,6 +417,24 @@ export const td: CSSProperties = {
 export function Empty({ text = "Nenhum registro encontrado." }: { text?: string }) {
   return (
     <div style={{ padding: "28px 12px", textAlign: "center", color: "oklch(0.55 0.02 250)", fontSize: 13 }}>
+      {text}
+    </div>
+  );
+}
+
+export function Loading({ text = "Carregando…" }: { text?: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        padding: "36px 12px",
+        textAlign: "center",
+        color: "oklch(0.5 0.02 250)",
+        fontSize: 13.5,
+        fontWeight: 600,
+      }}
+    >
       {text}
     </div>
   );

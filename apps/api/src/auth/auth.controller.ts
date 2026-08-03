@@ -2,6 +2,7 @@ import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
+import { Public } from "./permissions.guard";
 import type { Request } from "express";
 
 class LoginDto {
@@ -26,6 +27,7 @@ class SwitchDto {
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @Public()
   @Post("login")
   login(@Body() body: LoginDto) {
     return this.auth.login(body.email, body.senha, body.estabelecimentoId);

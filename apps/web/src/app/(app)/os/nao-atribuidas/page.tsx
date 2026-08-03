@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { OsFilasNav } from "@/components/os/OsFilasNav";
 import {
   Badge,
   Btn,
@@ -71,13 +72,14 @@ export default function NaoAtribuidasPage() {
   return (
     <div>
       <PageHeader
-        title="Fila Não Atribuídas"
+        title="Não atribuídas"
         subtitle={
           <span>
-            Ordenada por prioridade e abertura · <strong>{items.length}</strong> na fila
+            Fila · ordenada por prioridade e abertura · <strong>{items.length}</strong> na fila
           </span>
         }
       />
+      <OsFilasNav />
 
       {erro && <Err>{erro}</Err>}
       {msg && (

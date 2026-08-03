@@ -12,6 +12,7 @@ import {
   Err,
   FieldLabel,
   FilterBar,
+  Loading,
   PageHeader,
   fieldStyle,
   td,
@@ -167,10 +168,16 @@ export default function LaudosPage() {
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {busy ? (
             <tr>
               <td colSpan={8} style={td}>
-                <Empty text={busy ? "Carregando…" : "Nenhum laudo encontrado."} />
+                <Loading />
+              </td>
+            </tr>
+          ) : items.length === 0 ? (
+            <tr>
+              <td colSpan={8} style={td}>
+                <Empty text="Nenhum laudo encontrado." />
               </td>
             </tr>
           ) : (

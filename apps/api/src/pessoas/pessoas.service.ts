@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { StatusOS } from "@prisma/client";
-import { podeEditarCadastros } from "@aion/shared";
+import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -39,7 +39,7 @@ export class PessoasService {
     user: AuthUser,
     data: { matricula: string; nome: string; cargo?: string; registroProfissional?: string },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "pessoas")) throw new ForbiddenException();
     return this.prisma.colaborador.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
@@ -56,7 +56,7 @@ export class PessoasService {
     colaboradorId: string,
     data: { nome: string; nivel?: string; validade?: string },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "pessoas")) throw new ForbiddenException();
     const colab = await this.prisma.colaborador.findFirst({
       where: { id: colaboradorId, estabelecimentoId: user.estabelecimentoId },
     });
@@ -85,7 +85,7 @@ export class PessoasService {
     user: AuthUser,
     data: { nome: string; turno?: string; liderId?: string; membroIds?: string[] },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "pessoas")) throw new ForbiddenException();
     return this.prisma.equipe.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
@@ -101,7 +101,7 @@ export class PessoasService {
   }
 
   async addMembro(user: AuthUser, equipeId: string, colaboradorId: string) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "pessoas")) throw new ForbiddenException();
     const equipe = await this.prisma.equipe.findFirst({
       where: { id: equipeId, estabelecimentoId: user.estabelecimentoId },
     });

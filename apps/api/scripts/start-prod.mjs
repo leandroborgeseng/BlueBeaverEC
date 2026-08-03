@@ -48,6 +48,15 @@ if (!url) {
   process.exit(1);
 }
 
+const jwtSecret = process.env.JWT_SECRET?.trim();
+const weakSecrets = new Set(["", "change-me", "change-me-in-production", "dev-secret-change-me"]);
+if (!jwtSecret || weakSecrets.has(jwtSecret)) {
+  console.error(
+    "[aion] JWT_SECRET ausente ou fraco. Defina um segredo forte antes de subir a API em produção.",
+  );
+  process.exit(1);
+}
+
 process.env.DATABASE_URL = url;
 logTarget(url);
 

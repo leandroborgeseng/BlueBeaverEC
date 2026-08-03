@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import Link from "next/link";
 import {
   Btn,
   Err,
@@ -35,10 +36,10 @@ export default function NovaOsPage() {
   useEffect(() => {
     void Promise.all([
       api<Colaborador[]>("/colaboradores"),
-      api<EstoqueItem[]>("/estoque/itens"),
+      api<{ items: EstoqueItem[] }>("/estoque/itens?pageSize=100"),
     ]).then(([c, e]) => {
       setCols(c);
-      setPecas(e);
+      setPecas(e.items);
     });
   }, []);
 
@@ -90,7 +91,17 @@ export default function NovaOsPage() {
 
   return (
     <div style={{ maxWidth: 720 }}>
-      <PageHeader title="Abrir Ordem de Serviço" subtitle="Duplicidade não bloqueia · peça reserva estoque até fechar/cancelar" />
+      <PageHeader
+        title="Nova OS"
+        subtitle={
+          <span>
+            Duplicidade não bloqueia · peça reserva estoque até fechar/cancelar ·{" "}
+            <Link href="/os/rapida" style={{ color: "oklch(0.45 0.14 255)", fontWeight: 600 }}>
+              fluxo rápido
+            </Link>
+          </span>
+        }
+      />
 
       <Surface>
         <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>

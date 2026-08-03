@@ -3,21 +3,37 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { ModuloPermissao } from "@aion/shared";
-import { temPermissao } from "@aion/shared";
+import type { ModuloPermissao, NivelPermissao } from "@aion/shared";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { useSession } from "@/lib/session";
 import { ICONS, Icon, type IconKey } from "./icons";
 
-type FlyItem = { label: string; href: string; icon: IconKey; group?: boolean; modulo?: ModuloPermissao };
+type FlyItem = {
+  label: string;
+  href: string;
+  icon: IconKey;
+  group?: boolean;
+  modulo?: ModuloPermissao;
+  minNivel?: NivelPermissao;
+  /** Pathnames adicionais que marcam o item como ativo. */
+  match?: string[];
+};
 
-const RAIL: Array<{
+type RailItem = {
   key: string;
   label: string;
   icon: IconKey;
   href?: string;
   modulo?: ModuloPermissao;
+  minNivel?: NivelPermissao;
   items?: FlyItem[];
-}> = [
+};
+
+/**
+ * IA UX-1 — um dono por destino.
+ * Operação · Gestão · Estratégia · Admin · personas Portal vs Campo.
+ */
+const RAIL: RailItem[] = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard", href: "/dashboard", modulo: "dashboard" },
   {
     key: "equip",
@@ -26,17 +42,10 @@ const RAIL: Array<{
     modulo: "equipamentos",
     items: [
       { label: "Equipamentos", href: "/equipamentos", icon: "equip", modulo: "equipamentos" },
-      { label: "Ficha Vida do Equipamento", href: "/equipamentos/ficha-vida", icon: "history", modulo: "equipamentos" },
+      { label: "Ficha Vida", href: "/equipamentos/ficha-vida", icon: "history", modulo: "equipamentos" },
       { label: "Laudos", href: "/laudos", icon: "clipboard", modulo: "laudos" },
-      { label: "Pendentes de assinatura", href: "/laudos?resultado=PENDENTE_ASSINATURA", icon: "clipboard", modulo: "laudos" },
       { label: "Novo Laudo", href: "/laudos/novo", icon: "plus", modulo: "laudos" },
-      { label: "Plano de Descrições", href: "/cadastros?tab=planos", icon: "clipboard", modulo: "equipamentos" },
-      { label: "Fabricantes", href: "/cadastros?tab=fabricantes", icon: "factory", modulo: "equipamentos" },
-      { label: "Modelos", href: "/cadastros?tab=modelos", icon: "layers", modulo: "equipamentos" },
-      { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "clipboard", modulo: "laudos" },
-      { label: "Biblioteca de POPs", href: "/biblioteca-pops", icon: "folder", modulo: "laudos" },
-      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
-      { label: "Certificados", href: "/certificados", icon: "clipboard", modulo: "laudos" },
+      { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "layers", modulo: "laudos" },
       { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
     ],
   },
@@ -47,13 +56,15 @@ const RAIL: Array<{
     modulo: "os",
     items: [
       { label: "Ordens de Serviço", href: "/os", icon: "os", modulo: "os" },
-      { label: "Quadro de Processos", href: "/os/quadro-processos", icon: "columns", modulo: "os" },
-      { label: "Ordem de Serviço Rápida", href: "/os/rapida", icon: "plus", modulo: "os" },
-      { label: "Abrir Ordem de Serviço", href: "/os/nova", icon: "plus", modulo: "os" },
-      { label: "Triagem de Solicitações", href: "/os/triagem-solicitacoes", icon: "megaphone", modulo: "os" },
-      { label: "Fila Não Atribuídas", href: "/os/nao-atribuidas", icon: "flag", modulo: "os" },
-      { label: "Certificados de Calibração", href: "/certificados", icon: "clipboard", modulo: "laudos" },
-      { label: "Auditoria de Ordens de Serviço", href: "/os/auditoria", icon: "users", modulo: "os" },
+      {
+        label: "Filas",
+        href: "/os/filas",
+        icon: "columns",
+        modulo: "os",
+        match: ["/os/filas", "/os/quadro-processos", "/os/triagem-solicitacoes", "/os/nao-atribuidas"],
+      },
+      { label: "Nova OS", href: "/os/nova", icon: "plus", modulo: "os" },
+      { label: "Auditoria de OS", href: "/os/auditoria", icon: "users", modulo: "os" },
     ],
   },
   {
@@ -62,10 +73,17 @@ const RAIL: Array<{
     icon: "gestao",
     modulo: "contratos",
     items: [
-      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos", modulo: "contratos" },
+      { label: "Contratos", href: "/contratos", icon: "contratos", modulo: "contratos" },
       { label: "Colaboradores", href: "/pessoas", icon: "users", modulo: "pessoas" },
-      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
-      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
+      { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "target", modulo: "laudos" },
+      { label: "Certificados", href: "/certificados", icon: "shield", modulo: "laudos" },
+      { label: "Biblioteca de POPs", href: "/biblioteca-pops", icon: "folder", modulo: "laudos" },
+      {
+        label: "Cronograma de Manutenção",
+        href: "/gestao/cronograma-manutencao",
+        icon: "calendar",
+        modulo: "estrategico",
+      },
     ],
   },
   {
@@ -74,55 +92,48 @@ const RAIL: Array<{
     icon: "evolucao",
     modulo: "estrategico",
     items: [
-      { label: "Dashboard Executivo", href: "/gestao/dashboard-executivo", icon: "compass", modulo: "estrategico" },
       { label: "Jornada de Evolução", href: "/gestao/jornada-evolucao", icon: "trend", modulo: "estrategico" },
-      { label: "Avaliação de Maturidade", href: "/gestao/avaliacao-maturidade", icon: "target", modulo: "estrategico" },
-      { label: "Central de Conformidade", href: "/gestao/conformidade", icon: "shield", modulo: "estrategico" },
-      { label: "Biblioteca de POPs", href: "/biblioteca-pops", icon: "folder", modulo: "estrategico" },
+      { label: "Painel Executivo", href: "/gestao/dashboard-executivo", icon: "compass", modulo: "estrategico" },
+      { label: "Maturidade", href: "/gestao/avaliacao-maturidade", icon: "target", modulo: "estrategico" },
+      { label: "Conformidade", href: "/gestao/conformidade", icon: "shield", modulo: "estrategico" },
       { label: "Indicadores", href: "/gestao/indicadores", icon: "trend", modulo: "estrategico" },
-      { label: "Auditorias", href: "/auditorias", icon: "shield", modulo: "auditorias" },
+      { label: "Auditorias", href: "/auditorias", icon: "flag", modulo: "auditorias" },
       { label: "CAPEX", href: "/gestao/capex", icon: "dollar", modulo: "estrategico" },
       { label: "Relatórios", href: "/gestao/relatorios", icon: "clipboard", modulo: "estrategico" },
-      { label: "Cronograma de Manutenção", href: "/gestao/cronograma-manutencao", icon: "clipboard", modulo: "estrategico" },
       { label: "Mapeamento de Planos", href: "/gestao/mapeamento-planos", icon: "layers", modulo: "estrategico" },
-      { label: "Configurações da Organização", href: "/config", icon: "settings", modulo: "config" },
     ],
   },
-  {
-    key: "estoque",
-    label: "Estoque",
-    icon: "estoque",
-    modulo: "estoque",
-    items: [
-      { label: "Itens em Estoque", href: "/estoque", icon: "archive", modulo: "estoque" },
-      { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
-    ],
-  },
-  {
-    key: "financeiro",
-    label: "Financeiro",
-    icon: "financeiro",
-    modulo: "financeiro",
-    items: [
-      { label: "Financeiro", href: "/financeiro", icon: "dollar", modulo: "financeiro" },
-      { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos", modulo: "contratos" },
-    ],
-  },
+  { key: "estoque", label: "Estoque", icon: "estoque", href: "/estoque", modulo: "estoque" },
+  { key: "financeiro", label: "Financeiro", icon: "financeiro", href: "/financeiro", modulo: "financeiro" },
   {
     key: "portal",
-    label: "Portal do\nSolicitante",
+    label: "Portal\nSolicitante",
     icon: "megaphone",
     modulo: "portal",
     items: [
-      { label: "Abrir Solicitação de Serviço", href: "/portal/abrir-solicitacao", icon: "plus", modulo: "portal" },
-      { label: "Cronograma de Calibração", href: "/portal/cronograma", icon: "clipboard", modulo: "portal" },
+      { label: "Abrir Solicitação", href: "/portal/abrir-solicitacao", icon: "plus", modulo: "portal" },
+      { label: "Cronograma de Calibração", href: "/portal/cronograma", icon: "calendar", modulo: "portal" },
       { label: "Inventário do Setor", href: "/portal/inventario", icon: "equip", modulo: "portal" },
-      { label: "App Campo (PWA)", href: "/mobile", icon: "equip", modulo: "portal" },
     ],
   },
+  {
+    key: "campo",
+    label: "App\nCampo",
+    icon: "pin",
+    href: "/mobile",
+    modulo: "os",
+    minNivel: PERMISSAO_NIVEL.EDICAO,
+  },
+  { key: "config", label: "Config", icon: "settings", href: "/config", modulo: "config" },
 ];
 
 const ACCENT = "#ffffff";
+
+function flyItemActive(item: FlyItem, pathname: string) {
+  if (item.match?.includes(pathname)) return true;
+  const path = item.href.split("?")[0] ?? item.href;
+  return pathname === path;
+}
 
 export function SideRail() {
   const pathname = usePathname();
@@ -131,18 +142,18 @@ export function SideRail() {
   const [openRail, setOpenRail] = useState<string | null>(null);
 
   const mapa = me?.permissoesModulos;
-  const can = (modulo?: ModuloPermissao) => {
+  const can = (modulo?: ModuloPermissao, minNivel: NivelPermissao = PERMISSAO_NIVEL.LEITURA) => {
     if (!modulo) return true;
-    return temPermissao(mapa, modulo, 1);
+    return temPermissao(mapa, modulo, minNivel);
   };
 
   const visibleRail = useMemo(
     () =>
       RAIL.map((r) => ({
         ...r,
-        items: r.items?.filter((i) => can(i.modulo)),
+        items: r.items?.filter((i) => can(i.modulo, i.minNivel ?? PERMISSAO_NIVEL.LEITURA)),
       })).filter((r) => {
-        if (r.href) return can(r.modulo);
+        if (r.href) return can(r.modulo, r.minNivel ?? PERMISSAO_NIVEL.LEITURA);
         return (r.items?.length ?? 0) > 0;
       }),
     [mapa],
@@ -150,28 +161,31 @@ export function SideRail() {
 
   const activeCat = useMemo(() => {
     if (pathname.startsWith("/dashboard")) return "dashboard";
+    if (pathname.startsWith("/config")) return "config";
+    if (pathname.startsWith("/mobile")) return "campo";
+    if (pathname.startsWith("/portal")) return "portal";
     if (
       pathname.startsWith("/equipamentos") ||
       pathname.startsWith("/cadastros") ||
       pathname.startsWith("/procedimentos") ||
-      pathname.startsWith("/instrumentos") ||
-      pathname.startsWith("/certificados") ||
-      pathname.startsWith("/laudos") ||
-      pathname.startsWith("/biblioteca-pops")
-    )
+      pathname.startsWith("/laudos")
+    ) {
       return "equip";
+    }
     if (pathname.startsWith("/os")) return "os";
     if (
       pathname.startsWith("/contratos") ||
       pathname.startsWith("/pessoas") ||
+      pathname.startsWith("/instrumentos") ||
+      pathname.startsWith("/certificados") ||
+      pathname.startsWith("/biblioteca-pops") ||
       pathname.startsWith("/gestao/cronograma-manutencao")
-    )
+    ) {
       return "gestao";
-    if (pathname.startsWith("/gestao") || pathname.startsWith("/auditorias") || pathname.startsWith("/config"))
-      return "evolucao";
+    }
+    if (pathname.startsWith("/gestao") || pathname.startsWith("/auditorias")) return "evolucao";
     if (pathname.startsWith("/estoque")) return "estoque";
     if (pathname.startsWith("/financeiro")) return "financeiro";
-    if (pathname.startsWith("/portal") || pathname.startsWith("/mobile")) return "portal";
     return null;
   }, [pathname]);
 
@@ -209,10 +223,13 @@ export function SideRail() {
 
         {visibleRail.map((r) => {
           const active = openRail === r.key || activeCat === r.key;
+          const expanded = openRail === r.key && Boolean(r.items?.length);
           return (
             <button
               key={r.key}
               type="button"
+              aria-expanded={r.items ? expanded : undefined}
+              aria-controls={r.items ? `flyout-${r.key}` : undefined}
               onClick={() => {
                 if (r.href) {
                   setOpenRail(null);
@@ -244,10 +261,10 @@ export function SideRail() {
               <Icon d={ICONS[r.icon]} size={19} />
               <span
                 style={{
-                  fontSize: 9.5,
+                  fontSize: 11,
                   fontWeight: 600,
                   textAlign: "center",
-                  lineHeight: 1.25,
+                  lineHeight: 1.2,
                   whiteSpace: "pre-line",
                   letterSpacing: "0.01em",
                 }}
@@ -263,6 +280,9 @@ export function SideRail() {
         <>
           <div onClick={() => setOpenRail(null)} style={{ position: "fixed", inset: 0, zIndex: 28 }} />
           <div
+            id={`flyout-${openRail}`}
+            role="navigation"
+            aria-label={visibleRail.find((x) => x.key === openRail)?.label.replace("\n", " ")}
             style={{
               position: "fixed",
               top: 0,
@@ -278,12 +298,13 @@ export function SideRail() {
             }}
           >
             {(visibleRail.find((x) => x.key === openRail)?.items ?? []).map((f) => {
-              const selected = pathname === f.href;
+              const selected = flyItemActive(f, pathname);
               return (
                 <Link
                   key={`${f.href}-${f.label}`}
                   href={f.href}
                   onClick={() => setOpenRail(null)}
+                  aria-current={selected ? "page" : undefined}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "oklch(0.95 0.025 255)";
                   }}

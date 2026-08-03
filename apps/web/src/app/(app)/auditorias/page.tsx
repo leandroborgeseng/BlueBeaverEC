@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { FormDialog } from "@/components/ui/FormDialog";
 import {
   Badge,
   Btn,
@@ -41,6 +43,9 @@ export default function AuditoriasPage() {
   const [ncs, setNcs] = useState<Nc[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [fecharId, setFecharId] = useState<string | null>(null);
+  const [planoDraft, setPlanoDraft] = useState<{ id: string; descricao: string; prazo: string } | null>(null);
+  const [dialogErro, setDialogErro] = useState<string | null>(null);
 
   async function load() {
     const [a, n] = await Promise.all([api<Aud[]>("/auditorias"), api<Nc[]>("/nao-conformidades")]);
@@ -76,24 +81,12 @@ export default function AuditoriasPage() {
   }
 
   async function fechar(id: string) {
-    const justificativa = window.prompt("Justificativa de fechamento:");
-    if (!justificativa) return;
-    await api(`/nao-conformidades/${id}/fechar`, {
-      method: "POST",
-      body: JSON.stringify({ justificativa }),
-    });
-    await load();
+    setFecharId(id);
   }
 
   async function plano(id: string) {
-    const descricao = window.prompt("Plano de ação:");
-    const prazo = window.prompt("Prazo (YYYY-MM-DD):") || undefined;
-    if (!descricao) return;
-    await api(`/nao-conformidades/${id}/planos-acao`, {
-      method: "POST",
-      body: JSON.stringify({ descricao, prazo }),
-    });
-    await load();
+    setPlanoDraft({ id, descricao: "", prazo: "" });
+    setDialogErro(null);
   }
 
   async function escalonar() {
@@ -202,6 +195,71 @@ export default function AuditoriasPage() {
           {ncs.length === 0 && <Empty text="Nenhuma não conformidade aberta." />}
         </Panel>
       </div>
+
+      <ConfirmModal
+        open={Boolean(fecharId)}
+        title="Fechar NC"
+        message="Informe a justificativa de fechamento."
+        requireJustification
+        confirmLabel="Fechar"
+        onCancel={() => setFecharId(null)}
+        onConfirm={async (justificativa) => {
+          if (!fecharId) return;
+          await api(`/nao-conformidades/${fecharId}/fechar`, {
+            method: "POST",
+            body: JSON.stringify({ justificativa }),
+          });
+          setFecharId(null);
+          await load();
+        }}
+      />
+
+      <FormDialog
+        open={Boolean(planoDraft)}
+        title="Plano de ação"
+        confirmLabel="Salvar"
+        erro={dialogErro}
+        onCancel={() => setPlanoDraft(null)}
+        onConfirm={async () => {
+          if (!planoDraft?.descricao.trim()) {
+            setDialogErro("Descrição obrigatória");
+            return;
+          }
+          await api(`/nao-conformidades/${planoDraft.id}/planos-acao`, {
+            method: "POST",
+            body: JSON.stringify({
+              descricao: planoDraft.descricao.trim(),
+              prazo: planoDraft.prazo || undefined,
+            }),
+          });
+          setPlanoDraft(null);
+          await load();
+        }}
+      >
+        {planoDraft && (
+          <>
+            <div>
+              <FieldLabel htmlFor="plano-desc">Descrição</FieldLabel>
+              <input
+                id="plano-desc"
+                value={planoDraft.descricao}
+                onChange={(e) => setPlanoDraft({ ...planoDraft, descricao: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="plano-prazo">Prazo</FieldLabel>
+              <input
+                id="plano-prazo"
+                type="date"
+                value={planoDraft.prazo}
+                onChange={(e) => setPlanoDraft({ ...planoDraft, prazo: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+          </>
+        )}
+      </FormDialog>
     </div>
   );
 }

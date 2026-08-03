@@ -145,17 +145,33 @@ export class OsController {
 
   @Get("quadro-processos")
   async quadro(@CurrentUser() user: AuthUser) {
+    const pageSize = 100;
     const [abertas, andamento, concluidas, canceladas] = await Promise.all([
-      this.os.list(user.estabelecimentoId, { situacao: StatusOS.ABERTA, page: 1 }),
-      this.os.list(user.estabelecimentoId, { situacao: StatusOS.EM_ANDAMENTO, page: 1 }),
-      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CONCLUIDA, page: 1 }),
-      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CANCELADA, page: 1 }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.ABERTA, page: 1, pageSize }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.EM_ANDAMENTO, page: 1, pageSize }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CONCLUIDA, page: 1, pageSize }),
+      this.os.list(user.estabelecimentoId, { situacao: StatusOS.CANCELADA, page: 1, pageSize }),
     ]);
     return {
       ABERTA: abertas.items,
       EM_ANDAMENTO: andamento.items,
       CONCLUIDA: concluidas.items,
       CANCELADA: canceladas.items,
+      meta: {
+        pageSize,
+        truncated: {
+          ABERTA: abertas.total > pageSize,
+          EM_ANDAMENTO: andamento.total > pageSize,
+          CONCLUIDA: concluidas.total > pageSize,
+          CANCELADA: canceladas.total > pageSize,
+        },
+        totals: {
+          ABERTA: abertas.total,
+          EM_ANDAMENTO: andamento.total,
+          CONCLUIDA: concluidas.total,
+          CANCELADA: canceladas.total,
+        },
+      },
     };
   }
 

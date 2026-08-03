@@ -127,8 +127,18 @@ export class EstoqueController {
   constructor(private readonly estoque: EstoqueService) {}
 
   @Get("itens")
-  list(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
-    return this.estoque.list(user.estabelecimentoId, q);
+  list(
+    @CurrentUser() user: AuthUser,
+    @Query("q") q?: string,
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
+  ) {
+    return this.estoque.list(
+      user.estabelecimentoId,
+      q,
+      page ? Number(page) : 1,
+      pageSize ? Number(pageSize) : 50,
+    );
   }
 
   @Get("movimentos")

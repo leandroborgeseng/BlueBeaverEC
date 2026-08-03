@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { podeEditarCadastros } from "@aion/shared";
+import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -165,7 +165,7 @@ export class InstrumentosService {
   }
 
   async create(user: AuthUser, data: CreateInstrumentoInput) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "laudos")) throw new ForbiddenException();
     if (!data.nome?.trim() || !data.nSerie?.trim()) {
       throw new BadRequestException("Nome e nº de série obrigatórios");
     }
@@ -222,7 +222,7 @@ export class InstrumentosService {
     id: string,
     data: Partial<CreateInstrumentoInput> & { ativo?: boolean },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "laudos")) throw new ForbiddenException();
     const existing = await this.prisma.instrumentoPadrao.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });
@@ -260,7 +260,7 @@ export class InstrumentosService {
   }
 
   async addCertificado(user: AuthUser, instrumentoId: string, data: CreateCertificadoInput) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "laudos")) throw new ForbiddenException();
     const inst = await this.prisma.instrumentoPadrao.findFirst({
       where: { id: instrumentoId, estabelecimentoId: user.estabelecimentoId, ativo: true },
     });

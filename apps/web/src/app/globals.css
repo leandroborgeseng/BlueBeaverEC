@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@500;600;700&display=swap");
 
 :root {
   --aion-bg: oklch(0.98 0.003 250);
@@ -29,7 +29,7 @@
   --aion-radius-mobile-card: 12px;
   --aion-radius: 10px;
 
-  --aion-font: "Inter", system-ui, sans-serif;
+  --aion-font: "Source Sans 3", "IBM Plex Sans", system-ui, sans-serif;
   --aion-font-mobile: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { FormDialog } from "@/components/ui/FormDialog";
 import {
   Badge,
   Btn,
@@ -50,6 +51,11 @@ export default function CapexPage() {
   const [plano, setPlano] = useState<Plano[]>([]);
   const [tab, setTab] = useState<"sub" | "capex" | "plano">("sub");
   const [msg, setMsg] = useState<string | null>(null);
+  const [capexDraft, setCapexDraft] = useState<{
+    cand: Cand;
+    valor: string;
+    justificativa: string;
+  } | null>(null);
 
   async function load() {
     const [c, x, p] = await Promise.all([
@@ -67,22 +73,11 @@ export default function CapexPage() {
   }, []);
 
   async function gerarCapex(c: Cand) {
-    const valor = Number(window.prompt("Valor estimado:", "50000") || 0);
-    const justificativa = window.prompt("Justificativa:", `Substituição ${c.tag}`) || "";
-    if (!justificativa) return;
-    await api("/gestao/capex", {
-      method: "POST",
-      body: JSON.stringify({
-        descricao: `Substituição ${c.tag} — ${c.nome}`,
-        valorEstimado: valor,
-        justificativa,
-        equipamentoOrigemId: c.equipamentoId,
-        origem: "SUBSTITUICAO",
-      }),
+    setCapexDraft({
+      cand: c,
+      valor: "50000",
+      justificativa: `Substituição ${c.tag}`,
     });
-    setMsg("CAPEX proposto a partir da substituição");
-    setTab("capex");
-    await load();
   }
 
   async function gerarAutomatico() {
@@ -267,6 +262,54 @@ export default function CapexPage() {
           </div>
         </div>
       )}
+
+      <FormDialog
+        open={Boolean(capexDraft)}
+        title={capexDraft ? `CAPEX · ${capexDraft.cand.tag}` : "CAPEX"}
+        confirmLabel="Propor"
+        onCancel={() => setCapexDraft(null)}
+        onConfirm={async () => {
+          if (!capexDraft?.justificativa.trim()) return;
+          await api("/gestao/capex", {
+            method: "POST",
+            body: JSON.stringify({
+              descricao: `Substituição ${capexDraft.cand.tag} — ${capexDraft.cand.nome}`,
+              valorEstimado: Number(capexDraft.valor) || 0,
+              justificativa: capexDraft.justificativa.trim(),
+              equipamentoOrigemId: capexDraft.cand.equipamentoId,
+              origem: "SUBSTITUICAO",
+            }),
+          });
+          setCapexDraft(null);
+          setMsg("CAPEX proposto a partir da substituição");
+          setTab("capex");
+          await load();
+        }}
+      >
+        {capexDraft && (
+          <>
+            <div>
+              <FieldLabel htmlFor="capex-val">Valor estimado</FieldLabel>
+              <input
+                id="capex-val"
+                type="number"
+                value={capexDraft.valor}
+                onChange={(e) => setCapexDraft({ ...capexDraft, valor: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="capex-just">Justificativa</FieldLabel>
+              <input
+                id="capex-just"
+                value={capexDraft.justificativa}
+                onChange={(e) => setCapexDraft({ ...capexDraft, justificativa: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+          </>
+        )}
+      </FormDialog>
     </div>
   );
 }

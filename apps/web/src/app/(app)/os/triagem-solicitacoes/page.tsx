@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { api } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
+import { OsFilasNav } from "@/components/os/OsFilasNav";
 import {
   Badge,
   Btn,
@@ -206,10 +207,12 @@ export default function TriagemPage() {
         title="Triagem de Solicitações"
         subtitle={
           <span>
-            Aprovar cria OS vinculada · recusar exige justificativa · <strong>{pendentes}</strong> pendente(s)
+            Fila · aprovar cria OS vinculada · recusar exige justificativa · <strong>{pendentes}</strong>{" "}
+            pendente(s)
           </span>
         }
       />
+      <OsFilasNav />
 
       {erro && <Err>{erro}</Err>}
       {msg && (

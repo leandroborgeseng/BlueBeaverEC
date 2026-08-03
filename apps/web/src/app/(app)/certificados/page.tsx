@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api, downloadApi, fetchBlob } from "@/lib/api";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
   Badge,
   Btn,
@@ -39,6 +40,7 @@ export default function CertificadosPage() {
     url: string;
     loading: boolean;
   } | null>(null);
+  const [reabrirId, setReabrirId] = useState<string | null>(null);
 
   async function load() {
     setItems(await api<Cert[]>("/certificados"));
@@ -85,15 +87,7 @@ export default function CertificadosPage() {
   }
 
   async function reabrir(id: string) {
-    const justificativa = window.prompt("Justificativa de reabertura:");
-    if (!justificativa) return;
-    await api(`/certificados/${id}/reabrir`, {
-      method: "POST",
-      body: JSON.stringify({ justificativa }),
-    });
-    setMsg("Certificado reaberto");
-    fecharPreview();
-    await load();
+    setReabrirId(id);
   }
 
   return (
@@ -282,6 +276,26 @@ export default function CertificadosPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={Boolean(reabrirId)}
+        title="Reabrir certificado"
+        message="Informe a justificativa de reabertura."
+        requireJustification
+        confirmLabel="Reabrir"
+        onCancel={() => setReabrirId(null)}
+        onConfirm={async (justificativa) => {
+          if (!reabrirId) return;
+          await api(`/certificados/${reabrirId}/reabrir`, {
+            method: "POST",
+            body: JSON.stringify({ justificativa }),
+          });
+          setReabrirId(null);
+          setMsg("Certificado reaberto");
+          fecharPreview();
+          await load();
+        }}
+      />
     </div>
   );
 }

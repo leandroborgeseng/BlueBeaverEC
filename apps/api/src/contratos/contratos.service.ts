@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { IndiceReajuste, SituacaoContrato, StatusOS } from "@prisma/client";
-import { podeEditarCadastros } from "@aion/shared";
+import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -91,7 +91,7 @@ export class ContratosService {
       dataReajusteAniversario?: string;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "contratos")) throw new ForbiddenException();
 
     const eqs = data.equipamentoTags?.length
       ? await this.prisma.equipamento.findMany({
@@ -148,7 +148,7 @@ export class ContratosService {
       situacao?: SituacaoContrato;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "contratos")) throw new ForbiddenException();
     const existing = await this.prisma.contrato.findUnique({
       where: { estabelecimentoId_numero: { estabelecimentoId: user.estabelecimentoId, numero } },
     });
@@ -334,7 +334,7 @@ export class ContratosService {
     numero: string,
     data: { data?: string; valor: number; motivo: string },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "contratos")) throw new ForbiddenException();
     const c = await this.prisma.contrato.findUnique({
       where: {
         estabelecimentoId_numero: {

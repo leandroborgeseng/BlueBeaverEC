@@ -8,10 +8,14 @@ import type { AuthTokenPayload } from "./auth.service";
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
+    const secret = process.env.JWT_SECRET?.trim();
+    if (!secret && process.env.NODE_ENV === "production") {
+      throw new Error("JWT_SECRET é obrigatório em produção");
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET ?? "dev-secret-change-me",
+      secretOrKey: secret || "dev-secret-change-me",
     });
   }
 

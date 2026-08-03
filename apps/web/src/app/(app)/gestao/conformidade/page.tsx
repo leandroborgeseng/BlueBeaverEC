@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { FormDialog } from "@/components/ui/FormDialog";
 import {
   Badge,
   Btn,
@@ -26,6 +27,11 @@ export default function ConformidadePage() {
   const [tab, setTab] = useState<"conf" | "req" | "pop">("conf");
   const [pops, setPops] = useState<Array<{ id: string; codigo: string; titulo: string; versao: string }>>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [evidDraft, setEvidDraft] = useState<{
+    requisitoId: string;
+    descricao: string;
+    status: string;
+  } | null>(null);
 
   async function load() {
     const [c, p] = await Promise.all([
@@ -41,14 +47,7 @@ export default function ConformidadePage() {
   }, []);
 
   async function evidenciar(requisitoId: string) {
-    const descricao = window.prompt("Descrição da evidência:");
-    if (!descricao) return;
-    const status = window.prompt("Status (CONFORME|PARCIAL|NAO_CONFORME):", "CONFORME") || "CONFORME";
-    await api("/estrategico/evidencias", {
-      method: "POST",
-      body: JSON.stringify({ requisitoId, tipo: "documento", descricao, status }),
-    });
-    await load();
+    setEvidDraft({ requisitoId, descricao: "", status: "CONFORME" });
   }
 
   async function createPop(e: FormEvent<HTMLFormElement>) {
@@ -122,6 +121,54 @@ export default function ConformidadePage() {
           </div>
         </Panel>
       )}
+
+      <FormDialog
+        open={Boolean(evidDraft)}
+        title="Registrar evidência"
+        confirmLabel="Salvar"
+        onCancel={() => setEvidDraft(null)}
+        onConfirm={async () => {
+          if (!evidDraft?.descricao.trim()) return;
+          await api("/estrategico/evidencias", {
+            method: "POST",
+            body: JSON.stringify({
+              requisitoId: evidDraft.requisitoId,
+              tipo: "documento",
+              descricao: evidDraft.descricao.trim(),
+              status: evidDraft.status,
+            }),
+          });
+          setEvidDraft(null);
+          await load();
+        }}
+      >
+        {evidDraft && (
+          <>
+            <div>
+              <FieldLabel htmlFor="evid-desc">Descrição</FieldLabel>
+              <input
+                id="evid-desc"
+                value={evidDraft.descricao}
+                onChange={(e) => setEvidDraft({ ...evidDraft, descricao: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="evid-status">Status</FieldLabel>
+              <select
+                id="evid-status"
+                value={evidDraft.status}
+                onChange={(e) => setEvidDraft({ ...evidDraft, status: e.target.value })}
+                style={fieldStyle}
+              >
+                <option value="CONFORME">CONFORME</option>
+                <option value="PARCIAL">PARCIAL</option>
+                <option value="NAO_CONFORME">NAO_CONFORME</option>
+              </select>
+            </div>
+          </>
+        )}
+      </FormDialog>
     </div>
   );
 }

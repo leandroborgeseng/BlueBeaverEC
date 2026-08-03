@@ -9,6 +9,8 @@ import {
   Empty,
   Err,
   FieldLabel,
+  FilterBar,
+  Loading,
   PageHeader,
   Panel,
   Surface,
@@ -62,15 +64,35 @@ const tabStyle = (active: boolean): React.CSSProperties => ({
 export default function EstoquePage() {
   const [tab, setTab] = useState<Tab>("itens");
   const [items, setItems] = useState<Item[]>([]);
+  const [totalItens, setTotalItens] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(30);
+  const [qItens, setQItens] = useState("");
+  const [somenteMinimo, setSomenteMinimo] = useState(false);
+  const [loadingItens, setLoadingItens] = useState(true);
   const [movimentos, setMovimentos] = useState<Movimento[]>([]);
   const [comps, setComps] = useState<Comp[]>([]);
   const [filtroMov, setFiltroMov] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  const loadItens = useCallback(async () => {
-    setItems(await api<Item[]>("/estoque/itens"));
-  }, []);
+  const loadItens = useCallback(async (p = 1) => {
+    setLoadingItens(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(p),
+        pageSize: String(pageSize),
+      });
+      if (qItens.trim()) params.set("q", qItens.trim());
+      const data = await api<{ items: Item[]; total: number; page: number }>(`/estoque/itens?${params}`);
+      const list = somenteMinimo ? data.items.filter((i) => i.status === "ABAIXO_DO_MINIMO") : data.items;
+      setItems(list);
+      setTotalItens(somenteMinimo ? list.length : data.total);
+      setPage(data.page);
+    } finally {
+      setLoadingItens(false);
+    }
+  }, [pageSize, qItens, somenteMinimo]);
 
   const loadMovimentos = useCallback(async () => {
     const params = filtroMov.trim() ? `?itemCodigo=${encodeURIComponent(filtroMov.trim())}` : "";
@@ -224,90 +246,162 @@ export default function EstoquePage() {
 
       {tab === "itens" && (
         <>
+          <FilterBar>
+            <div>
+              <FieldLabel htmlFor="est-q">Busca</FieldLabel>
+              <input
+                id="est-q"
+                value={qItens}
+                onChange={(e) => setQItens(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setPage(1);
+                    void loadItens(1);
+                  }
+                }}
+                placeholder="Código ou descrição"
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="est-min">Status</FieldLabel>
+              <label htmlFor="est-min" style={{ display: "flex", alignItems: "center", gap: 8, height: 40, fontSize: 13 }}>
+                <input
+                  id="est-min"
+                  type="checkbox"
+                  checked={somenteMinimo}
+                  onChange={(e) => setSomenteMinimo(e.target.checked)}
+                />
+                Abaixo do mínimo
+              </label>
+            </div>
+            <Btn
+              type="button"
+              onClick={() => {
+                setPage(1);
+                void loadItens(1).catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
+              }}
+            >
+              Filtrar
+            </Btn>
+          </FilterBar>
+
           <Surface style={{ marginBottom: 16 }}>
             <form
               onSubmit={(e) => void onCreate(e)}
               style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}
             >
               <div>
-                <FieldLabel>Código</FieldLabel>
-                <input name="codigo" placeholder="Código" required style={fieldStyle} />
+                <FieldLabel htmlFor="est-cod">Código</FieldLabel>
+                <input id="est-cod" name="codigo" placeholder="Código" required style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Descrição</FieldLabel>
-                <input name="descricao" placeholder="Descrição" required style={fieldStyle} />
+                <FieldLabel htmlFor="est-desc">Descrição</FieldLabel>
+                <input id="est-desc" name="descricao" placeholder="Descrição" required style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Qtd</FieldLabel>
-                <input name="qtdAtual" type="number" placeholder="Qtd" style={fieldStyle} />
+                <FieldLabel htmlFor="est-qtd">Qtd</FieldLabel>
+                <input id="est-qtd" name="qtdAtual" type="number" placeholder="Qtd" style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Mín.</FieldLabel>
-                <input name="qtdMinima" type="number" placeholder="Mín." style={fieldStyle} />
+                <FieldLabel htmlFor="est-qmin">Mín.</FieldLabel>
+                <input id="est-qmin" name="qtdMinima" type="number" placeholder="Mín." style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>R$</FieldLabel>
-                <input name="valorUnitario" type="number" step="0.01" placeholder="R$" style={fieldStyle} />
+                <FieldLabel htmlFor="est-vu">R$</FieldLabel>
+                <input id="est-vu" name="valorUnitario" type="number" step="0.01" placeholder="R$" style={fieldStyle} />
               </div>
               <Btn type="submit">+ Item</Btn>
             </form>
           </Surface>
 
-          <DataTable>
-            <thead>
-              <tr>
-                <th style={th}>Código</th>
-                <th style={th}>Descrição</th>
-                <th style={th}>Atual</th>
-                <th style={th}>Reservada</th>
-                <th style={th}>Disponível</th>
-                <th style={th}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={td}>
-                    <Empty />
-                  </td>
-                </tr>
-              ) : (
-                items.map((i) => (
-                  <tr key={i.id}>
-                    <td style={td}>{i.codigo}</td>
-                    <td style={td}>{i.descricao}</td>
-                    <td style={td}>{i.qtdAtual}</td>
-                    <td style={td}>{i.qtdReservada}</td>
-                    <td style={td}>{i.disponivel}</td>
-                    <td style={td}>
-                      <Badge tone={i.status === "ABAIXO_DO_MINIMO" ? "MEDIA" : "ATIVO"}>
-                        {i.status === "ABAIXO_DO_MINIMO" ? "Abaixo do mínimo" : "Normal"}
-                      </Badge>
-                    </td>
+          {loadingItens ? (
+            <Loading />
+          ) : (
+            <>
+              <DataTable>
+                <thead>
+                  <tr>
+                    <th style={th}>Código</th>
+                    <th style={th}>Descrição</th>
+                    <th style={th}>Atual</th>
+                    <th style={th}>Reservada</th>
+                    <th style={th}>Disponível</th>
+                    <th style={th}>Status</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </DataTable>
+                </thead>
+                <tbody>
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={td}>
+                        <Empty />
+                      </td>
+                    </tr>
+                  ) : (
+                    items.map((i) => (
+                      <tr key={i.id}>
+                        <td style={td}>{i.codigo}</td>
+                        <td style={td}>{i.descricao}</td>
+                        <td style={td}>{i.qtdAtual}</td>
+                        <td style={td}>{i.qtdReservada}</td>
+                        <td style={td}>{i.disponivel}</td>
+                        <td style={td}>
+                          <Badge tone={i.status === "ABAIXO_DO_MINIMO" ? "MEDIA" : "ATIVO"}>
+                            {i.status === "ABAIXO_DO_MINIMO" ? "Abaixo do mínimo" : "Normal"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </DataTable>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12 }}>
+                <Btn
+                  variant="ghost"
+                  disabled={page <= 1}
+                  onClick={() => {
+                    const p = page - 1;
+                    setPage(p);
+                    void loadItens(p);
+                  }}
+                >
+                  Anterior
+                </Btn>
+                <span style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
+                  Página {page} · {totalItens} item(ns)
+                </span>
+                <Btn
+                  variant="ghost"
+                  disabled={page * pageSize >= totalItens}
+                  onClick={() => {
+                    const p = page + 1;
+                    setPage(p);
+                    void loadItens(p);
+                  }}
+                >
+                  Próxima
+                </Btn>
+              </div>
+            </>
+          )}
         </>
       )}
 
       {tab === "movimentos" && (
         <>
-          <Surface style={{ marginBottom: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "end" }}>
-              <div>
-                <FieldLabel>Filtrar por código do item</FieldLabel>
-                <input
-                  value={filtroMov}
-                  onChange={(e) => setFiltroMov(e.target.value)}
-                  placeholder="Ex: PEC-001"
-                  style={fieldStyle}
-                />
-              </div>
-              <Btn onClick={() => void loadMovimentos()}>Filtrar</Btn>
+          <FilterBar>
+            <div>
+              <FieldLabel htmlFor="mov-cod">Código do item</FieldLabel>
+              <input
+                id="mov-cod"
+                value={filtroMov}
+                onChange={(e) => setFiltroMov(e.target.value)}
+                placeholder="Ex: PEC-001"
+                style={fieldStyle}
+              />
             </div>
-          </Surface>
+            <Btn onClick={() => void loadMovimentos()}>Filtrar</Btn>
+          </FilterBar>
 
           <DataTable>
             <thead>

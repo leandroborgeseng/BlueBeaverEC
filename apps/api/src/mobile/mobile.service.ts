@@ -299,7 +299,7 @@ export class MobileService {
       }
 
       try {
-        await this.dispatchSync(user, item.type, item.payload);
+        // Reserva a chave antes do efeito — retry não duplica fotos/baixas.
         await this.prisma.mobileSyncIdempotency.create({
           data: {
             estabelecimentoId: user.estabelecimentoId,
@@ -307,8 +307,34 @@ export class MobileService {
             tipo: item.type,
           },
         });
+      } catch (e) {
+        const code = typeof e === "object" && e && "code" in e ? String((e as { code: string }).code) : "";
+        if (code === "P2002") {
+          results.push({ clientId: item.clientId, ok: true, detail: "idempotent" });
+          continue;
+        }
+        results.push({
+          clientId: item.clientId,
+          ok: false,
+          detail: e instanceof Error ? e.message : "erro",
+        });
+        continue;
+      }
+
+      try {
+        await this.dispatchSync(user, item.type, item.payload);
         results.push({ clientId: item.clientId, ok: true });
       } catch (e) {
+        await this.prisma.mobileSyncIdempotency
+          .delete({
+            where: {
+              estabelecimentoId_clientId: {
+                estabelecimentoId: user.estabelecimentoId,
+                clientId: item.clientId,
+              },
+            },
+          })
+          .catch(() => undefined);
         results.push({
           clientId: item.clientId,
           ok: false,

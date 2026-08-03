@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
+import { OsFilasNav } from "@/components/os/OsFilasNav";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
   Badge,
   Btn,
@@ -23,7 +25,13 @@ interface OsCard {
   equipamento: { tag: string; nome: string };
 }
 
-type Quadro = Record<string, OsCard[]>;
+type Quadro = Record<string, OsCard[]> & {
+  meta?: {
+    pageSize: number;
+    truncated: Record<string, boolean>;
+    totals: Record<string, number>;
+  };
+};
 type ColKey = "ABERTA" | "EM_ANDAMENTO" | "CONCLUIDA" | "CANCELADA";
 
 const COLS: ColKey[] = ["ABERTA", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"];
@@ -52,6 +60,12 @@ export default function QuadroPage() {
   const [quadro, setQuadro] = useState<Quadro>({});
   const [erro, setErro] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pending, setPending] = useState<{
+    os: OsCard;
+    from: ColKey;
+    to: ColKey;
+    acao: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     const data = await api<Quadro>("/os/quadro-processos");
@@ -62,20 +76,13 @@ export default function QuadroPage() {
     void load().catch(() => setQuadro({}));
   }, [load]);
 
-  async function mover(os: OsCard, from: ColKey, to: ColKey) {
-    const map = acaoParaDestino(from, to);
-    if (!map) return;
-    let justificativa: string | undefined;
-    if (map.precisaJustificativa) {
-      justificativa = window.prompt("Justificativa:") ?? undefined;
-      if (!justificativa?.trim()) return;
-    }
+  async function executarMove(os: OsCard, acao: string, justificativa?: string) {
     setBusy(os.codigo);
     setErro(null);
     try {
       await api(`/os/${os.numero}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ acao: map.acao, justificativa }),
+        body: JSON.stringify({ acao, justificativa }),
       });
       await load();
     } catch (e) {
@@ -85,19 +92,42 @@ export default function QuadroPage() {
     }
   }
 
+  async function mover(os: OsCard, from: ColKey, to: ColKey) {
+    const map = acaoParaDestino(from, to);
+    if (!map) return;
+    if (map.precisaJustificativa) {
+      setPending({ os, from, to, acao: map.acao });
+      return;
+    }
+    await executarMove(os, map.acao);
+  }
+
+  const truncado = COLS.some((c) => quadro.meta?.truncated?.[c]);
+
   return (
     <div>
       <PageHeader
         title="Quadro de Processos"
-        subtitle="Mova a OS entre colunas pelo seletor · clique no código para abrir"
+        subtitle="Fila · mova a OS entre colunas pelo seletor · clique no código para abrir"
       />
+      <OsFilasNav />
       {erro && <Err>{erro}</Err>}
+      {truncado && (
+        <Err>
+          Exibindo até {quadro.meta?.pageSize ?? 100} OS por coluna — há mais itens (veja totais no cabeçalho).
+        </Err>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
         {COLS.map((col) => (
           <Surface key={col} style={{ background: "oklch(0.975 0.005 250)", minHeight: 320 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <strong style={{ fontSize: 13 }}>{COL_LABELS[col]}</strong>
-              <Badge tone={col}>{(quadro[col] ?? []).length}</Badge>
+              <Badge tone={col}>
+                {(quadro[col] ?? []).length}
+                {quadro.meta?.totals?.[col] != null && quadro.meta.totals[col] > (quadro[col] ?? []).length
+                  ? ` / ${quadro.meta.totals[col]}`
+                  : ""}
+              </Badge>
             </div>
             <div style={{ display: "grid", gap: 8 }}>
               {(quadro[col] ?? []).map((os) => (
@@ -148,6 +178,22 @@ export default function QuadroPage() {
           </Surface>
         ))}
       </div>
+
+      <ConfirmModal
+        open={Boolean(pending)}
+        title={pending ? `${pending.acao === "cancelar" ? "Cancelar" : "Reabrir"} ${pending.os.codigo}` : ""}
+        message="Informe a justificativa para continuar."
+        requireJustification
+        danger={pending?.acao === "cancelar"}
+        confirmLabel="Confirmar"
+        onCancel={() => setPending(null)}
+        onConfirm={async (justificativa) => {
+          if (!pending) return;
+          const { os, acao } = pending;
+          setPending(null);
+          await executarMove(os, acao, justificativa);
+        }}
+      />
     </div>
   );
 }

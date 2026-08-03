@@ -76,6 +76,22 @@ export class OsService {
         : {}),
     };
 
+    if (query.atrasada === true) {
+      const now = Date.now();
+      const slaOr = (Object.entries(SLA_HORAS) as Array<[PrioridadeShared, number]>).map(
+        ([prioridade, horas]) => ({
+          prioridade: prioridade as PrioridadeOS,
+          abertura: { lt: new Date(now - horas * 60 * 60 * 1000) },
+        }),
+      );
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        { fechamento: null },
+        { status: { notIn: [StatusOS.CANCELADA, StatusOS.CONCLUIDA] } },
+        { OR: slaOr },
+      ];
+    }
+
     const [total, rows] = await Promise.all([
       this.prisma.ordemServico.count({ where }),
       this.prisma.ordemServico.findMany({
@@ -90,19 +106,16 @@ export class OsService {
       }),
     ]);
 
-    let items = rows.map((os) => ({
+    const items = rows.map((os) => ({
       ...os,
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     }));
-    if (query.atrasada === true) {
-      items = items.filter((o) => o.atrasada);
-    }
 
     return {
-      total: query.atrasada === true ? items.length : total,
+      items,
+      total,
       page,
       pageSize,
-      items,
     };
   }
 

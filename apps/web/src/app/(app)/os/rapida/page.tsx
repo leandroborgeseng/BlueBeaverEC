@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import {
@@ -33,10 +34,10 @@ export default function OsRapidaPage() {
   useEffect(() => {
     void Promise.all([
       api<Colaborador[]>("/colaboradores"),
-      api<EstoqueItem[]>("/estoque/itens"),
+      api<{ items: EstoqueItem[] }>("/estoque/itens?pageSize=100"),
     ]).then(([c, e]) => {
       setCols(c);
-      setPecas(e);
+      setPecas(e.items);
     });
   }, []);
 
@@ -98,7 +99,17 @@ export default function OsRapidaPage() {
 
   return (
     <div>
-      <PageHeader title="OS Rápida" subtitle="Abertura + execução em um passo · Fechar ou deixar aberta" />
+      <PageHeader
+        title="OS rápida"
+        subtitle={
+          <span>
+            Abertura + execução em um passo ·{" "}
+            <Link href="/os/nova" style={{ color: "oklch(0.45 0.14 255)", fontWeight: 600 }}>
+              formulário completo
+            </Link>
+          </span>
+        }
+      />
       {aviso && <div style={{ marginBottom: 10, color: "oklch(0.55 0.14 85)", fontWeight: 700 }}>{aviso}</div>}
       {erro && <Err>{erro}</Err>}
 

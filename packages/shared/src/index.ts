@@ -209,9 +209,18 @@ export function temPermissao(
   return n >= minimo;
 }
 
+/** Edição no módulo indicado (mapa JWT ou matriz padrão do perfil). */
+export function podeEditarModulo(
+  perfil: PerfilAcesso,
+  mapa: MapaPermissoes | undefined,
+  modulo: ModuloPermissao,
+): boolean {
+  return temPermissao(mapa ?? permissoesDoPerfil(perfil), modulo, PERMISSAO_NIVEL.EDICAO);
+}
+
+/** Cadastros de parque / planos — módulo `equipamentos`. */
 export function podeEditarCadastros(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {
-  if (mapa) return temPermissao(mapa, "equipamentos", PERMISSAO_NIVEL.EDICAO);
-  return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
+  return podeEditarModulo(perfil, mapa, "equipamentos");
 }
 
 /** Aprovar/recusar solicitações, atribuir OS, cancelar/reabrir — nível de aprovação. */

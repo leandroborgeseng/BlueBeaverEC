@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { TipoMovimentoEstoque } from "@prisma/client";
-import { podeEditarCadastros } from "@aion/shared";
+import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -8,44 +8,58 @@ import type { AuthUser } from "../auth/current-user.decorator";
 export class EstoqueService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(estabelecimentoId: string, q?: string) {
-    const items = await this.prisma.estoqueItem.findMany({
-      where: {
-        estabelecimentoId,
-        ativo: true,
-        ...(q
-          ? {
-              OR: [
-                { codigo: { contains: q, mode: "insensitive" } },
-                { descricao: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
-      orderBy: { codigo: "asc" },
+  async list(estabelecimentoId: string, q?: string, page = 1, pageSize = 50) {
+    const safePage = Math.max(1, page);
+    const safeSize = Math.min(100, Math.max(1, pageSize));
+    const where = {
+      estabelecimentoId,
+      ativo: true as const,
+      ...(q
+        ? {
+            OR: [
+              { codigo: { contains: q, mode: "insensitive" as const } },
+              { descricao: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, items] = await Promise.all([
+      this.prisma.estoqueItem.count({ where }),
+      this.prisma.estoqueItem.findMany({
+        where,
+        orderBy: { codigo: "asc" },
+        skip: (safePage - 1) * safeSize,
+        take: safeSize,
+      }),
+    ]);
+
+    const ids = items.map((i) => i.id);
+    const reservas =
+      ids.length === 0
+        ? []
+        : await this.prisma.estoqueReserva.groupBy({
+            by: ["estoqueItemId"],
+            where: { estoqueItemId: { in: ids }, ativa: true },
+            _sum: { quantidade: true },
+          });
+    const reservaMap = new Map(reservas.map((r) => [r.estoqueItemId, Number(r._sum.quantidade ?? 0)]));
+
+    const mapped = items.map((item) => {
+      const qtdReservada = reservaMap.get(item.id) ?? 0;
+      const qtdAtual = Number(item.qtdAtual);
+      const qtdMinima = Number(item.qtdMinima);
+      return {
+        ...item,
+        qtdAtual,
+        qtdMinima,
+        qtdReservada,
+        disponivel: qtdAtual - qtdReservada,
+        status: qtdAtual < qtdMinima ? "ABAIXO_DO_MINIMO" : "NORMAL",
+      };
     });
 
-    const withReserva = await Promise.all(
-      items.map(async (item) => {
-        const reserved = await this.prisma.estoqueReserva.aggregate({
-          where: { estoqueItemId: item.id, ativa: true },
-          _sum: { quantidade: true },
-        });
-        const qtdReservada = Number(reserved._sum.quantidade ?? 0);
-        const qtdAtual = Number(item.qtdAtual);
-        const qtdMinima = Number(item.qtdMinima);
-        return {
-          ...item,
-          qtdAtual,
-          qtdMinima,
-          qtdReservada,
-          disponivel: qtdAtual - qtdReservada,
-          status: qtdAtual < qtdMinima ? "ABAIXO_DO_MINIMO" : "NORMAL",
-        };
-      }),
-    );
-
-    return withReserva;
+    return { items: mapped, total, page: safePage, pageSize: safeSize };
   }
 
   async movimentos(estabelecimentoId: string, itemCodigo?: string) {
@@ -73,7 +87,7 @@ export class EstoqueService {
       valorUnitario?: number;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "estoque")) throw new ForbiddenException();
     const qtd = data.qtdAtual ?? 0;
     return this.prisma.$transaction(async (tx) => {
       const item = await tx.estoqueItem.create({
@@ -104,7 +118,7 @@ export class EstoqueService {
   }
 
   async entrada(user: AuthUser, itemCodigo: string, qtd: number, motivo?: string) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "estoque")) throw new ForbiddenException();
     if (qtd <= 0) throw new BadRequestException("Quantidade inválida");
     const item = await this.findItem(user.estabelecimentoId, itemCodigo);
     return this.prisma.$transaction(async (tx) => {
@@ -226,7 +240,7 @@ export class EstoqueService {
     user: AuthUser,
     data: { itemDescricao: string; equipamentoOrigemTag: string; dataRetirada?: string },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "estoque")) throw new ForbiddenException();
     const origem = await this.prisma.equipamento.findUnique({
       where: {
         estabelecimentoId_tag: {
@@ -257,7 +271,7 @@ export class EstoqueService {
       osDestinoNumero?: number;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "estoque")) throw new ForbiddenException();
     const comp = await this.prisma.componenteRecuperado.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });
