@@ -1,0 +1,155 @@
+{
+  "codigoPop": "POP.EC.MP.002",
+  "nome": "Preventiva — Bomba de Infusão de Seringa (POP.EC.MP.002)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 4,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.MP.002",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e continuidade do cabo de força"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do teclado"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusíveis"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do manípulo de fixação do êmbolo"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do suporte da seringa"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da trava de empilhamento de bombas"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do fixador de suporte"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Autoteste"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Reconhecimento / identificação da seringa"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Infusão (Volume/Tempo 10 ml · 2 min)",
+      "tipo": "medicao",
+      "campos": ["valorConfigurado", "valorMedido"],
+      "toleranciaNota": "Configurar Volume/Tempo 10 ml e 2 min; registrar volume medido na proveta e tempo no cronômetro."
+    },
+    {
+      "id": "04-04",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Teste de KVO (Keep Vein Open)"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Alarme de oclusão"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Conexão com a rede elétrica"
+    }
+  ]
+}
