@@ -100,7 +100,7 @@ export default function RelatoriosPage() {
         method: "POST",
         body: "{}",
       });
-      setMsg(res.mensagem ?? "E-mail simulado enviado");
+      setMsg(res.mensagem ?? "Disparo processado (sem SMTP)");
       await load();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Erro ao disparar");

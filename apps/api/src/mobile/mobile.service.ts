@@ -88,15 +88,87 @@ export class MobileService {
 
   async detalheOs(user: AuthUser, numero: number) {
     const os = await this.findOs(user.estabelecimentoId, numero);
-    return this.prisma.ordemServico.findUnique({
+    const detail = await this.prisma.ordemServico.findUnique({
       where: { id: os.id },
       include: {
-        equipamento: { include: { setor: true } },
+        equipamento: {
+          include: {
+            setor: true,
+            tipoEquipamentoPlano: {
+              include: {
+                testes: { where: { ativo: true } },
+              },
+            },
+          },
+        },
         checklistMobile: true,
         fotosMobile: { orderBy: { createdAt: "desc" }, take: 20 },
         itens: true,
       },
     });
+    if (!detail) throw new NotFoundException("OS não encontrada");
+
+    const checklistSugerido = await this.checklistSugeridoParaOs(user.estabelecimentoId, detail);
+    return { ...detail, checklistSugerido };
+  }
+
+  private async checklistSugeridoParaOs(
+    estabelecimentoId: string,
+    os: {
+      tipo: string;
+      equipamento: {
+        tipoEquipamentoPlano?: {
+          testes: Array<{ tipoTeste: string; procedimentoCodigo: string }>;
+        } | null;
+      };
+    },
+  ): Promise<Array<{ id: string; label: string; ok: boolean }> | null> {
+    const mapTipo: Record<string, string> = {
+      PREVENTIVA: "PREVENTIVA",
+      CALIBRACAO: "CALIBRACAO",
+      TSE: "TSE",
+      QUALIFICACAO: "QUALIFICACAO",
+      RECEBIMENTO: "RECEBIMENTO",
+    };
+    const tipoTeste = mapTipo[os.tipo];
+    if (!tipoTeste) return null;
+
+    let codigo: string | undefined;
+    const testes = os.equipamento.tipoEquipamentoPlano?.testes ?? [];
+    const match = testes.find((t) => t.tipoTeste === tipoTeste);
+    if (match) codigo = match.procedimentoCodigo;
+
+    const proc = await this.prisma.procedimentoLaudo.findFirst({
+      where: {
+        estabelecimentoId,
+        tipo: tipoTeste as never,
+        ativo: true,
+        ...(codigo ? { OR: [{ nome: { contains: codigo, mode: "insensitive" } }, { pop: { codigo } }] } : {}),
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    if (!proc) {
+      const fallback = await this.prisma.procedimentoLaudo.findFirst({
+        where: { estabelecimentoId, tipo: tipoTeste as never, ativo: true },
+        orderBy: { updatedAt: "desc" },
+      });
+      if (!fallback) return null;
+      return this.itensProcToChecklist(fallback.itens);
+    }
+    return this.itensProcToChecklist(proc.itens);
+  }
+
+  private itensProcToChecklist(itens: unknown): Array<{ id: string; label: string; ok: boolean }> {
+    const arr = Array.isArray(itens) ? itens : [];
+    return arr
+      .map((raw, i) => {
+        const it = raw as { id?: string; pergunta?: string; label?: string };
+        const label = String(it.pergunta ?? it.label ?? "").trim();
+        if (!label) return null;
+        return { id: String(it.id ?? `item-${i + 1}`), label, ok: false };
+      })
+      .filter((x): x is { id: string; label: string; ok: boolean } => Boolean(x))
+      .slice(0, 80);
   }
 
   async checklist(

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, clearToken, setToken } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
@@ -52,7 +53,7 @@ interface TopBarProps {
 function initials(nome?: string) {
   if (!nome) return "NX";
   const parts = nome.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "NX";
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "AI";
 }
 
 export function TopBar({
@@ -63,6 +64,7 @@ export function TopBar({
   estabelecimentos = [],
   onSwitched,
 }: TopBarProps) {
+  const pathname = usePathname();
   const openWindow = useWindowStore((s) => s.open);
   const [panel, setPanel] = useState<"perfil" | "notif" | "busca" | "recentes" | "favoritos" | null>(null);
   const [q, setQ] = useState("");
@@ -117,11 +119,29 @@ export function TopBar({
     }
     if (panel === "favoritos" && favoritos.length === 0) {
       void api<Array<{ id: string; label: string; href: string }>>("/nav/favoritos")
-        .then(setFavoritos)
+        .then((defaults) => {
+          try {
+            const raw = localStorage.getItem("aion_favoritos");
+            const saved = raw ? (JSON.parse(raw) as Array<{ id: string; label: string; href: string }>) : [];
+            setFavoritos(Array.isArray(saved) && saved.length > 0 ? saved : defaults);
+          } catch {
+            setFavoritos(defaults);
+          }
+        })
         .catch(() => setFavoritos([]));
     }
   }, [panel, recentes.length, favoritos.length]);
 
+  function salvarFavoritoAtual() {
+    const href = pathname || "/dashboard";
+    const label = href.replace(/^\//, "").replace(/\//g, " · ") || "Dashboard";
+    const next = [
+      { id: href, label, href },
+      ...favoritos.filter((f) => f.href !== href),
+    ].slice(0, 12);
+    setFavoritos(next);
+    localStorage.setItem("aion_favoritos", JSON.stringify(next));
+  }
   async function trocar(id: string) {
     if (!id || id === estabelecimentoId) return;
     const res = await api<{ accessToken: string }>("/auth/switch-estabelecimento", {
@@ -440,17 +460,22 @@ export function TopBar({
                 </button>
               </>
             ) : panel === "favoritos" ? (
-              favoritos.length === 0 ? (
-                <div style={{ padding: "12px 14px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-                  Nenhum favorito configurado.
-                </div>
-              ) : (
-                favoritos.map((f) => (
-                  <Link key={f.id} href={f.href} onClick={() => setPanel(null)} style={resultLink}>
-                    {f.label}
-                  </Link>
-                ))
-              )
+              <>
+                <button type="button" onClick={salvarFavoritoAtual} style={{ ...resultLink, fontWeight: 700 } as React.CSSProperties}>
+                  + Favoritar página atual
+                </button>
+                {favoritos.length === 0 ? (
+                  <div style={{ padding: "12px 14px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
+                    Nenhum favorito configurado.
+                  </div>
+                ) : (
+                  favoritos.map((f) => (
+                    <Link key={f.id} href={f.href} onClick={() => setPanel(null)} style={resultLink}>
+                      {f.label}
+                    </Link>
+                  ))
+                )}
+              </>
             ) : panel === "recentes" ? (
               recentes.length === 0 ? (
                 <div style={{ padding: "12px 14px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>

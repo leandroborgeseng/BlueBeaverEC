@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -76,6 +76,57 @@ class GlosaDto {
   motivo!: string;
 }
 
+class UpdateContratoDto {
+  @IsOptional()
+  @IsString()
+  fornecedorId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  descricao?: string;
+
+  @IsOptional()
+  @IsString()
+  vigenciaInicio?: string;
+
+  @IsOptional()
+  @IsString()
+  vigenciaFim?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  valor?: number;
+
+  @IsOptional()
+  @IsArray()
+  equipamentoTags?: string[];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  slaAtendimentoHoras?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  slaSolucaoHoras?: number;
+
+  @IsOptional()
+  @IsEnum(IndiceReajuste)
+  indiceReajuste?: IndiceReajuste;
+
+  @IsOptional()
+  @IsString()
+  dataReajusteAniversario?: string;
+
+  @IsOptional()
+  @IsEnum(SituacaoContrato)
+  situacao?: SituacaoContrato;
+}
+
 @Controller("contratos")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("contratos", PERMISSAO_NIVEL.LEITURA)
@@ -106,6 +157,16 @@ export class ContratosController {
   @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
   create(@CurrentUser() user: AuthUser, @Body() body: CreateContratoDto) {
     return this.contratos.create(user, body);
+  }
+
+  @Patch(":numero")
+  @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: UpdateContratoDto,
+  ) {
+    return this.contratos.update(user, numero, body);
   }
 
   @Post(":numero/glosas")

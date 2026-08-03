@@ -12,7 +12,9 @@ import {
   ValidateNested,
 } from "class-validator";
 import { PrioridadeOS, StatusOS, TipoOS } from "@prisma/client";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { OsService } from "./os.service";
 
@@ -137,6 +139,7 @@ class AtribuirDto {
 
 @Controller("os")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("os", PERMISSAO_NIVEL.LEITURA)
 export class OsController {
   constructor(private readonly os: OsService) {}
 
@@ -212,16 +215,19 @@ export class OsController {
     return this.os.log(user.estabelecimentoId, Number(numero));
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateOsDto) {
     return this.os.create(user, body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("rapida")
   rapida(@CurrentUser() user: AuthUser, @Body() body: RapidaDto) {
     return this.os.rapida(user, body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Patch(":numero/atribuir")
   atribuir(
     @CurrentUser() user: AuthUser,
@@ -231,6 +237,7 @@ export class OsController {
     return this.os.atribuir(user, Number(numero), body.responsavelId);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Patch(":numero/pendencia")
   pendencia(
     @CurrentUser() user: AuthUser,
@@ -240,6 +247,7 @@ export class OsController {
     return this.os.updatePendencia(user, Number(numero), body.pendencia ?? null);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Patch(":numero/status")
   status(
     @CurrentUser() user: AuthUser,

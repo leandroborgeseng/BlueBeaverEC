@@ -2,7 +2,9 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@ne
 import { Type } from "class-transformer";
 import { IsEnum, IsNumber, IsOptional, IsString, Min, MinLength } from "class-validator";
 import { SituacaoComponenteRecuperado } from "@prisma/client";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { EstoqueService } from "./estoque.service";
 
@@ -120,6 +122,7 @@ class ReposicaoDto {
 
 @Controller("estoque")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estoque", PERMISSAO_NIVEL.LEITURA)
 export class EstoqueController {
   constructor(private readonly estoque: EstoqueService) {}
 
@@ -133,26 +136,31 @@ export class EstoqueController {
     return this.estoque.movimentos(user.estabelecimentoId, itemCodigo);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("itens")
   create(@CurrentUser() user: AuthUser, @Body() body: CreateItemDto) {
     return this.estoque.create(user, body);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("entradas")
   entrada(@CurrentUser() user: AuthUser, @Body() body: EntradaDto) {
     return this.estoque.entrada(user, body.itemCodigo, body.qtd, body.motivo);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("baixas")
   baixar(@CurrentUser() user: AuthUser, @Body() body: BaixaDto) {
     return this.estoque.baixar(user, body.itemCodigo, body.qtd, body.osNumero);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("reservas")
   reservar(@CurrentUser() user: AuthUser, @Body() body: ReservaDto) {
     return this.estoque.reservar(user, body.itemCodigo, body.qtd, body.osNumero);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("reposicoes")
   reposicao(@CurrentUser() user: AuthUser, @Body() body: ReposicaoDto) {
     return this.estoque.solicitarRepos(user, body.itemCodigo, body.qtd, body.observacao);
@@ -163,11 +171,13 @@ export class EstoqueController {
     return this.estoque.listComponentes(user.estabelecimentoId);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Post("componentes-recuperados")
   createComp(@CurrentUser() user: AuthUser, @Body() body: CreateCompDto) {
     return this.estoque.createComponente(user, body);
   }
 
+  @RequirePermission("estoque", PERMISSAO_NIVEL.EDICAO)
   @Patch("componentes-recuperados/:id")
   updateComp(
     @CurrentUser() user: AuthUser,

@@ -2,7 +2,9 @@ import { Body, Controller, Get, Param, Post, Query, Res, UseGuards } from "@nest
 import { TipoLaudo } from "@prisma/client";
 import { IsString, MinLength } from "class-validator";
 import type { Response } from "express";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { LaudosService } from "./laudos.service";
 import { buildPdfBuffer } from "../relatorios/report-export";
@@ -15,6 +17,7 @@ class ReabrirDto {
 
 @Controller("certificados")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("laudos", PERMISSAO_NIVEL.LEITURA)
 export class CertificadosController {
   constructor(private readonly laudos: LaudosService) {}
 

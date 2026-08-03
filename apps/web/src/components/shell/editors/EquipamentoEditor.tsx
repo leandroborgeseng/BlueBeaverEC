@@ -79,6 +79,7 @@ export function EquipamentoEditor({
   onDone: () => void;
 }) {
   const updateWindow = useWindowStore((s) => s.update);
+  const open = useWindowStore((s) => s.open);
   const [tab, setTab] = useState<Tab>("geral");
   const [data, setData] = useState<EquipDetail | null>(null);
   const [setores, setSetores] = useState<Lookup[]>([]);
@@ -232,8 +233,33 @@ export function EquipamentoEditor({
       {msg && <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)" }}>{msg}</div>}
 
       {Boolean(data.checklistRecebimentoPendente) && (
-        <div style={{ color: "oklch(0.55 0.14 85)", fontWeight: 700, fontSize: 13 }}>
-          Checklist de recebimento pendente
+        <div
+          style={{
+            color: "oklch(0.45 0.12 75)",
+            fontWeight: 600,
+            fontSize: 13,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 10,
+            alignItems: "center",
+            padding: "10px 12px",
+            background: "oklch(0.97 0.03 85)",
+            borderRadius: 8,
+          }}
+        >
+          <span>Checklist de recebimento pendente</span>
+          <Btn
+            size="sm"
+            onClick={() =>
+              open({
+                kind: "laudo",
+                title: `Recebimento · ${tag}`,
+                payload: { tipo: "RECEBIMENTO", equipamentoTag: tag },
+              })
+            }
+          >
+            Abrir laudo de recebimento
+          </Btn>
         </div>
       )}
 

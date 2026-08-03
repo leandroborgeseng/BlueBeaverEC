@@ -29,9 +29,18 @@ export default function ExecucaoOsPage() {
   const drawing = useRef(false);
 
   useEffect(() => {
-    api<{ checklistMobile?: { itens: typeof CHECKLIST_DEFAULT } }>(`/mobile/os/${numero}`)
+    api<{
+      checklistMobile?: { itens: typeof CHECKLIST_DEFAULT };
+      checklistSugerido?: typeof CHECKLIST_DEFAULT;
+      tipo?: string;
+      codigo?: string;
+    }>(`/mobile/os/${numero}`)
       .then((d) => {
-        if (d.checklistMobile?.itens?.length) setChecklist(d.checklistMobile.itens as typeof CHECKLIST_DEFAULT);
+        if (d.checklistMobile?.itens?.length) {
+          setChecklist(d.checklistMobile.itens as typeof CHECKLIST_DEFAULT);
+        } else if (d.checklistSugerido?.length) {
+          setChecklist(d.checklistSugerido);
+        }
       })
       .catch(() => undefined);
   }, [numero]);

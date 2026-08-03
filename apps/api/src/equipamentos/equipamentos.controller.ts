@@ -12,7 +12,9 @@ import {
 import { Type } from "class-transformer";
 import { SituacaoEquipamento } from "@prisma/client";
 import type { Response } from "express";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { EquipamentosService } from "./equipamentos.service";
 
@@ -206,6 +208,7 @@ class ImportDto {
 
 @Controller("equipamentos")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("equipamentos", PERMISSAO_NIVEL.LEITURA)
 export class EquipamentosController {
   constructor(private readonly equipamentos: EquipamentosService) {}
 
@@ -240,11 +243,13 @@ export class EquipamentosController {
     res.send(buf);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("import")
   importRows(@CurrentUser() user: AuthUser, @Body() body: ImportDto) {
     return this.equipamentos.importRows(user, body.rows ?? []);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateEquipamentoDto) {
     return this.equipamentos.create(user, body);
@@ -256,6 +261,7 @@ export class EquipamentosController {
     return this.equipamentos.byTag(user.estabelecimentoId, tag, verValores);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Patch(":tag")
   update(
     @CurrentUser() user: AuthUser,
@@ -265,16 +271,19 @@ export class EquipamentosController {
     return this.equipamentos.update(user, tag, body);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Patch(":tag/tag")
   changeTag(@CurrentUser() user: AuthUser, @Param("tag") tag: string, @Body() body: ChangeTagDto) {
     return this.equipamentos.updateTag(user, tag, body.novaTag, body.justificativa);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post(":tag/arquivar")
   arquivar(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     return this.equipamentos.arquivar(user, tag);
   }
 
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post(":tag/reativar")
   reativar(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     return this.equipamentos.reativar(user, tag);

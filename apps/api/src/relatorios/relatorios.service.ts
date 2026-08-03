@@ -231,12 +231,12 @@ export class RelatoriosService {
     });
 
     return {
-      enviado: true,
+      enviado: false,
       stub: true,
       template: ag.template,
       destinatarios: ag.destinatarios,
       bytes: size,
-      mensagem: `E-mail simulado para ${ag.destinatarios.length} destinatário(s)`,
+      mensagem: `Simulação: PDF gerado (${size} bytes) para ${ag.destinatarios.length} destinatário(s) — SMTP não configurado`,
     };
   }
 

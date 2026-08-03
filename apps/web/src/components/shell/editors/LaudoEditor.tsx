@@ -53,12 +53,43 @@ interface RespostaItem {
   valorConfigurado?: number;
   leituras?: Array<number | undefined>;
   media?: number;
+  mediaCorrigida?: number;
   erroAbs?: number;
   erroPct?: number;
   limite?: number;
   unidade?: string;
   toleranciaTexto?: string;
   observacao?: string;
+  correcaoPadrao?: number;
+  incertezaExpandida?: number;
+  fatorK?: number;
+  pontoCertificadoRef?: string;
+}
+
+type PontoCert = {
+  id?: string;
+  valorNominal?: number | null;
+  valorConvencional?: number | null;
+  correcao?: number | null;
+  incertezaExpandida?: number | null;
+  fatorK?: number | null;
+  unidade?: string | null;
+};
+
+function pontoMaisProximo(padrao: number, pontos: PontoCert[]): PontoCert | null {
+  if (!pontos.length) return null;
+  let best: PontoCert | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const p of pontos) {
+    const ref = p.valorNominal ?? p.valorConvencional;
+    if (ref == null || Number.isNaN(Number(ref))) continue;
+    const d = Math.abs(Number(ref) - padrao);
+    if (d < bestDist) {
+      bestDist = d;
+      best = p;
+    }
+  }
+  return best;
 }
 
 interface LaudoDetail {
@@ -117,6 +148,7 @@ export function LaudoEditor({
   const [respostas, setRespostas] = useState<RespostaItem[]>([]);
   const [responsavelTecnicoId, setResponsavelTecnicoId] = useState("");
   const [instrumentoId, setInstrumentoId] = useState("");
+  const [pontosCertificado, setPontosCertificado] = useState<PontoCert[]>([]);
   const [tecnicoNome, setTecnicoNome] = useState("");
   const [criterioAceitacao, setCriterioAceitacao] = useState(2);
   const [norma, setNorma] = useState("EC");
@@ -162,6 +194,21 @@ export function LaudoEditor({
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, [tipo, viewMode]);
+
+  useEffect(() => {
+    if (viewMode || !instrumentoId || tipo !== "CALIBRACAO") {
+      setPontosCertificado([]);
+      return;
+    }
+    void api<{
+      certificados?: Array<{ vigente?: boolean; pontos?: PontoCert[] }>;
+    }>(`/instrumentos-padroes/${instrumentoId}`)
+      .then((d) => {
+        const vigente = d.certificados?.find((c) => c.vigente) ?? d.certificados?.[0];
+        setPontosCertificado(vigente?.pontos ?? []);
+      })
+      .catch(() => setPontosCertificado([]));
+  }, [instrumentoId, tipo, viewMode]);
 
   useEffect(() => {
     if (viewMode || !proc) {
@@ -217,9 +264,13 @@ export function LaudoEditor({
             : r.valorMedido;
         if (media == null) return { ...r, valorConfigurado: padrao };
 
-        const erroAbs = Number((media - padrao).toFixed(4));
+        const ponto = pontoMaisProximo(padrao, pontosCertificado);
+        const correcao = ponto?.correcao != null ? Number(ponto.correcao) : 0;
+        const u = ponto?.incertezaExpandida != null ? Number(ponto.incertezaExpandida) : undefined;
+        const mediaCorrigida = Number((media + correcao).toFixed(4));
+        const erroAbs = Number((mediaCorrigida - padrao).toFixed(4));
         const erroPct =
-          padrao === 0 ? 0 : Number((((media - padrao) / padrao) * 100).toFixed(2));
+          padrao === 0 ? 0 : Number((((mediaCorrigida - padrao) / padrao) * 100).toFixed(2));
         const tol = item?.tolerancia;
         const tolValor = tol?.valor ?? r.limite;
         const modo = tol?.modo;
@@ -229,7 +280,6 @@ export function LaudoEditor({
         } else if (tolValor != null && modo === "percentual") {
           aprovado = Math.abs(erroPct) <= tolValor;
         } else if (tolValor != null && !modo) {
-          // fallback: se unidade do limite parece absoluta e pequena, usa absoluto
           aprovado = Math.abs(erroPct) <= tolValor;
         } else {
           aprovado = Math.abs(erroPct) <= criterioAceitacao;
@@ -240,6 +290,16 @@ export function LaudoEditor({
           valorConfigurado: padrao,
           valorMedido: media,
           media,
+          mediaCorrigida,
+          correcaoPadrao: correcao || undefined,
+          incertezaExpandida: u,
+          fatorK: ponto?.fatorK != null ? Number(ponto.fatorK) : undefined,
+          pontoCertificadoRef:
+            ponto?.valorNominal != null
+              ? `nominal=${ponto.valorNominal}`
+              : ponto?.valorConvencional != null
+                ? `conv=${ponto.valorConvencional}`
+                : undefined,
           erroAbs,
           erroPct,
           limite: tolValor ?? criterioAceitacao,
@@ -256,7 +316,7 @@ export function LaudoEditor({
       }
       return r;
     });
-  }, [respostas, tipo, proc, criterioAceitacao]);
+  }, [respostas, tipo, proc, criterioAceitacao, pontosCertificado]);
 
   const resultadoPreview = useMemo(() => {
     if (tipo === "CALIBRACAO" || tipo === "TSE") {
@@ -290,6 +350,10 @@ export function LaudoEditor({
             criterioAceitacao,
             norma,
             proximaPreventiva: proximaPreventiva || undefined,
+            metrologia: {
+              instrumentoId: instrumentoId || undefined,
+              pontosCertificadoUsados: pontosCertificado.length,
+            },
           },
           justificativaRessalva: justificativaRessalva || undefined,
         }),
@@ -444,6 +508,16 @@ export function LaudoEditor({
                     ))}
                   </select>
                 )}
+                {!viewMode && instrumentoId && pontosCertificado.length === 0 && displayTipo === "CALIBRACAO" && (
+                  <div style={{ fontSize: 12, color: "oklch(0.55 0.14 85)", marginTop: 4 }}>
+                    Certificado vigente sem pontos U — cadastre os pontos do padrão antes de calibrar.
+                  </div>
+                )}
+                {!viewMode && pontosCertificado.length > 0 && (
+                  <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)", marginTop: 4 }}>
+                    {pontosCertificado.length} ponto(s) do certificado aplicados (correção + U).
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -595,6 +669,8 @@ export function LaudoEditor({
                             {" · "}média {r.media ?? r.valorMedido ?? "—"}
                             {r.erroPct != null ? ` · erro ${r.erroPct}%` : ""}
                             {r.erroAbs != null ? ` (Δ ${r.erroAbs})` : ""}
+                            {r.incertezaExpandida != null ? ` · U=${r.incertezaExpandida}` : ""}
+                            {r.correcaoPadrao != null ? ` · corr=${r.correcaoPadrao}` : ""}
                             {" · "}
                             {r.status}
                           </span>
@@ -624,7 +700,12 @@ export function LaudoEditor({
                             ))}
                             <span style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
                               méd {r.media ?? "—"}
+                              {r.correcaoPadrao != null ? ` · corr ${r.correcaoPadrao}` : ""}
+                              {r.mediaCorrigida != null && r.correcaoPadrao
+                                ? ` → ${r.mediaCorrigida}`
+                                : ""}
                               {r.erroPct != null ? ` · ${r.erroPct}%` : ""}
+                              {r.incertezaExpandida != null ? ` · U=${r.incertezaExpandida}` : ""}
                               {r.media != null ? (r.status === "REPROVADO" ? " · NC" : " · OK") : ""}
                             </span>
                           </>

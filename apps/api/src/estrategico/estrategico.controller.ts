@@ -10,7 +10,9 @@ import {
   MinLength,
 } from "class-validator";
 import type { Response } from "express";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { EstrategicoService } from "./estrategico.service";
 
@@ -80,6 +82,7 @@ class PopDto {
 
 @Controller("estrategico")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
 export class EstrategicoController {
   constructor(private readonly estrategico: EstrategicoService) {}
 
@@ -93,6 +96,7 @@ export class EstrategicoController {
     return this.estrategico.listMaturidade(user.estabelecimentoId);
   }
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Put("maturidade/dominios/:id")
   avaliar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: AvaliacaoDto) {
     return this.estrategico.upsertAvaliacao(user, id, body);
@@ -103,6 +107,7 @@ export class EstrategicoController {
     return this.estrategico.getJornada(user.estabelecimentoId);
   }
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Patch("jornada")
   setJornada(@CurrentUser() user: AuthUser, @Body() body: JornadaDto) {
     return this.estrategico.setJornada(user.estabelecimentoId, body.etapaAtual, body.notas);
@@ -118,6 +123,7 @@ export class EstrategicoController {
     return this.estrategico.centralConformidade(user.estabelecimentoId);
   }
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Post("evidencias")
   evidencia(@CurrentUser() user: AuthUser, @Body() body: EvidenciaDto) {
     return this.estrategico.addEvidencia(user, body);
@@ -143,6 +149,7 @@ export class EstrategicoController {
     res.send(doc.conteudo);
   }
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Post("pops")
   createPop(@CurrentUser() user: AuthUser, @Body() body: PopDto) {
     return this.estrategico.createPop(user, body);

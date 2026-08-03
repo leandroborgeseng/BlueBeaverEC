@@ -10,7 +10,9 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { MobileService } from "./mobile.service";
 
@@ -87,6 +89,7 @@ class SyncQueueDto {
 
 @Controller("mobile")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("os", PERMISSAO_NIVEL.LEITURA)
 export class MobileController {
   constructor(private readonly mobile: MobileService) {}
 
@@ -115,6 +118,7 @@ export class MobileController {
     return this.mobile.detalheOs(user, Number(numero));
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("os/:numero/checklist")
   checklist(
     @CurrentUser() user: AuthUser,
@@ -124,6 +128,7 @@ export class MobileController {
     return this.mobile.checklist(user, Number(numero), body.itens);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("os/:numero/fotos")
   fotos(
     @CurrentUser() user: AuthUser,
@@ -133,6 +138,7 @@ export class MobileController {
     return this.mobile.fotos(user, Number(numero), body.fotos);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("os/:numero/pecas")
   pecas(
     @CurrentUser() user: AuthUser,
@@ -142,6 +148,7 @@ export class MobileController {
     return this.mobile.pecas(user, Number(numero), body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("os/:numero/finalizar")
   finalizar(
     @CurrentUser() user: AuthUser,
@@ -151,6 +158,7 @@ export class MobileController {
     return this.mobile.finalizar(user, Number(numero), body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Post("sync/queue")
   sync(@CurrentUser() user: AuthUser, @Body() body: SyncQueueDto) {
     return this.mobile.syncQueue(user, body.items ?? []);

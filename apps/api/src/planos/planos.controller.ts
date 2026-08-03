@@ -2,7 +2,9 @@ import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 import { TipoOS } from "@prisma/client";
 import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 import { Type } from "class-transformer";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { PlanosService } from "./planos.service";
 
@@ -29,9 +31,11 @@ class RampUpDto {
 
 @Controller("planos")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
 export class PlanosController {
   constructor(private readonly planos: PlanosService) {}
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Post("ramp-up/preview")
   preview(@CurrentUser() user: AuthUser, @Body() body: RampUpDto) {
     return this.planos.previewRampUp(user.estabelecimentoId, {
@@ -41,6 +45,7 @@ export class PlanosController {
     });
   }
 
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   @Post("ramp-up")
   gerar(@CurrentUser() user: AuthUser, @Body() body: RampUpDto) {
     if (body.dryRun) {

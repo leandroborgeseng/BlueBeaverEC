@@ -441,11 +441,27 @@ export class LaudosService {
   private async assertInstrumentoValido(estabelecimentoId: string, instrumentoId: string) {
     const inst = await this.prisma.instrumentoPadrao.findFirst({
       where: { id: instrumentoId, estabelecimentoId, ativo: true },
+      include: {
+        certificados: {
+          where: { vigente: true },
+          take: 1,
+          include: { _count: { select: { pontos: true } } },
+          orderBy: { dataValidade: "desc" },
+        },
+      },
     });
     if (!inst) throw new NotFoundException("Instrumento padrão não encontrado");
-    if (inst.certificadoValidade && inst.certificadoValidade.getTime() < Date.now()) {
+    const vigente = inst.certificados[0];
+    const validade = vigente?.dataValidade ?? inst.certificadoValidade;
+    if (validade && validade.getTime() < Date.now()) {
       throw new ForbiddenException(
         "Instrumento com certificado vencido não pode ser usado em novo laudo",
+      );
+    }
+    const pontos = vigente?._count.pontos ?? 0;
+    if (pontos <= 0) {
+      throw new ForbiddenException(
+        "Instrumento sem pontos de calibração (U) no certificado vigente — cadastre o certificado RBC com pontos antes de usar no laudo",
       );
     }
   }

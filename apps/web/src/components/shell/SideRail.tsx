@@ -84,6 +84,7 @@ const RAIL: Array<{
       { label: "CAPEX", href: "/gestao/capex", icon: "dollar", modulo: "estrategico" },
       { label: "Relatórios", href: "/gestao/relatorios", icon: "clipboard", modulo: "estrategico" },
       { label: "Cronograma de Manutenção", href: "/gestao/cronograma-manutencao", icon: "clipboard", modulo: "estrategico" },
+      { label: "Mapeamento de Planos", href: "/gestao/mapeamento-planos", icon: "layers", modulo: "estrategico" },
       { label: "Configurações da Organização", href: "/config", icon: "settings", modulo: "config" },
     ],
   },

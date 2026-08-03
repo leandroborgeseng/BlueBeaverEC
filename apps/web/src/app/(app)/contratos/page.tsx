@@ -143,6 +143,41 @@ export default function ContratosPage() {
     }
   }
 
+  async function editar(c: Contrato) {
+    const descricao = window.prompt("Descrição", c.descricao);
+    if (descricao == null) return;
+    const valorStr = window.prompt("Valor (R$)", String(c.valor));
+    if (valorStr == null) return;
+    const fim = window.prompt(
+      "Vigência fim (YYYY-MM-DD)",
+      c.vigenciaFim.slice(0, 10),
+    );
+    if (fim == null) return;
+    const tags = window.prompt(
+      "TAGs cobertas (vírgula)",
+      c.equipamentos.map((e) => e.equipamento.tag).join(", "),
+    );
+    if (tags == null) return;
+    try {
+      await api(`/contratos/${encodeURIComponent(c.numero)}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          descricao,
+          valor: Number(valorStr),
+          vigenciaFim: fim,
+          equipamentoTags: tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean),
+        }),
+      });
+      setMsg(`Contrato ${c.numero} atualizado`);
+      await load();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
   async function openMatriz(numero: string) {
     try {
       setMatriz(await api<Matriz>(`/contratos/${numero}/matriz-cobertura`));
@@ -282,6 +317,9 @@ export default function ContratosPage() {
             <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
               <Btn variant="secondary" onClick={() => void openMatriz(c.numero)}>
                 Matriz de cobertura
+              </Btn>
+              <Btn variant="ghost" onClick={() => void editar(c)}>
+                Editar
               </Btn>
               <Btn variant="ghost" onClick={() => void glosa(c.numero)}>
                 Registrar glosa

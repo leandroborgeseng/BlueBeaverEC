@@ -37,7 +37,7 @@ export default function QuadroPage() {
 
   return (
     <div>
-      <PageHeader title="Quadro de Processos" subtitle="Kanban por status · drag-and-drop fora desta fase" />
+      <PageHeader title="Quadro de Processos" subtitle="Kanban por status (visualização; arraste será adicionado depois)" />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
         {COLS.map((col) => (
           <Surface key={col} style={{ background: "oklch(0.975 0.005 250)", minHeight: 320 }}>

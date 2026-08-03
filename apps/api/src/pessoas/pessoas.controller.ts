@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { IsArray, IsOptional, IsString, MinLength } from "class-validator";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { PessoasService } from "./pessoas.service";
 
@@ -60,6 +62,7 @@ class MembroDto {
 
 @Controller("pessoas")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("pessoas", PERMISSAO_NIVEL.LEITURA)
 export class PessoasController {
   constructor(private readonly pessoas: PessoasService) {}
 
@@ -68,11 +71,13 @@ export class PessoasController {
     return this.pessoas.colaboradores(user.estabelecimentoId);
   }
 
+  @RequirePermission("pessoas", PERMISSAO_NIVEL.EDICAO)
   @Post("colaboradores")
   createColab(@CurrentUser() user: AuthUser, @Body() body: CreateColabDto) {
     return this.pessoas.createColaborador(user, body);
   }
 
+  @RequirePermission("pessoas", PERMISSAO_NIVEL.EDICAO)
   @Post("colaboradores/:id/competencias")
   competencia(
     @CurrentUser() user: AuthUser,
@@ -87,11 +92,13 @@ export class PessoasController {
     return this.pessoas.listEquipes(user.estabelecimentoId);
   }
 
+  @RequirePermission("pessoas", PERMISSAO_NIVEL.EDICAO)
   @Post("equipes")
   createEquipe(@CurrentUser() user: AuthUser, @Body() body: CreateEquipeDto) {
     return this.pessoas.createEquipe(user, body);
   }
 
+  @RequirePermission("pessoas", PERMISSAO_NIVEL.EDICAO)
   @Post("equipes/:id/membros")
   addMembro(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: MembroDto) {
     return this.pessoas.addMembro(user, id, body.colaboradorId);

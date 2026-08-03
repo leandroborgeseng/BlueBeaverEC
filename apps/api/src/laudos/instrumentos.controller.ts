@@ -20,7 +20,9 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 import type { Response } from "express";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { InstrumentosService } from "./instrumentos.service";
 
@@ -213,6 +215,7 @@ class CreateCertificadoDto {
 
 @Controller("instrumentos-padroes")
 @UseGuards(JwtAuthGuard)
+@RequirePermission("laudos", PERMISSAO_NIVEL.LEITURA)
 export class InstrumentosController {
   constructor(private readonly instrumentos: InstrumentosService) {}
 
@@ -226,11 +229,13 @@ export class InstrumentosController {
     return this.instrumentos.get(user.estabelecimentoId, id);
   }
 
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateInstrumentoDto) {
     return this.instrumentos.create(user, body);
   }
 
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
   @Patch(":id")
   update(
     @CurrentUser() user: AuthUser,
@@ -240,6 +245,7 @@ export class InstrumentosController {
     return this.instrumentos.update(user, id, body);
   }
 
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
   @Post(":id/certificados")
   addCertificado(
     @CurrentUser() user: AuthUser,

@@ -131,6 +131,77 @@ export class ContratosService {
     });
   }
 
+  async update(
+    user: AuthUser,
+    numero: string,
+    data: {
+      fornecedorId?: string;
+      descricao?: string;
+      vigenciaInicio?: string;
+      vigenciaFim?: string;
+      valor?: number;
+      equipamentoTags?: string[];
+      slaAtendimentoHoras?: number;
+      slaSolucaoHoras?: number;
+      indiceReajuste?: IndiceReajuste;
+      dataReajusteAniversario?: string | null;
+      situacao?: SituacaoContrato;
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    const existing = await this.prisma.contrato.findUnique({
+      where: { estabelecimentoId_numero: { estabelecimentoId: user.estabelecimentoId, numero } },
+    });
+    if (!existing) throw new NotFoundException("Contrato não encontrado");
+
+    const vigenciaFim = data.vigenciaFim ? new Date(data.vigenciaFim) : existing.vigenciaFim;
+    const situacao = data.situacao ?? this.calcSituacao(vigenciaFim);
+
+    if (data.equipamentoTags) {
+      const eqs = data.equipamentoTags.length
+        ? await this.prisma.equipamento.findMany({
+            where: {
+              estabelecimentoId: user.estabelecimentoId,
+              tag: { in: data.equipamentoTags },
+            },
+          })
+        : [];
+      await this.prisma.contratoEquipamento.deleteMany({ where: { contratoId: existing.id } });
+      if (eqs.length) {
+        await this.prisma.contratoEquipamento.createMany({
+          data: eqs.map((e) => ({ contratoId: existing.id, equipamentoId: e.id })),
+        });
+      }
+    }
+
+    return this.prisma.contrato.update({
+      where: { id: existing.id },
+      data: {
+        ...(data.fornecedorId ? { fornecedorId: data.fornecedorId } : {}),
+        ...(data.descricao ? { descricao: data.descricao.trim() } : {}),
+        ...(data.vigenciaInicio ? { vigenciaInicio: new Date(data.vigenciaInicio) } : {}),
+        ...(data.vigenciaFim ? { vigenciaFim } : {}),
+        ...(data.valor != null ? { valor: data.valor } : {}),
+        situacao,
+        ...(data.slaAtendimentoHoras != null ? { slaAtendimentoHoras: data.slaAtendimentoHoras } : {}),
+        ...(data.slaSolucaoHoras != null ? { slaSolucaoHoras: data.slaSolucaoHoras } : {}),
+        ...(data.indiceReajuste ? { indiceReajuste: data.indiceReajuste } : {}),
+        ...(data.dataReajusteAniversario !== undefined
+          ? {
+              dataReajusteAniversario: data.dataReajusteAniversario
+                ? new Date(data.dataReajusteAniversario)
+                : null,
+            }
+          : {}),
+      },
+      include: {
+        fornecedor: true,
+        equipamentos: { include: { equipamento: true } },
+        glosas: true,
+      },
+    });
+  }
+
   async matrizCobertura(estabelecimentoId: string, numero: string) {
     const c = await this.prisma.contrato.findUnique({
       where: { estabelecimentoId_numero: { estabelecimentoId, numero } },
