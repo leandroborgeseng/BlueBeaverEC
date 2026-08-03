@@ -64,6 +64,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      tsx:
+        specifier: ^4.20.3
+        version: 4.23.2
     devDependencies:
       '@nestjs/cli':
         specifier: ^11.0.7
@@ -86,9 +89,6 @@ importers:
       '@types/pdfkit':
         specifier: ^0.17.6
         version: 0.17.6
-      tsx:
-        specifier: ^4.20.3
-        version: 4.23.2
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

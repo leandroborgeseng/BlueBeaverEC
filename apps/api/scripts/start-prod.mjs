@@ -65,4 +65,5 @@ function run(cmd, args) {
 }
 
 run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
+run(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")]);
 run(process.execPath, ["dist/main.js"]);

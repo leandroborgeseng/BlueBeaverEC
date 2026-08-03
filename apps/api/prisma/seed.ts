@@ -17,7 +17,7 @@ async function main() {
 
   const engenheiro = await prisma.usuario.upsert({
     where: { email: "engenheiro@nexo.local" },
-    update: {},
+    update: { senhaHash, nome: "Ana Engenheira" },
     create: {
       email: "engenheiro@nexo.local",
       nome: "Ana Engenheira",
@@ -27,7 +27,7 @@ async function main() {
 
   const tecnico = await prisma.usuario.upsert({
     where: { email: "tecnico@nexo.local" },
-    update: {},
+    update: { senhaHash, nome: "Carlos Técnico" },
     create: {
       email: "tecnico@nexo.local",
       nome: "Carlos Técnico",
@@ -37,7 +37,7 @@ async function main() {
 
   const solicitante = await prisma.usuario.upsert({
     where: { email: "solicitante@nexo.local" },
-    update: {},
+    update: { senhaHash, nome: "Maria Solicitante" },
     create: {
       email: "solicitante@nexo.local",
       nome: "Maria Solicitante",
