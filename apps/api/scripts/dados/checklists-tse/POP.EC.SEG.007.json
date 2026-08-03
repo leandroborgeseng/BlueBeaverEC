@@ -1,0 +1,296 @@
+{
+  "codigoPop": "POP.EC.SEG.007",
+  "nome": "TSE — Cama Eletrica (POP.EC.SEG.007)",
+  "tipo": "TSE",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.SEG.007",
+  "itens": [
+    {
+      "id": "CI-001-001",
+      "secao": "CLASSE I · 01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "CI-002-002",
+      "secao": "CLASSE I · 02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-002-003",
+      "secao": "CLASSE I · 02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-003-004",
+      "secao": "CLASSE I · 03 TENSÃO DA REDE ELÉTRICA",
+      "secaoOrdem": 3,
+      "pergunta": "Tensão da rede elétrica",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-004-005",
+      "secao": "CLASSE I · 04 RESISTÊNCIA DA CARCAÇA AO TERRA",
+      "secaoOrdem": 4,
+      "pergunta": "RESISTÊNCIA (mOhm)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-005-006",
+      "secao": "CLASSE I · 05 CORRENTE DE FUGA PELO TERRA GERAL",
+      "secaoOrdem": 5,
+      "pergunta": "FUGA PELO TERRA (NORMAL) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-005-007",
+      "secao": "CLASSE I · 05 CORRENTE DE FUGA PELO TERRA GERAL",
+      "secaoOrdem": 5,
+      "pergunta": "FUGA PELO TERRA (NORMAL – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-005-008",
+      "secao": "CLASSE I · 05 CORRENTE DE FUGA PELO TERRA GERAL",
+      "secaoOrdem": 5,
+      "pergunta": "FUGA PELO TERRA (REVERSO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-005-009",
+      "secao": "CLASSE I · 05 CORRENTE DE FUGA PELO TERRA GERAL",
+      "secaoOrdem": 5,
+      "pergunta": "FUGA PELO TERRA (REVERSO – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-010",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (NORMAL) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-011",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (NORMAL – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-012",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (NORMAL – FALHA NO TERRA) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-013",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (REVERSO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-014",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (REVERSO – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-006-015",
+      "secao": "CLASSE I · 06 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 6,
+      "pergunta": "FUGA PELO GABINETE (REVERSO – FALHA NO TERRA) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-007-016",
+      "secao": "CLASSE I · 07 CORRENTE DE FUGA PELA PARTE APLICADA 1 (TIPO B E BF)",
+      "secaoOrdem": 7,
+      "pergunta": "FUGA PELA PARTE APLICADA BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-007-017",
+      "secao": "CLASSE I · 07 CORRENTE DE FUGA PELA PARTE APLICADA 1 (TIPO B E BF)",
+      "secaoOrdem": 7,
+      "pergunta": "FUGA PELA PARTE APLICADA COM FALHA NO TERRA BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-007-018",
+      "secao": "CLASSE I · 07 CORRENTE DE FUGA PELA PARTE APLICADA 1 (TIPO B E BF)",
+      "secaoOrdem": 7,
+      "pergunta": "FUGA PELA PARTE APLICADA COM FALHA NO NEUTRO BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-007-019",
+      "secao": "CLASSE I · 07 CORRENTE DE FUGA PELA PARTE APLICADA 1 (TIPO B E BF)",
+      "secaoOrdem": 7,
+      "pergunta": "FUGA PELA PARTE APLICADA BF (REVERSO) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-008-020",
+      "secao": "CLASSE I · 08 CORRENTE DE FUGA PELA PARTE APLICADA 1 ( TIPO CF)",
+      "secaoOrdem": 8,
+      "pergunta": "FUGA DA PARTE APLICADA (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-008-021",
+      "secao": "CLASSE I · 08 CORRENTE DE FUGA PELA PARTE APLICADA 1 ( TIPO CF)",
+      "secaoOrdem": 8,
+      "pergunta": "FUGA DA PARTE APLICADA COM FALHA NO TERRA (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-008-022",
+      "secao": "CLASSE I · 08 CORRENTE DE FUGA PELA PARTE APLICADA 1 ( TIPO CF)",
+      "secaoOrdem": 8,
+      "pergunta": "FUGA DA PARTE APLICADA COM FALHA NO NEUTRO (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CI-008-023",
+      "secao": "CLASSE I · 08 CORRENTE DE FUGA PELA PARTE APLICADA 1 ( TIPO CF)",
+      "secaoOrdem": 8,
+      "pergunta": "FUGA DA PARTE APLICADA (REVERSO) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-101-024",
+      "secao": "CLASSE II · 01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 101,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "CII-102-025",
+      "secao": "CLASSE II · 02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 102,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-102-026",
+      "secao": "CLASSE II · 02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 102,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-103-027",
+      "secao": "CLASSE II · 03 TENSÃO DA REDE ELÉTRICA",
+      "secaoOrdem": 103,
+      "pergunta": "Tensão da rede elétrica",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-028",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (NORMAL) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-029",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (NORMAL – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-030",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (NORMAL – FALHA NO TERRA) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-031",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (REVERSO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-032",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (REVERSO – FALHA NO NEUTRO) (uA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-104-033",
+      "secao": "CLASSE II · 04 CORRENTE DE FUGA PELO GABINETE",
+      "secaoOrdem": 104,
+      "pergunta": "FUGA PELO GABINETE (REVERSO – FALHA NO TERRA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-105-034",
+      "secao": "CLASSE II · 05 CORRENTE DE FUGA PELA PARTE APLICADA (TIPO B E BF)",
+      "secaoOrdem": 105,
+      "pergunta": "FUGA PELA PARTE APLICADA BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-105-035",
+      "secao": "CLASSE II · 05 CORRENTE DE FUGA PELA PARTE APLICADA (TIPO B E BF)",
+      "secaoOrdem": 105,
+      "pergunta": "FUGA PELA PARTE APLICADA COM FALHA NO TERRA BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-105-036",
+      "secao": "CLASSE II · 05 CORRENTE DE FUGA PELA PARTE APLICADA (TIPO B E BF)",
+      "secaoOrdem": 105,
+      "pergunta": "FUGA PELA PARTE APLICADA COM FALHA NO NEUTRO BF (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-105-037",
+      "secao": "CLASSE II · 05 CORRENTE DE FUGA PELA PARTE APLICADA (TIPO B E BF)",
+      "secaoOrdem": 105,
+      "pergunta": "FUGA PELA PARTE APLICADA BF (REVERSO) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-106-038",
+      "secao": "CLASSE II · 06 CORRENTE DE FUGA PELA PARTE APLICADA ( TIPO CF)",
+      "secaoOrdem": 106,
+      "pergunta": "FUGA DA PARTE APLICADA (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-106-039",
+      "secao": "CLASSE II · 06 CORRENTE DE FUGA PELA PARTE APLICADA ( TIPO CF)",
+      "secaoOrdem": 106,
+      "pergunta": "FUGA DA PARTE APLICADA COM FALHA NO TERRA (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-106-040",
+      "secao": "CLASSE II · 06 CORRENTE DE FUGA PELA PARTE APLICADA ( TIPO CF)",
+      "secaoOrdem": 106,
+      "pergunta": "FUGA DA PARTE APLICADA COM FALHA NO NEUTRO (NORMAL) (µA)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "CII-106-041",
+      "secao": "CLASSE II · 06 CORRENTE DE FUGA PELA PARTE APLICADA ( TIPO CF)",
+      "secaoOrdem": 106,
+      "pergunta": "FUGA DA PARTE APLICADA (REVERSO) (µA)",
+      "tipo": "medicao"
+    }
+  ]
+}

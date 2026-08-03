@@ -1,0 +1,44 @@
+{
+  "codigoPop": "POP.EC.SEG.010",
+  "nome": "TSE — Marcapasso Cardiaco (POP.EC.SEG.010)",
+  "tipo": "TSE",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.SEG.010",
+  "itens": [
+    {
+      "id": "TSE-001-001",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "TSE-002-002",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao"
+    },
+    {
+      "id": "TSE-002-003",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao"
+    },
+    {
+      "id": "TSE-003-004",
+      "secao": "03 CORRENTE AUXILIAR ATRAVÉS DO PACIENTE",
+      "secaoOrdem": 3,
+      "pergunta": "Condição normal",
+      "tipo": "medicao"
+    },
+    {
+      "id": "TSE-003-005",
+      "secao": "03 CORRENTE AUXILIAR ATRAVÉS DO PACIENTE",
+      "secaoOrdem": 3,
+      "pergunta": "Condição anormal sob uma só falha",
+      "tipo": "medicao"
+    }
+  ]
+}

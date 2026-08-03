@@ -160,7 +160,10 @@ export function LaudoEditor({
         pergunta: item.pergunta,
         secao: item.secao,
         tipo: item.tipo,
-        status: tipo === "CALIBRACAO" || tipo === "TSE" ? "APROVADO" : "SIM",
+        status:
+          tipo === "CALIBRACAO" || (tipo === "TSE" && item.tipo !== "check")
+            ? "APROVADO"
+            : "SIM",
         valorMedido: item.valorPadrao,
         valorConfigurado: undefined,
         limite: item.limite,
@@ -181,7 +184,7 @@ export function LaudoEditor({
           status: Math.abs(erroPct) <= criterioAceitacao ? "APROVADO" : "REPROVADO",
         };
       }
-      if (tipo === "TSE" && r.valorMedido != null && r.limite != null) {
+      if (tipo === "TSE" && r.tipo !== "check" && r.valorMedido != null && r.limite != null) {
         return {
           ...r,
           status: r.valorMedido <= r.limite ? "APROVADO" : "REPROVADO",
@@ -474,9 +477,13 @@ export function LaudoEditor({
             displayRespostas.map((r, idx) => {
               const prevSecao = idx > 0 ? displayRespostas[idx - 1]?.secao : undefined;
               const showSecao = Boolean(r.secao && r.secao !== prevSecao);
-              const isMedicao = r.tipo === "medicao" || displayTipo === "CALIBRACAO" || displayTipo === "TSE";
+              const isMedicao =
+                r.tipo === "medicao" ||
+                ((displayTipo === "CALIBRACAO" || displayTipo === "TSE") && r.tipo !== "check");
               const isPreventivaCheck =
-                displayTipo === "PREVENTIVA" || displayTipo === "RECEBIMENTO";
+                displayTipo === "PREVENTIVA" ||
+                displayTipo === "RECEBIMENTO" ||
+                (displayTipo === "TSE" && r.tipo === "check");
 
               return (
                 <div key={r.id ?? idx} style={{ display: "grid", gap: 6 }}>
@@ -548,7 +555,8 @@ export function LaudoEditor({
                           style={fieldStyle}
                         />
                       </>
-                    ) : displayTipo !== "CALIBRACAO" && displayTipo !== "TSE" ? (
+                    ) : displayTipo !== "CALIBRACAO" &&
+                      (displayTipo !== "TSE" || r.tipo === "check") ? (
                       <select
                         value={r.status}
                         onChange={(e) =>
@@ -558,7 +566,7 @@ export function LaudoEditor({
                         }
                         style={fieldStyle}
                       >
-                        {displayTipo === "PREVENTIVA" ? (
+                        {isPreventivaCheck ? (
                           <>
                             <option value="SIM">C — Conforme</option>
                             <option value="NAO">N.C — Não conforme</option>
