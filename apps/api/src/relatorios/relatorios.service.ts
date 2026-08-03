@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
 import { FrequenciaRelatorio } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { EstrategicoService } from "../estrategico/estrategico.service";
@@ -7,6 +8,7 @@ import { PlanosService } from "../planos/planos.service";
 import { EquipamentosService } from "../equipamentos/equipamentos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { buildPdfBuffer, buildXlsxBuffer, type ReportPayload } from "./report-export";
+import { sendMail } from "./mail";
 
 const TEMPLATES = [
   {
@@ -195,6 +197,12 @@ export class RelatoriosService {
     });
   }
 
+  /** Cron horário: processa agendamentos vencidos (desligável com RELATORIOS_CRON=0). */
+  @Cron("0 * * * *")
+  async cronDispararPendentes() {
+    await this.dispararPendentesGlobal();
+  }
+
   private nextDate(freq: FrequenciaRelatorio, from: Date) {
     const proximo = new Date(from);
     if (freq === FrequenciaRelatorio.SEMANAL) proximo.setDate(proximo.getDate() + 7);
@@ -204,26 +212,48 @@ export class RelatoriosService {
   }
 
   /**
-   * Stub de envio por e-mail: gera o relatório, registra log e avança próximoEnvio.
-   * Sem SMTP — pronto para plugar provedor depois.
+   * Gera PDF, tenta SMTP (se SMTP_HOST) e avança próximoEnvio.
+   * Sem SMTP continua honesto: stub sem fingir entrega.
    */
-  async disparar(user: AuthUser, id: string) {
+  async disparar(user: AuthUser | null, id: string) {
     const ag = await this.prisma.relatorioAgendamento.findFirst({
-      where: { id, estabelecimentoId: user.estabelecimentoId, ativo: true },
+      where: {
+        id,
+        ...(user ? { estabelecimentoId: user.estabelecimentoId } : {}),
+        ativo: true,
+      },
     });
     if (!ag) throw new NotFoundException("Agendamento não encontrado");
 
-    const out = await this.gerar(user.estabelecimentoId, ag.template, "pdf");
+    const out = await this.gerar(ag.estabelecimentoId, ag.template, "pdf");
     const size = out.formato === "pdf" ? out.buffer.length : 0;
     const agora = new Date();
 
-    await this.prisma.logAcesso.create({
-      data: {
-        usuarioId: user.userId,
-        acao: "RELATORIO_EMAIL_ENVIADO",
-        detalhe: `${user.estabelecimentoId} · ag=${ag.id} · ${ag.template} → ${ag.destinatarios.join(", ")} · ${size}b · stub`,
-      },
-    });
+    const mail =
+      out.formato === "pdf"
+        ? await sendMail({
+            to: ag.destinatarios,
+            subject: `[Aion] Relatório ${ag.template}`,
+            text: `Relatório agendado (${ag.template}) gerado em ${agora.toISOString()}.`,
+            attachments: [
+              {
+                filename: out.filename,
+                content: out.buffer,
+                contentType: out.mime,
+              },
+            ],
+          })
+        : { enviado: false, stub: true, detalhe: "formato sem anexo" };
+
+    if (user?.userId) {
+      await this.prisma.logAcesso.create({
+        data: {
+          usuarioId: user.userId,
+          acao: mail.enviado ? "RELATORIO_EMAIL_ENVIADO" : "RELATORIO_EMAIL_STUB",
+          detalhe: `${ag.estabelecimentoId} · ag=${ag.id} · ${ag.template} → ${ag.destinatarios.join(", ")} · ${size}b · ${mail.detalhe}`,
+        },
+      });
+    }
 
     await this.prisma.relatorioAgendamento.update({
       where: { id: ag.id },
@@ -231,12 +261,14 @@ export class RelatoriosService {
     });
 
     return {
-      enviado: false,
-      stub: true,
+      enviado: mail.enviado,
+      stub: mail.stub,
       template: ag.template,
       destinatarios: ag.destinatarios,
       bytes: size,
-      mensagem: `Simulação: PDF gerado (${size} bytes) para ${ag.destinatarios.length} destinatário(s) — SMTP não configurado`,
+      mensagem: mail.enviado
+        ? `E-mail enviado (${size} bytes) para ${ag.destinatarios.length} destinatário(s)`
+        : `Simulação: PDF gerado (${size} bytes) — ${mail.detalhe}`,
     };
   }
 
@@ -253,6 +285,37 @@ export class RelatoriosService {
     const resultados = [];
     for (const p of pendentes) {
       resultados.push(await this.disparar(user, p.id));
+    }
+    return { processados: resultados.length, resultados };
+  }
+
+  /** Cron: todos os estabelecimentos com próximoEnvio vencido. */
+  async dispararPendentesGlobal() {
+    if (process.env.RELATORIOS_CRON === "0") {
+      return { skipped: true, processados: 0 };
+    }
+    const agora = new Date();
+    const pendentes = await this.prisma.relatorioAgendamento.findMany({
+      where: {
+        ativo: true,
+        OR: [{ proximoEnvio: null }, { proximoEnvio: { lte: agora } }],
+      },
+      take: 50,
+    });
+    const resultados = [];
+    for (const p of pendentes) {
+      try {
+        resultados.push(await this.disparar(null, p.id));
+      } catch (e) {
+        resultados.push({
+          enviado: false,
+          stub: true,
+          template: p.template,
+          destinatarios: p.destinatarios,
+          bytes: 0,
+          mensagem: e instanceof Error ? e.message : "erro",
+        });
+      }
     }
     return { processados: resultados.length, resultados };
   }

@@ -21,12 +21,15 @@ interface OfflineState {
   hydrate: () => Promise<void>;
 }
 
-const DB_NAME = "nexo_offline";
+const DB_NAME = "aion_offline";
+const DB_NAME_LEGACY = "nexo_offline";
 const STORE = "queue";
+const SESSION_KEY = "aion_offline_queue";
+const SESSION_KEY_LEGACY = "nexo_offline_queue";
 
-function openDb(): Promise<IDBDatabase> {
+function openDb(name: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(name, 1);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) {
@@ -38,16 +41,32 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-async function idbGetAll(): Promise<QueueItem[]> {
-  if (typeof indexedDB === "undefined") return sessionFallbackLoad();
+async function idbGetAllFrom(name: string): Promise<QueueItem[]> {
   try {
-    const db = await openDb();
+    const db = await openDb(name);
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, "readonly");
       const req = tx.objectStore(STORE).getAll();
       req.onsuccess = () => resolve((req.result as QueueItem[]) ?? []);
       req.onerror = () => reject(req.error);
     });
+  } catch {
+    return [];
+  }
+}
+
+async function idbGetAll(): Promise<QueueItem[]> {
+  if (typeof indexedDB === "undefined") return sessionFallbackLoad();
+  try {
+    let items = await idbGetAllFrom(DB_NAME);
+    if (items.length === 0) {
+      const legacy = await idbGetAllFrom(DB_NAME_LEGACY);
+      if (legacy.length > 0) {
+        for (const item of legacy) await idbPut(item);
+        items = legacy;
+      }
+    }
+    return items;
   } catch {
     return sessionFallbackLoad();
   }
@@ -57,10 +76,10 @@ async function idbPut(item: QueueItem) {
   if (typeof indexedDB === "undefined") {
     const q = sessionFallbackLoad();
     q.push(item);
-    sessionStorage.setItem("nexo_offline_queue", JSON.stringify(q));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(q));
     return;
   }
-  const db = await openDb();
+  const db = await openDb(DB_NAME);
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
     tx.objectStore(STORE).put(item);
@@ -71,10 +90,11 @@ async function idbPut(item: QueueItem) {
 
 async function idbClear() {
   if (typeof indexedDB === "undefined") {
-    sessionStorage.removeItem("nexo_offline_queue");
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY_LEGACY);
     return;
   }
-  const db = await openDb();
+  const db = await openDb(DB_NAME);
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
     tx.objectStore(STORE).clear();
@@ -86,7 +106,9 @@ async function idbClear() {
 function sessionFallbackLoad(): QueueItem[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(sessionStorage.getItem("nexo_offline_queue") ?? "[]") as QueueItem[];
+    const raw =
+      sessionStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY_LEGACY) ?? "[]";
+    return JSON.parse(raw) as QueueItem[];
   } catch {
     return [];
   }

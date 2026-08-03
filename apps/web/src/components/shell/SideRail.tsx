@@ -65,7 +65,6 @@ const RAIL: Array<{
       { label: "Contratos de Manutenção", href: "/contratos", icon: "contratos", modulo: "contratos" },
       { label: "Colaboradores", href: "/pessoas", icon: "users", modulo: "pessoas" },
       { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
-      { label: "Cronograma de Manutenção", href: "/gestao/cronograma-manutencao", icon: "clipboard", modulo: "estrategico" },
       { label: "Cadastros Básicos", href: "/cadastros", icon: "folder", group: true, modulo: "equipamentos" },
     ],
   },

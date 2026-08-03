@@ -14,6 +14,7 @@ export class NavController {
 
   @Get("favoritos")
   favoritos() {
+    // Sugestões padrão; a TopBar persiste favoritos reais em localStorage (`aion_favoritos`).
     return [
       { id: "equipamentos", label: "Equipamentos", href: "/equipamentos" },
       { id: "os", label: "Ordens de Serviço", href: "/os" },
