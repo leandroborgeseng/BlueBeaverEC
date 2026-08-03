@@ -1,11 +1,12 @@
 import {
-  CanActivate,
   ExecutionContext,
   ForbiddenException,
   Injectable,
   SetMetadata,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { AuthGuard } from "@nestjs/passport";
+import { isObservable, lastValueFrom } from "rxjs";
 import {
   PERMISSAO_NIVEL,
   permissoesDoPerfil,
@@ -21,24 +22,36 @@ export const PERMISSAO_KEY = "nexo_permissao";
 export const RequirePermission = (modulo: ModuloPermissao, minimo: NivelPermissao = PERMISSAO_NIVEL.LEITURA) =>
   SetMetadata(PERMISSAO_KEY, { modulo, minimo });
 
+/**
+ * Guard global: só exige JWT + permissão quando há `@RequirePermission`.
+ * Assim o JWT roda aqui (APP_GUARD executa antes do `@UseGuards(JwtAuthGuard)`).
+ */
 @Injectable()
-export class PermissionsGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+export class PermissionsGuard extends AuthGuard("jwt") {
+  constructor(private readonly reflector: Reflector) {
+    super();
+  }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const meta = this.reflector.getAllAndOverride<{ modulo: ModuloPermissao; minimo: NivelPermissao }>(
       PERMISSAO_KEY,
       [context.getHandler(), context.getClass()],
     );
     if (!meta) return true;
 
-    const req = context.switchToHttp().getRequest<{ user?: AuthUser & { permissoesModulos?: Record<string, number> } }>();
+    const jwtResult = await super.canActivate(context);
+    const jwtOk = isObservable(jwtResult)
+      ? await lastValueFrom(jwtResult)
+      : await Promise.resolve(jwtResult);
+    if (!jwtOk) return false;
+
+    const req = context.switchToHttp().getRequest<{
+      user?: AuthUser & { permissoesModulos?: Record<string, number> };
+    }>();
     const user = req.user;
     if (!user) throw new ForbiddenException("Não autenticado");
 
-    const mapa =
-      user.permissoesModulos ??
-      permissoesDoPerfil(user.perfil as PerfilAcesso);
+    const mapa = user.permissoesModulos ?? permissoesDoPerfil(user.perfil as PerfilAcesso);
 
     if (!temPermissao(mapa, meta.modulo, meta.minimo)) {
       throw new ForbiddenException(`Sem permissão para ${meta.modulo}`);

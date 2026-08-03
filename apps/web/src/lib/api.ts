@@ -55,11 +55,14 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 
 async function fetchBinary(path: string, init?: RequestInit): Promise<{ blob: Blob; filename?: string }> {
   const token = getToken();
+  const method = (init?.method ?? "GET").toUpperCase();
+  const hasBody = init?.body != null && method !== "GET" && method !== "HEAD";
   let res: Response;
   try {
     res = await fetch(apiUrl(path), {
       ...init,
       headers: {
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(init?.headers ?? {}),
       },
