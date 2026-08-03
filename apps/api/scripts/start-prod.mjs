@@ -2,12 +2,16 @@
 /**
  * Start production: migrate + seed (rápido) + API + import em background.
  * Prefers DATABASE_URL as provided by the host (Railway).
+ *
+ * Evita `pnpm --filter` (quebra se o host ainda aponta @nexo/*).
  */
 import { spawn, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const monorepoRoot = path.resolve(root, "../..");
 
 function assembleFromPgVars() {
   const { PGHOST, PGPORT = "5432", PGUSER, PGPASSWORD, PGDATABASE } = process.env;
@@ -47,6 +51,18 @@ if (!url) {
 process.env.DATABASE_URL = url;
 logTarget(url);
 
+function resolveBin(name) {
+  const candidates = [
+    path.join(root, "node_modules", ".bin", name),
+    path.join(monorepoRoot, "node_modules", ".bin", name),
+    path.join(root, "node_modules", name, "build", "index.js"),
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return null;
+}
+
 function run(cmd, args) {
   const result = spawnSync(cmd, args, {
     cwd: root,
@@ -63,7 +79,18 @@ function run(cmd, args) {
   }
 }
 
-run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
+const prismaJs = path.join(monorepoRoot, "node_modules", "prisma", "build", "index.js");
+const prismaLocal = path.join(root, "node_modules", "prisma", "build", "index.js");
+if (existsSync(prismaJs)) {
+  run(process.execPath, [prismaJs, "migrate", "deploy"]);
+} else if (existsSync(prismaLocal)) {
+  run(process.execPath, [prismaLocal, "migrate", "deploy"]);
+} else {
+  const prismaBin = resolveBin("prisma");
+  if (prismaBin) run(prismaBin, ["migrate", "deploy"]);
+  else run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
+}
+
 run(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")]);
 
 // Import em background DEPOIS da API: healthcheck do Railway não mata o boot.

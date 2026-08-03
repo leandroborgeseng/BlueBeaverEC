@@ -1,0 +1,15 @@
+# Railway — serviço API
+# Root Directory: raiz do monorepo (vazio)
+# Build → Dockerfile path: apps/api/Dockerfile
+#
+# NÃO configure Custom Start com `pnpm --filter @nexo/...`
+# (pacotes renomeados para @aion/*). Deixe o CMD do Dockerfile.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/api/Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

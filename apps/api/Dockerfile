@@ -14,10 +14,12 @@ RUN pnpm install --frozen-lockfile=false
 FROM deps AS build
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
+# Mantém o workspace pnpm válido (apps/*) sem copiar o web inteiro
+COPY apps/web/package.json ./apps/web/package.json
 RUN pnpm --filter @aion/shared build
 WORKDIR /app/apps/api
 RUN pnpm prisma generate
-RUN pnpm build
+RUN pnpm exec nest build
 
 FROM node:22-alpine AS runner
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate \
@@ -28,6 +30,7 @@ COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/.npmrc ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/apps/api ./apps/api
+COPY --from=build /app/apps/web/package.json ./apps/web/package.json
 WORKDIR /app/apps/api
 EXPOSE 3001
 CMD ["node", "scripts/start-prod.mjs"]

@@ -78,6 +78,23 @@ docker compose exec api pnpm prisma:seed
 
 O compose sobe `db` + `api` + `web`. A API aplica migrations no start.
 
+## Deploy no Railway
+
+Dois serviços a partir da **raiz do monorepo** (não use Root Directory `apps/api` / `apps/web`).
+
+| Serviço | Dockerfile | Start |
+|---------|------------|-------|
+| API | `apps/api/Dockerfile` | `node scripts/start-prod.mjs` (já no Dockerfile) |
+| Web | `apps/web/Dockerfile` | `node scripts/start-prod.mjs` (já no Dockerfile) |
+
+**Importante após o rebrand Aion:** se o Custom Start/Build ainda tiver `pnpm --filter @nexo/api` ou `@nexo/web`, o container falha com:
+
+```text
+No projects matched the filters in "/app"
+```
+
+Troque para `@aion/api` / `@aion/web`, ou remova o custom command e use só o Dockerfile (recomendado).
+
 ## Docs de produto
 
 - `HANDOFF-Cursor.md`

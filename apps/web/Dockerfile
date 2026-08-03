@@ -16,6 +16,8 @@ ARG NEXT_PUBLIC_API_URL=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
+# Mantém o workspace pnpm válido (apps/*) sem copiar a api inteira
+COPY apps/api/package.json ./apps/api/package.json
 RUN pnpm --filter @aion/shared build
 RUN pnpm --filter @aion/web build
 
@@ -28,6 +30,7 @@ COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/.npmrc ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/apps/web ./apps/web
+COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 WORKDIR /app/apps/web
 EXPOSE 3000
 CMD ["node", "scripts/start-prod.mjs"]
