@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api } from "@/lib/api";
+import { useWindowStore } from "@/store/windows";
 
 interface Colaborador {
   id: string;
@@ -48,7 +49,9 @@ interface OsDetail {
 }
 
 type Tab = "geral" | "itens" | "log" | "acoes";
-type StatusAcao = "fechar" | "cancelar" | "reabrir";
+type StatusAcao = "fechar" | "cancelar" | "reabrir" | "iniciar" | "pausar";
+
+const TIPOS_COM_LAUDO = new Set(["PREVENTIVA", "CALIBRACAO", "TSE", "QUALIFICACAO"]);
 
 const tabStyle = (active: boolean): React.CSSProperties => ({
   padding: "8px 14px",
@@ -70,6 +73,7 @@ export function OsEditor({
   codigo: string;
   onDone: () => void;
 }) {
+  const open = useWindowStore((s) => s.open);
   const [tab, setTab] = useState<Tab>("geral");
   const [os, setOs] = useState<OsDetail | null>(null);
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
@@ -124,16 +128,45 @@ export function OsEditor({
 
   async function confirmarStatus(justificativa?: string) {
     if (!statusModal) return;
-    await api(`/os/${numero}/status`, {
-      method: "PATCH",
-      body: JSON.stringify({ acao: statusModal, justificativa }),
-    });
-    setStatusModal(null);
-    if (statusModal === "fechar" || statusModal === "cancelar") {
-      onDone();
-    } else {
-      setMsg(`OS ${statusModal === "reabrir" ? "reaberta" : statusModal}`);
+    const acao = statusModal;
+    try {
+      await api(`/os/${numero}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ acao, justificativa }),
+      });
+      setStatusModal(null);
+      setErro(null);
+      if (acao === "fechar" || acao === "cancelar") {
+        onDone();
+      } else {
+        setMsg(
+          acao === "reabrir"
+            ? "OS reaberta"
+            : acao === "iniciar"
+              ? "OS em andamento"
+              : acao === "pausar"
+                ? "OS pausada"
+                : `OS ${acao}`,
+        );
+        await load();
+      }
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
+      setStatusModal(null);
+    }
+  }
+
+  async function patchStatusDireto(acao: "iniciar" | "pausar") {
+    try {
+      await api(`/os/${numero}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ acao }),
+      });
+      setMsg(acao === "iniciar" ? "OS em andamento" : "OS pausada");
+      setErro(null);
       await load();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro");
     }
   }
 
@@ -195,6 +228,24 @@ export function OsEditor({
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {os.tipo && TIPOS_COM_LAUDO.has(os.tipo) && (
+              <Btn
+                size="sm"
+                onClick={() =>
+                  open({
+                    kind: "laudo",
+                    title: `Laudo · OS ${os.numero}`,
+                    payload: {
+                      tipo: os.tipo,
+                      equipamentoTag: equipTag,
+                      osNumero: os.numero,
+                    },
+                  })
+                }
+              >
+                Registrar laudo
+              </Btn>
+            )}
             <Btn variant="ghost" size="sm" href={`/mobile/os/${numero}`}>
               Abrir no campo
             </Btn>
@@ -296,6 +347,14 @@ export function OsEditor({
           <div>
             <FieldLabel>Alterar status</FieldLabel>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {(os.status === "ABERTA" || os.status === "NAO_ATRIBUIDA") && (
+                <Btn onClick={() => void patchStatusDireto("iniciar")}>Iniciar</Btn>
+              )}
+              {os.status === "EM_ANDAMENTO" && (
+                <Btn variant="secondary" onClick={() => void patchStatusDireto("pausar")}>
+                  Pausar
+                </Btn>
+              )}
               <Btn onClick={() => setStatusModal("fechar")}>Fechar OS</Btn>
               <Btn variant="danger" onClick={() => setStatusModal("cancelar")}>
                 Cancelar OS
@@ -304,6 +363,11 @@ export function OsEditor({
                 Reabrir OS
               </Btn>
             </div>
+            {os.tipo && TIPOS_COM_LAUDO.has(os.tipo) && (
+              <p style={{ margin: "8px 0 0", fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                Fechar exige laudo aprovado vinculado a esta OS (engenheiro pode justificar override).
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -311,9 +375,15 @@ export function OsEditor({
       <ConfirmModal
         open={statusModal === "fechar"}
         title="Fechar ordem de serviço"
-        message={`Confirma o fechamento da OS ${os.codigo}?`}
+        message={
+          os.tipo && TIPOS_COM_LAUDO.has(os.tipo)
+            ? `Confirma o fechamento da OS ${os.codigo}? Sem laudo aprovado vinculado, engenheiro deve justificar o override.`
+            : `Confirma o fechamento da OS ${os.codigo}?`
+        }
         confirmLabel="Fechar"
-        onConfirm={() => confirmarStatus()}
+        requireJustification={Boolean(os.tipo && TIPOS_COM_LAUDO.has(os.tipo))}
+        justificationMin={0}
+        onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
       />
       <ConfirmModal

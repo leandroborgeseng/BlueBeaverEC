@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrioridadeOS, StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
-import { podeAlterarStatusOS } from "@aion/shared";
+import { PERMISSAO_NIVEL, podeAlterarStatusOS, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import type { AuthUser } from "../auth/current-user.decorator";
@@ -17,11 +17,24 @@ export class SolicitacoesService {
     private readonly os: OsService,
   ) {}
 
-  list(estabelecimentoId: string, status?: StatusSolicitacao) {
+  async list(user: AuthUser, status?: StatusSolicitacao) {
+    const podeTriagem = temPermissao(
+      user.permissoesModulos,
+      "os",
+      PERMISSAO_NIVEL.EDICAO,
+    );
+
+    let solicitanteNome: string | undefined;
+    if (!podeTriagem) {
+      const me = await this.prisma.usuario.findUnique({ where: { id: user.userId } });
+      solicitanteNome = me?.nome;
+    }
+
     return this.prisma.solicitacaoServico.findMany({
       where: {
-        estabelecimentoId,
+        estabelecimentoId: user.estabelecimentoId,
         ...(status ? { status } : {}),
+        ...(solicitanteNome ? { solicitanteNome } : {}),
       },
       include: { equipamento: true, ordemServico: true },
       orderBy: { createdAt: "desc" },
@@ -79,7 +92,7 @@ export class SolicitacoesService {
   }
 
   async aprovar(user: AuthUser, id: string, responsavelId?: string) {
-    if (!podeAlterarStatusOS(user.perfil)) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro pode aprovar solicitações");
     }
 
@@ -113,7 +126,7 @@ export class SolicitacoesService {
   }
 
   async recusar(user: AuthUser, id: string, justificativa: string) {
-    if (!podeAlterarStatusOS(user.perfil)) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro pode recusar solicitações");
     }
     if (!justificativa?.trim()) {
@@ -138,7 +151,7 @@ export class SolicitacoesService {
   }
 
   async vincularEquipamento(user: AuthUser, id: string, equipamentoTag: string) {
-    if (!podeAlterarStatusOS(user.perfil)) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException();
     }
     const sol = await this.prisma.solicitacaoServico.findFirst({

@@ -22,7 +22,7 @@ class FinalizarDto {
   observacoes?: string;
 
   @IsString()
-  @MinLength(1)
+  @MinLength(100)
   assinaturaBase64!: string;
 }
 

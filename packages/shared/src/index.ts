@@ -214,9 +214,40 @@ export function podeEditarCadastros(perfil: PerfilAcesso, mapa?: MapaPermissoes)
   return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
 }
 
+/** Aprovar/recusar solicitações, atribuir OS, cancelar/reabrir — nível de aprovação. */
 export function podeAlterarStatusOS(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {
   if (mapa) return temPermissao(mapa, "os", PERMISSAO_NIVEL.EDICAO_APROVACAO);
   return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
+}
+
+export type AcaoStatusOS = "iniciar" | "pausar" | "fechar" | "cancelar" | "reabrir";
+
+/**
+ * Técnico (EDICAO) inicia/pausa/fecha execução.
+ * Cancelar/reabrir exige EDICAO_APROVACAO (engenheiro/gestor).
+ */
+export function podeExecutarAcaoStatusOS(
+  perfil: PerfilAcesso,
+  acao: AcaoStatusOS,
+  mapa?: MapaPermissoes,
+): boolean {
+  const precisaAprovacao = acao === "cancelar" || acao === "reabrir";
+  if (mapa) {
+    return temPermissao(
+      mapa,
+      "os",
+      precisaAprovacao ? PERMISSAO_NIVEL.EDICAO_APROVACAO : PERMISSAO_NIVEL.EDICAO,
+    );
+  }
+  if (precisaAprovacao) {
+    return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
+  }
+  return (
+    perfil === "TECNICO" ||
+    perfil === "ENGENHEIRO" ||
+    perfil === "GESTOR" ||
+    perfil === "ADMIN"
+  );
 }
 
 export function podeVerFinanceiro(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {

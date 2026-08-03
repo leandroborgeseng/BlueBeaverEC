@@ -49,7 +49,7 @@ export function ConfirmModal({
     setBusy(true);
     setErro(null);
     try {
-      await onConfirm(requireJustification ? justificativa.trim() : undefined);
+      await onConfirm(requireJustification ? justificativa.trim() || undefined : undefined);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro");
       setBusy(false);

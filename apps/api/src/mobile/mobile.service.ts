@@ -216,14 +216,22 @@ export class MobileService {
     return this.estoque.baixar(user, body.itemCodigo, body.qtd, numero);
   }
 
+  private assertAssinaturaValida(assinaturaBase64: string) {
+    const raw = assinaturaBase64?.trim() ?? "";
+    if (!raw || raw === "offline" || raw.length < 100) {
+      throw new BadRequestException("Assinatura digital inválida ou ausente");
+    }
+    if (!raw.startsWith("data:image")) {
+      throw new BadRequestException("Assinatura deve ser uma imagem (data URL)");
+    }
+  }
+
   async finalizar(
     user: AuthUser,
     numero: number,
     body: { observacoes?: string; assinaturaBase64: string },
   ) {
-    if (!body.assinaturaBase64?.trim()) {
-      throw new ForbiddenException("Assinatura digital obrigatória");
-    }
+    this.assertAssinaturaValida(body.assinaturaBase64);
 
     const os = await this.findOs(user.estabelecimentoId, numero);
     await this.assertPodeExecutar(user, os);
@@ -231,6 +239,8 @@ export class MobileService {
     if (os.pendencia?.trim()) {
       throw new ConflictException("Não é possível finalizar OS com pendência aberta");
     }
+
+    await this.os.assertLaudoAprovadoParaFechar(user, os);
 
     return this.prisma.$transaction(async (tx) => {
       const reservas = await tx.estoqueReserva.findMany({
@@ -319,7 +329,7 @@ export class MobileService {
       case "FINALIZAR_OS":
         await this.finalizar(user, Number(payload.numero), {
           observacoes: String(payload.observacoes ?? ""),
-          assinaturaBase64: String(payload.assinaturaBase64 ?? "offline"),
+          assinaturaBase64: String(payload.assinaturaBase64 ?? ""),
         });
         break;
       case "CHECKLIST":

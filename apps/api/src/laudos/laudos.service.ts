@@ -158,7 +158,11 @@ export class LaudosService {
       include: { equipamento: true, procedimento: true },
     });
 
-    if (data.tipo === TipoLaudo.RECEBIMENTO) {
+    if (
+      data.tipo === TipoLaudo.RECEBIMENTO &&
+      (resultado === ResultadoLaudo.APROVADO ||
+        resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS)
+    ) {
       await this.prisma.equipamento.update({
         where: { id: equipamento.id },
         data: { checklistRecebimentoPendente: false },

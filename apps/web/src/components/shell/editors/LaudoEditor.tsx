@@ -97,6 +97,7 @@ interface LaudoDetail {
   numero: string;
   tipo: string;
   resultado: string;
+  osNumero?: number | null;
   dataExecucao?: string;
   respostas?: RespostaItem[];
   metadados?: Record<string, unknown>;
@@ -125,12 +126,14 @@ export function LaudoEditor({
   laudoId,
   tipo: tipoInicial,
   equipamentoTag: tagInicial,
+  osNumero: osNumeroInicial,
   windowId,
   onDone,
 }: {
   laudoId?: string;
   tipo?: string;
   equipamentoTag?: string;
+  osNumero?: number;
   windowId?: string;
   onDone?: () => void;
 }) {
@@ -141,6 +144,7 @@ export function LaudoEditor({
   const [laudo, setLaudo] = useState<LaudoDetail | null>(null);
   const [tipo, setTipo] = useState(tipoInicial ?? "PREVENTIVA");
   const [equipamentoTag, setEquipamentoTag] = useState(tagInicial ?? "");
+  const [osNumero, setOsNumero] = useState(osNumeroInicial != null ? String(osNumeroInicial) : "");
   const [procs, setProcs] = useState<Proc[]>([]);
   const [cols, setCols] = useState<Colaborador[]>([]);
   const [insts, setInsts] = useState<Inst[]>([]);
@@ -168,6 +172,7 @@ export function LaudoEditor({
     setEquipamentoTag(data.equipamento.tag);
     setRespostas((data.respostas as RespostaItem[]) ?? []);
     setJustificativaRessalva(data.justificativaRessalva ?? "");
+    if (data.osNumero != null) setOsNumero(String(data.osNumero));
     if (windowId) {
       updateWindow(windowId, { title: `Laudo ${data.numero}` });
     }
@@ -345,6 +350,7 @@ export function LaudoEditor({
           instrumentoId: instrumentoId || undefined,
           responsavelTecnicoId: responsavelTecnicoId || undefined,
           tecnicoNome: tecnicoNome || undefined,
+          osNumero: osNumero.trim() ? Number(osNumero) : undefined,
           respostas: computedRespostas,
           metadados: {
             criterioAceitacao,
@@ -441,6 +447,21 @@ export function LaudoEditor({
                 />
               )}
             </div>
+          </div>
+
+          <div>
+            <FieldLabel>Nº OS vinculada (obrigatória p/ fechar preventiva/calibração/TSE/QLF)</FieldLabel>
+            {viewMode ? (
+              <div style={{ fontSize: 13 }}>{laudo?.osNumero ?? "—"}</div>
+            ) : (
+              <input
+                value={osNumero}
+                onChange={(e) => setOsNumero(e.target.value)}
+                placeholder="Ex.: 1234"
+                inputMode="numeric"
+                style={fieldStyle}
+              />
+            )}
           </div>
 
           {!viewMode && (

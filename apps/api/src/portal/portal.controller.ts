@@ -19,7 +19,7 @@ export class PortalController {
   @Get("cronograma-calibracao")
   async cronograma(@CurrentUser() user: AuthUser, @Query("setor") setor?: string) {
     const me = await this.session.me(user);
-    const setorFilter = await this.resolveSetorFilter(me.setorIds, setor);
+    const setorFilter = await this.resolveSetorFilter(user.estabelecimentoId, me.setorIds, setor);
 
     const laudos = await this.prisma.laudo.findMany({
       where: {
@@ -57,7 +57,7 @@ export class PortalController {
   @Get("inventario-setor")
   async inventario(@CurrentUser() user: AuthUser, @Query("setor") setor?: string) {
     const me = await this.session.me(user);
-    const setorFilter = await this.resolveSetorFilter(me.setorIds, setor);
+    const setorFilter = await this.resolveSetorFilter(user.estabelecimentoId, me.setorIds, setor);
 
     const items = await this.prisma.equipamento.findMany({
       where: {
@@ -86,10 +86,17 @@ export class PortalController {
     }));
   }
 
-  private async resolveSetorFilter(setorIds: string[], setorNome?: string) {
+  private async resolveSetorFilter(
+    estabelecimentoId: string,
+    setorIds: string[],
+    setorNome?: string,
+  ) {
     if (setorNome?.trim()) {
       const s = await this.prisma.setor.findFirst({
-        where: { nome: { contains: setorNome.trim(), mode: "insensitive" } },
+        where: {
+          estabelecimentoId,
+          nome: { contains: setorNome.trim(), mode: "insensitive" },
+        },
       });
       return s ? [s.id] : ["__none__"];
     }

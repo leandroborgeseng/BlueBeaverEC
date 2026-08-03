@@ -58,28 +58,29 @@ export class SolicitacoesController {
 
   @Get()
   list(@CurrentUser() user: AuthUser, @Query("status") status?: StatusSolicitacao) {
-    return this.solicitacoes.list(user.estabelecimentoId, status);
+    return this.solicitacoes.list(user, status);
   }
 
-  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
+  /** Solicitante usa módulo portal (EDICAO); triagem usa os. */
+  @RequirePermission("portal", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateSolicitacaoDto) {
     return this.solicitacoes.create(user, body);
   }
 
-  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   @Post(":id/aprovar")
   aprovar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: AprovarDto) {
     return this.solicitacoes.aprovar(user, id, body.responsavelId);
   }
 
-  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   @Post(":id/recusar")
   recusar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: RecusarDto) {
     return this.solicitacoes.recusar(user, id, body.justificativa);
   }
 
-  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   @Patch(":id/equipamento")
   vincular(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: VincularDto) {
     return this.solicitacoes.vincularEquipamento(user, id, body.equipamentoTag);

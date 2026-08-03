@@ -115,6 +115,11 @@ function WindowFrame({
             equipamentoTag={
               win.payload?.equipamentoTag != null ? String(win.payload.equipamentoTag) : undefined
             }
+            osNumero={
+              win.payload?.osNumero != null && win.payload.osNumero !== ""
+                ? Number(win.payload.osNumero)
+                : undefined
+            }
             windowId={win.id}
             onDone={onClose}
           />

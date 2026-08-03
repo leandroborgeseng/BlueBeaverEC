@@ -5,10 +5,29 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { PrioridadeOS, Prisma, StatusOS, TipoOS } from "@prisma/client";
-import { SLA_HORAS, podeAlterarStatusOS, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
+import { PrioridadeOS, Prisma, ResultadoLaudo, StatusOS, TipoLaudo, TipoOS } from "@prisma/client";
+import {
+  PERMISSAO_NIVEL,
+  SLA_HORAS,
+  podeAlterarStatusOS,
+  podeExecutarAcaoStatusOS,
+  temPermissao,
+  type PrioridadeOS as PrioridadeShared,
+} from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+
+const TIPOS_OS_EXIGEM_LAUDO: TipoOS[] = [
+  TipoOS.PREVENTIVA,
+  TipoOS.CALIBRACAO,
+  TipoOS.TSE,
+  TipoOS.QUALIFICACAO,
+];
+
+const RESULTADOS_LAUDO_OK: ResultadoLaudo[] = [
+  ResultadoLaudo.APROVADO,
+  ResultadoLaudo.APROVADO_COM_RESSALVAS,
+];
 
 @Injectable()
 export class OsService {
@@ -351,7 +370,7 @@ export class OsService {
   }
 
   async atribuir(user: AuthUser, numero: number, responsavelId: string) {
-    if (!podeAlterarStatusOS(user.perfil)) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente o Engenheiro pode atribuir OS");
     }
     const os = await this.findByNumero(user.estabelecimentoId, numero);
@@ -367,13 +386,48 @@ export class OsService {
     });
   }
 
+  /**
+   * Preventiva/calibração/TSE/QLF só fecham com laudo aprovado vinculado (osNumero)
+   * ou override de engenheiro com justificativa.
+   */
+  async assertLaudoAprovadoParaFechar(
+    user: AuthUser,
+    os: { numero: number; tipo: TipoOS; equipamentoId: string },
+    justificativa?: string,
+  ) {
+    if (!TIPOS_OS_EXIGEM_LAUDO.includes(os.tipo)) return;
+
+    const tipoLaudo = os.tipo as unknown as TipoLaudo;
+    const laudo = await this.prisma.laudo.findFirst({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        equipamentoId: os.equipamentoId,
+        tipo: tipoLaudo,
+        osNumero: os.numero,
+        resultado: { in: RESULTADOS_LAUDO_OK },
+      },
+      select: { id: true, numero: true },
+    });
+    if (laudo) return;
+
+    const podeOverride =
+      Boolean(justificativa?.trim()) &&
+      temPermissao(user.permissoesModulos, "os", PERMISSAO_NIVEL.EDICAO_APROVACAO);
+    if (podeOverride) return;
+
+    throw new ConflictException(
+      `Não é possível fechar OS ${os.tipo} sem laudo aprovado vinculado (nº OS ${os.numero}). ` +
+        "Engenheiro pode justificar o override.",
+    );
+  }
+
   async changeStatus(
     user: AuthUser,
     numero: number,
     acao: "fechar" | "cancelar" | "reabrir" | "iniciar" | "pausar",
     justificativa?: string,
   ) {
-    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
+    if (!podeExecutarAcaoStatusOS(user.perfil, acao, user.permissoesModulos)) {
       throw new ForbiddenException("Sem permissão para alterar o status desta OS");
     }
 
@@ -409,6 +463,7 @@ export class OsService {
       if (os.pendencia?.trim()) {
         throw new ConflictException("Não é possível fechar OS com pendência aberta");
       }
+      await this.assertLaudoAprovadoParaFechar(user, os, justificativa);
       return this.prisma.$transaction(async (tx) => {
         const reservas = await tx.estoqueReserva.findMany({
           where: { ordemServicoId: os.id, ativa: true },
