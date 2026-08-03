@@ -570,22 +570,82 @@ model ProcedimentoModelo {
 }
 
 model InstrumentoPadrao {
-  id                 String    @id @default(cuid())
-  estabelecimentoId  String
-  nome               String
-  nSerie             String
-  certificadoNumero  String?
-  certificadoEmissao DateTime?
+  id                  String    @id @default(cuid())
+  estabelecimentoId   String
+  nome                String
+  nSerie              String
+  fabricante          String?
+  modelo              String?
+  codigoPatrimonio    String?
+  /// Grandezas cobertas (ex.: temperatura, umidade, pressão)
+  grandezas           String[]  @default([])
+  faixaMedicao        String?
+  resolucao           String?
+  observacoes         String?
+  /// Snapshot do certificado vigente (legado / lookup rápido)
+  certificadoNumero   String?
+  certificadoEmissao  DateTime?
   certificadoValidade DateTime?
-  laboratorioEmissor String?
-  ativo              Boolean   @default(true)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  laboratorioEmissor  String?
+  ativo               Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   laudos          Laudo[]
+  certificados    CertificadoPadrao[]
 
   @@unique([estabelecimentoId, nSerie])
+  @@index([estabelecimentoId, ativo])
+}
+
+/// Histórico de certificados de calibração do padrão (RBC / laboratório).
+model CertificadoPadrao {
+  id                     String   @id @default(cuid())
+  estabelecimentoId      String
+  instrumentoId          String
+  numero                 String
+  dataEmissao            DateTime
+  dataValidade           DateTime
+  laboratorioEmissor     String?
+  laboratorioAcreditacao String?
+  /// Fator de abrangência k (tipicamente 2)
+  fatorAbrangencia       Float    @default(2)
+  observacoes            String?
+  anexoNome              String?
+  anexoMime              String?  @default("application/pdf")
+  anexoConteudo          Bytes?
+  vigente                Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  instrumento InstrumentoPadrao         @relation(fields: [instrumentoId], references: [id], onDelete: Cascade)
+  pontos      CertificadoPadraoPonto[]
+
+  @@unique([instrumentoId, numero])
+  @@index([estabelecimentoId])
+  @@index([instrumentoId, vigente])
+  @@index([dataValidade])
+}
+
+/// Pontos metrológicos do certificado do padrão (necessário para U e correção).
+model CertificadoPadraoPonto {
+  id                   String  @id @default(cuid())
+  certificadoId        String
+  ordem                Int     @default(0)
+  grandeza             String?
+  unidade              String
+  valorNominal         Float?
+  valorConvencional    Float?
+  indicacao            Float?
+  correcao             Float?
+  incertezaExpandida   Float
+  fatorK               Float?  @default(2)
+  observacao           String?
+
+  certificado CertificadoPadrao @relation(fields: [certificadoId], references: [id], onDelete: Cascade)
+
+  @@index([certificadoId])
 }
 
 model Laudo {

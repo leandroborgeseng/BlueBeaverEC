@@ -292,17 +292,73 @@ async function main() {
     where: {
       estabelecimentoId_nSerie: { estabelecimentoId: hospital.id, nSerie: "FLUKE-ESA615-001" },
     },
-    update: {},
+    update: {
+      fabricante: "Fluke Biomedical",
+      modelo: "ESA615",
+      grandezas: ["corrente de fuga", "resistência", "tensão"],
+      faixaMedicao: "conforme manual ESA615",
+      resolucao: "1 µA",
+    },
     create: {
       estabelecimentoId: hospital.id,
       nome: "Analisador de Segurança Elétrica Fluke ESA615",
       nSerie: "FLUKE-ESA615-001",
+      fabricante: "Fluke Biomedical",
+      modelo: "ESA615",
+      grandezas: ["corrente de fuga", "resistência", "tensão"],
+      faixaMedicao: "conforme manual ESA615",
+      resolucao: "1 µA",
       certificadoNumero: "RBC-99881",
       certificadoEmissao: new Date("2025-09-01"),
       certificadoValidade: new Date("2027-09-01"),
       laboratorioEmissor: "Lab Metrologia Sul",
     },
   });
+
+  const certExistente = await prisma.certificadoPadrao.findFirst({
+    where: { instrumentoId: instrumento.id, numero: "RBC-99881" },
+  });
+  if (!certExistente) {
+    await prisma.certificadoPadrao.create({
+      data: {
+        estabelecimentoId: hospital.id,
+        instrumentoId: instrumento.id,
+        numero: "RBC-99881",
+        dataEmissao: new Date("2025-09-01"),
+        dataValidade: new Date("2027-09-01"),
+        laboratorioEmissor: "Lab Metrologia Sul",
+        laboratorioAcreditacao: "CRL-0000",
+        fatorAbrangencia: 2,
+        vigente: true,
+        pontos: {
+          create: [
+            {
+              ordem: 1,
+              grandeza: "Corrente de fuga",
+              unidade: "µA",
+              valorNominal: 100,
+              valorConvencional: 100.2,
+              indicacao: 100.0,
+              correcao: 0.2,
+              incertezaExpandida: 1.5,
+              fatorK: 2,
+            },
+            {
+              ordem: 2,
+              grandeza: "Resistência de aterramento",
+              unidade: "mOhm",
+              valorNominal: 100,
+              valorConvencional: 99.8,
+              indicacao: 100.0,
+              correcao: -0.2,
+              incertezaExpandida: 2.0,
+              fatorK: 2,
+            },
+          ],
+        },
+      },
+    });
+  }
 
   const procPrev = await prisma.procedimentoLaudo.upsert({
     where: { id: "proc_prev_vent" },
