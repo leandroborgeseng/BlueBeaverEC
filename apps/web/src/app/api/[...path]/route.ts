@@ -84,7 +84,7 @@ async function proxy(req: NextRequest, path: string[]) {
   } catch (err) {
     return NextResponse.json(
       {
-        message: `API inacessível (${base}): ${errorDetail(err)}. Use http:// (não https) no host *.railway.internal, mesma PORT da API, e API Active. Alternativa: URL pública https://…up.railway.app.`,
+        message: `API inacessível (${base}): ${errorDetail(err)}. ECONNREFUSED = API fora do ar ou porta errada (no Railway costuma ser $PORT, ex. 8080 — veja o log "listening on"). Ajuste API_INTERNAL_URL ou use a URL pública https://…up.railway.app.`,
       },
       { status: 502 },
     );
