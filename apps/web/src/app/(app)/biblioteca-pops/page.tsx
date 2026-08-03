@@ -205,6 +205,7 @@ export default function BibliotecaPopsPage() {
                         onClick={() =>
                           void downloadApi(
                             `/estrategico/pops/${p.id}/documento.pdf`,
+                            { method: "GET" },
                             p.nomeArquivo ?? `${p.codigo}.pdf`,
                           )
                         }
@@ -271,6 +272,7 @@ export default function BibliotecaPopsPage() {
                 onClick={() =>
                   void downloadApi(
                     `/estrategico/pops/${preview.pop.id}/documento.pdf`,
+                    { method: "GET" },
                     preview.pop.nomeArquivo ?? `${preview.pop.codigo}.pdf`,
                   )
                 }
