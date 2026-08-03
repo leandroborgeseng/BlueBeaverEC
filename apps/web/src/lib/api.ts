@@ -53,8 +53,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** Busca binário (PDF) com auth Bearer e devolve Blob. */
-export async function fetchBlob(path: string, init?: RequestInit): Promise<Blob> {
+async function fetchBinary(path: string, init?: RequestInit): Promise<{ blob: Blob; filename?: string }> {
   const token = getToken();
   let res: Response;
   try {
@@ -72,7 +71,29 @@ export async function fetchBlob(path: string, init?: RequestInit): Promise<Blob>
     const body = await res.json().catch(() => ({}));
     throw new Error((body as { message?: string }).message ?? `Erro ${res.status}`);
   }
-  return res.blob();
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") ?? "";
+  const match = /filename="?([^"]+)"?/i.exec(cd);
+  return { blob, filename: match?.[1] };
+}
+
+/** Busca binário (PDF) com auth Bearer e devolve Blob. */
+export async function fetchBlob(path: string, init?: RequestInit): Promise<Blob> {
+  const { blob } = await fetchBinary(path, init);
+  return blob;
+}
+
+/** Download binário (PDF/XLSX) com auth Bearer. */
+export async function downloadApi(path: string, init?: RequestInit, fallbackName = "download.bin") {
+  const { blob, filename } = await fetchBinary(path, init);
+  const name = filename ?? fallbackName;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+  return name;
 }
 
 export { API_URL };
