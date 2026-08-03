@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { api, downloadApi } from "@/lib/api";
+import { api, downloadApi, fetchBlob } from "@/lib/api";
 import {
   Badge,
   Btn,
@@ -11,7 +11,6 @@ import {
   FieldLabel,
   FilterBar,
   PageHeader,
-  Panel,
   ResultCount,
   fieldStyle,
   td,
@@ -31,11 +30,15 @@ interface Cert {
 
 export default function CertificadosPage() {
   const [items, setItems] = useState<Cert[]>([]);
-  const [doc, setDoc] = useState<unknown>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [qStatus, setQStatus] = useState("Todos");
   const [qTipo, setQTipo] = useState("Todos");
+  const [preview, setPreview] = useState<{
+    cert: Cert;
+    url: string;
+    loading: boolean;
+  } | null>(null);
 
   async function load() {
     setItems(await api<Cert[]>("/certificados"));
@@ -44,6 +47,12 @@ export default function CertificadosPage() {
   useEffect(() => {
     void load().catch((e) => setErro(e.message));
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (preview?.url) URL.revokeObjectURL(preview.url);
+    };
+  }, [preview?.url]);
 
   const filtered = useMemo(() => {
     return items.filter((c) => {
@@ -56,8 +65,23 @@ export default function CertificadosPage() {
   const vencidos = items.filter((c) => c.statusCertificado === "VENCIDO").length;
   const aVencer = items.filter((c) => c.statusCertificado === "A_VENCER").length;
 
-  async function consultar(id: string) {
-    setDoc(await api(`/certificados/${id}/documento`));
+  function fecharPreview() {
+    if (preview?.url) URL.revokeObjectURL(preview.url);
+    setPreview(null);
+  }
+
+  async function visualizar(c: Cert) {
+    if (preview?.url) URL.revokeObjectURL(preview.url);
+    setPreview({ cert: c, url: "", loading: true });
+    setErro(null);
+    try {
+      const blob = await fetchBlob(`/certificados/${c.id}/documento.pdf`);
+      const url = URL.createObjectURL(blob);
+      setPreview({ cert: c, url, loading: false });
+    } catch (err) {
+      setPreview(null);
+      setErro(err instanceof Error ? err.message : "Erro ao carregar PDF");
+    }
   }
 
   async function reabrir(id: string) {
@@ -68,7 +92,7 @@ export default function CertificadosPage() {
       body: JSON.stringify({ justificativa }),
     });
     setMsg("Certificado reaberto");
-    setDoc(null);
+    fecharPreview();
     await load();
   }
 
@@ -142,9 +166,13 @@ export default function CertificadosPage() {
                 <Badge tone={c.statusCertificado}>{c.statusCertificado.replace("_", " ")}</Badge>
               </td>
               <td style={td}>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <Btn variant="ghost" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void consultar(c.id)}>
-                    Documento
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <Btn
+                    variant="primary"
+                    style={{ padding: "6px 10px", fontSize: 12 }}
+                    onClick={() => void visualizar(c)}
+                  >
+                    Visualizar
                   </Btn>
                   <Btn
                     variant="ghost"
@@ -157,7 +185,7 @@ export default function CertificadosPage() {
                       ).catch((err) => setErro(err instanceof Error ? err.message : "Erro ao baixar PDF"))
                     }
                   >
-                    {c.temAnexoOriginal ? "PDF original" : "PDF"}
+                    Baixar
                   </Btn>
                   <Btn variant="secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void reabrir(c.id)}>
                     Reabrir
@@ -170,21 +198,89 @@ export default function CertificadosPage() {
       </DataTable>
       {filtered.length === 0 && <Empty text="Nenhum certificado neste filtro." />}
 
-      {doc != null && (
-        <Panel title="Documento do certificado" action={<Btn variant="ghost" onClick={() => setDoc(null)}>Fechar</Btn>}>
-          <pre
+      {preview && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-label="Pré-visualização do certificado"
+          onClick={fecharPreview}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 90,
+            background: "rgba(16,24,40,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              margin: 0,
-              fontSize: 11,
-              overflow: "auto",
-              maxHeight: 360,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
+              width: "min(960px, 100%)",
+              height: "min(90vh, 900px)",
+              background: "white",
+              borderRadius: 12,
+              boxShadow: "0 24px 64px rgba(16,24,40,0.28)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
             }}
           >
-            {JSON.stringify(doc, null, 2)}
-          </pre>
-        </Panel>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                padding: "12px 16px",
+                borderBottom: "1px solid oklch(0.92 0.006 255)",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  {preview.cert.numero} · {preview.cert.tipo}
+                </div>
+                <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {preview.cert.equipamento.tag} — {preview.cert.equipamento.nome}
+                  {preview.cert.temAnexoOriginal ? " · PDF original" : ""}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <Btn
+                  variant="secondary"
+                  style={{ padding: "6px 12px", fontSize: 12 }}
+                  onClick={() =>
+                    void downloadApi(
+                      `/certificados/${preview.cert.id}/documento.pdf`,
+                      { method: "GET" },
+                      `${preview.cert.equipamento.tag}-${preview.cert.tipo}.pdf`,
+                    ).catch((err) => setErro(err instanceof Error ? err.message : "Erro"))
+                  }
+                >
+                  Baixar
+                </Btn>
+                <Btn variant="ghost" style={{ padding: "6px 12px", fontSize: 12 }} onClick={fecharPreview}>
+                  Fechar
+                </Btn>
+              </div>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, background: "oklch(0.96 0.005 255)" }}>
+              {preview.loading || !preview.url ? (
+                <div style={{ height: "100%", display: "grid", placeItems: "center", color: "oklch(0.5 0.02 250)" }}>
+                  Carregando PDF…
+                </div>
+              ) : (
+                <iframe
+                  title={`Certificado ${preview.cert.numero}`}
+                  src={preview.url}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
