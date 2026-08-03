@@ -62,6 +62,7 @@ export class CertificadosController {
   }
 
   @Post(":id/reabrir")
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   reabrir(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: ReabrirDto) {
     return this.laudos.reabrirCertificado(user, id, body.justificativa);
   }

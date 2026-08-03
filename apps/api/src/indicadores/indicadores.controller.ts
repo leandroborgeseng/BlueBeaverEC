@@ -49,6 +49,7 @@ export class IndicadoresController {
   }
 
   @Post("construtor")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   construtor(@CurrentUser() user: AuthUser, @Body() body: ConstrutorDto) {
     return this.indicadores.construtor(user, body);
   }

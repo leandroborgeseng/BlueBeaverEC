@@ -69,11 +69,13 @@ export class GestaoController {
   }
 
   @Post("plano-diretor")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   createPlano(@CurrentUser() user: AuthUser, @Body() body: PlanoDto) {
     return this.gestao.createPlanoDiretor(user, body);
   }
 
   @Patch("plano-diretor/:id")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   patchPlano(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PlanoDto) {
     return this.gestao.patchPlanoDiretor(user, id, body);
   }

@@ -93,7 +93,7 @@ export class AuditoriasController {
     return this.auditorias.fecharNc(user, id, body.justificativa);
   }
 
-  @RequirePermission("auditorias", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("auditorias", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   @Post("nao-conformidades/:id/reabrir")
   reabrir(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: JustificativaDto) {
     return this.auditorias.reabrirNc(user, id, body.justificativa);

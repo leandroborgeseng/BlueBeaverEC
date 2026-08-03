@@ -25,7 +25,7 @@ export class AuditoriasService {
   }
 
   async create(user: AuthUser, data: { escopo: string; responsavelId?: string }) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const codigo = await this.nextCodigo(user.estabelecimentoId, "AUD");
     return this.prisma.auditoria.create({
       data: {
@@ -39,7 +39,7 @@ export class AuditoriasService {
   }
 
   async iniciar(user: AuthUser, id: string) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const aud = await this.findAud(user.estabelecimentoId, id);
     return this.prisma.auditoria.update({
       where: { id: aud.id },

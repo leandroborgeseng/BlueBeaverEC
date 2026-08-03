@@ -183,7 +183,7 @@ export class EquipamentosService {
       situacao?: SituacaoEquipamento;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode cadastrar equipamentos");
     }
     return this.prisma.equipamento.create({
@@ -239,7 +239,7 @@ export class EquipamentosService {
       dataEndOfLife?: string | null;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro pode salvar alterações");
     }
     const eq = await this.prisma.equipamento.findUnique({
@@ -291,7 +291,7 @@ export class EquipamentosService {
   }
 
   async updateTag(user: AuthUser, tag: string, novaTag: string, justificativa: string) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode alterar TAG");
     }
     if (!justificativa?.trim()) {
@@ -325,7 +325,7 @@ export class EquipamentosService {
   }
 
   async arquivar(user: AuthUser, tag: string) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException();
     }
     const eq = await this.prisma.equipamento.findUnique({
@@ -350,7 +350,7 @@ export class EquipamentosService {
   }
 
   async reativar(user: AuthUser, tag: string) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException();
     }
     const eq = await this.prisma.equipamento.findUnique({
@@ -422,7 +422,7 @@ export class EquipamentosService {
       observacao?: string;
     }>,
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const resultados: Array<{ tag: string; ok: boolean; erro?: string }> = [];
 
     for (const row of rows) {

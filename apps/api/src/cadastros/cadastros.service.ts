@@ -13,7 +13,7 @@ export class CadastrosService {
   constructor(private readonly prisma: PrismaService) {}
 
   private assertEdit(user: AuthUser) {
-    if (!podeEditarCadastros(user.perfil)) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode editar cadastros");
     }
   }

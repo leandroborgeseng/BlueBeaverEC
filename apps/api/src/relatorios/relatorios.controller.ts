@@ -50,6 +50,7 @@ export class RelatoriosController {
   }
 
   @Post("gerar")
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
   async gerar(
     @CurrentUser() user: AuthUser,
     @Body() body: GerarDto,

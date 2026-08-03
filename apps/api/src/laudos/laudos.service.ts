@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrioridadeOS, ResultadoLaudo, TipoLaudo, TipoOS } from "@prisma/client";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import { ContratosService } from "../contratos/contratos.service";
@@ -390,6 +391,9 @@ export class LaudosService {
   }
 
   async reabrirCertificado(user: AuthUser, id: string, justificativa: string) {
+    if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      throw new ForbiddenException("Sem permissão para reabrir certificado");
+    }
     if (!justificativa?.trim()) throw new BadRequestException("Justificativa obrigatória");
     const l = await this.prisma.laudo.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },

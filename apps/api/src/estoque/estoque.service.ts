@@ -73,7 +73,7 @@ export class EstoqueService {
       valorUnitario?: number;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const qtd = data.qtdAtual ?? 0;
     return this.prisma.$transaction(async (tx) => {
       const item = await tx.estoqueItem.create({
@@ -104,7 +104,7 @@ export class EstoqueService {
   }
 
   async entrada(user: AuthUser, itemCodigo: string, qtd: number, motivo?: string) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     if (qtd <= 0) throw new BadRequestException("Quantidade inválida");
     const item = await this.findItem(user.estabelecimentoId, itemCodigo);
     return this.prisma.$transaction(async (tx) => {
@@ -226,7 +226,7 @@ export class EstoqueService {
     user: AuthUser,
     data: { itemDescricao: string; equipamentoOrigemTag: string; dataRetirada?: string },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const origem = await this.prisma.equipamento.findUnique({
       where: {
         estabelecimentoId_tag: {
@@ -257,7 +257,7 @@ export class EstoqueService {
       osDestinoNumero?: number;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const comp = await this.prisma.componenteRecuperado.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });

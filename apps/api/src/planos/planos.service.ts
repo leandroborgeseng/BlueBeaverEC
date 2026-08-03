@@ -74,7 +74,7 @@ export class PlanosService {
   }
 
   async gerarRampUp(user: AuthUser, opts: RampUpOptions = {}) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     return this.gerarRampUpInternal(user.estabelecimentoId, { ...opts, dryRun: false });
   }
 

@@ -30,7 +30,7 @@ export class ProcedimentosService {
     user: AuthUser,
     data: { nome: string; tipo: TipoLaudo; validadeMeses?: number; itens?: unknown[] },
   ) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     return this.prisma.procedimentoLaudo.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
@@ -43,7 +43,7 @@ export class ProcedimentosService {
   }
 
   async updateItens(user: AuthUser, id: string, itens: unknown[]) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const proc = await this.findOwned(user.estabelecimentoId, id);
     return this.prisma.procedimentoLaudo.update({
       where: { id: proc.id },
@@ -52,7 +52,7 @@ export class ProcedimentosService {
   }
 
   async vincularModelo(user: AuthUser, id: string, modeloId: string) {
-    if (!podeEditarCadastros(user.perfil)) throw new ForbiddenException();
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
     const proc = await this.findOwned(user.estabelecimentoId, id);
 
     // Vínculo exclusivo: desvincula outros procedimentos do mesmo tipo neste modelo

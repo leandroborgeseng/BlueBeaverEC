@@ -21,7 +21,7 @@ export class IndicadoresService {
       indicadores.map(async (ind) => {
         const valor = await this.calcular(estabelecimentoId, ind);
         const historico = await this.prisma.indicadorSnapshot.findMany({
-          where: { indicadorId: ind.id },
+          where: { indicadorId: ind.id, estabelecimentoId },
           orderBy: { periodo: "desc" },
           take: 2,
         });
@@ -49,7 +49,7 @@ export class IndicadoresService {
     if (!ind) throw new NotFoundException("Indicador não encontrado");
     await this.snapshotMesAtual(estabelecimentoId, ind);
     const snaps = await this.prisma.indicadorSnapshot.findMany({
-      where: { indicadorId: id },
+      where: { indicadorId: id, estabelecimentoId },
       orderBy: { periodo: "desc" },
       take: meses,
     });
@@ -216,8 +216,14 @@ export class IndicadoresService {
     const periodo = new Date().toISOString().slice(0, 7);
     const valor = await this.calcular(estabelecimentoId, ind);
     await this.prisma.indicadorSnapshot.upsert({
-      where: { indicadorId_periodo: { indicadorId: ind.id, periodo } },
-      create: { indicadorId: ind.id, periodo, valor },
+      where: {
+        indicadorId_estabelecimentoId_periodo: {
+          indicadorId: ind.id,
+          estabelecimentoId,
+          periodo,
+        },
+      },
+      create: { indicadorId: ind.id, estabelecimentoId, periodo, valor },
       update: { valor },
     });
   }

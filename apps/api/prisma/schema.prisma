@@ -99,6 +99,7 @@ model Estabelecimento {
   pops                   Pop[]
   recomendacoes          RecomendacaoInstitucional[]
   indicadores            Indicador[]
+  indicadorSnapshots     IndicadorSnapshot[]
   planosDiretor          PlanoDiretorItem[]
   capexItens             CapexItem[]
   relatorioAgendamentos  RelatorioAgendamento[]
@@ -1037,15 +1038,18 @@ model Indicador {
 }
 
 model IndicadorSnapshot {
-  id          String   @id @default(cuid())
-  indicadorId String
-  periodo     String // YYYY-MM
-  valor       Float
-  createdAt   DateTime @default(now())
+  id                 String   @id @default(cuid())
+  indicadorId        String
+  estabelecimentoId  String
+  periodo            String // YYYY-MM
+  valor              Float
+  createdAt          DateTime @default(now())
 
-  indicador Indicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  indicador       Indicador      @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
 
-  @@unique([indicadorId, periodo])
+  @@unique([indicadorId, estabelecimentoId, periodo])
+  @@index([estabelecimentoId, periodo])
 }
 
 model PlanoDiretorItem {
