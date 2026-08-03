@@ -17,6 +17,15 @@ interface Proc {
     tipo?: string;
     valorPadrao?: number;
     limite?: number;
+    unidade?: string;
+    repeticoes?: number;
+    tolerancia?: {
+      valor?: number | null;
+      modo?: string | null;
+      unidade?: string | null;
+      texto?: string | null;
+      parametro?: string;
+    };
     campos?: string[];
   }>;
 }
@@ -42,8 +51,13 @@ interface RespostaItem {
   status?: string;
   valorMedido?: number;
   valorConfigurado?: number;
+  leituras?: Array<number | undefined>;
+  media?: number;
+  erroAbs?: number;
   erroPct?: number;
   limite?: number;
+  unidade?: string;
+  toleranciaTexto?: string;
   observacao?: string;
 }
 
@@ -155,35 +169,85 @@ export function LaudoEditor({
       return;
     }
     setRespostas(
-      (proc.itens ?? []).map((item) => ({
-        id: item.id,
-        pergunta: item.pergunta,
-        secao: item.secao,
-        tipo: item.tipo,
-        status:
-          tipo === "CALIBRACAO" || (tipo === "TSE" && item.tipo !== "check")
-            ? "APROVADO"
-            : "SIM",
-        valorMedido: item.valorPadrao,
-        valorConfigurado: undefined,
-        limite: item.limite,
-        erroPct: 0,
-      })),
+      (proc.itens ?? []).map((item) => {
+        const isCheck = item.tipo === "check";
+        const isCalPt = item.tipo === "calibracao" || (tipo === "CALIBRACAO" && item.valorPadrao != null && !isCheck);
+        return {
+          id: item.id,
+          pergunta: item.pergunta,
+          secao: item.secao,
+          tipo: item.tipo ?? (isCalPt ? "calibracao" : undefined),
+          status:
+            isCheck || (tipo !== "CALIBRACAO" && tipo !== "TSE")
+              ? "SIM"
+              : tipo === "CALIBRACAO" || tipo === "TSE"
+                ? "APROVADO"
+                : "SIM",
+          valorMedido: item.tipo === "medicao" ? undefined : undefined,
+          valorConfigurado: isCalPt ? item.valorPadrao : undefined,
+          leituras: isCalPt ? [undefined, undefined, undefined] : undefined,
+          limite: item.limite ?? item.tolerancia?.valor ?? undefined,
+          unidade: item.unidade,
+          toleranciaTexto: item.tolerancia?.texto ?? undefined,
+          erroPct: 0,
+        };
+      }),
     );
   }, [proc, tipo, viewMode]);
 
   const computedRespostas = useMemo(() => {
     return respostas.map((r) => {
-      if (tipo === "CALIBRACAO" && r.valorMedido != null && proc) {
-        const padrao = proc.itens.find((i) => i.id === r.id)?.valorPadrao ?? 0;
-        const erroPct = padrao === 0 ? 0 : Number((((r.valorMedido - padrao) / padrao) * 100).toFixed(2));
+      if (tipo === "CALIBRACAO" && r.tipo === "check") {
+        return r;
+      }
+
+      if (tipo === "CALIBRACAO" && r.tipo === "medicao") {
+        return r;
+      }
+
+      if (tipo === "CALIBRACAO" && (r.tipo === "calibracao" || r.valorConfigurado != null || (r.leituras && r.leituras.length))) {
+        const item = proc?.itens.find((i) => i.id === r.id);
+        const padrao = item?.valorPadrao ?? r.valorConfigurado ?? 0;
+        const leituras = (r.leituras ?? [])
+          .map((v) => (v == null || Number.isNaN(v) ? undefined : Number(v)))
+          .filter((v): v is number => v != null);
+        const media =
+          leituras.length > 0
+            ? Number((leituras.reduce((a, b) => a + b, 0) / leituras.length).toFixed(4))
+            : r.valorMedido;
+        if (media == null) return { ...r, valorConfigurado: padrao };
+
+        const erroAbs = Number((media - padrao).toFixed(4));
+        const erroPct =
+          padrao === 0 ? 0 : Number((((media - padrao) / padrao) * 100).toFixed(2));
+        const tol = item?.tolerancia;
+        const tolValor = tol?.valor ?? r.limite;
+        const modo = tol?.modo;
+        let aprovado: boolean;
+        if (tolValor != null && modo === "absoluto") {
+          aprovado = Math.abs(erroAbs) <= tolValor;
+        } else if (tolValor != null && modo === "percentual") {
+          aprovado = Math.abs(erroPct) <= tolValor;
+        } else if (tolValor != null && !modo) {
+          // fallback: se unidade do limite parece absoluta e pequena, usa absoluto
+          aprovado = Math.abs(erroPct) <= tolValor;
+        } else {
+          aprovado = Math.abs(erroPct) <= criterioAceitacao;
+        }
+
         return {
           ...r,
+          valorConfigurado: padrao,
+          valorMedido: media,
+          media,
+          erroAbs,
           erroPct,
-          limite: criterioAceitacao,
-          status: Math.abs(erroPct) <= criterioAceitacao ? "APROVADO" : "REPROVADO",
+          limite: tolValor ?? criterioAceitacao,
+          toleranciaTexto: tol?.texto ?? r.toleranciaTexto,
+          status: aprovado ? "APROVADO" : "REPROVADO",
         };
       }
+
       if (tipo === "TSE" && r.tipo !== "check" && r.valorMedido != null && r.limite != null) {
         return {
           ...r,
@@ -196,7 +260,9 @@ export function LaudoEditor({
 
   const resultadoPreview = useMemo(() => {
     if (tipo === "CALIBRACAO" || tipo === "TSE") {
-      const reprovados = computedRespostas.filter((r) => r.status === "REPROVADO").length;
+      const reprovados = computedRespostas.filter(
+        (r) => r.status === "REPROVADO" || (r.tipo === "check" && r.status === "NAO"),
+      ).length;
       if (reprovados > 0) return "REPROVADO";
       return "APROVADO";
     }
@@ -293,6 +359,7 @@ export function LaudoEditor({
                   <option value="PREVENTIVA">Preventiva</option>
                   <option value="CALIBRACAO">Calibração</option>
                   <option value="TSE">TSE</option>
+                  <option value="QUALIFICACAO">Qualificação</option>
                 </select>
               )}
             </div>
@@ -399,7 +466,7 @@ export function LaudoEditor({
 
           {!viewMode && displayTipo === "CALIBRACAO" && (
             <div>
-              <FieldLabel>Critério ±%</FieldLabel>
+              <FieldLabel>Critério padrão (%) — fallback sem tolerância no item</FieldLabel>
               <input
                 type="number"
                 step="0.1"
@@ -477,13 +544,22 @@ export function LaudoEditor({
             displayRespostas.map((r, idx) => {
               const prevSecao = idx > 0 ? displayRespostas[idx - 1]?.secao : undefined;
               const showSecao = Boolean(r.secao && r.secao !== prevSecao);
+              const isCalibracaoPt =
+                r.tipo === "calibracao" ||
+                (displayTipo === "CALIBRACAO" &&
+                  r.tipo !== "check" &&
+                  r.tipo !== "medicao" &&
+                  (r.valorConfigurado != null || (r.leituras?.length ?? 0) > 0));
               const isMedicao =
                 r.tipo === "medicao" ||
-                ((displayTipo === "CALIBRACAO" || displayTipo === "TSE") && r.tipo !== "check");
+                ((displayTipo === "TSE" || displayTipo === "CALIBRACAO") &&
+                  r.tipo !== "check" &&
+                  !isCalibracaoPt);
               const isPreventivaCheck =
                 displayTipo === "PREVENTIVA" ||
                 displayTipo === "RECEBIMENTO" ||
-                (displayTipo === "TSE" && r.tipo === "check");
+                displayTipo === "QUALIFICACAO" ||
+                ((displayTipo === "TSE" || displayTipo === "CALIBRACAO") && r.tipo === "check");
 
               return (
                 <div key={r.id ?? idx} style={{ display: "grid", gap: 6 }}>
@@ -502,21 +578,85 @@ export function LaudoEditor({
                       {r.secao}
                     </div>
                   )}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: isMedicao && isPreventivaCheck ? "2fr 1fr 1fr 1fr" : "2fr 1fr 1fr",
-                      gap: 8,
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ fontSize: 13 }}>{r.pergunta}</span>
-                    {viewMode ? (
-                      <span style={{ fontSize: 13 }}>
-                        {r.tipo === "medicao"
-                          ? `cfg ${r.valorConfigurado ?? "—"} · med ${r.valorMedido ?? "—"}`
-                          : r.valorMedido != null && displayTipo !== "PREVENTIVA"
-                            ? r.valorMedido
+                  {isCalibracaoPt ? (
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "baseline" }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, minWidth: 140 }}>
+                          {r.pergunta}
+                          {r.toleranciaTexto ? (
+                            <span style={{ fontWeight: 500, color: "oklch(0.45 0.03 250)", marginLeft: 8 }}>
+                              tol {r.toleranciaTexto}
+                            </span>
+                          ) : null}
+                        </span>
+                        {viewMode ? (
+                          <span style={{ fontSize: 13 }}>
+                            L: {(r.leituras ?? []).filter((v) => v != null).join(" / ") || "—"}
+                            {" · "}média {r.media ?? r.valorMedido ?? "—"}
+                            {r.erroPct != null ? ` · erro ${r.erroPct}%` : ""}
+                            {r.erroAbs != null ? ` (Δ ${r.erroAbs})` : ""}
+                            {" · "}
+                            {r.status}
+                          </span>
+                        ) : (
+                          <>
+                            {[0, 1, 2].map((li) => (
+                              <input
+                                key={li}
+                                type="number"
+                                step="any"
+                                placeholder={`M${li + 1}`}
+                                value={r.leituras?.[li] ?? ""}
+                                onChange={(e) => {
+                                  const v = e.target.value === "" ? undefined : Number(e.target.value);
+                                  setRespostas((prev) =>
+                                    prev.map((x, i) => {
+                                      if (i !== idx) return x;
+                                      const leituras = [...(x.leituras ?? [undefined, undefined, undefined])];
+                                      while (leituras.length < 3) leituras.push(undefined);
+                                      leituras[li] = v;
+                                      return { ...x, leituras };
+                                    }),
+                                  );
+                                }}
+                                style={{ ...fieldStyle, width: 96 }}
+                              />
+                            ))}
+                            <span style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
+                              méd {r.media ?? "—"}
+                              {r.erroPct != null ? ` · ${r.erroPct}%` : ""}
+                              {r.media != null ? (r.status === "REPROVADO" ? " · NC" : " · OK") : ""}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {!viewMode && (
+                        <input
+                          placeholder="Obs."
+                          value={r.observacao ?? ""}
+                          onChange={(e) =>
+                            setRespostas((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "2fr 1fr 1fr",
+                        gap: 8,
+                        alignItems: "center",
+                      }}
+                    >
+                      <span style={{ fontSize: 13 }}>{r.pergunta}</span>
+                      {viewMode ? (
+                        <span style={{ fontSize: 13 }}>
+                          {r.tipo === "medicao" || isMedicao
+                            ? `${r.valorMedido ?? "—"}`
                             : r.status === "SIM"
                               ? "C"
                               : r.status === "NAO"
@@ -524,26 +664,11 @@ export function LaudoEditor({
                                 : r.status === "NA"
                                   ? "N.A"
                                   : r.status}
-                        {r.erroPct != null && displayTipo === "CALIBRACAO" ? ` (${r.erroPct}%)` : ""}
-                      </span>
-                    ) : r.tipo === "medicao" ? (
-                      <>
+                        </span>
+                      ) : r.tipo === "medicao" || (isMedicao && r.tipo !== "check") ? (
                         <input
                           type="number"
-                          step="0.1"
-                          placeholder="Configurado"
-                          value={r.valorConfigurado ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value === "" ? undefined : Number(e.target.value);
-                            setRespostas((prev) =>
-                              prev.map((x, i) => (i === idx ? { ...x, valorConfigurado: v } : x)),
-                            );
-                          }}
-                          style={fieldStyle}
-                        />
-                        <input
-                          type="number"
-                          step="0.1"
+                          step="any"
                           placeholder="Medido"
                           value={r.valorMedido ?? ""}
                           onChange={(e) => {
@@ -554,75 +679,46 @@ export function LaudoEditor({
                           }}
                           style={fieldStyle}
                         />
-                      </>
-                    ) : displayTipo !== "CALIBRACAO" &&
-                      (displayTipo !== "TSE" || r.tipo === "check") ? (
-                      <select
-                        value={r.status}
-                        onChange={(e) =>
-                          setRespostas((prev) =>
-                            prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)),
-                          )
-                        }
-                        style={fieldStyle}
-                      >
-                        {isPreventivaCheck ? (
-                          <>
-                            <option value="SIM">C — Conforme</option>
-                            <option value="NAO">N.C — Não conforme</option>
-                            <option value="NA">N.A — Não aplicável</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="SIM">Sim</option>
-                            <option value="NAO">Não</option>
-                            <option value="NA">N/A</option>
-                          </>
-                        )}
-                      </select>
-                    ) : (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={r.valorMedido ?? ""}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          setRespostas((prev) =>
-                            prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)),
-                          );
-                        }}
-                        style={fieldStyle}
-                      />
-                    )}
-                    {viewMode ? (
-                      <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{r.observacao ?? "—"}</span>
-                    ) : (
-                      <input
-                        placeholder="Obs."
-                        value={r.observacao ?? ""}
-                        onChange={(e) =>
-                          setRespostas((prev) =>
-                            prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)),
-                          )
-                        }
-                        style={fieldStyle}
-                      />
-                    )}
-                  </div>
-                  {r.tipo === "medicao" && !viewMode && (
-                    <select
-                      value={r.status ?? "SIM"}
-                      onChange={(e) =>
-                        setRespostas((prev) =>
-                          prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)),
-                        )
-                      }
-                      style={{ ...fieldStyle, maxWidth: 220 }}
-                    >
-                      <option value="SIM">C — Conforme</option>
-                      <option value="NAO">N.C — Não conforme</option>
-                      <option value="NA">N.A — Não aplicável</option>
-                    </select>
+                      ) : (
+                        <select
+                          value={r.status}
+                          onChange={(e) =>
+                            setRespostas((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        >
+                          {isPreventivaCheck ? (
+                            <>
+                              <option value="SIM">C — Conforme</option>
+                              <option value="NAO">N.C — Não conforme</option>
+                              <option value="NA">N.A — Não aplicável</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="SIM">Sim</option>
+                              <option value="NAO">Não</option>
+                              <option value="NA">N/A</option>
+                            </>
+                          )}
+                        </select>
+                      )}
+                      {viewMode ? (
+                        <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{r.observacao ?? "—"}</span>
+                      ) : (
+                        <input
+                          placeholder="Obs."
+                          value={r.observacao ?? ""}
+                          onChange={(e) =>
+                            setRespostas((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               );

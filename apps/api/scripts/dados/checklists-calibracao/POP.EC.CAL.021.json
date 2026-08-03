@@ -1,0 +1,171 @@
+{
+  "codigoPop": "POP.EC.CAL.021",
+  "nome": "Calibração — Balanca Bancada (POP.EC.CAL.021)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.021",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Leitura de massa",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    }
+  ],
+  "padroesSugeridos": [
+    "BALANÇA DE BANCADA"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "10,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "20,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "100,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-04",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "500,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-05",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "1000,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-06",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "2000,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-07",
+      "secao": "03 LEITURA DE MASSA",
+      "secaoOrdem": 3,
+      "pergunta": "3000,00 g",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "g",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Leitura de massa"
+      },
+      "limite": 10.0
+    }
+  ]
+}

@@ -133,10 +133,10 @@ setTimeout(() => {
           );
           tse.on("exit", (ct) => {
             console.log(`[nexo] import checklists TSE finalizado (code=${ct ?? "?"})`);
-            console.log("[nexo] iniciando import de laudos PDF em background…");
-            const laudos = spawn(
+            console.log("[nexo] iniciando import de checklists calibração…");
+            const cal = spawn(
               process.execPath,
-              [path.join(root, "scripts/maybe-import-laudos.mjs")],
+              [path.join(root, "scripts/maybe-import-checklists-calibracao.mjs")],
               {
                 cwd: root,
                 env: process.env,
@@ -145,8 +145,38 @@ setTimeout(() => {
                 detached: false,
               },
             );
-            laudos.on("exit", (c2) => {
-              console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+            cal.on("exit", (cca) => {
+              console.log(`[nexo] import checklists calibração finalizado (code=${cca ?? "?"})`);
+              console.log("[nexo] iniciando import de checklists qualificação…");
+              const qlf = spawn(
+                process.execPath,
+                [path.join(root, "scripts/maybe-import-checklists-qualificacao.mjs")],
+                {
+                  cwd: root,
+                  env: process.env,
+                  stdio: "inherit",
+                  shell: false,
+                  detached: false,
+                },
+              );
+              qlf.on("exit", (cq) => {
+                console.log(`[nexo] import checklists qualificação finalizado (code=${cq ?? "?"})`);
+                console.log("[nexo] iniciando import de laudos PDF em background…");
+                const laudos = spawn(
+                  process.execPath,
+                  [path.join(root, "scripts/maybe-import-laudos.mjs")],
+                  {
+                    cwd: root,
+                    env: process.env,
+                    stdio: "inherit",
+                    shell: false,
+                    detached: false,
+                  },
+                );
+                laudos.on("exit", (c2) => {
+                  console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+                });
+              });
             });
           });
         });

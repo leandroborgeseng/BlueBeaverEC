@@ -1,0 +1,108 @@
+{
+  "codigoPop": "POP.EC.CAL.030",
+  "nome": "Calibração — Autoclave Bancada (POP.EC.CAL.030)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.030",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Temperatura",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Pressão",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    }
+  ],
+  "padroesSugeridos": [
+    "Padrão Especificações"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 TEMPERATURA (121°C)",
+      "secaoOrdem": 3,
+      "pergunta": "121,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 121.0,
+      "unidade": "°C",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TEMPERATURA (134°C)",
+      "secaoOrdem": 4,
+      "pergunta": "134,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 134.0,
+      "unidade": "°C",
+      "repeticoes": 3
+    },
+    {
+      "id": "05-01",
+      "secao": "05 PRESSÃO (210kPa)",
+      "secaoOrdem": 5,
+      "pergunta": "210,00 kPa",
+      "tipo": "calibracao",
+      "valorPadrao": 210.0,
+      "unidade": "kPa",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Pressão"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 PRESSÃO (110 kPa)",
+      "secaoOrdem": 6,
+      "pergunta": "110,00 kPa",
+      "tipo": "calibracao",
+      "valorPadrao": 110.0,
+      "unidade": "kPa",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Pressão"
+      },
+      "limite": 10.0
+    }
+  ]
+}

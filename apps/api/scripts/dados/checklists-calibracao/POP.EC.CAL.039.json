@@ -1,0 +1,804 @@
+{
+  "codigoPop": "POP.EC.CAL.039",
+  "nome": "Calibração — Impedânciometro Timpanometrico (POP.EC.CAL.039)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.039",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Frequência",
+      "valor": 1.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±1%"
+    },
+    {
+      "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral",
+      "valor": 5.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±5dB"
+    },
+    {
+      "parametro": "Intensidade sonora - Sonda",
+      "valor": 3.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±3dB"
+    },
+    {
+      "parametro": "Frequência - Sonda",
+      "valor": 2.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±2%"
+    }
+  ],
+  "padroesSugeridos": [
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-04",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-05",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-06",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-07",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-08",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-09",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-10",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-11",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-04",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-05",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-06",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-07",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-08",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-09",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-10",
+      "secao": "04 CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – CONTRALATERAL",
+      "secaoOrdem": 4,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-04",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-05",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-06",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-07",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-08",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-09",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-10",
+      "secao": "05 CALIBRAÇÃO – CALIBRAÇÃO - NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE (dB) – IPSILATERAL",
+      "secaoOrdem": 5,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±5dB",
+        "parametro": "Nível de pressão sonora – Contralateral / Ipsilateral"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 CALIBRAÇÃO – INTENSIDADE SONORA (dB) – SONDA ELETRÔNICA",
+      "secaoOrdem": 6,
+      "pergunta": "226 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 226.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Intensidade sonora - Sonda"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-02",
+      "secao": "06 CALIBRAÇÃO – INTENSIDADE SONORA (dB) – SONDA ELETRÔNICA",
+      "secaoOrdem": 6,
+      "pergunta": "678 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 678.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Intensidade sonora - Sonda"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-03",
+      "secao": "06 CALIBRAÇÃO – INTENSIDADE SONORA (dB) – SONDA ELETRÔNICA",
+      "secaoOrdem": 6,
+      "pergunta": "800 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 800.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Intensidade sonora - Sonda"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-04",
+      "secao": "06 CALIBRAÇÃO – INTENSIDADE SONORA (dB) – SONDA ELETRÔNICA",
+      "secaoOrdem": 6,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Intensidade sonora - Sonda"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-05",
+      "secao": "06 CALIBRAÇÃO – INTENSIDADE SONORA (dB) – SONDA ELETRÔNICA",
+      "secaoOrdem": 6,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Intensidade sonora - Sonda"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-01",
+      "secao": "07 CALIBRAÇÃO – FREQUÊNCIA (Hz) – SONDA ELETRÔNICA",
+      "secaoOrdem": 7,
+      "pergunta": "226 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 226.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "07-02",
+      "secao": "07 CALIBRAÇÃO – FREQUÊNCIA (Hz) – SONDA ELETRÔNICA",
+      "secaoOrdem": 7,
+      "pergunta": "678 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 678.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "07-03",
+      "secao": "07 CALIBRAÇÃO – FREQUÊNCIA (Hz) – SONDA ELETRÔNICA",
+      "secaoOrdem": 7,
+      "pergunta": "800 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 800.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "07-04",
+      "secao": "07 CALIBRAÇÃO – FREQUÊNCIA (Hz) – SONDA ELETRÔNICA",
+      "secaoOrdem": 7,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "07-05",
+      "secao": "07 CALIBRAÇÃO – FREQUÊNCIA (Hz) – SONDA ELETRÔNICA",
+      "secaoOrdem": 7,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    }
+  ]
+}

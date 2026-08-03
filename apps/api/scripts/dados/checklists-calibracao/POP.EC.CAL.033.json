@@ -1,0 +1,686 @@
+{
+  "codigoPop": "POP.EC.CAL.033",
+  "nome": "Calibração — Bisturi Eletronico Argonio (POP.EC.CAL.033)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.033",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Corte",
+      "valor": 20.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±20%"
+    },
+    {
+      "parametro": "Coagulação",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Fluxo de gás argônio",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    }
+  ],
+  "padroesSugeridos": [
+    "Analisador de bisturi eletrônico",
+    "Analisador de fluxo de gases",
+    "Termohigrômetro",
+    "Multímetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 POTÊNCIA – CORTE PURO – MONOPOLAR (WEM / COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 3,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 POTÊNCIA – CORTE PURO – MONOPOLAR (WEM / COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 3,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 POTÊNCIA – CORTE PURO – MONOPOLAR (WEM / COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 3,
+      "pergunta": "300,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 300.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 POTÊNCIA – CORTE BLEND 1 – MONOPOLAR (WEM)",
+      "secaoOrdem": 4,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 POTÊNCIA – CORTE BLEND 1 – MONOPOLAR (WEM)",
+      "secaoOrdem": 4,
+      "pergunta": "150,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 POTÊNCIA – CORTE BLEND 1 – MONOPOLAR (WEM)",
+      "secaoOrdem": 4,
+      "pergunta": "250,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 POTÊNCIA – CORTE BLEND 2 – MONOPOLAR (WEM)",
+      "secaoOrdem": 5,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 POTÊNCIA – CORTE BLEND 2 – MONOPOLAR (WEM)",
+      "secaoOrdem": 5,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 POTÊNCIA – CORTE BLEND 2 – MONOPOLAR (WEM)",
+      "secaoOrdem": 5,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 POTÊNCIA – CORTE BLEND 3 – MONOPOLAR (WEM)",
+      "secaoOrdem": 6,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "06-02",
+      "secao": "06 POTÊNCIA – CORTE BLEND 3 – MONOPOLAR (WEM)",
+      "secaoOrdem": 6,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "06-03",
+      "secao": "06 POTÊNCIA – CORTE BLEND 3 – MONOPOLAR (WEM)",
+      "secaoOrdem": 6,
+      "pergunta": "150,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "07-01",
+      "secao": "07 POTÊNCIA – CORTE BLEND - MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 7,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "07-02",
+      "secao": "07 POTÊNCIA – CORTE BLEND - MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 7,
+      "pergunta": "150,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "07-03",
+      "secao": "07 POTÊNCIA – CORTE BLEND - MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 7,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "08-01",
+      "secao": "08 POTÊNCIA – CORTE VALLEYLAB – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 8,
+      "pergunta": "5,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 5.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "08-02",
+      "secao": "08 POTÊNCIA – CORTE VALLEYLAB – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 8,
+      "pergunta": "45,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 45.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "08-03",
+      "secao": "08 POTÊNCIA – CORTE VALLEYLAB – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 8,
+      "pergunta": "85,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 85.0,
+      "unidade": "W",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 20.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±20%",
+        "parametro": "Corte"
+      },
+      "limite": 20.0
+    },
+    {
+      "id": "09-01",
+      "secao": "09 POTÊNCIA – AUTO CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 9,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "09-02",
+      "secao": "09 POTÊNCIA – AUTO CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 9,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "09-03",
+      "secao": "09 POTÊNCIA – AUTO CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 9,
+      "pergunta": "300,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 300.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "10-01",
+      "secao": "10 POTÊNCIA – HIGH CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 10,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "10-02",
+      "secao": "10 POTÊNCIA – HIGH CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 10,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "10-03",
+      "secao": "10 POTÊNCIA – HIGH CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 10,
+      "pergunta": "300,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 300.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "11-01",
+      "secao": "11 POTÊNCIA – DRY CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 11,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "11-02",
+      "secao": "11 POTÊNCIA – DRY CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 11,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "11-03",
+      "secao": "11 POTÊNCIA – DRY CUT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 11,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "12-01",
+      "secao": "12 POTÊNCIA – COAGULAÇÃO SPRAY – MONOPOLAR (WEM / COVIDIEN VALLEYLAB/ ERBE)",
+      "secaoOrdem": 12,
+      "pergunta": "30,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 30.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "12-02",
+      "secao": "12 POTÊNCIA – COAGULAÇÃO SPRAY – MONOPOLAR (WEM / COVIDIEN VALLEYLAB/ ERBE)",
+      "secaoOrdem": 12,
+      "pergunta": "60,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "12-03",
+      "secao": "12 POTÊNCIA – COAGULAÇÃO SPRAY – MONOPOLAR (WEM / COVIDIEN VALLEYLAB/ ERBE)",
+      "secaoOrdem": 12,
+      "pergunta": "120,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "13-01",
+      "secao": "13 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 13,
+      "pergunta": "20,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "13-02",
+      "secao": "13 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 13,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "13-03",
+      "secao": "13 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 13,
+      "pergunta": "120,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "14-01",
+      "secao": "14 POTÊNCIA – COAGULAÇÃO FULGURATE – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 14,
+      "pergunta": "20,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "14-02",
+      "secao": "14 POTÊNCIA – COAGULAÇÃO FULGURATE – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 14,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "14-03",
+      "secao": "14 POTÊNCIA – COAGULAÇÃO FULGURATE – MONOPOLAR (COVIDIEN VALLEYLAB)",
+      "secaoOrdem": 14,
+      "pergunta": "120,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "15-01",
+      "secao": "15 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 15,
+      "pergunta": "30,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 30.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "15-02",
+      "secao": "15 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 15,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "15-03",
+      "secao": "15 POTÊNCIA – COAGULAÇÃO SOFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 15,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "16-01",
+      "secao": "16 POTÊNCIA – COAGULAÇÃO SWIFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 16,
+      "pergunta": "30,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 30.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "16-02",
+      "secao": "16 POTÊNCIA – COAGULAÇÃO SWIFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 16,
+      "pergunta": "100,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "16-03",
+      "secao": "16 POTÊNCIA – COAGULAÇÃO SWIFT – MONOPOLAR (ERBE)",
+      "secaoOrdem": 16,
+      "pergunta": "200,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "17-01",
+      "secao": "17 POTÊNCIA – COAGULAÇÃO FORCED – MONOPOLAR (ERBE)",
+      "secaoOrdem": 17,
+      "pergunta": "20,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "17-02",
+      "secao": "17 POTÊNCIA – COAGULAÇÃO FORCED – MONOPOLAR (ERBE)",
+      "secaoOrdem": 17,
+      "pergunta": "50,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "17-03",
+      "secao": "17 POTÊNCIA – COAGULAÇÃO FORCED – MONOPOLAR (ERBE)",
+      "secaoOrdem": 17,
+      "pergunta": "120,00 W",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "W",
+      "repeticoes": 3
+    },
+    {
+      "id": "18-01",
+      "secao": "18 FLUXO DE GÁS ARGÔNIO",
+      "secaoOrdem": 18,
+      "pergunta": "1,00 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 1.0,
+      "unidade": "L/min",
+      "repeticoes": 3
+    },
+    {
+      "id": "18-02",
+      "secao": "18 FLUXO DE GÁS ARGÔNIO",
+      "secaoOrdem": 18,
+      "pergunta": "3,00 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 3.0,
+      "unidade": "L/min",
+      "repeticoes": 3
+    },
+    {
+      "id": "18-03",
+      "secao": "18 FLUXO DE GÁS ARGÔNIO",
+      "secaoOrdem": 18,
+      "pergunta": "5,00 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 5.0,
+      "unidade": "L/min",
+      "repeticoes": 3
+    }
+  ]
+}

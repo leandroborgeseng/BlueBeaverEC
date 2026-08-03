@@ -1,0 +1,275 @@
+{
+  "codigoPop": "POP.EC.CAL.014",
+  "nome": "Calibração — Esfigmomanometro (POP.EC.CAL.014)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.014",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Pressão",
+      "valor": 5.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±5%"
+    }
+  ],
+  "padroesSugeridos": [
+    "Analisador digital de pressão",
+    "Simulador de pressão não",
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 PADRÃO DE PRESSÃO CRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 3,
+      "pergunta": "60,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 PADRÃO DE PRESSÃO CRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 3,
+      "pergunta": "120,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 PADRÃO DE PRESSÃO CRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 3,
+      "pergunta": "180,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 180.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-04",
+      "secao": "03 PADRÃO DE PRESSÃO CRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 3,
+      "pergunta": "280,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 280.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 PADRÃO DE PRESSÃO DECRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 4,
+      "pergunta": "280,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 280.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 PADRÃO DE PRESSÃO DECRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 4,
+      "pergunta": "180,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 180.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 PADRÃO DE PRESSÃO DECRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 4,
+      "pergunta": "120,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-04",
+      "secao": "04 PADRÃO DE PRESSÃO DECRESCENTE – EQUIPAMENTO ANEROIDE",
+      "secaoOrdem": 4,
+      "pergunta": "60,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-05",
+      "secao": "03 PRESSÃO SISTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 3,
+      "pergunta": "80,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 80.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-06",
+      "secao": "03 PRESSÃO SISTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 3,
+      "pergunta": "120,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "03-07",
+      "secao": "03 PRESSÃO SISTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 3,
+      "pergunta": "200,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 200.0,
+      "unidade": "mmHg",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-05",
+      "secao": "04 PADRÃO DIASTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 4,
+      "pergunta": "50,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "mmHg",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-06",
+      "secao": "04 PADRÃO DIASTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 4,
+      "pergunta": "80,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 80.0,
+      "unidade": "mmHg",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-07",
+      "secao": "04 PADRÃO DIASTÓLICA – EQUIPAMENTO DIGITAL",
+      "secaoOrdem": 4,
+      "pergunta": "150,0 mmHg",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "mmHg",
+      "repeticoes": 3
+    }
+  ]
+}

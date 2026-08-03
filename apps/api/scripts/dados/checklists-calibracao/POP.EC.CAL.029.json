@@ -1,0 +1,1437 @@
+{
+  "codigoPop": "POP.EC.CAL.029",
+  "nome": "Calibração — Audiômetro (POP.EC.CAL.029)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.029",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Frequência",
+      "valor": 1.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±1%"
+    },
+    {
+      "parametro": "Nível de pressão sonora –",
+      "valor": 3.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±3dB"
+    },
+    {
+      "parametro": "Tom puro",
+      "valor": 5.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±5dB"
+    },
+    {
+      "parametro": "Mascaramento",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Força no vibrador ósseo",
+      "valor": 4.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±4dB"
+    },
+    {
+      "parametro": "± 4dB: 250Hz à 4kHz;",
+      "valor": 5.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±5dB"
+    },
+    {
+      "parametro": "Campo livre",
+      "valor": 5.0,
+      "modo": "absoluto",
+      "unidade": "dB",
+      "texto": "±5dB"
+    }
+  ],
+  "padroesSugeridos": [
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-04",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-05",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-06",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-07",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-08",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-09",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-10",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "03-11",
+      "secao": "03 CALIBRAÇÃO – FREQUÊNCIA (Hz)",
+      "secaoOrdem": 3,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±1%",
+        "parametro": "Frequência"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-04",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-05",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-06",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-07",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-08",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-09",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-10",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-11",
+      "secao": "04 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA - TONAL",
+      "secaoOrdem": 4,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-04",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-05",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-06",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-07",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-08",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-09",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-10",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-11",
+      "secao": "05 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 5,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-02",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-03",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-04",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-05",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-06",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-07",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-08",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-09",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-10",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "06-11",
+      "secao": "06 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE DIREITO (dB) – VIA AÉREA -",
+      "secaoOrdem": 6,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-01",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "125 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 125.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-02",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-03",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-04",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-05",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-06",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-07",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-08",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-09",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-10",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "07-11",
+      "secao": "07 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA PRODUZIDO NO FONE ESQUERDO (dB) – VIA AÉREA -",
+      "secaoOrdem": 7,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "08-01",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-02",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-03",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-04",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-05",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-06",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-07",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-08",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-09",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "08-10",
+      "secao": "08 CALIBRAÇÃO – NÍVEL DE FORÇA VIBRATÓRIA (dB) - VIBRADOR ÓSSEO – VIA ÓSSEA",
+      "secaoOrdem": 8,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 4.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±4dB",
+        "parametro": "Força no vibrador ósseo"
+      },
+      "limite": 4.0
+    },
+    {
+      "id": "09-01",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "250 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 250.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-02",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-03",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "750 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 750.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-04",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "1000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-05",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "1500 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 1500.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-06",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "2000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 2000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-07",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "3000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 3000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-08",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "4000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 4000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-09",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "6000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 6000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "09-10",
+      "secao": "09 CALIBRAÇÃO – NÍVEL DE PRESSÃO SONORA (dB) – CAMPO LIVRE - TONAL",
+      "secaoOrdem": 9,
+      "pergunta": "8000 Hz",
+      "tipo": "calibracao",
+      "valorPadrao": 8000.0,
+      "unidade": "Hz",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "dB",
+        "texto": "±3dB",
+        "parametro": "Nível de pressão sonora –"
+      },
+      "limite": 3.0
+    }
+  ]
+}

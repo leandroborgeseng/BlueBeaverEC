@@ -1,0 +1,252 @@
+{
+  "codigoPop": "POP.EC.CAL.002",
+  "nome": "Calibração — Bomba Infusao Seringa (POP.EC.CAL.002)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.002",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Tempo de infusão",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    },
+    {
+      "parametro": "Volume de infusão",
+      "valor": 5.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±5%"
+    },
+    {
+      "parametro": "Pressão limite",
+      "valor": 5.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±5%"
+    },
+    {
+      "parametro": "EQUIPAMENTO DO TIPO",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "BOMBA DE INFUSÃO DE",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "SERINGA",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "de 2026",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    }
+  ],
+  "padroesSugeridos": [
+    "Cronômetro",
+    "Analisador digital de pressão",
+    "balança.",
+    "Termohigrometro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO DO TEMPO DE INFUSÃO",
+      "secaoOrdem": 3,
+      "pergunta": "300,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 300.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo de infusão"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO DO TEMPO DE INFUSÃO",
+      "secaoOrdem": 3,
+      "pergunta": "600,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 600.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo de infusão"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO DO TEMPO DE INFUSÃO",
+      "secaoOrdem": 3,
+      "pergunta": "900,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 900.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo de infusão"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CALIBRAÇÃO DO VOLUME INFUNDIDO",
+      "secaoOrdem": 4,
+      "pergunta": "10,0 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "ml",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Volume de infusão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CALIBRAÇÃO DO VOLUME INFUNDIDO",
+      "secaoOrdem": 4,
+      "pergunta": "15,0 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 15.0,
+      "unidade": "ml",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Volume de infusão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 CALIBRAÇÃO DO VOLUME INFUNDIDO",
+      "secaoOrdem": 4,
+      "pergunta": "18,0 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 18.0,
+      "unidade": "ml",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Volume de infusão"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CALIBRAÇÃO DA PRESSÃO LIMITE",
+      "secaoOrdem": 5,
+      "pergunta": "20,0 kPa",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "kPa",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão limite"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CALIBRAÇÃO DA PRESSÃO LIMITE",
+      "secaoOrdem": 5,
+      "pergunta": "70,0 kPa",
+      "tipo": "calibracao",
+      "valorPadrao": 70.0,
+      "unidade": "kPa",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão limite"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 CALIBRAÇÃO DA PRESSÃO LIMITE",
+      "secaoOrdem": 5,
+      "pergunta": "120,0 kPa",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "kPa",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Pressão limite"
+      },
+      "limite": 5.0
+    }
+  ]
+}

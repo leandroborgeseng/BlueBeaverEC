@@ -1,0 +1,117 @@
+{
+  "codigoPop": "POP.EC.CAL.037",
+  "nome": "Calibração — Estufa De Cultura (POP.EC.CAL.037)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.037",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Temperatura",
+      "valor": 1.0,
+      "modo": "absoluto",
+      "unidade": "°C",
+      "texto": "±1,0°C"
+    }
+  ],
+  "padroesSugeridos": [
+    "Termohigrometro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 TEMPERATURA (37 °C)",
+      "secaoOrdem": 3,
+      "pergunta": "37,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 37.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TEMPERATURA (40 °C)",
+      "secaoOrdem": 4,
+      "pergunta": "40,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 40.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TEMPERATURA (50 °C)",
+      "secaoOrdem": 5,
+      "pergunta": "50,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 TEMPERATURA (56 °C)",
+      "secaoOrdem": 6,
+      "pergunta": "56,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 56.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "codigoPop": "POP.EC.CAL.010",
+  "nome": "Calibração — Eletrocardiografo (POP.EC.CAL.010)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.010",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Frequência cardíaca",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Sensibilidade (Amplitude)",
+      "valor": 5.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±5%"
+    },
+    {
+      "parametro": "Velocidade de impressão",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    }
+  ],
+  "padroesSugeridos": [
+    "Simulador de ECG",
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 ECG- CALIBRAÇÃO DA FREQUÊNCIA CARDÍACA",
+      "secaoOrdem": 3,
+      "pergunta": "30 BPM",
+      "tipo": "calibracao",
+      "valorPadrao": 30.0,
+      "unidade": "BPM",
+      "repeticoes": 3
+    },
+    {
+      "id": "03-02",
+      "secao": "03 ECG- CALIBRAÇÃO DA FREQUÊNCIA CARDÍACA",
+      "secaoOrdem": 3,
+      "pergunta": "160 BPM",
+      "tipo": "calibracao",
+      "valorPadrao": 160.0,
+      "unidade": "BPM",
+      "repeticoes": 3
+    },
+    {
+      "id": "03-03",
+      "secao": "03 ECG- CALIBRAÇÃO DA FREQUÊNCIA CARDÍACA",
+      "secaoOrdem": 3,
+      "pergunta": "240 BPM",
+      "tipo": "calibracao",
+      "valorPadrao": 240.0,
+      "unidade": "BPM",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-01",
+      "secao": "04 AMPLITUDE – SENSIBILIDADE (ONDA QUADRADA)",
+      "secaoOrdem": 4,
+      "pergunta": "5,00 mm",
+      "tipo": "calibracao",
+      "valorPadrao": 5.0,
+      "unidade": "mm",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Sensibilidade (Amplitude)"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 AMPLITUDE – SENSIBILIDADE (ONDA QUADRADA)",
+      "secaoOrdem": 4,
+      "pergunta": "10,00 mm",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "mm",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Sensibilidade (Amplitude)"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 AMPLITUDE – SENSIBILIDADE (ONDA QUADRADA)",
+      "secaoOrdem": 4,
+      "pergunta": "20,00 mm",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "mm",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±5%",
+        "parametro": "Sensibilidade (Amplitude)"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VELOCIDADE DE IMPRESSÃO",
+      "secaoOrdem": 5,
+      "pergunta": "75,00 mm",
+      "tipo": "calibracao",
+      "valorPadrao": 75.0,
+      "unidade": "mm",
+      "repeticoes": 3
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VELOCIDADE DE IMPRESSÃO",
+      "secaoOrdem": 5,
+      "pergunta": "150,000 mm",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "mm",
+      "repeticoes": 3
+    }
+  ]
+}

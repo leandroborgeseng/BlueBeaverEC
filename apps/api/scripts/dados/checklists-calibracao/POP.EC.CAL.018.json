@@ -1,0 +1,154 @@
+{
+  "codigoPop": "POP.EC.CAL.018",
+  "nome": "Calibração — Desfibrilador Automatico Externo (POP.EC.CAL.018)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.018",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Níveis de energia",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    }
+  ],
+  "padroesSugeridos": [
+    "Analisador de desfibrilador -",
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 NÍVEIS DE ENERGIA – ELETRODOS ADULTO",
+      "secaoOrdem": 3,
+      "pergunta": "120,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 120.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 NÍVEIS DE ENERGIA – ELETRODOS ADULTO",
+      "secaoOrdem": 3,
+      "pergunta": "150,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 150.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 NÍVEIS DE ENERGIA – ELETRODOS ADULTO",
+      "secaoOrdem": 3,
+      "pergunta": "170,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 170.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 NÍVEIS DE ENERGIA – ELETRODOS PEDIÁTRICOS",
+      "secaoOrdem": 4,
+      "pergunta": "50,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 NÍVEIS DE ENERGIA – ELETRODOS PEDIÁTRICOS",
+      "secaoOrdem": 4,
+      "pergunta": "70,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 70.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 NÍVEIS DE ENERGIA – ELETRODOS PEDIÁTRICOS",
+      "secaoOrdem": 4,
+      "pergunta": "80,0 J",
+      "tipo": "calibracao",
+      "valorPadrao": 80.0,
+      "unidade": "J",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Níveis de energia"
+      },
+      "limite": 10.0
+    }
+  ]
+}

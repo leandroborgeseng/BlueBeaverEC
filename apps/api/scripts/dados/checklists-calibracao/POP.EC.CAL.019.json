@@ -1,0 +1,268 @@
+{
+  "codigoPop": "POP.EC.CAL.019",
+  "nome": "Calibração — Termohigrometro Digital (POP.EC.CAL.019)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.019",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Temperatura",
+      "valor": 3.0,
+      "modo": "absoluto",
+      "unidade": "°C",
+      "texto": "±3,0°C"
+    },
+    {
+      "parametro": "Umidade relativa",
+      "valor": 5.0,
+      "modo": "absoluto",
+      "unidade": "pontos",
+      "texto": "±5pontos"
+    }
+  ],
+  "padroesSugeridos": [
+    "TERMOHIGROMETRO DIGITAL"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 TEMPERATURA – SENSOR EXTERNO",
+      "secaoOrdem": 3,
+      "pergunta": "15,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 15.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 TEMPERATURA – SENSOR EXTERNO",
+      "secaoOrdem": 3,
+      "pergunta": "20,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 TEMPERATURA – SENSOR EXTERNO",
+      "secaoOrdem": 3,
+      "pergunta": "25,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 25.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TEMPERATURA – SENSOR INTERNO",
+      "secaoOrdem": 4,
+      "pergunta": "15,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 15.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 TEMPERATURA – SENSOR INTERNO",
+      "secaoOrdem": 4,
+      "pergunta": "20,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 TEMPERATURA – SENSOR INTERNO",
+      "secaoOrdem": 4,
+      "pergunta": "25,0°C",
+      "tipo": "calibracao",
+      "valorPadrao": 25.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 3.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±3,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 3.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 UMIDADE RELATIVA – SENSOR EXTERNO",
+      "secaoOrdem": 5,
+      "pergunta": "40%",
+      "tipo": "calibracao",
+      "valorPadrao": 40.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 UMIDADE RELATIVA – SENSOR EXTERNO",
+      "secaoOrdem": 5,
+      "pergunta": "50%",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 UMIDADE RELATIVA – SENSOR EXTERNO",
+      "secaoOrdem": 5,
+      "pergunta": "60%",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 UMIDADE RELATIVA – SENSOR INTERNO",
+      "secaoOrdem": 6,
+      "pergunta": "40%",
+      "tipo": "calibracao",
+      "valorPadrao": 40.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "06-02",
+      "secao": "06 UMIDADE RELATIVA – SENSOR INTERNO",
+      "secaoOrdem": 6,
+      "pergunta": "50%",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    },
+    {
+      "id": "06-03",
+      "secao": "06 UMIDADE RELATIVA – SENSOR INTERNO",
+      "secaoOrdem": 6,
+      "pergunta": "60%",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "%",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 5.0,
+        "modo": "absoluto",
+        "unidade": "pontos",
+        "texto": "±5pontos",
+        "parametro": "Umidade relativa"
+      },
+      "limite": 5.0
+    }
+  ]
+}

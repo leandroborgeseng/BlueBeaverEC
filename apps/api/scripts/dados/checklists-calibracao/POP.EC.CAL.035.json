@@ -1,0 +1,167 @@
+{
+  "codigoPop": "POP.EC.CAL.035",
+  "nome": "Calibração — Centrífuga (POP.EC.CAL.035)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 6,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.035",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Tempo",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    },
+    {
+      "parametro": "Velocidade de rotação",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    },
+    {
+      "parametro": "Temperatura",
+      "valor": 1.0,
+      "modo": "absoluto",
+      "unidade": "°C",
+      "texto": "±1,0°C"
+    }
+  ],
+  "padroesSugeridos": [
+    "Cronômetro digital"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 3,
+      "pergunta": "180,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 180.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 3,
+      "pergunta": "300,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 300.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 3,
+      "pergunta": "900,00 s",
+      "tipo": "calibracao",
+      "valorPadrao": 900.0,
+      "unidade": "s",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Tempo"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CALIBRAÇÃO - TEMPERATURA",
+      "secaoOrdem": 5,
+      "pergunta": "4,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 4.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CALIBRAÇÃO - TEMPERATURA",
+      "secaoOrdem": 5,
+      "pergunta": "10,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 CALIBRAÇÃO - TEMPERATURA",
+      "secaoOrdem": 5,
+      "pergunta": "20,00 °C",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "°C",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 1.0,
+        "modo": "absoluto",
+        "unidade": "°C",
+        "texto": "±1,0°C",
+        "parametro": "Temperatura"
+      },
+      "limite": 1.0
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "codigoPop": "POP.EC.QLF.004",
+  "nome": "Qualificação — Capela Fluxo Laminar (POP.EC.QLF.004)",
+  "tipo": "QUALIFICACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A formulário · POP.EC.QLF.004",
+  "criteriosAceitacao": [],
+  "nota": "Protocolos térmicos usam template de estudos (estanqueidade, Bowie & Dick, distribuição/penetração). Cálculos F0 e mapeamento completo de sensores permanecem no relatório/planilha de qualificação.",
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Fabricante",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Modelo",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Número de série",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Código identificador",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização",
+      "tipo": "texto"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física geral",
+      "tipo": "check"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Cabo de Força",
+      "tipo": "check"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Condições ambientais",
+      "tipo": "check"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Lâmpada germicida",
+      "tipo": "check"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Manutenção preventiva",
+      "tipo": "check"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "DESEMPENHO DE",
+      "tipo": "check"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "EQUIPAMENTOS DO TIPO",
+      "tipo": "check"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "CAPELA DE FLUXO LAMINAR",
+      "tipo": "check"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "de 2026",
+      "tipo": "check"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CONTAGEM DE PARTÍCULAS (INTEGRIDADE DO SISTEMA DE FILTRAGEM)",
+      "secaoOrdem": 4,
+      "pergunta": "0,3 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CONTAGEM DE PARTÍCULAS (INTEGRIDADE DO SISTEMA DE FILTRAGEM)",
+      "secaoOrdem": 4,
+      "pergunta": "0,5 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CONCENTRAÇÃO DE PARTÍCULAS",
+      "secaoOrdem": 5,
+      "pergunta": "0,3 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CONCENTRAÇÃO DE PARTÍCULAS",
+      "secaoOrdem": 5,
+      "pergunta": "0,5 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÃO DISTRIBUIÇÃO DO FLUXO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 6,
+      "pergunta": "Distribuição do fluxo de ar",
+      "tipo": "check"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 LUMINOSIDADE",
+      "secaoOrdem": 7,
+      "pergunta": "Ponto 1",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 LUMINOSIDADE",
+      "secaoOrdem": 7,
+      "pergunta": "Ponto 2",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 LUMINOSIDADE",
+      "secaoOrdem": 7,
+      "pergunta": "Ponto 3",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 LUMINOSIDADE",
+      "secaoOrdem": 7,
+      "pergunta": "Ponto 4",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "07-05",
+      "secao": "07 LUMINOSIDADE",
+      "secaoOrdem": 7,
+      "pergunta": "Ponto 5",
+      "tipo": "medicao",
+      "unidade": "lux"
+    }
+  ]
+}

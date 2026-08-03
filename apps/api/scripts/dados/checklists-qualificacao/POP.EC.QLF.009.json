@@ -1,0 +1,247 @@
+{
+  "codigoPop": "POP.EC.QLF.009",
+  "nome": "Qualificação — Refrigerador Banco De Sangue Medicamentos (POP.EC.QLF.009)",
+  "tipo": "QUALIFICACAO",
+  "validadeMeses": 12,
+  "fonte": "Protocolo térmico + template estudos · POP.EC.QLF.009",
+  "criteriosAceitacao": [
+    "dados de temperatura",
+    "(RBC). Equipamento com sensores de temperatura do tipo termoresistência",
+    "(RBC). Faixa de medição de temperatura: 0 a 70°C; faixa de medição de",
+    "(RBC). Com sensor do tipo termoresistência; erro máximo de temperatura",
+    "absoluta de no máximo 0,02°C, uniformidade radial máxima de 0,05°C e",
+    "equipamento quando submetido a abertura de porta por tempo determinado.",
+    "tempo determinado.",
+    "Para os equipamentos utilizados em banco de sangue a temperatura deverá se manter em",
+    "4°C com variação máxima aceitável de ± 2°C.",
+    "medição de temperatura, pressão e umidade em equipamentos.",
+    "Inicialmente foram distribuídos X sensores de temperatura, sendo posicionados da seguinte",
+    "estudo de 24h consecutivas, com registros de temperatura a cada 60s.",
+    "11. Tempo total do estudo",
+    "13. Condições finais: Tempo total de avaliação e temperaturas;",
+    "com [tempo] de porta aberta, com registros de temperatura a cada 10s.",
+    "19. Tempo total do estudo",
+    "21. Condições finais: Tempo total de avaliação e temperaturas;",
+    "com [tempo] de interrupção do fornecimento de energia, com registros de temperatura a cada 10s.",
+    "14. Tempo total do estudo",
+    "16. Condições finais: Tempo total de avaliação e temperaturas;"
+  ],
+  "nota": "Protocolos térmicos usam template de estudos (estanqueidade, Bowie & Dick, distribuição/penetração). Cálculos F0 e mapeamento completo de sensores permanecem no relatório/planilha de qualificação.",
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 PRÉ-REQUISITOS (protocolo)",
+      "secaoOrdem": 1,
+      "pergunta": "Faixa de trabalho de temperatura",
+      "tipo": "check"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 PRÉ-REQUISITOS (protocolo)",
+      "secaoOrdem": 1,
+      "pergunta": "Capacidade de armazenamento",
+      "tipo": "check"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 PRÉ-REQUISITOS (protocolo)",
+      "secaoOrdem": 1,
+      "pergunta": "Setpoint de controle (alarmes: alta temperatura e baixa temperatura)",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 ESTANQUEIDADE",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de estanqueidade inicial",
+      "tipo": "check"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 ESTANQUEIDADE",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de estanqueidade final",
+      "tipo": "check"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 BOWIE & DICK",
+      "secaoOrdem": 3,
+      "pergunta": "Ciclo Bowie & Dick aprovado",
+      "tipo": "check"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 1 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 1 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 1 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 2 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 2 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 2 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-07",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 3 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-08",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 3 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "04-09",
+      "secao": "04 DISTRIBUIÇÃO TÉRMICA SEM CARGA",
+      "secaoOrdem": 4,
+      "pergunta": "Ciclo 3 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 1 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 1 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 1 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 2 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 2 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 2 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-07",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 3 — temperatura mínima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-08",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 3 — temperatura máxima (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "05-09",
+      "secao": "05 PENETRAÇÃO TÉRMICA COM CARGA",
+      "secaoOrdem": 5,
+      "pergunta": "Ciclo 3 — temperatura média (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 INDICADORES",
+      "secaoOrdem": 6,
+      "pergunta": "Indicadores biológicos aprovados",
+      "tipo": "check"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 INDICADORES",
+      "secaoOrdem": 6,
+      "pergunta": "Integradores químicos aprovados",
+      "tipo": "check"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 INDICADORES",
+      "secaoOrdem": 6,
+      "pergunta": "Letalidade F0 mínima (min)",
+      "tipo": "medicao",
+      "unidade": "min"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 CONCLUSÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Equipamento qualificado / aprovado",
+      "tipo": "check"
+    }
+  ]
+}

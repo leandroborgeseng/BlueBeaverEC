@@ -1,0 +1,153 @@
+{
+  "codigoPop": "POP.EC.CAL.022",
+  "nome": "Calibração — Ventilometro (POP.EC.CAL.022)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.022",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Fluxo",
+      "valor": 15.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±15%"
+    }
+  ],
+  "padroesSugeridos": [
+    "VENTILÔMETRO"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 3,
+      "pergunta": "2,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 2.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 3,
+      "pergunta": "4,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 4.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 3,
+      "pergunta": "6,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 6.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 4,
+      "pergunta": "4,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 4.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 4,
+      "pergunta": "8,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 8.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    },
+    {
+      "id": "04-03",
+      "secao": "04 CALIBRAÇÃO DA LEITURA DE FLUXO",
+      "secaoOrdem": 4,
+      "pergunta": "12,0 L/min",
+      "tipo": "calibracao",
+      "valorPadrao": 12.0,
+      "unidade": "L/min",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 15.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±15%",
+        "parametro": "Fluxo"
+      },
+      "limite": 15.0
+    }
+  ]
+}

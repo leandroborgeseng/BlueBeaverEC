@@ -1,0 +1,147 @@
+{
+  "codigoPop": "POP.EC.CAL.043",
+  "nome": "Calibração — Injetor Meio Contraste (POP.EC.CAL.043)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.043",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Volume",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Tempo",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Pressão",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    }
+  ],
+  "padroesSugeridos": [],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E RECOLHER",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 CALIBRAÇÃO - VOLUME",
+      "secaoOrdem": 3,
+      "pergunta": "20,00 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 20.0,
+      "unidade": "ml",
+      "repeticoes": 3
+    },
+    {
+      "id": "03-02",
+      "secao": "03 CALIBRAÇÃO - VOLUME",
+      "secaoOrdem": 3,
+      "pergunta": "60,00 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 60.0,
+      "unidade": "ml",
+      "repeticoes": 3
+    },
+    {
+      "id": "03-03",
+      "secao": "03 CALIBRAÇÃO - VOLUME",
+      "secaoOrdem": 3,
+      "pergunta": "100,00 ml",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "ml",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-01",
+      "secao": "04 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 4,
+      "pergunta": "10,00s",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "s",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-02",
+      "secao": "04 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 4,
+      "pergunta": "30,00s",
+      "tipo": "calibracao",
+      "valorPadrao": 30.0,
+      "unidade": "s",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-03",
+      "secao": "04 CALIBRAÇÃO - TEMPO",
+      "secaoOrdem": 4,
+      "pergunta": "50,00s",
+      "tipo": "calibracao",
+      "valorPadrao": 50.0,
+      "unidade": "s",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-04",
+      "secao": "04 CALIBRAÇÃO – PRESSÃO LIMITE",
+      "secaoOrdem": 4,
+      "pergunta": "100PSI",
+      "tipo": "calibracao",
+      "valorPadrao": 100.0,
+      "unidade": "PSI",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-05",
+      "secao": "04 CALIBRAÇÃO – PRESSÃO LIMITE",
+      "secaoOrdem": 4,
+      "pergunta": "350PSI",
+      "tipo": "calibracao",
+      "valorPadrao": 350.0,
+      "unidade": "PSI",
+      "repeticoes": 3
+    },
+    {
+      "id": "04-06",
+      "secao": "04 CALIBRAÇÃO – PRESSÃO LIMITE",
+      "secaoOrdem": 4,
+      "pergunta": "700PSI",
+      "tipo": "calibracao",
+      "valorPadrao": 700.0,
+      "unidade": "PSI",
+      "repeticoes": 3
+    }
+  ]
+}

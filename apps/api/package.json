@@ -17,6 +17,8 @@
     "import:pops": "tsx scripts/import-pops-biblioteca.ts",
     "import:checklists": "tsx scripts/import-checklists-preventiva.ts",
     "import:checklists:tse": "tsx scripts/import-checklists-tse.ts",
+    "import:checklists:cal": "tsx scripts/import-checklists-calibracao.ts",
+    "import:checklists:qlf": "tsx scripts/import-checklists-qualificacao.ts",
     "import:laudos": "tsx scripts/import-laudos-pdf.ts"
   },
   "dependencies": {

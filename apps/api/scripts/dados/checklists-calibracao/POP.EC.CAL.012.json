@@ -1,0 +1,276 @@
+{
+  "codigoPop": "POP.EC.CAL.012",
+  "nome": "Calibração — Marcapasso Cardiaco (POP.EC.CAL.012)",
+  "tipo": "CALIBRACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.CAL.012",
+  "notaMetrologia": "Conformidade neste laudo: média de até 3 leituras vs valor nominal, comparada à tolerância do Quadro 7 (absoluta ou %). Incerteza expandida dos padrões e planilha metrológica Aion permanecem como registro complementar quando aplicável.",
+  "tolerancias": [
+    {
+      "parametro": "Frequência de pulso",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    },
+    {
+      "parametro": "Sensibilidade de pulso",
+      "valor": 10.0,
+      "modo": "percentual",
+      "unidade": "%",
+      "texto": "±10%"
+    },
+    {
+      "parametro": "Amplitude de pulso",
+      "valor": null,
+      "modo": null,
+      "unidade": null,
+      "texto": null
+    }
+  ],
+  "padroesSugeridos": [
+    "Analisador de marcapasso",
+    "Termohigrômetro"
+  ],
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO (EM CASO DE NC, JUSTIFICAR NA OBSERVAÇÃO E",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento",
+      "tipo": "check"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura (°C)",
+      "tipo": "medicao",
+      "unidade": "°C"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 CONDIÇÕES AMBIENTAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Umidade Relativa (U.R.(%))",
+      "tipo": "medicao",
+      "unidade": "%UR"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 SENSIBILIDADE DE PULSO ATRIAL",
+      "secaoOrdem": 5,
+      "pergunta": "2,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 2.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "05-02",
+      "secao": "05 SENSIBILIDADE DE PULSO ATRIAL",
+      "secaoOrdem": 5,
+      "pergunta": "5,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 5.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "05-03",
+      "secao": "05 SENSIBILIDADE DE PULSO ATRIAL",
+      "secaoOrdem": 5,
+      "pergunta": "10,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "06-01",
+      "secao": "06 SENSIBILIDADE DE PULSO VENTRICULAR",
+      "secaoOrdem": 6,
+      "pergunta": "2,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 2.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "06-02",
+      "secao": "06 SENSIBILIDADE DE PULSO VENTRICULAR",
+      "secaoOrdem": 6,
+      "pergunta": "5,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 5.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "06-03",
+      "secao": "06 SENSIBILIDADE DE PULSO VENTRICULAR",
+      "secaoOrdem": 6,
+      "pergunta": "10,00 mV",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "mV",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "07-01",
+      "secao": "07 AMPLITUDE DE PULSO ATRIAL",
+      "secaoOrdem": 7,
+      "pergunta": "2,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 2.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "07-02",
+      "secao": "07 AMPLITUDE DE PULSO ATRIAL",
+      "secaoOrdem": 7,
+      "pergunta": "6,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 6.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "07-03",
+      "secao": "07 AMPLITUDE DE PULSO ATRIAL",
+      "secaoOrdem": 7,
+      "pergunta": "10,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "08-01",
+      "secao": "08 AMPLITUDE DE PULSO VENTRICULAR",
+      "secaoOrdem": 8,
+      "pergunta": "2,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 2.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "08-02",
+      "secao": "08 AMPLITUDE DE PULSO VENTRICULAR",
+      "secaoOrdem": 8,
+      "pergunta": "6,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 6.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    },
+    {
+      "id": "08-03",
+      "secao": "08 AMPLITUDE DE PULSO VENTRICULAR",
+      "secaoOrdem": 8,
+      "pergunta": "10,0 V",
+      "tipo": "calibracao",
+      "valorPadrao": 10.0,
+      "unidade": "V",
+      "repeticoes": 3,
+      "tolerancia": {
+        "valor": 10.0,
+        "modo": "percentual",
+        "unidade": "%",
+        "texto": "±10%",
+        "parametro": "Sensibilidade de pulso"
+      },
+      "limite": 10.0
+    }
+  ]
+}

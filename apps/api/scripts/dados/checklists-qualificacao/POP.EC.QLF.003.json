@@ -1,0 +1,494 @@
+{
+  "codigoPop": "POP.EC.QLF.003",
+  "nome": "Qualificação — Cabine Segurança Biológica (POP.EC.QLF.003)",
+  "tipo": "QUALIFICACAO",
+  "validadeMeses": 12,
+  "fonte": "Anexo A formulário · POP.EC.QLF.003",
+  "criteriosAceitacao": [],
+  "nota": "Protocolos térmicos usam template de estudos (estanqueidade, Bowie & Dick, distribuição/penetração). Cálculos F0 e mapeamento completo de sensores permanecem no relatório/planilha de qualificação.",
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Fabricante",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Modelo",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Número de série",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Código identificador",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Classificação da cabine",
+      "tipo": "texto"
+    },
+    {
+      "id": "01-06",
+      "secao": "01 DADOS DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização",
+      "tipo": "texto"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física geral",
+      "tipo": "check"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Cabo de Força",
+      "tipo": "check"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Condições ambientais",
+      "tipo": "check"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Lâmpada germicida",
+      "tipo": "check"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "Manutenção preventiva",
+      "tipo": "check"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "DESEMPENHO DE",
+      "tipo": "check"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "EQUIPAMENTOS DO TIPO",
+      "tipo": "check"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "CABINE DE SEGURANÇA",
+      "tipo": "check"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "BIOLÓGICA",
+      "tipo": "check"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 DADOS DE MANUTENÇÃO E FUNCIONAMENTO",
+      "secaoOrdem": 2,
+      "pergunta": "de 2026",
+      "tipo": "check"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 1",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 2",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 3",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 4",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 5",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 6",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-07",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 7",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-08",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 8",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-09",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 9",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-10",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 10",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-11",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 11",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-12",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 12",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-13",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 13",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-14",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 14",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-15",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 15",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-16",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 16",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-17",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 17",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-18",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 18",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-19",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 19",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-20",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 20",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-21",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 21",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-22",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 22",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-23",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 23",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-24",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 24",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-25",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 25",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-26",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 26",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-27",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 27",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-28",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 28",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-29",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 29",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "03-30",
+      "secao": "03 VERIFICAÇÃO DA VELOCIDADE DE DOWNFLOW",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto 30",
+      "tipo": "medicao",
+      "unidade": "m/s"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 CONTAGEM DE PARTÍCULAS (INTEGRIDADE DO SISTEMA DE FILTRAGEM)",
+      "secaoOrdem": 5,
+      "pergunta": "0,3 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 CONTAGEM DE PARTÍCULAS (INTEGRIDADE DO SISTEMA DE FILTRAGEM)",
+      "secaoOrdem": 5,
+      "pergunta": "0,5 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 CONCENTRAÇÃO DE PARTÍCULAS",
+      "secaoOrdem": 6,
+      "pergunta": "0,3 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 CONCENTRAÇÃO DE PARTÍCULAS",
+      "secaoOrdem": 6,
+      "pergunta": "0,5 µm",
+      "tipo": "medicao"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "DESEMPENHO DE",
+      "tipo": "check"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "EQUIPAMENTOS DO TIPO",
+      "tipo": "check"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "CABINE DE SEGURANÇA",
+      "tipo": "check"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "BIOLÓGICA",
+      "tipo": "check"
+    },
+    {
+      "id": "07-05",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "de 2026",
+      "tipo": "check"
+    },
+    {
+      "id": "07-06",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "Fluxo de ar descendente",
+      "tipo": "check"
+    },
+    {
+      "id": "07-07",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "Homogeneidade da circulação de ar das grelhas",
+      "tipo": "check"
+    },
+    {
+      "id": "07-08",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "Retenção de fluxo na janela",
+      "tipo": "check"
+    },
+    {
+      "id": "07-09",
+      "secao": "07 VERIFICAÇÃO DE CIRCULAÇÃO DE AR (TESTE DE FUMAÇA)",
+      "secaoOrdem": 7,
+      "pergunta": "Retenção de fluxo no perímetro frontal",
+      "tipo": "check"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 LUMINOSIDADE",
+      "secaoOrdem": 8,
+      "pergunta": "Ponto 1",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "08-02",
+      "secao": "08 LUMINOSIDADE",
+      "secaoOrdem": 8,
+      "pergunta": "Ponto 2",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "08-03",
+      "secao": "08 LUMINOSIDADE",
+      "secaoOrdem": 8,
+      "pergunta": "Ponto 3",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "08-04",
+      "secao": "08 LUMINOSIDADE",
+      "secaoOrdem": 8,
+      "pergunta": "Ponto 4",
+      "tipo": "medicao",
+      "unidade": "lux"
+    },
+    {
+      "id": "08-05",
+      "secao": "08 LUMINOSIDADE",
+      "secaoOrdem": 8,
+      "pergunta": "Ponto 5",
+      "tipo": "medicao",
+      "unidade": "lux"
+    }
+  ]
+}
