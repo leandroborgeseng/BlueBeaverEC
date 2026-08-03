@@ -63,14 +63,16 @@ export default function CadastrosPage() {
 
   async function createNamed(path: string, body: Record<string, unknown>, e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const payload: Record<string, unknown> = { ...body };
     fd.forEach((v, k) => {
-      payload[k] = String(v);
+      if (k === "vidaUtilAnos") payload[k] = Number(v);
+      else payload[k] = String(v);
     });
     try {
       await api(path, { method: "POST", body: JSON.stringify(payload) });
-      e.currentTarget.reset();
+      form.reset();
       setMsg("Salvo com sucesso");
       await reload();
     } catch (err) {
