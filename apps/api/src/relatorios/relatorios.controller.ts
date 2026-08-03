@@ -49,8 +49,9 @@ export class RelatoriosController {
     return this.relatorios.templates();
   }
 
+  /** Exportar PDF/XLSX — leitura basta (inventário, calendário, etc.). Agendar e-mail exige EDICAO. */
   @Post("gerar")
-  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("estrategico", PERMISSAO_NIVEL.LEITURA)
   async gerar(
     @CurrentUser() user: AuthUser,
     @Body() body: GerarDto,
