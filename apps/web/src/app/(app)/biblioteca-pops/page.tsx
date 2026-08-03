@@ -163,7 +163,7 @@ export default function BibliotecaPopsPage() {
       </FilterBar>
 
       {filtered.length === 0 ? (
-        <Empty>Nenhum POP encontrado. Aguarde o import no boot da API.</Empty>
+        <Empty text="Nenhum POP encontrado. Aguarde o import no boot da API." />
       ) : (
         <DataTable>
           <thead>
