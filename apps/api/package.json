@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "import:equipamentos": "tsx scripts/import-equipamentos-reais.ts"
+    "import:equipamentos": "tsx scripts/import-equipamentos-reais.ts",
+    "import:laudos": "tsx scripts/import-laudos-pdf.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.3",

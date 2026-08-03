@@ -29,6 +29,17 @@ export class CertificadosController {
     @Param("id") id: string,
     @Res() res: Response,
   ) {
+    const original = await this.laudos.certificadoPdfOriginal(user.estabelecimentoId, id);
+    if (original) {
+      res.setHeader("Content-Type", original.mimeType || "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${original.nomeArquivo.replace(/"/g, "")}"`,
+      );
+      res.send(Buffer.from(original.conteudo));
+      return;
+    }
+
     const doc = await this.laudos.certificadoDocumento(user.estabelecimentoId, id);
     const pdf = await buildPdfBuffer({
       template: "conformidade",

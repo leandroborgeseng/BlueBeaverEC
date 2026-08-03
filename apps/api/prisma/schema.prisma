@@ -562,10 +562,24 @@ model Laudo {
   procedimento       ProcedimentoLaudo? @relation(fields: [procedimentoId], references: [id])
   instrumento        InstrumentoPadrao? @relation(fields: [instrumentoId], references: [id])
   responsavelTecnico Colaborador?      @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
+  anexos             LaudoAnexo[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, tipo])
   @@index([equipamentoId])
+}
+
+model LaudoAnexo {
+  id          String   @id @default(cuid())
+  laudoId     String
+  nomeArquivo String
+  mimeType    String   @default("application/pdf")
+  conteudo    Bytes
+  createdAt   DateTime @default(now())
+
+  laudo Laudo @relation(fields: [laudoId], references: [id], onDelete: Cascade)
+
+  @@index([laudoId])
 }
 
 enum SituacaoContrato {

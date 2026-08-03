@@ -293,12 +293,16 @@ export class LaudosService {
           tipo: { in: tipos },
           resultado: { in: [ResultadoLaudo.APROVADO, ResultadoLaudo.APROVADO_COM_RESSALVAS] },
         },
-        include: { equipamento: { include: { setor: true } } },
+        include: {
+          equipamento: { include: { setor: true } },
+          anexos: { select: { id: true, nomeArquivo: true } },
+        },
         orderBy: { validadeAte: "asc" },
       })
       .then((rows) =>
         rows.map((l) => ({
           ...l,
+          temAnexoOriginal: (l.anexos?.length ?? 0) > 0,
           statusCertificado: this.statusCertificado(l.validadeAte),
         })),
       );
@@ -311,6 +315,7 @@ export class LaudosService {
         equipamento: { include: { setor: true, fabricante: true, modelo: true } },
         procedimento: true,
         responsavelTecnico: true,
+        anexos: { select: { id: true, nomeArquivo: true, mimeType: true } },
       },
     });
     if (!l) throw new NotFoundException("Certificado não encontrado");
@@ -327,7 +332,25 @@ export class LaudosService {
         procedimento: l.procedimento?.nome,
         responsavel: l.responsavelTecnico?.nome,
         respostas: l.respostas,
+        anexos: l.anexos,
       },
+    };
+  }
+
+  async certificadoPdfOriginal(estabelecimentoId: string, id: string) {
+    const l = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId },
+      include: {
+        anexos: { orderBy: { createdAt: "desc" }, take: 1 },
+      },
+    });
+    if (!l) throw new NotFoundException("Certificado não encontrado");
+    const anexo = l.anexos[0];
+    if (!anexo) return null;
+    return {
+      nomeArquivo: anexo.nomeArquivo,
+      mimeType: anexo.mimeType,
+      conteudo: anexo.conteudo,
     };
   }
 

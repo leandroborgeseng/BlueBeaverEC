@@ -25,6 +25,7 @@ interface Cert {
   validadeAte?: string | null;
   statusCertificado: string;
   resultado?: string | null;
+  temAnexoOriginal?: boolean;
   equipamento: { tag: string; nome: string; setor: { nome: string } };
 }
 
@@ -149,12 +150,14 @@ export default function CertificadosPage() {
                     variant="ghost"
                     style={{ padding: "6px 10px", fontSize: 12 }}
                     onClick={() =>
-                      void downloadApi(`/certificados/${c.id}/documento.pdf`, { method: "GET" }, "certificado.pdf").catch(
-                        (err) => setErro(err instanceof Error ? err.message : "Erro ao baixar PDF"),
-                      )
+                      void downloadApi(
+                        `/certificados/${c.id}/documento.pdf`,
+                        { method: "GET" },
+                        c.temAnexoOriginal ? `${c.equipamento.tag}-${c.tipo}.pdf` : "certificado.pdf",
+                      ).catch((err) => setErro(err instanceof Error ? err.message : "Erro ao baixar PDF"))
                     }
                   >
-                    PDF
+                    {c.temAnexoOriginal ? "PDF original" : "PDF"}
                   </Btn>
                   <Btn variant="secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void reabrir(c.id)}>
                     Reabrir
