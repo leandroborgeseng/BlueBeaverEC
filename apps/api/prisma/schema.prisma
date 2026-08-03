@@ -50,6 +50,7 @@ enum TipoOS {
   PREVENTIVA
   CALIBRACAO
   TSE
+  QUALIFICACAO
 }
 
 enum UrgenciaSolicitacao {
@@ -103,6 +104,7 @@ model Estabelecimento {
   relatorioAgendamentos  RelatorioAgendamento[]
   perfisCustom           PerfilCustom[]
   mobileSyncIds          MobileSyncIdempotency[]
+  tiposEquipamentoPlano  TipoEquipamentoPlano[]
 }
 
 model Usuario {
@@ -211,6 +213,44 @@ model PlanoDescricao {
   @@unique([estabelecimentoId, nome])
 }
 
+/// Catálogo de tipo de equipamento para plano de manutenção (ex.: "Desfibrilador - cardioversor").
+model TipoEquipamentoPlano {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  ativo              Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  testes          PlanoTeste[]
+  equipamentos    Equipamento[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+model PlanoTeste {
+  id                    String         @id @default(cuid())
+  tipoEquipamentoPlanoId String
+  tipoTeste             TipoTestePlano
+  periodicidadeMeses    Int
+  procedimentoCodigo    String
+  parametrosFaixa       String?
+  tolerancias           String?
+  classeTse             String?
+  tipoParteAplicada     String?
+  pontoAplicacao        String?
+  ativo                 Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  tipoEquipamentoPlano TipoEquipamentoPlano @relation(fields: [tipoEquipamentoPlanoId], references: [id], onDelete: Cascade)
+  laudos               Laudo[]
+
+  @@unique([tipoEquipamentoPlanoId, tipoTeste])
+  @@index([procedimentoCodigo])
+}
+
 model CentroCusto {
   id                 String @id @default(cuid())
   estabelecimentoId  String
@@ -267,6 +307,9 @@ model Equipamento {
   dataEndOfService   DateTime?
   dataEndOfLife      DateTime?
   observacao         String?
+  tipoEquipamentoPlanoId String?
+  planoMatchTipo     String?   // exato | aproximado | sem_correspondencia
+  planoMatchObs      String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -277,6 +320,7 @@ model Equipamento {
   setor           Setor           @relation(fields: [setorId], references: [id])
   fornecedor      Fornecedor?     @relation(fields: [fornecedorId], references: [id])
   centroCusto     CentroCusto?    @relation(fields: [centroCustoId], references: [id])
+  tipoEquipamentoPlano TipoEquipamentoPlano? @relation(fields: [tipoEquipamentoPlanoId], references: [id], onDelete: SetNull)
   historicoTags   HistoricoTag[]
   ordensServico   OrdemServico[]
   solicitacoes    SolicitacaoServico[]
@@ -288,6 +332,7 @@ model Equipamento {
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
   @@index([setorId])
+  @@index([tipoEquipamentoPlanoId])
 }
 
 model HistoricoTag {
@@ -464,12 +509,21 @@ enum TipoLaudo {
   PREVENTIVA
   CALIBRACAO
   TSE
+  QUALIFICACAO
 }
 
 enum ResultadoLaudo {
   APROVADO
   REPROVADO
   APROVADO_COM_RESSALVAS
+  PENDENTE_ASSINATURA
+}
+
+enum TipoTestePlano {
+  PREVENTIVA
+  CALIBRACAO
+  TSE
+  QUALIFICACAO
 }
 
 enum NormaTse {
@@ -546,6 +600,7 @@ model Laudo {
   responsavelTecnicoId String?
   procedimentoId       String?
   instrumentoId        String?
+  planoTesteId         String?
   resultado            ResultadoLaudo?
   justificativaRessalva String?
   validadeMeses        Int?
@@ -562,6 +617,7 @@ model Laudo {
   procedimento       ProcedimentoLaudo? @relation(fields: [procedimentoId], references: [id])
   instrumento        InstrumentoPadrao? @relation(fields: [instrumentoId], references: [id])
   responsavelTecnico Colaborador?      @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
+  planoTeste         PlanoTeste?       @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
   anexos             LaudoAnexo[]
 
   @@unique([estabelecimentoId, numero])

@@ -1,0 +1,1041 @@
+[
+ {
+  "nomeEquipamentoNexo": "Agitador de Tubos (Vórtex)",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Nenhum tipo de agitador/vórtex de laboratório consta na planilha de referência.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Aparelho de Anestesia",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Unidade de anestesia",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Unidade de anestesia",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.004"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Volume: 100,0 a 700,0mL;\nFrequência respiratória: 10 a 20RPM:\nPressão inspiratória: 15 a 35cmH2O;\nPressão expiratória final positiva (PEEP): 5 a 15 cmH2O;\nConcentração de O2: 21 a 100%;\nVaporizador: 1 a 4%.",
+    "tolerancias": "± 15%;\n ± 3 pontos;\n ± 5%;\n ± 5%;\n ± 10%;\n ± 5%.",
+    "procedimento": "POP.EC.CAL.004"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "B ou BF",
+    "pontoAplicacao": "Ramo expiratório, ramo inspiratório, sensor de capnografia (quando aplicável).",
+    "procedimento": "POP.EC.SEG.001"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Aparelho de Raios X - Fixo Digital",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Aparelho de raios-x fixo",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Aparelho de raios-x fixo",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.094"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Aparelho de Raios X - Móvel",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Aparelho de raios-x móvel",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Aparelho de raios-x móvel",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.095"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Aparelho para Hemodiálise",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Uni Hemodiálise",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Uni Hemodiálise",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.107"
+   },
+   "calibracao": null,
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "B",
+    "pontoAplicacao": "Carcaça do equipamento.",
+    "procedimento": "POP.EC.SEG.016"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Arco Cirúrgico",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Arco cirúrgico",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Arco cirúrgico",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.097"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Audiômetro",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Audiômetro",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Audiômetro",
+   "preventiva": null,
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência: 125 a 8000Hz;\nNível de pressão sonora - Tom puro: \n60dB HL com frequência de 125Hz e 80dB HL com frequência de 250 a 8000Hz; \nNível de pressão sonona - Mascaramento: \n50dB HL com frequência de 125Hz, 70 dB HL com frequência de 250Hz e 80dB HL com frequência de 750Hz a 8000Hz; \nForça no vibrador ósseo: \n30dB HL com frequência de 250Hz, 40 dB HL com frequência de 500Hz e 50 dB HL com frequência de 750 a 8000Hz;\nNível de pressão sonora - Campo livre: \n70 dB HL com frequência de 250Hz e 80 dB HL com frequência de 500 a 8000Hz.",
+    "tolerancias": "Frequência: ± 1%; \nNível de pressão sonora – Tom puro: \n± 3dB: 125Hz à 4kHz;\n± 5dB: ≥4kHz até 16kHz;\nNível de pressão sonora – Mascaramento:\n+5 /-3dB;\nForça no vibrador ósseo: \n± 4dB: 250Hz à 4kHz;\n± 5dB: ≥4kHz;\nNível de pressão sonora – Campo livre:\n± 3dB: 125Hz à 4kHz;\n± 5dB: ≥4kHz até 16kHz;",
+    "procedimento": "POP.EC.CAL.029"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "BERA Sistema de Potencial Evocado",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Sis triagem auditiva RN",
+  "observacao": "BERA (potencial evocado auditivo) não tem linha própria; usada a linha de triagem auditiva por potencial evocado como referência mais próxima — confirmar com metrologia.",
+  "plano": {
+   "equipamento": "Sis triagem auditiva RN",
+   "preventiva": null,
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência: 125 a 8000 Hz;\nNível de pressão sonora: 100,0 a 126,0 dB NPS com frequência de 125 a 8000Hz.",
+    "tolerancias": "± 1%;\n± 3 dB;",
+    "procedimento": "POP.EC.CAL.032"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Balança Antropométrica Adulto",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Balança antropométrica adulto",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Balança antropométrica adulto",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.024"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Leitura de massa: 30000 a 120000g.",
+    "tolerancias": "± 5%.",
+    "procedimento": "POP.EC.CAL.020"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Balança Antropométrica Infantil",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Balança paciente infantil eletrônica",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Balança paciente infantil eletrônica",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.029"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Leitura de massa: 3000 a 15000g.",
+    "tolerancias": "± 5%.",
+    "procedimento": "POP.EC.CAL.024"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Balança Digital Portátil",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Balança antropométrica adulto",
+  "observacao": "Sem linha específica para balança digital portátil; usada a linha de balança antropométrica adulto (faixa de massa similar).",
+  "plano": {
+   "equipamento": "Balança antropométrica adulto",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.024"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Leitura de massa: 30000 a 120000g.",
+    "tolerancias": "± 5%.",
+    "procedimento": "POP.EC.CAL.020"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Balança Tipo Plataforma",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Balança antropométrica adulto",
+  "observacao": "Sem linha específica para balança tipo plataforma; usada a linha de balança antropométrica adulto como referência mais próxima.",
+  "plano": {
+   "equipamento": "Balança antropométrica adulto",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.024"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Leitura de massa: 30000 a 120000g.",
+    "tolerancias": "± 5%.",
+    "procedimento": "POP.EC.CAL.020"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Banho-Maria",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Banho maria",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Banho maria",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.001"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Temperatura: 28,0°C, 37,0°C e 65,0°C.",
+    "tolerancias": "± 1,5°C.",
+    "procedimento": "POP.EC.CAL.001"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Berço Aquecido",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Berço aquecido",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Berço aquecido",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.006"
+   },
+   "calibracao": {
+    "periodicidade": "06 meses",
+    "parametrosFaixa": "Temperatura: 30,0 a 42,0°C;\nTempo: 60,00 a 600,00s.",
+    "tolerancias": "± 1,0°C.\n ± 10%.",
+    "procedimento": "POP.EC.CAL.005"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "BF",
+    "pontoAplicacao": "Sensor de oximetria e sensor de temperatura.",
+    "procedimento": "POP.EC.SEG.003"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Bisturi Elétrico (até 150 W)",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Bisturi eletrônico",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Bisturi eletrônico",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.008"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Corte puro: 50,0 a 300,0W;\nCorte blend: 50,0 a 250,0W;\nCoagulação spray: 30,0 a 120,0W;\nCoagulação fulgurate: 20,0 a 120,0W;\nCoagulação soft: 30,0 a 200,0W;",
+    "tolerancias": "±20%.",
+    "procedimento": "POP.EC.CAL.007"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "CF",
+    "pontoAplicacao": "Placa de retorno do paciente.",
+    "procedimento": "POP.EC.SEG.005"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Bomba de Infusão",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Bomba de infusão uso geral",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Bomba de infusão uso geral",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.015"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Tempo de infusão: 300,00 a 900,00s\nVolume infundido: 10,0 a 18,0 mL;\nPressão limite: 30 a 120kPa.",
+    "tolerancias": "± 10%;\n ± 5%;\n± 5%.",
+    "procedimento": "POP.EC.CAL.013"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Bomba de Infusão de Seringa",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Bomba de infusão de seringa",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Bomba de infusão de seringa",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.002"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Tempo de infusão: 300,00 a 900,00s\nVolume infundido: 10,0 a 18,0 mL;\nPressão limite: 20 a 120kPa.",
+    "tolerancias": "± 10%;\n ± 5%;\n± 5%.",
+    "procedimento": "POP.EC.CAL.002"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Cadeira Oftalmológica",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário sem linha de calibração/TSE na planilha; sugerir cadastro apenas com plano de preventiva a definir pela engenharia clínica.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Cadeira de Banho/ Higiênica",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Cadeira de Rodas Adulto",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Cadeira de Rodas para Obeso",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Cama Hospitalar Tipo Fawler Mecânica",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Cama elétrica",
+  "observacao": "Planilha só lista 'Cama elétrica' (PM 12m / TSE 36m Classe I B). Confirmar se a MI-508 do inventário é mecânica ou elétrica (RENEM já sinalizou essa dúvida): se for mecânica (sem componentes elétricos), TSE não se aplica — usar apenas periodicidade de preventiva.",
+  "plano": {
+   "equipamento": "Cama elétrica",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.010"
+   },
+   "calibracao": null,
+   "segurancaEletrica": {
+    "periodicidade": "36 meses",
+    "classe": "I",
+    "tipo": "B",
+    "pontoAplicacao": "Controle e carcaça.",
+    "procedimento": "POP.EC.SEG.007"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Cama hospitalar infantil",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Cama elétrica",
+  "observacao": "Sem linha específica para cama infantil; usada a linha de cama elétrica como referência — confirmar se o modelo é elétrico antes de aplicar bloco de TSE.",
+  "plano": {
+   "equipamento": "Cama elétrica",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.010"
+   },
+   "calibracao": null,
+   "segurancaEletrica": {
+    "periodicidade": "36 meses",
+    "classe": "I",
+    "tipo": "B",
+    "pontoAplicacao": "Controle e carcaça.",
+    "procedimento": "POP.EC.SEG.007"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Carro Maca Simples",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário de transporte sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Carro p/medicamentos",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Mobiliário sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Central de Monitoração para UTI",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Monitor fisiológico multiuso",
+  "observacao": "Central de monitoração (estação/display) não tem linha própria; usada a linha de monitor multiparâmetros, mas os parâmetros de calibração listados (oximetria, PNI etc.) só se aplicam se a central realizar aquisição direta — confirmar aplicabilidade.",
+  "plano": {
+   "equipamento": "Monitor fisiológico multiuso",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.003"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Oximetria - Saturação de oxigênio: 80 a 100%;\nOximetria - Frequência de pulso: 60 a 160BPM;\nFrequência cardíaca: 30 a 240BPM;\nFrequência respiratória: 10 a 30 RESPPM;\nPressão não invasiva sistólica: 60,0 a 200,0 mmHg;\nPressão não invasiva diastólica: 30,0 a 150,0mmHg;\nPressão invasiva sistólica: 60,0 a 150,0 mmHg;\nPressão invasiva diastólica: 30,0 a 100,0 mmHg;\nTemperatura: 30,0 a 42,0°C;\nCapnografia: 10% CO2;\nDébito cardíaco: 5,0 a 15,0 L/min.",
+    "tolerancias": "Oximetria - Saturação de oxigênio: ± 3 pontos; \nOximetria - Frequência de pulso: ± 5 pontos; \nFrequência cardíaca: ± 5 pontos;\nFrequência respiratória: ± 3 pontos;\nPressão não invasiva sistólica: ± 9 pontos;\nPressão não invasiva diastólica: ± 9 pontos;\nPressão invasiva sistólica: ± 5%;\nPressão invasiva diastólica: ± 5%;\nTemperatura: ± 5%;\nCapnografia: ± 10%;\nDébito cardíaco: ± 10%.",
+    "procedimento": "POP.EC.CAL.003"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I ou II",
+    "tipo": "CF",
+    "pontoAplicacao": "Sensor de oximetria, sensor de temperatura, sensor de capnografia, cabo de pressão não invasiva, cabo de pressão invasiva, eletrodos de ECG.",
+    "procedimento": "POP.EC.SEG.002"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Centrífuga Laboratorial",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Centrífuga",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Centrífuga",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.052"
+   },
+   "calibracao": {
+    "periodicidade": "06 meses",
+    "parametrosFaixa": "Tempo: 180,00 a 900,00s;\nVelocidade de rotação: 3.000,00 a 8.500,00 RPM;\nTemperatura: 4 a 20°C.",
+    "tolerancias": "±10%;\n±10%;\n±1°C.",
+    "procedimento": "POP.EC.CAL.035"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Coluna Oftalmológica",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Coluna oftalmológica",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Coluna oftalmológica",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.055"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Câmara para Conservação de Hemoderivados/ Imuno/ Termolábeis",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Câmara de conservação",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Câmara de conservação",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.033"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Temperatura: 4,0 e 6,0°C.",
+    "tolerancias": "± 2°C.",
+    "procedimento": "POP.EC.CAL.027"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.QLF.002"
+   }
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Câmara para Conservação de Imunobiológicos",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Câmara de conservação",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Câmara de conservação",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.033"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Temperatura: 4,0 e 6,0°C.",
+    "tolerancias": "± 2°C.",
+    "procedimento": "POP.EC.CAL.027"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.QLF.002"
+   }
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Desfibrilador Convencional",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Desfibrilador - cardioversor",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Desfibrilador - cardioversor",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.011"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Níveis de energia - pás externas: 150,0 a 360,0 J;\nNíveis de energia - pás internas: 10,0 a 50,0 J;\nFrequência cardíaca - pás externas: 60 a 240 BPM.",
+    "tolerancias": "±10%.",
+    "procedimento": "POP.EC.CAL.009"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "II",
+    "tipo": "CF ou BF",
+    "pontoAplicacao": "Pás externas, pás internas, cabo de ECG, sensor de oximetria, e demais acessórios.",
+    "procedimento": "POP.EC.SEG.008"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Detector Fetal",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Detector fetal",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Detector fetal",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.085"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Eletroencefalógrafo",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Monitor EEG",
+  "observacao": "Planilha só lista 'Monitor EEG'; usada como referência para o eletroencefalógrafo diagnóstico do inventário.",
+  "plano": {
+   "equipamento": "Monitor EEG",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.058"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência de onda: 0,5 a 50,0 Hz;\nAmplitude de onda: 10,0 a 2.000,0µV.",
+    "tolerancias": "±10%.",
+    "procedimento": "POP.EC.CAL.036"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "II",
+    "tipo": "CF",
+    "pontoAplicacao": "Eletrodos.",
+    "procedimento": "POP.EC.SEG.017"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Foco Refletor Ambulatorial",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Foco cirúrgico móvel",
+  "observacao": "Sem linha específica para foco/refletor ambulatorial (luz de exame); usada a linha de foco cirúrgico móvel como referência mais próxima — sem calibração/TSE listados, apenas preventiva.",
+  "plano": {
+   "equipamento": "Foco cirúrgico móvel",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.017"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Freezer para Armazenamento de Hemocomponentes",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Freezer de armazenamento biológico",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Freezer de armazenamento biológico",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.066"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Temperatura: -10 a -30°C.",
+    "tolerancias": "± 2°C.",
+    "procedimento": "POP.EC.CAL.038"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.QLF.006"
+   }
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Imitanciômetro",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Impedânciometro timpanométrico",
+  "observacao": "Imitanciômetro e impedanciômetro timpanométrico são o mesmo equipamento.",
+  "plano": {
+   "equipamento": "Impedânciometro timpanométrico",
+   "preventiva": null,
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência: 125 a 8000Hz;\nNível de pressão sonora - Contralateral: \n87 a 105,5 dB HL \ncom frequência de 250Hz a 8000Hz; \nNível de pressão sonona - Ipsilateral: \n100,0 a 105,5 dB HL \ncom frequência de 250 a 8000 Hz; \nIntensidade sonora - Sonda eletrônica: \n85,0 dB SPL com frequência de 226 a 1500Hz;\nFrequência - Sonda eletrônica: 226,0 a 1500,0 Hz.",
+    "tolerancias": "Frequência:± 1%; \nNível de pressão sonora – Contra/Ipsilateral: ± 5 dB;\nIntensidade sonora - Sonda: ± 3 dB;\nFrequência - Sonda: ± 2%.",
+    "procedimento": "POP.EC.CAL.039"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Lâmpada de Fenda",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Lâmpada de fenda",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Lâmpada de fenda",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.072"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "MAPA - Monitor Ambulatorial de Pressão Arterial",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "MAPA",
+  "observacao": null,
+  "plano": {
+   "equipamento": "MAPA",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.031"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Pressão sistólica: 80,00 a 240,00 mmHg;\nPressão diastólica: 50,00 a 180,00 mmHg.",
+    "tolerancias": "± 10%.",
+    "procedimento": "POP.EC.CAL.026"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Marcapasso Cardíaco Externo",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Marcapasso cardíaco - eletrodo invasivo",
+  "observacao": "Planilha só lista a linha de marcapasso com eletrodo invasivo; o inventário tem marcapasso EXTERNO (transcutâneo) — confirmar com metrologia se os mesmos parâmetros/tolerâncias se aplicam.",
+  "plano": {
+   "equipamento": "Marcapasso cardíaco - eletrodo invasivo",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.014"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência de pulso atrial: 60,0 a 120,0 ppm;\nFrequência de pulto ventricular: 60,0 a 120,0 ppm;\nSensibilidade de pulso atrial: 2,00 a 10,00 mV;\nSensibilidade de pulso ventricular: 2,00 a 10,00 mV;\nAmplitude de pulso atrial: 2,00 a 10,00 V;\nAmplitude de pulso ventricular: 2,00 a 10,00V.",
+    "tolerancias": "Frequência: ± 10%;\nSensibilidade: ± 10%;\nAmplitude: ± 5%;",
+    "procedimento": "POP.EC.CAL.012"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "II",
+    "tipo": "CF",
+    "pontoAplicacao": "Cabo de conexão com o paciente.",
+    "procedimento": "POP.EC.SEG.010"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Medidor de Cuff",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Cuffômetro",
+  "observacao": "Medidor de cuff e cuffômetro são o mesmo equipamento.",
+  "plano": {
+   "equipamento": "Cuffômetro",
+   "preventiva": null,
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Pressão: 10,0 a 120,0 cmH2O.",
+    "tolerancias": "±10%.",
+    "procedimento": "POP.EC.CAL.015"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Mesa Cirúrgica Elétrica",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Mesa cirúrgica",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Mesa cirúrgica",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.026"
+   },
+   "calibracao": null,
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "B",
+    "pontoAplicacao": "Controle e carcaça do equipamento.",
+    "procedimento": "POP.EC.SEG.011"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Mesa Ginecológica",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Sem linha correspondente na planilha.",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Microscópio Laboratorial Básico",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Microscópio Lab",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Microscópio Lab",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.110"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Monitor Multiparâmetros",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Monitor fisiológico multiuso",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Monitor fisiológico multiuso",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.003"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Oximetria - Saturação de oxigênio: 80 a 100%;\nOximetria - Frequência de pulso: 60 a 160BPM;\nFrequência cardíaca: 30 a 240BPM;\nFrequência respiratória: 10 a 30 RESPPM;\nPressão não invasiva sistólica: 60,0 a 200,0 mmHg;\nPressão não invasiva diastólica: 30,0 a 150,0mmHg;\nPressão invasiva sistólica: 60,0 a 150,0 mmHg;\nPressão invasiva diastólica: 30,0 a 100,0 mmHg;\nTemperatura: 30,0 a 42,0°C;\nCapnografia: 10% CO2;\nDébito cardíaco: 5,0 a 15,0 L/min.",
+    "tolerancias": "Oximetria - Saturação de oxigênio: ± 3 pontos; \nOximetria - Frequência de pulso: ± 5 pontos; \nFrequência cardíaca: ± 5 pontos;\nFrequência respiratória: ± 3 pontos;\nPressão não invasiva sistólica: ± 9 pontos;\nPressão não invasiva diastólica: ± 9 pontos;\nPressão invasiva sistólica: ± 5%;\nPressão invasiva diastólica: ± 5%;\nTemperatura: ± 5%;\nCapnografia: ± 10%;\nDébito cardíaco: ± 10%.",
+    "procedimento": "POP.EC.CAL.003"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I ou II",
+    "tipo": "CF",
+    "pontoAplicacao": "Sensor de oximetria, sensor de temperatura, sensor de capnografia, cabo de pressão não invasiva, cabo de pressão invasiva, eletrodos de ECG.",
+    "procedimento": "POP.EC.SEG.002"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Oftalmoscópio Binocular Indireto",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Oftalmoscópio indireto",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Oftalmoscópio indireto",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.074"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Oxímetro de Pulso",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Oxímetro de pulso",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Oxímetro de pulso",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.009"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Saturação de oxigênio: 80 a 100%;\nFrequência de pulso: 60 a 160 BPM.",
+    "tolerancias": "± 3 pontos;\n ± 5 pontos.",
+    "procedimento": "POP.EC.CAL.008"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I",
+    "tipo": "BF",
+    "pontoAplicacao": "Sensor de oximetria.",
+    "procedimento": "POP.EC.SEG.006"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Refrator de Greens",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Refrator de greens",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Refrator de greens",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.077"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Seladora",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Selador pacote",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Selador pacote",
+   "preventiva": {
+    "periodicidade": "06  meses",
+    "procedimento": "POP.EC.MP.116"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Temperatura: 120,00 a 150,00°C.",
+    "tolerancias": "± 2°C.",
+    "procedimento": "POP.EC.CAL.046"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.QLF.010"
+   }
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Sistema Holter - Analisador e Gravador",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Holter",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Holter",
+   "preventiva": {
+    "periodicidade": "06 meses",
+    "procedimento": "POP.EC.MP.030"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Frequência cardíaca: 30 a 240 BPM.",
+    "tolerancias": "± 10%.",
+    "procedimento": "POP.EC.CAL.025"
+   },
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Sistema de Vídeo Endoscopia Flexível",
+  "tipoMatch": "aproximado",
+  "equipamentoPlanilha": "Torre de videoendoscopia",
+  "observacao": "Planilha não tem linha genérica de 'sistema de endoscopia flexível'; usada 'Torre de videoendoscopia' como referência — confirmar se não seria mais adequado 'Videogastroscópio', 'Videocolonoscópio' ou 'Nasofibroscópio' conforme aplicação clínica real do equipamento.",
+  "plano": {
+   "equipamento": "Torre de videoendoscopia",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.119"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Tela de acuidade visual",
+  "tipoMatch": "sem_correspondencia",
+  "equipamentoPlanilha": null,
+  "observacao": "Sem linha correspondente na planilha (item óptico simples, provavelmente sem calibração/TSE aplicável).",
+  "plano": null
+ },
+ {
+  "nomeEquipamentoNexo": "Tonômetro",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Tonometro oftalmológico",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Tonometro oftalmológico",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.079"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Ultrassom Diagnóstico com Aplicação Transesofágica",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Sistema de ultrassonografia",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Sistema de ultrassonografia",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.084"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Ultrassom Diagnóstico sem Aplicação Transesofágica",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Sistema de ultrassonografia",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Sistema de ultrassonografia",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.084"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Ventilador Pulmonar Pressométrico e Volumétrico",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Ventilador UTI",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Ventilador UTI",
+   "preventiva": {
+    "periodicidade": "04 meses",
+    "procedimento": "POP.EC.MP.007"
+   },
+   "calibracao": {
+    "periodicidade": "12 meses",
+    "parametrosFaixa": "Volume - adulto: 100,0 a 700,0mL;\nVolume - neonatal: 30,0 a 100,0 mL;\nFrequência respiratória: 10 a 20 RPM;\nPressão inspiratória: 15 a 35 cmH2O;\nPressão inspiratória - neonatal: 5 a 15 cmH2O;\nPressão expiratória final positiva (PEEP): 5 a 15 cmH2O;\nConcentração de O2: 21 a 100%;\nTempo inspiratório: 0,5 a 1,0s.",
+    "tolerancias": "Volume : ± 15%;\nFrequência respiratória: ± 3 pontos;\nPressão inspiratória: ± 5%;\nPressão expiratória final positiva (PEEP): ± 5%;\nConcentração de O2: ± 10%;\nTempo inspiratório: ± 10%.",
+    "procedimento": "POP.EC.CAL.006"
+   },
+   "segurancaEletrica": {
+    "periodicidade": "12 meses",
+    "classe": "I ou II",
+    "tipo": "B ou BF",
+    "pontoAplicacao": "Ramo expiratório e ramo inspiratório.",
+    "procedimento": "POP.EC.SEG.004"
+   },
+   "qualificacao": null
+  }
+ },
+ {
+  "nomeEquipamentoNexo": "Vídeo Laringoscópio",
+  "tipoMatch": "exato",
+  "equipamentoPlanilha": "Videolaringoscópio",
+  "observacao": null,
+  "plano": {
+   "equipamento": "Videolaringoscópio",
+   "preventiva": {
+    "periodicidade": "12 meses",
+    "procedimento": "POP.EC.MP.027"
+   },
+   "calibracao": null,
+   "segurancaEletrica": null,
+   "qualificacao": null
+  }
+ }
+]

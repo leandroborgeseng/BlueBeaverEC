@@ -85,16 +85,27 @@ setTimeout(() => {
   });
   imp.on("exit", (code) => {
     console.log(`[nexo] import equipamentos finalizado (code=${code ?? "?"})`);
-    console.log("[nexo] iniciando import de laudos PDF em background…");
-    const laudos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-laudos.mjs")], {
+    console.log("[nexo] iniciando import de planos de manutenção…");
+    const planos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-planos.mjs")], {
       cwd: root,
       env: process.env,
       stdio: "inherit",
       shell: false,
       detached: false,
     });
-    laudos.on("exit", (c2) => {
-      console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+    planos.on("exit", (c1) => {
+      console.log(`[nexo] import planos finalizado (code=${c1 ?? "?"})`);
+      console.log("[nexo] iniciando import de laudos PDF em background…");
+      const laudos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-laudos.mjs")], {
+        cwd: root,
+        env: process.env,
+        stdio: "inherit",
+        shell: false,
+        detached: false,
+      });
+      laudos.on("exit", (c2) => {
+        console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+      });
     });
   });
 }, 4000);

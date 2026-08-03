@@ -22,11 +22,15 @@ export type StatusOS =
   | "CONCLUIDA"
   | "CANCELADA";
 
-export type TipoOS = "CORRETIVA" | "PREVENTIVA" | "CALIBRACAO" | "TSE";
+export type TipoOS = "CORRETIVA" | "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO";
 
-export type TipoLaudo = "RECEBIMENTO" | "PREVENTIVA" | "CALIBRACAO" | "TSE";
+export type TipoLaudo = "RECEBIMENTO" | "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO";
 
-export type ResultadoLaudo = "APROVADO" | "REPROVADO" | "APROVADO_COM_RESSALVAS";
+export type ResultadoLaudo =
+  | "APROVADO"
+  | "REPROVADO"
+  | "APROVADO_COM_RESSALVAS"
+  | "PENDENTE_ASSINATURA";
 
 /** SLA em horas a partir da abertura, por prioridade. */
 export const SLA_HORAS: Record<PrioridadeOS, number> = {

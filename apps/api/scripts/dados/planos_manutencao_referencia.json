@@ -1,0 +1,1669 @@
+[
+ {
+  "equipamento": "Cuffômetro",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Pressão: 10,0 a 120,0 cmH2O.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.015"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Termohigrometro digital",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 15,0 a 25,0°C;\nUmidade relativa: 40 a 60%.",
+   "tolerancias": "± 3°C.\n ± 5 pontos.",
+   "procedimento": "POP.EC.CAL.019"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Balança de bancada",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Leitura de massa: 10,00 a 3000,00g.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.021"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Ventilômetro",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Leitura de fluxo: 2,0 a 12,0 L/min.",
+   "tolerancias": "± 15%.",
+   "procedimento": "POP.EC.CAL.022"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Audiômetro",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência: 125 a 8000Hz;\nNível de pressão sonora - Tom puro: \n60dB HL com frequência de 125Hz e 80dB HL com frequência de 250 a 8000Hz; \nNível de pressão sonona - Mascaramento: \n50dB HL com frequência de 125Hz, 70 dB HL com frequência de 250Hz e 80dB HL com frequência de 750Hz a 8000Hz; \nForça no vibrador ósseo: \n30dB HL com frequência de 250Hz, 40 dB HL com frequência de 500Hz e 50 dB HL com frequência de 750 a 8000Hz;\nNível de pressão sonora - Campo livre: \n70 dB HL com frequência de 250Hz e 80 dB HL com frequência de 500 a 8000Hz.",
+   "tolerancias": "Frequência: ± 1%; \nNível de pressão sonora – Tom puro: \n± 3dB: 125Hz à 4kHz;\n± 5dB: ≥4kHz até 16kHz;\nNível de pressão sonora – Mascaramento:\n+5 /-3dB;\nForça no vibrador ósseo: \n± 4dB: 250Hz à 4kHz;\n± 5dB: ≥4kHz;\nNível de pressão sonora – Campo livre:\n± 3dB: 125Hz à 4kHz;\n± 5dB: ≥4kHz até 16kHz;",
+   "procedimento": "POP.EC.CAL.029"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Sis triagem auditiva RN",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência: 125 a 8000 Hz;\nNível de pressão sonora: 100,0 a 126,0 dB NPS com frequência de 125 a 8000Hz.",
+   "tolerancias": "± 1%;\n± 3 dB;",
+   "procedimento": "POP.EC.CAL.032"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Impedânciometro timpanométrico",
+  "preventiva": null,
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência: 125 a 8000Hz;\nNível de pressão sonora - Contralateral: \n87 a 105,5 dB HL \ncom frequência de 250Hz a 8000Hz; \nNível de pressão sonona - Ipsilateral: \n100,0 a 105,5 dB HL \ncom frequência de 250 a 8000 Hz; \nIntensidade sonora - Sonda eletrônica: \n85,0 dB SPL com frequência de 226 a 1500Hz;\nFrequência - Sonda eletrônica: 226,0 a 1500,0 Hz.",
+   "tolerancias": "Frequência:± 1%; \nNível de pressão sonora – Contra/Ipsilateral: ± 5 dB;\nIntensidade sonora - Sonda: ± 3 dB;\nFrequência - Sonda: ± 2%.",
+   "procedimento": "POP.EC.CAL.039"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Banho maria",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.001"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 28,0°C, 37,0°C e 65,0°C.",
+   "tolerancias": "± 1,5°C.",
+   "procedimento": "POP.EC.CAL.001"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Bomba de infusão de seringa",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.002"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Tempo de infusão: 300,00 a 900,00s\nVolume infundido: 10,0 a 18,0 mL;\nPressão limite: 20 a 120kPa.",
+   "tolerancias": "± 10%;\n ± 5%;\n± 5%.",
+   "procedimento": "POP.EC.CAL.002"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Monitor fisiológico multiuso",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.003"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Oximetria - Saturação de oxigênio: 80 a 100%;\nOximetria - Frequência de pulso: 60 a 160BPM;\nFrequência cardíaca: 30 a 240BPM;\nFrequência respiratória: 10 a 30 RESPPM;\nPressão não invasiva sistólica: 60,0 a 200,0 mmHg;\nPressão não invasiva diastólica: 30,0 a 150,0mmHg;\nPressão invasiva sistólica: 60,0 a 150,0 mmHg;\nPressão invasiva diastólica: 30,0 a 100,0 mmHg;\nTemperatura: 30,0 a 42,0°C;\nCapnografia: 10% CO2;\nDébito cardíaco: 5,0 a 15,0 L/min.",
+   "tolerancias": "Oximetria - Saturação de oxigênio: ± 3 pontos; \nOximetria - Frequência de pulso: ± 5 pontos; \nFrequência cardíaca: ± 5 pontos;\nFrequência respiratória: ± 3 pontos;\nPressão não invasiva sistólica: ± 9 pontos;\nPressão não invasiva diastólica: ± 9 pontos;\nPressão invasiva sistólica: ± 5%;\nPressão invasiva diastólica: ± 5%;\nTemperatura: ± 5%;\nCapnografia: ± 10%;\nDébito cardíaco: ± 10%.",
+   "procedimento": "POP.EC.CAL.003"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I ou II",
+   "tipo": "CF",
+   "pontoAplicacao": "Sensor de oximetria, sensor de temperatura, sensor de capnografia, cabo de pressão não invasiva, cabo de pressão invasiva, eletrodos de ECG.",
+   "procedimento": "POP.EC.SEG.002"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Unidade de anestesia",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.004"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Volume: 100,0 a 700,0mL;\nFrequência respiratória: 10 a 20RPM:\nPressão inspiratória: 15 a 35cmH2O;\nPressão expiratória final positiva (PEEP): 5 a 15 cmH2O;\nConcentração de O2: 21 a 100%;\nVaporizador: 1 a 4%.",
+   "tolerancias": "± 15%;\n ± 3 pontos;\n ± 5%;\n ± 5%;\n ± 10%;\n ± 5%.",
+   "procedimento": "POP.EC.CAL.004"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "B ou BF",
+   "pontoAplicacao": "Ramo expiratório, ramo inspiratório, sensor de capnografia (quando aplicável).",
+   "procedimento": "POP.EC.SEG.001"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Autoclave horizontal de barreira",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.005"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.001"
+  }
+ },
+ {
+  "equipamento": "Berço aquecido",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.006"
+  },
+  "calibracao": {
+   "periodicidade": "06 meses",
+   "parametrosFaixa": "Temperatura: 30,0 a 42,0°C;\nTempo: 60,00 a 600,00s.",
+   "tolerancias": "± 1,0°C.\n ± 10%.",
+   "procedimento": "POP.EC.CAL.005"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "BF",
+   "pontoAplicacao": "Sensor de oximetria e sensor de temperatura.",
+   "procedimento": "POP.EC.SEG.003"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Ventilador UTI",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.007"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Volume - adulto: 100,0 a 700,0mL;\nVolume - neonatal: 30,0 a 100,0 mL;\nFrequência respiratória: 10 a 20 RPM;\nPressão inspiratória: 15 a 35 cmH2O;\nPressão inspiratória - neonatal: 5 a 15 cmH2O;\nPressão expiratória final positiva (PEEP): 5 a 15 cmH2O;\nConcentração de O2: 21 a 100%;\nTempo inspiratório: 0,5 a 1,0s.",
+   "tolerancias": "Volume : ± 15%;\nFrequência respiratória: ± 3 pontos;\nPressão inspiratória: ± 5%;\nPressão expiratória final positiva (PEEP): ± 5%;\nConcentração de O2: ± 10%;\nTempo inspiratório: ± 10%.",
+   "procedimento": "POP.EC.CAL.006"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I ou II",
+   "tipo": "B ou BF",
+   "pontoAplicacao": "Ramo expiratório e ramo inspiratório.",
+   "procedimento": "POP.EC.SEG.004"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Bisturi eletrônico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.008"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Corte puro: 50,0 a 300,0W;\nCorte blend: 50,0 a 250,0W;\nCoagulação spray: 30,0 a 120,0W;\nCoagulação fulgurate: 20,0 a 120,0W;\nCoagulação soft: 30,0 a 200,0W;",
+   "tolerancias": "±20%.",
+   "procedimento": "POP.EC.CAL.007"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "CF",
+   "pontoAplicacao": "Placa de retorno do paciente.",
+   "procedimento": "POP.EC.SEG.005"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Oxímetro de pulso",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.009"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Saturação de oxigênio: 80 a 100%;\nFrequência de pulso: 60 a 160 BPM.",
+   "tolerancias": "± 3 pontos;\n ± 5 pontos.",
+   "procedimento": "POP.EC.CAL.008"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "BF",
+   "pontoAplicacao": "Sensor de oximetria.",
+   "procedimento": "POP.EC.SEG.006"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Cama elétrica",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.010"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "36 meses",
+   "classe": "I",
+   "tipo": "B",
+   "pontoAplicacao": "Controle e carcaça.",
+   "procedimento": "POP.EC.SEG.007"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Desfibrilador - cardioversor",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.011"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Níveis de energia - pás externas: 150,0 a 360,0 J;\nNíveis de energia - pás internas: 10,0 a 50,0 J;\nFrequência cardíaca - pás externas: 60 a 240 BPM.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.009"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "II",
+   "tipo": "CF ou BF",
+   "pontoAplicacao": "Pás externas, pás internas, cabo de ECG, sensor de oximetria, e demais acessórios.",
+   "procedimento": "POP.EC.SEG.008"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Eletrocardiógrafo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.012"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência cardíaca: 30 a 240 BPM;\nAmplitude - sensibilidade: 5,00 a 20,00 mm;\nVelocidade de impressão: 75,00 e 150,00 mm.",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.010"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "CF",
+   "pontoAplicacao": "Cabo de ECG.",
+   "procedimento": "POP.EC.SEG.009"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Aspirador cirúrgico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.013"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Marcapasso cardíaco - eletrodo invasivo",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.014"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência de pulso atrial: 60,0 a 120,0 ppm;\nFrequência de pulto ventricular: 60,0 a 120,0 ppm;\nSensibilidade de pulso atrial: 2,00 a 10,00 mV;\nSensibilidade de pulso ventricular: 2,00 a 10,00 mV;\nAmplitude de pulso atrial: 2,00 a 10,00 V;\nAmplitude de pulso ventricular: 2,00 a 10,00V.",
+   "tolerancias": "Frequência: ± 10%;\nSensibilidade: ± 10%;\nAmplitude: ± 5%;",
+   "procedimento": "POP.EC.CAL.012"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "II",
+   "tipo": "CF",
+   "pontoAplicacao": "Cabo de conexão com o paciente.",
+   "procedimento": "POP.EC.SEG.010"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Bomba de infusão uso geral",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.015"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Tempo de infusão: 300,00 a 900,00s\nVolume infundido: 10,0 a 18,0 mL;\nPressão limite: 30 a 120kPa.",
+   "tolerancias": "± 10%;\n ± 5%;\n± 5%.",
+   "procedimento": "POP.EC.CAL.013"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Esfigmomanômetro",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.016"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Pressão crescrente - Equipamento aneróide: \n60,00 a 280,00 mmHg;\nPressão decrescente - Equipamento aneróide: \n280,00 a 60,00 mmHg;\nPressão sistólica - Equipamento digital: \n80,00 a 200,00 mmHg;\nPressão diastólica - Equipamento digital: \n50,00 a 150,00 mmHg.",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.014"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Foco cirúrgico móvel",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.017"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Incubadora neonatal",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.018"
+  },
+  "calibracao": {
+   "periodicidade": "06 meses",
+   "parametrosFaixa": "Temperatura: 30,0 a 42,0 °C;\nUmidade relativa: 50 a 80 %.",
+   "tolerancias": "± 1,5°C.\n ± 10%.",
+   "procedimento": "POP.EC.CAL.016"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Fototerapia hiperbilirrubinemia",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.019"
+  },
+  "calibracao": {
+   "periodicidade": "06 meses",
+   "parametrosFaixa": "Irradiância: 20,0 a 40,0 µW/ cm².nm.",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.017"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Desfibrilador automático externo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.020"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Níveis de energia - Adulto: 120,0 a 170,0J.\nNíveis de energia - Pediátrico: 50,0 a 80,0J.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.018"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "BIPAP / CPAP",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.021"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência respiratória: 15 a 30RPM;\nPressão inspiratória (BiPAP): 5 a 30 cmH2O;\nPressão inspiratória (CPAP): 4 a 20 cmH2O;\nPressão expiratória: 5 a 20 cmH2O;\nTempo inspiratório: 0,5 a 1,0s.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.011"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Monitor de óxido nítrico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.022"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Foco cirúrgico fixo",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.023"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Balança antropométrica adulto",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.024"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Leitura de massa: 30000 a 120000g.",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.020"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Eletroneuromiógrafo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.025"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Mesa cirúrgica",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.026"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "B",
+   "pontoAplicacao": "Controle e carcaça do equipamento.",
+   "procedimento": "POP.EC.SEG.011"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Videolaringoscópio",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.027"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Incubadora biológica",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.028"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 60,0°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.023"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Balança paciente infantil eletrônica",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.029"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Leitura de massa: 3000 a 15000g.",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.024"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Holter",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.030"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência cardíaca: 30 a 240 BPM.",
+   "tolerancias": "± 10%.",
+   "procedimento": "POP.EC.CAL.025"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "MAPA",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.031"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Pressão sistólica: 80,00 a 240,00 mmHg;\nPressão diastólica: 50,00 a 180,00 mmHg.",
+   "tolerancias": "± 10%.",
+   "procedimento": "POP.EC.CAL.026"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Guindaste de paciente",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.032"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Câmara de conservação",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.033"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 4,0 e 6,0°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.027"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.002"
+  }
+ },
+ {
+  "equipamento": "Estimulador elétrico neuromuscular",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.034"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência: 50,00 a 120,00Hz;\nLargura de pulso: 200,0 a 700,0 µs.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.028"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Agitador/ Homogeneizador de plaquetas",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.035"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Autoclave bancada",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.036"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 121,00°C - 134,00°C;\nPressão: 210kPa - 110kPa.",
+   "tolerancias": "+3°C;\n±10%.",
+   "procedimento": "POP.EC.CAL.030"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Autoclave vertical",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.037"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 121,00°C.",
+   "tolerancias": "+3°C;\n±10%.",
+   "procedimento": "POP.EC.CAL.031"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Refrator oftalmológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.038"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Banho histológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.039"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Cicloergômetro",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.040"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Bisturí eletrônico argônio",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.041"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Corte puro: 50,0 a 300,0W;\nCorte blend: 50,0 a 250,0W;\nCoagulação spray: 30,0 a 120,0W;\nCoagulação fulgurate: 20,0 a 120,0W;\nCoagulação soft: 30,0 a 200,0W;\nFluxo de gás argônio: 1,0 a 5,0L/min.",
+   "tolerancias": "±20%.",
+   "procedimento": "POP.EC.CAL.033"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Bomba extratora de leite",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.042"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Cabine audiometria",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.043"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Cabine de segurança biológica",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.044"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.QLF.003"
+  }
+ },
+ {
+  "equipamento": "Cadeira exame tratamento otorrinolaringológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.045"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Cadeira exame tratamento odontológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.046"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Campímetro",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.047"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Capela de exaustão",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.048"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Capela de fluxo laminar",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.049"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.004"
+  }
+ },
+ {
+  "equipamento": "Cardiotocógrafo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.050"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência cardíaca fetal: 60 a 240 BPM;\nPressão intrauterina: 30 a 90 mmHg.",
+   "tolerancias": "±5%.",
+   "procedimento": "POP.EC.CAL.034"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Central de inclusão de parafina",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.051"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Centrífuga",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.052"
+  },
+  "calibracao": {
+   "periodicidade": "06 meses",
+   "parametrosFaixa": "Tempo: 180,00 a 900,00s;\nVelocidade de rotação: 3.000,00 a 8.500,00 RPM;\nTemperatura: 4 a 20°C.",
+   "tolerancias": "±10%;\n±10%;\n±1°C.",
+   "procedimento": "POP.EC.CAL.035"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Videocolonoscópio",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.053"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Colposcópio",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.054"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Coluna oftalmológica",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.055"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Analisador laboratorial de hemácias contador de células",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.056"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Criostato",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.057"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Monitor EEG",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.058"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência de onda: 0,5 a 50,0 Hz;\nAmplitude de onda: 10,0 a 2.000,0µV.",
+   "tolerancias": "±10%.",
+   "procedimento": "POP.EC.CAL.036"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "II",
+   "tipo": "CF",
+   "pontoAplicacao": "Eletrodos.",
+   "procedimento": "POP.EC.SEG.017"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Espectofotômetro",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.059"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Espirômetro",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.060"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Esteira ergométrica",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.061"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Estufa de cultura",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.062"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 37,0 a 56,0°C",
+   "tolerancias": "±1°C.",
+   "procedimento": "POP.EC.CAL.037"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.005"
+  }
+ },
+ {
+  "equipamento": "Estufa de secagem",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.063"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Facoemulsificador",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.064"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "BF",
+   "pontoAplicacao": "Caneta de facoemulsificação (Peça de mão).",
+   "procedimento": "POP.EC.SEG.012"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Fonte de luz",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.065"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Freezer de armazenamento biológico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.066"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: -10 a -30°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.038"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.006"
+  }
+ },
+ {
+  "equipamento": "Garrote pneumático",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.067"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Videogastroscópio",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.068"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Homogeneizador de sangue",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.069"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Insuflador de CO2",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.070"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Fluxo: 3,0 a 15,0L/min;\nPressão: 5,00 a 30,00mmHg.",
+   "tolerancias": "±10%;\n±5%.",
+   "procedimento": "POP.EC.CAL.040"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Irrigador cirúrgico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.071"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Lâmpada de fenda",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.072"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Laser oftalmoscópio",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.073"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Oftalmoscópio indireto",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.074"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Paquímetro oftalmológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.075"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Projetor gráfico ocular",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.076"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Refrator de greens",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.077"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Câmera fundo olho",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.078"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Tonometro oftalmológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.079"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Sistema topografia córnea",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.080"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "YAG Laser",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.081"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Aquecedor de manta térmica",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.082"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Serra de gesso",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.083"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Sistema de ultrassonografia",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.084"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Detector fetal",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.085"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Lavadora descontaminadora",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.086"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.007"
+  }
+ },
+ {
+  "equipamento": "Banho turbilhão",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.087"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "B",
+   "pontoAplicacao": "Superfície do tanque.",
+   "procedimento": "POP.EC.SEG.013"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Sistema de hipotermia- hipertermia",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.088"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura do paciente: 30,0 a 42,0°C;\nTemperatura do colchão: 4,0 a 42,0°C.",
+   "tolerancias": "± 1,5°C;\n± 2,0°C;",
+   "procedimento": "POP.EC.CAL.044"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Polígrafo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.089"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Frequência cardíaca: 30 a 240 BPM;\nPressão invasiva: 50,0 a 200,0mmHg;\nDébito cardíaco: 5,0 a 15,0 L/min.",
+   "tolerancias": "± 5%;\n± 4%;\n± 5%.",
+   "procedimento": "POP.EC.CAL.041"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Perfurador cirúrgico elétrico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.090"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "BF",
+   "pontoAplicacao": "Peça de mão conectada ao console.",
+   "procedimento": "POP.EC.SEG.018"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Pipeta",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.091"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Volume: 0,50mL; \nVolume: 1,000mL;\nVolume: 0,500mL.",
+   "tolerancias": "± 0,01 (Classe A) ou ± 0,02 (Classe B);\n± 0,008 (Classe A) ou ± 0,02 (Classe B);\n± 0,005 (Classe A) ou ± 0,01 (Classe B).",
+   "procedimento": "POP.EC.CAL.042"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Nasofibroscópio",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.092"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Angiógrafo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.093"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Aparelho de raios-x fixo",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.094"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Aparelho de raios-x móvel",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.095"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Aparelho de raios-x odontológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.096"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "B",
+   "pontoAplicacao": "Extremidade do conjunto emissor de radiação.",
+   "procedimento": "POP.EC.SEG.014"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Arco cirúrgico",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.097"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Injetor meio contraste",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.098"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Volume: 20,0 a 100,0mL;\nTempo: 10,00 a 50,00s;\nPressão: 100,0 a 700,0 PSI.",
+   "tolerancias": "± 5%;\n± 10%;\n± 5%.",
+   "procedimento": "POP.EC.CAL.043"
+  },
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "CF",
+   "pontoAplicacao": "Superfície do console.",
+   "procedimento": "POP.EC.SEG.015"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Densitometria óssea",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.099"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Dermátomo",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.100"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Sis digitalização imagem radiografia",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.101"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Impressora processo seco",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.102"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Lavadora e reprocessadora de endoscópios",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.103"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Lavadora US",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.104"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.008"
+  }
+ },
+ {
+  "equipamento": "Litotripsia extracorpórea",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.105"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Máquina de circulação extracorpórea",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.106"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Uni Hemodiálise",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.107"
+  },
+  "calibracao": null,
+  "segurancaEletrica": {
+   "periodicidade": "12 meses",
+   "classe": "I",
+   "tipo": "B",
+   "pontoAplicacao": "Carcaça do equipamento.",
+   "procedimento": "POP.EC.SEG.016"
+  },
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Microscópio cirúrgico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.108"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Microscópio especular",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.109"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Microscópio Lab",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.110"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Micrótomo",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.111"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Osmose reversa portátil",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.112"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Refrigerador de banco de sangue/ medicamentos",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.113"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 4 e 6°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.045"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.009"
+  }
+ },
+ {
+  "equipamento": "Reprocessadora de filtro dialisador",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.114"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Ressonância magnética",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.115"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Selador pacote",
+  "preventiva": {
+   "periodicidade": "06  meses",
+   "procedimento": "POP.EC.MP.116"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: 120,00 a 150,00°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.046"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.QLF.010"
+  }
+ },
+ {
+  "equipamento": "Tomógrafo",
+  "preventiva": {
+   "periodicidade": "04 meses",
+   "procedimento": "POP.EC.MP.117"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Torre de videocirurgia",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.118"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Torre de videoendoscopia",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.119"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Ultrafreezer",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.120"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Temperatura: -40,00 a -90,00°C.",
+   "tolerancias": "± 2°C.",
+   "procedimento": "POP.EC.CAL.047"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Ultrassom odontológico",
+  "preventiva": {
+   "periodicidade": "12 meses",
+   "procedimento": "POP.EC.MP.121"
+  },
+  "calibracao": {
+   "periodicidade": "12 meses",
+   "parametrosFaixa": "Potência: 30,00W",
+   "tolerancias": "± 5%.",
+   "procedimento": "POP.EC.CAL.048"
+  },
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Unitarizadora de medicamentos",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.122"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Máquina facetadora",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.123"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ },
+ {
+  "equipamento": "Analisador de gases sanguíneos",
+  "preventiva": {
+   "periodicidade": "06 meses",
+   "procedimento": "POP.EC.MP.124"
+  },
+  "calibracao": null,
+  "segurancaEletrica": null,
+  "qualificacao": null
+ }
+]

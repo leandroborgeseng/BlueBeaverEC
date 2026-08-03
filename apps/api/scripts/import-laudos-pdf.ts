@@ -1,11 +1,12 @@
 /**
- * Importa PDFs de laudos: {tag}_{CALIBRACAO|TSE}_{YYYY-MM-DD}.pdf
+ * Importa PDFs de laudos.
  *
- * Para cada arquivo:
- *  - localiza equipamento pela tag
- *  - cria OS CONCLUIDA (tipo CALIBRACAO/TSE)
- *  - cria Laudo APROVADO com validade +12 meses
- *  - grava PDF em LaudoAnexo
+ * Padrões aceitos:
+ *   {tag|serie}_{CALIBRACAO|TSE|PREVENTIVA|QUALIFICACAO}_{YYYY-MM-DD}.pdf  (legado)
+ *   {tag|serie}_{POP.EC.xxx}_{YYYY-MM-DD}.pdf                              (preferido)
+ *
+ * Se o PDF indicar "Em execução" / sem assinatura → ResultadoLaudo.PENDENTE_ASSINATURA
+ * (não fecha o ciclo nem agenda próxima OS).
  *
  * Uso:
  *   pnpm exec tsx scripts/import-laudos-pdf.ts scripts/dados/laudos-desfibriladores
@@ -19,11 +20,52 @@ import {
   StatusOS,
   TipoLaudo,
   TipoOS,
+  TipoTestePlano,
 } from "@prisma/client";
+import {
+  addMonths,
+  agendarProximaOsPlano,
+  tipoOsFromLaudo,
+} from "../src/planos/proxima-os-plano";
 
 const prisma = new PrismaClient();
 
-const FILE_RE = /^(.+?)_(CALIBRACAO|TSE)_(\d{4}-\d{2}-\d{2})\.pdf$/i;
+const LEGACY_RE =
+  /^(.+?)_(CALIBRACAO|TSE|PREVENTIVA|QUALIFICACAO)_(\d{4}-\d{2}-\d{2})\.pdf$/i;
+const POP_RE = /^(.+?)_(POP\.EC\.[A-Z]+\.\d+)_(\d{4}-\d{2}-\d{2})\.pdf$/i;
+
+const UNSIGNED_MARKERS = [
+  /em\s*execu[cç][aã]o/i,
+  /estado\s*:\s*em\s*execu/i,
+  /status\s*:\s*em\s*execu/i,
+  /pending\s*signature/i,
+  /aguardando\s*assinatura/i,
+];
+
+function pdfPendenteAssinatura(buf: Buffer): boolean {
+  // Texto literal costuma aparecer em PDFs gerados (sem decoder completo).
+  const text = buf.toString("latin1");
+  return UNSIGNED_MARKERS.some((re) => re.test(text));
+}
+
+function tipoLaudoFromTeste(t: TipoTestePlano | string): TipoLaudo {
+  switch (t) {
+    case TipoTestePlano.PREVENTIVA:
+    case "PREVENTIVA":
+      return TipoLaudo.PREVENTIVA;
+    case TipoTestePlano.CALIBRACAO:
+    case "CALIBRACAO":
+      return TipoLaudo.CALIBRACAO;
+    case TipoTestePlano.TSE:
+    case "TSE":
+      return TipoLaudo.TSE;
+    case TipoTestePlano.QUALIFICACAO:
+    case "QUALIFICACAO":
+      return TipoLaudo.QUALIFICACAO;
+    default:
+      return TipoLaudo.CALIBRACAO;
+  }
+}
 
 async function nextOsNumero(estabId: string) {
   const row = await prisma.contadorSequencia.upsert({
@@ -41,8 +83,37 @@ async function nextLaudoNumero(estabId: string, tipo: TipoLaudo) {
     create: { estabelecimentoId: estabId, chave, valor: 1 },
     update: { valor: { increment: 1 } },
   });
-  const prefix = tipo === TipoLaudo.CALIBRACAO ? "CAL" : "TSE";
+  const prefix =
+    tipo === TipoLaudo.CALIBRACAO
+      ? "CAL"
+      : tipo === TipoLaudo.TSE
+        ? "TSE"
+        : tipo === TipoLaudo.PREVENTIVA
+          ? "PRV"
+          : tipo === TipoLaudo.QUALIFICACAO
+            ? "QLF"
+            : tipo.slice(0, 3);
   return `${prefix}-${String(row.valor).padStart(4, "0")}`;
+}
+
+async function findEquipamento(estabId: string, chave: string) {
+  const key = chave.trim();
+  const byTag = await prisma.equipamento.findUnique({
+    where: { estabelecimentoId_tag: { estabelecimentoId: estabId, tag: key } },
+    include: { tipoEquipamentoPlano: { include: { testes: true } } },
+  });
+  if (byTag) return byTag;
+
+  const bySerie = await prisma.equipamento.findFirst({
+    where: { estabelecimentoId: estabId, nSerie: key },
+    include: { tipoEquipamentoPlano: { include: { testes: true } } },
+  });
+  if (bySerie) return bySerie;
+
+  return prisma.equipamento.findFirst({
+    where: { estabelecimentoId: estabId, patrimonio: key },
+    include: { tipoEquipamentoPlano: { include: { testes: true } } },
+  });
 }
 
 async function main() {
@@ -64,36 +135,106 @@ async function main() {
 
   let criados = 0;
   let pulados = 0;
+  let pendentes = 0;
   const erros: string[] = [];
+  const revisao: string[] = [];
 
   for (const file of files) {
-    const m = FILE_RE.exec(file);
-    if (!m) {
-      erros.push(`${file}: nome fora do padrão tag_TIPO_YYYY-MM-DD.pdf`);
+    const popM = POP_RE.exec(file);
+    const legM = !popM ? LEGACY_RE.exec(file) : null;
+    if (!popM && !legM) {
+      erros.push(`${file}: nome fora do padrão (tag_POP|TIPO_YYYY-MM-DD.pdf)`);
       continue;
     }
-    const tag = m[1];
-    const tipoStr = m[2].toUpperCase() as "CALIBRACAO" | "TSE";
-    const dataStr = m[3];
+
+    const chave = (popM ?? legM)![1];
+    const dataStr = (popM ?? legM)![3];
     const dataExecucao = new Date(`${dataStr}T12:00:00.000Z`);
     if (Number.isNaN(dataExecucao.getTime())) {
       erros.push(`${file}: data inválida`);
       continue;
     }
 
-    const tipoLaudo = tipoStr === "TSE" ? TipoLaudo.TSE : TipoLaudo.CALIBRACAO;
-    const tipoOs = tipoStr === "TSE" ? TipoOS.TSE : TipoOS.CALIBRACAO;
-
     try {
-      const eq = await prisma.equipamento.findUnique({
-        where: {
-          estabelecimentoId_tag: { estabelecimentoId: estab.id, tag },
-        },
-      });
+      const eq = await findEquipamento(estab.id, chave);
       if (!eq) {
-        erros.push(`${file}: equipamento tag=${tag} não encontrado`);
+        erros.push(`${file}: equipamento chave=${chave} não encontrado`);
         continue;
       }
+
+      let planoTeste: {
+        id: string;
+        tipoTeste: TipoTestePlano;
+        periodicidadeMeses: number;
+        procedimentoCodigo: string;
+        tipoEquipamentoPlanoId: string;
+      } | null = null;
+
+      if (popM) {
+        const codigo = popM[2].toUpperCase();
+        const candidatos = await prisma.planoTeste.findMany({
+          where: {
+            procedimentoCodigo: { equals: codigo, mode: "insensitive" },
+            ativo: true,
+            tipoEquipamentoPlano: { estabelecimentoId: estab.id },
+          },
+        });
+
+        if (candidatos.length === 0) {
+          revisao.push(`${file}: POP ${codigo} não encontrado no catálogo`);
+          continue;
+        }
+
+        if (!eq.tipoEquipamentoPlanoId) {
+          revisao.push(
+            `${file}: equipamento ${eq.tag} sem plano vinculado — POP ${codigo} exige revisão`,
+          );
+          continue;
+        }
+
+        planoTeste =
+          candidatos.find((c) => c.tipoEquipamentoPlanoId === eq.tipoEquipamentoPlanoId) ?? null;
+        if (!planoTeste) {
+          revisao.push(
+            `${file}: POP ${codigo} não pertence ao plano do equipamento ${eq.tag} (${eq.tipoEquipamentoPlano?.nome ?? "?"})`,
+          );
+          continue;
+        }
+      } else if (legM) {
+        const tipoStr = legM[2].toUpperCase() as TipoTestePlano | "CALIBRACAO" | "TSE";
+        const tipoTeste =
+          tipoStr === "TSE"
+            ? TipoTestePlano.TSE
+            : tipoStr === "PREVENTIVA"
+              ? TipoTestePlano.PREVENTIVA
+              : tipoStr === "QUALIFICACAO"
+                ? TipoTestePlano.QUALIFICACAO
+                : TipoTestePlano.CALIBRACAO;
+
+        if (eq.tipoEquipamentoPlanoId) {
+          planoTeste =
+            (await prisma.planoTeste.findUnique({
+              where: {
+                tipoEquipamentoPlanoId_tipoTeste: {
+                  tipoEquipamentoPlanoId: eq.tipoEquipamentoPlanoId,
+                  tipoTeste,
+                },
+              },
+            })) ?? null;
+        }
+      }
+
+      const tipoLaudo = planoTeste
+        ? tipoLaudoFromTeste(planoTeste.tipoTeste)
+        : tipoLaudoFromTeste((legM?.[2] ?? "CALIBRACAO").toUpperCase());
+      const tipoOs = tipoOsFromLaudo(tipoLaudo);
+      const pdf = readFileSync(join(dir, file));
+      const pendente = pdfPendenteAssinatura(pdf);
+      const resultado = pendente ? ResultadoLaudo.PENDENTE_ASSINATURA : ResultadoLaudo.APROVADO;
+      if (pendente) pendentes += 1;
+
+      const validadeMeses = planoTeste?.periodicidadeMeses ?? 12;
+      const validadeAte = addMonths(dataExecucao, validadeMeses);
 
       const existente = await prisma.laudo.findFirst({
         where: {
@@ -110,10 +251,6 @@ async function main() {
         continue;
       }
 
-      const validadeAte = new Date(dataExecucao);
-      validadeAte.setMonth(validadeAte.getMonth() + 12);
-      const pdf = readFileSync(join(dir, file));
-
       let laudoId = existente?.id;
       let osNumero = existente?.osNumero ?? null;
 
@@ -125,12 +262,12 @@ async function main() {
             numero: osNumero,
             codigo: `OS-${String(osNumero).padStart(4, "0")}`,
             equipamentoId: eq.id,
-            tipo: tipoOs,
+            tipo: tipoOs as TipoOS,
             prioridade: PrioridadeOS.MEDIA,
-            status: StatusOS.CONCLUIDA,
+            status: pendente ? StatusOS.EM_ANDAMENTO : StatusOS.CONCLUIDA,
             abertura: dataExecucao,
-            fechamento: dataExecucao,
-            pendencia: null,
+            fechamento: pendente ? null : dataExecucao,
+            pendencia: pendente ? "Aguardando assinatura do laudo PDF" : null,
             observacaoRequisicao: `Importação PDF ${file}`,
           },
         });
@@ -145,17 +282,53 @@ async function main() {
             osNumero,
             dataExecucao,
             tecnicoNome: "Importação PDF",
-            resultado: ResultadoLaudo.APROVADO,
-            validadeMeses: 12,
-            validadeAte,
+            resultado,
+            validadeMeses,
+            validadeAte: pendente ? null : validadeAte,
+            planoTesteId: planoTeste?.id ?? null,
             respostas: [],
             metadados: {
               origem: "import_laudos_pdf",
               arquivoOriginal: file,
+              procedimentoCodigo: planoTeste?.procedimentoCodigo ?? null,
+              pendenteAssinatura: pendente,
             },
           },
         });
         laudoId = laudo.id;
+
+        if (!pendente && planoTeste) {
+          await agendarProximaOsPlano(prisma, {
+            estabelecimentoId: estab.id,
+            equipamentoId: eq.id,
+            tipo: tipoLaudo,
+            dataExecucao,
+            periodicidadeMeses: planoTeste.periodicidadeMeses,
+            resultado,
+            observacao: `Próxima ${tipoLaudo} · ${planoTeste.procedimentoCodigo}`,
+          });
+        }
+      } else if (existente && !pendente && existente.resultado === ResultadoLaudo.PENDENTE_ASSINATURA) {
+        await prisma.laudo.update({
+          where: { id: existente.id },
+          data: {
+            resultado: ResultadoLaudo.APROVADO,
+            validadeMeses,
+            validadeAte,
+            planoTesteId: planoTeste?.id ?? existente.planoTesteId,
+          },
+        });
+        if (planoTeste) {
+          await agendarProximaOsPlano(prisma, {
+            estabelecimentoId: estab.id,
+            equipamentoId: eq.id,
+            tipo: tipoLaudo,
+            dataExecucao,
+            periodicidadeMeses: planoTeste.periodicidadeMeses,
+            resultado: ResultadoLaudo.APROVADO,
+            observacao: `Próxima ${tipoLaudo} · ${planoTeste.procedimentoCodigo}`,
+          });
+        }
       }
 
       if (!laudoId) throw new Error("laudoId ausente");
@@ -170,7 +343,11 @@ async function main() {
       });
 
       criados += 1;
-      console.log(`[nexo] OK ${file} → tag ${tag} · OS-${osNumero} · laudo ${laudoId}`);
+      console.log(
+        `[nexo] OK ${file} → tag ${eq.tag} · OS-${osNumero} · ${resultado}${
+          planoTeste ? ` · ${planoTeste.procedimentoCodigo}` : ""
+        }`,
+      );
     } catch (e) {
       erros.push(`${file}: ${e instanceof Error ? e.message : e}`);
     }
@@ -183,7 +360,10 @@ async function main() {
         arquivos: files.length,
         anexosCriados: criados,
         pulados,
+        pendenteAssinatura: pendentes,
+        revisaoManual: revisao.length,
         erros: erros.length,
+        detalhesRevisao: revisao,
         detalhesErros: erros,
       },
       null,

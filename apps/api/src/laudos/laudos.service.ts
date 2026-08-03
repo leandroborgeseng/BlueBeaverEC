@@ -9,6 +9,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import { ContratosService } from "../contratos/contratos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { agendarProximaOsPlano, resultadoFechaCiclo } from "../planos/proxima-os-plano";
 
 type RespostaItem = {
   id?: string;
@@ -112,7 +113,24 @@ export class LaudosService {
         })
       : null;
 
-    const validadeMeses = data.validadeMeses ?? procedimento?.validadeMeses ?? 12;
+    const planoTeste =
+      equipamento.tipoEquipamentoPlanoId &&
+      (data.tipo === TipoLaudo.PREVENTIVA ||
+        data.tipo === TipoLaudo.CALIBRACAO ||
+        data.tipo === TipoLaudo.TSE ||
+        data.tipo === TipoLaudo.QUALIFICACAO)
+        ? await this.prisma.planoTeste.findUnique({
+            where: {
+              tipoEquipamentoPlanoId_tipoTeste: {
+                tipoEquipamentoPlanoId: equipamento.tipoEquipamentoPlanoId,
+                tipoTeste: data.tipo,
+              },
+            },
+          })
+        : null;
+
+    const validadeMeses =
+      data.validadeMeses ?? planoTeste?.periodicidadeMeses ?? procedimento?.validadeMeses ?? 12;
     const validadeAte = new Date();
     validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
 
@@ -129,10 +147,11 @@ export class LaudosService {
         responsavelTecnicoId: data.responsavelTecnicoId,
         procedimentoId: data.procedimentoId,
         instrumentoId: data.instrumentoId,
+        planoTesteId: planoTeste?.id,
         resultado,
         justificativaRessalva: data.justificativaRessalva,
         validadeMeses,
-        validadeAte,
+        validadeAte: resultado === ResultadoLaudo.PENDENTE_ASSINATURA ? null : validadeAte,
         respostas: respostas as object[],
         metadados: (data.metadados ?? {}) as object,
       },
@@ -143,6 +162,18 @@ export class LaudosService {
       await this.prisma.equipamento.update({
         where: { id: equipamento.id },
         data: { checklistRecebimentoPendente: false },
+      });
+    }
+
+    if (resultadoFechaCiclo(resultado) && planoTeste) {
+      await agendarProximaOsPlano(this.prisma, {
+        estabelecimentoId: user.estabelecimentoId,
+        equipamentoId: equipamento.id,
+        tipo: data.tipo,
+        dataExecucao: laudo.dataExecucao,
+        periodicidadeMeses: planoTeste.periodicidadeMeses,
+        resultado,
+        observacao: `Próxima ${data.tipo} · ${planoTeste.procedimentoCodigo}`,
       });
     }
 

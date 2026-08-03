@@ -13,6 +13,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "import:equipamentos": "tsx scripts/import-equipamentos-reais.ts",
+    "import:planos": "tsx scripts/import-planos-manutencao.ts",
     "import:laudos": "tsx scripts/import-laudos-pdf.ts"
   },
   "dependencies": {

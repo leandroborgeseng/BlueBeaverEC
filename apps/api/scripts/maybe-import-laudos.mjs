@@ -36,6 +36,8 @@ try {
       OR: [
         { nomeArquivo: { contains: "_CALIBRACAO_" } },
         { nomeArquivo: { contains: "_TSE_" } },
+        { nomeArquivo: { contains: "_POP.EC." } },
+        { nomeArquivo: { contains: "POP.EC." } },
       ],
     },
   });
