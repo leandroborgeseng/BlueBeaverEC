@@ -24,3 +24,4 @@ apps/api/scripts/dados/pops-biblioteca/_preview
 /nexo_extract_v2.json
 /aion_extract.json
 /aion_extract_v2.json
+.venv-img
