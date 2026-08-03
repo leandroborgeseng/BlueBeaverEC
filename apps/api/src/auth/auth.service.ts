@@ -19,17 +19,50 @@ export class AuthService {
   ) {}
 
   async login(email: string, senha: string, estabelecimentoId?: string) {
-    const usuario = await this.prisma.usuario.findUnique({
-      where: { email: email.toLowerCase().trim() },
+    const normalized = email.toLowerCase().trim();
+    const legacy =
+      normalized.endsWith("@aion.local")
+        ? normalized.replace(/@aion\.local$/, "@nexo.local")
+        : normalized.endsWith("@nexo.local")
+          ? normalized.replace(/@nexo\.local$/, "@aion.local")
+          : null;
+
+    let usuario = await this.prisma.usuario.findUnique({
+      where: { email: normalized },
       include: { estabelecimentos: { include: { estabelecimento: true } } },
     });
+
+    // Compat: banco ainda com @nexo.local ou usuário digitou o domínio antigo
+    if (!usuario && legacy) {
+      usuario = await this.prisma.usuario.findUnique({
+        where: { email: legacy },
+        include: { estabelecimentos: { include: { estabelecimento: true } } },
+      });
+    }
 
     if (!usuario || !usuario.ativo) {
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
     const ok = await bcrypt.compare(senha, usuario.senhaHash);
-    if (!ok) {
+    // Compat senha demo antiga (nexo1234) → aceita e atualiza para aion1234
+    let senhaOk = ok;
+    if (!senhaOk && senha === "aion1234") {
+      const legacyPass = await bcrypt.compare("nexo1234", usuario.senhaHash);
+      if (legacyPass) {
+        senhaOk = true;
+        const senhaHash = await bcrypt.hash("aion1234", 10);
+        const emailFinal = usuario.email.includes("@nexo.local")
+          ? usuario.email.replace(/@nexo\.local$/, "@aion.local")
+          : usuario.email;
+        await this.prisma.usuario.update({
+          where: { id: usuario.id },
+          data: { senhaHash, email: emailFinal },
+        });
+        usuario = { ...usuario, email: emailFinal, senhaHash };
+      }
+    }
+    if (!senhaOk) {
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
