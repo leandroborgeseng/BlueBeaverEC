@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 /**
- * Start production: migrate + API.
+ * Start production: migrate + seed (rápido) + API + import em background.
  * Prefers DATABASE_URL as provided by the host (Railway).
- * Assembles from PG* only when DATABASE_URL is missing.
  */
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -66,4 +65,30 @@ function run(cmd, args) {
 
 run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
 run(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")]);
-run(process.execPath, ["dist/main.js"]);
+
+// Import em background DEPOIS da API: healthcheck do Railway não mata o boot.
+const api = spawn(process.execPath, ["dist/main.js"], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  shell: false,
+});
+
+setTimeout(() => {
+  console.log("[nexo] iniciando import de equipamentos em background…");
+  const imp = spawn(process.execPath, [path.join(root, "scripts/maybe-import-equipamentos.mjs")], {
+    cwd: root,
+    env: process.env,
+    stdio: "inherit",
+    shell: false,
+    detached: false,
+  });
+  imp.on("exit", (code) => {
+    console.log(`[nexo] import equipamentos finalizado (code=${code ?? "?"})`);
+  });
+}, 4000);
+
+api.on("exit", (code, signal) => {
+  if (signal) process.kill(process.pid, signal);
+  process.exit(code ?? 1);
+});

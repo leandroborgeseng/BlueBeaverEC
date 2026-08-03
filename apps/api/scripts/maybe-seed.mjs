@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 /**
- * Boot automático (Railway / Coolify / compose):
+ * Boot automático (Railway):
  * 1. Seed demo se o banco não tiver usuários (ou SEED_ON_BOOT=true)
- * 2. Import de equipamentos reais se scripts/dados/equipamentos-reais.json existir
- *    e ainda não tiver sido carregado (ou IMPORT_EQUIPAMENTOS_ON_BOOT=true)
  *
- * Não exige comando manual no host.
+ * Import de equipamentos reais roda em background via start-prod.mjs
+ * (não bloqueia healthcheck / não deixa o deploy matar o processo no meio).
  */
-import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -18,10 +16,6 @@ const require = createRequire(path.join(root, "package.json"));
 const { PrismaClient } = require("@prisma/client");
 
 const forceSeed = process.env.SEED_ON_BOOT === "true" || process.env.SEED_ON_BOOT === "1";
-const forceImport =
-  process.env.IMPORT_EQUIPAMENTOS_ON_BOOT === "true" ||
-  process.env.IMPORT_EQUIPAMENTOS_ON_BOOT === "1";
-
 const prisma = new PrismaClient();
 
 function run(cmd, args) {
@@ -52,31 +46,9 @@ try {
     );
     run("pnpm", ["exec", "tsx", "prisma/seed.ts"]);
   }
-
-  const importFile = path.join(root, "scripts/dados/equipamentos-reais.json");
-  if (!existsSync(importFile)) {
-    console.log("[nexo] import equipamentos: arquivo equipamentos-reais.json ausente — skip");
-  } else {
-    // Marcador: primeiro desfibrilador do extract HRTC (tag 7716)
-    const marker = await prisma.equipamento.findFirst({
-      where: { tag: "7716" },
-      select: { id: true },
-    });
-    if (marker && !forceImport) {
-      console.log("[nexo] import equipamentos skipped (dados reais já presentes)");
-    } else {
-      console.log(
-        forceImport
-          ? "[nexo] IMPORT_EQUIPAMENTOS_ON_BOOT=true — importando equipamentos reais…"
-          : "[nexo] importando equipamentos reais (HRTC)…",
-      );
-      run("pnpm", ["exec", "tsx", "scripts/import-equipamentos-reais.ts", "scripts/dados/equipamentos-reais.json"]);
-    }
-  }
-
   process.exit(0);
 } catch (e) {
-  console.error("[nexo] boot seed/import falhou:", e);
+  console.error("[nexo] boot seed falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();
