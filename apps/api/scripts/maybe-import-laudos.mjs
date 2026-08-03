@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Importa PDFs de laudos se a pasta existir e ainda faltarem anexos.
+ * Importa PDFs de laudos de todas as pastas em scripts/dados/laudos-*.
  * Force: IMPORT_LAUDOS_ON_BOOT=true
  */
 import { existsSync, readdirSync } from "node:fs";
@@ -16,56 +16,92 @@ const { PrismaClient } = require("@prisma/client");
 const force =
   process.env.IMPORT_LAUDOS_ON_BOOT === "true" || process.env.IMPORT_LAUDOS_ON_BOOT === "1";
 
-const dir = path.join(root, "scripts/dados/laudos-desfibriladores");
+const dados = path.join(root, "scripts/dados");
 const prisma = new PrismaClient();
 
-try {
-  if (!existsSync(dir)) {
-    console.log("[nexo] import laudos PDF: pasta ausente — skip");
-    process.exit(0);
+/** Pastas conhecidas + qualquer laudos-* futura */
+function listLaudoDirs() {
+  const fixed = [
+    "laudos-desfibriladores",
+    "laudos-preventiva",
+    "laudos-calibracao",
+    "laudos-tse",
+    "laudos-qualificacao",
+  ];
+  const found = new Set();
+  for (const name of fixed) {
+    const p = path.join(dados, name);
+    if (existsSync(p)) found.add(p);
   }
+  if (existsSync(dados)) {
+    for (const ent of readdirSync(dados, { withFileTypes: true })) {
+      if (ent.isDirectory() && ent.name.startsWith("laudos-")) {
+        found.add(path.join(dados, ent.name));
+      }
+    }
+  }
+  return [...found];
+}
 
-  const expected = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".pdf")).length;
-  if (expected === 0) {
-    console.log("[nexo] import laudos PDF: nenhum PDF — skip");
-    process.exit(0);
-  }
+async function countAnexosForDir(dirName) {
+  // Conta anexos cujo nomeArquivo bate com arquivos desta pasta (já importados).
+  const files = existsSync(dirName)
+    ? readdirSync(dirName).filter((f) => f.toLowerCase().endsWith(".pdf"))
+    : [];
+  if (files.length === 0) return { expected: 0, anexos: 0, files };
 
   const anexos = await prisma.laudoAnexo.count({
-    where: {
-      OR: [
-        { nomeArquivo: { contains: "_CALIBRACAO_" } },
-        { nomeArquivo: { contains: "_TSE_" } },
-        { nomeArquivo: { contains: "_POP.EC." } },
-        { nomeArquivo: { contains: "POP.EC." } },
-      ],
-    },
+    where: { nomeArquivo: { in: files } },
   });
+  return { expected: files.length, anexos, files };
+}
 
-  console.log(`[nexo] import laudos PDF: ${anexos}/${expected} anexos no banco`);
-
-  if (!force && anexos >= expected) {
-    console.log("[nexo] import laudos PDF skipped (carga completa)");
+try {
+  const dirs = listLaudoDirs();
+  if (dirs.length === 0) {
+    console.log("[nexo] import laudos PDF: nenhuma pasta laudos-* — skip");
     process.exit(0);
   }
 
-  console.log(
-    force
-      ? "[nexo] IMPORT_LAUDOS_ON_BOOT=true — reimportando PDFs…"
-      : `[nexo] retomando import de laudos PDF (${expected - anexos} faltando)…`,
-  );
+  let exitCode = 0;
 
-  const result = spawnSync(
-    "pnpm",
-    ["exec", "tsx", "scripts/import-laudos-pdf.ts", "scripts/dados/laudos-desfibriladores"],
-    { cwd: root, env: process.env, stdio: "inherit", shell: false },
-  );
+  for (const dir of dirs) {
+    const rel = path.relative(root, dir);
+    const { expected, anexos } = await countAnexosForDir(dir);
+    console.log(`[nexo] import laudos PDF (${path.basename(dir)}): ${anexos}/${expected} anexos`);
 
-  if (result.error) {
-    console.error(result.error);
-    process.exit(1);
+    if (expected === 0) {
+      console.log(`[nexo] ${path.basename(dir)}: vazia — skip`);
+      continue;
+    }
+
+    if (!force && anexos >= expected) {
+      console.log(`[nexo] ${path.basename(dir)}: carga completa — skip`);
+      continue;
+    }
+
+    console.log(
+      force
+        ? `[nexo] IMPORT_LAUDOS_ON_BOOT=true — reimportando ${rel}…`
+        : `[nexo] importando ${rel} (${expected - anexos} faltando)…`,
+    );
+
+    const result = spawnSync("pnpm", ["exec", "tsx", "scripts/import-laudos-pdf.ts", rel], {
+      cwd: root,
+      env: process.env,
+      stdio: "inherit",
+      shell: false,
+    });
+
+    if (result.error) {
+      console.error(result.error);
+      exitCode = 1;
+    } else if ((result.status ?? 1) !== 0) {
+      exitCode = result.status ?? 1;
+    }
   }
-  process.exit(result.status ?? 1);
+
+  process.exit(exitCode);
 } catch (e) {
   console.error("[nexo] import laudos PDF falhou:", e);
   process.exit(1);
