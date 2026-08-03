@@ -15,6 +15,7 @@
     "import:equipamentos": "tsx scripts/import-equipamentos-reais.ts",
     "import:planos": "tsx scripts/import-planos-manutencao.ts",
     "import:pops": "tsx scripts/import-pops-biblioteca.ts",
+    "import:checklists": "tsx scripts/import-checklists-preventiva.ts",
     "import:laudos": "tsx scripts/import-laudos-pdf.ts"
   },
   "dependencies": {

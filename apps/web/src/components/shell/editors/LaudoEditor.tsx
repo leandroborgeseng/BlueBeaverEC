@@ -10,7 +10,15 @@ interface Proc {
   id: string;
   nome: string;
   tipo: string;
-  itens: Array<{ id?: string; pergunta?: string; valorPadrao?: number; limite?: number }>;
+  itens: Array<{
+    id?: string;
+    pergunta?: string;
+    secao?: string;
+    tipo?: string;
+    valorPadrao?: number;
+    limite?: number;
+    campos?: string[];
+  }>;
 }
 
 interface Colaborador {
@@ -29,8 +37,11 @@ interface Inst {
 interface RespostaItem {
   id?: string;
   pergunta?: string;
+  secao?: string;
+  tipo?: string;
   status?: string;
   valorMedido?: number;
+  valorConfigurado?: number;
   erroPct?: number;
   limite?: number;
   observacao?: string;
@@ -147,8 +158,11 @@ export function LaudoEditor({
       (proc.itens ?? []).map((item) => ({
         id: item.id,
         pergunta: item.pergunta,
+        secao: item.secao,
+        tipo: item.tipo,
         status: tipo === "CALIBRACAO" || tipo === "TSE" ? "APROVADO" : "SIM",
         valorMedido: item.valorPadrao,
+        valorConfigurado: undefined,
         limite: item.limite,
         erroPct: 0,
       })),
@@ -457,58 +471,154 @@ export function LaudoEditor({
           {displayRespostas.length === 0 ? (
             <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 13 }}>Nenhum item no checklist.</div>
           ) : (
-            displayRespostas.map((r, idx) => (
-              <div
-                key={r.id ?? idx}
-                style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8, alignItems: "center" }}
-              >
-                <span style={{ fontSize: 13 }}>{r.pergunta}</span>
-                {viewMode || (displayTipo !== "CALIBRACAO" && displayTipo !== "TSE") ? (
-                  viewMode ? (
-                    <span style={{ fontSize: 13 }}>
-                      {r.valorMedido != null ? r.valorMedido : r.status}
-                      {r.erroPct != null ? ` (${r.erroPct}%)` : ""}
-                    </span>
-                  ) : (
-                    <select
-                      value={r.status}
-                      onChange={(e) =>
-                        setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)))
-                      }
-                      style={fieldStyle}
+            displayRespostas.map((r, idx) => {
+              const prevSecao = idx > 0 ? displayRespostas[idx - 1]?.secao : undefined;
+              const showSecao = Boolean(r.secao && r.secao !== prevSecao);
+              const isMedicao = r.tipo === "medicao" || displayTipo === "CALIBRACAO" || displayTipo === "TSE";
+              const isPreventivaCheck =
+                displayTipo === "PREVENTIVA" || displayTipo === "RECEBIMENTO";
+
+              return (
+                <div key={r.id ?? idx} style={{ display: "grid", gap: 6 }}>
+                  {showSecao && (
+                    <div
+                      style={{
+                        marginTop: idx === 0 ? 0 : 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: "0.02em",
+                        color: "oklch(0.4 0.04 250)",
+                        borderBottom: "1px solid oklch(0.92 0.01 250)",
+                        paddingBottom: 4,
+                      }}
                     >
-                      <option value="SIM">Sim</option>
-                      <option value="NAO">Não</option>
-                      <option value="NA">N/A</option>
-                    </select>
-                  )
-                ) : (
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={r.valorMedido ?? ""}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)));
+                      {r.secao}
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: isMedicao && isPreventivaCheck ? "2fr 1fr 1fr 1fr" : "2fr 1fr 1fr",
+                      gap: 8,
+                      alignItems: "center",
                     }}
-                    style={fieldStyle}
-                    disabled={viewMode}
-                  />
-                )}
-                {viewMode ? (
-                  <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{r.observacao ?? "—"}</span>
-                ) : (
-                  <input
-                    placeholder="Obs."
-                    value={r.observacao ?? ""}
-                    onChange={(e) =>
-                      setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)))
-                    }
-                    style={fieldStyle}
-                  />
-                )}
-              </div>
-            ))
+                  >
+                    <span style={{ fontSize: 13 }}>{r.pergunta}</span>
+                    {viewMode ? (
+                      <span style={{ fontSize: 13 }}>
+                        {r.tipo === "medicao"
+                          ? `cfg ${r.valorConfigurado ?? "—"} · med ${r.valorMedido ?? "—"}`
+                          : r.valorMedido != null && displayTipo !== "PREVENTIVA"
+                            ? r.valorMedido
+                            : r.status === "SIM"
+                              ? "C"
+                              : r.status === "NAO"
+                                ? "N.C"
+                                : r.status === "NA"
+                                  ? "N.A"
+                                  : r.status}
+                        {r.erroPct != null && displayTipo === "CALIBRACAO" ? ` (${r.erroPct}%)` : ""}
+                      </span>
+                    ) : r.tipo === "medicao" ? (
+                      <>
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="Configurado"
+                          value={r.valorConfigurado ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value === "" ? undefined : Number(e.target.value);
+                            setRespostas((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, valorConfigurado: v } : x)),
+                            );
+                          }}
+                          style={fieldStyle}
+                        />
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="Medido"
+                          value={r.valorMedido ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value === "" ? undefined : Number(e.target.value);
+                            setRespostas((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)),
+                            );
+                          }}
+                          style={fieldStyle}
+                        />
+                      </>
+                    ) : displayTipo !== "CALIBRACAO" && displayTipo !== "TSE" ? (
+                      <select
+                        value={r.status}
+                        onChange={(e) =>
+                          setRespostas((prev) =>
+                            prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)),
+                          )
+                        }
+                        style={fieldStyle}
+                      >
+                        {displayTipo === "PREVENTIVA" ? (
+                          <>
+                            <option value="SIM">C — Conforme</option>
+                            <option value="NAO">N.C — Não conforme</option>
+                            <option value="NA">N.A — Não aplicável</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="SIM">Sim</option>
+                            <option value="NAO">Não</option>
+                            <option value="NA">N/A</option>
+                          </>
+                        )}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={r.valorMedido ?? ""}
+                        onChange={(e) => {
+                          const v = Number(e.target.value);
+                          setRespostas((prev) =>
+                            prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)),
+                          );
+                        }}
+                        style={fieldStyle}
+                      />
+                    )}
+                    {viewMode ? (
+                      <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{r.observacao ?? "—"}</span>
+                    ) : (
+                      <input
+                        placeholder="Obs."
+                        value={r.observacao ?? ""}
+                        onChange={(e) =>
+                          setRespostas((prev) =>
+                            prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)),
+                          )
+                        }
+                        style={fieldStyle}
+                      />
+                    )}
+                  </div>
+                  {r.tipo === "medicao" && !viewMode && (
+                    <select
+                      value={r.status ?? "SIM"}
+                      onChange={(e) =>
+                        setRespostas((prev) =>
+                          prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)),
+                        )
+                      }
+                      style={{ ...fieldStyle, maxWidth: 220 }}
+                    >
+                      <option value="SIM">C — Conforme</option>
+                      <option value="NAO">N.C — Não conforme</option>
+                      <option value="NA">N.A — Não aplicável</option>
+                    </select>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       )}

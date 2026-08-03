@@ -105,16 +105,31 @@ setTimeout(() => {
       });
       pops.on("exit", (cp) => {
         console.log(`[nexo] import pops biblioteca finalizado (code=${cp ?? "?"})`);
-        console.log("[nexo] iniciando import de laudos PDF em background…");
-        const laudos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-laudos.mjs")], {
-          cwd: root,
-          env: process.env,
-          stdio: "inherit",
-          shell: false,
-          detached: false,
-        });
-        laudos.on("exit", (c2) => {
-          console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+        console.log("[nexo] iniciando import de checklists preventiva…");
+        const checks = spawn(
+          process.execPath,
+          [path.join(root, "scripts/maybe-import-checklists.mjs")],
+          {
+            cwd: root,
+            env: process.env,
+            stdio: "inherit",
+            shell: false,
+            detached: false,
+          },
+        );
+        checks.on("exit", (cc) => {
+          console.log(`[nexo] import checklists preventiva finalizado (code=${cc ?? "?"})`);
+          console.log("[nexo] iniciando import de laudos PDF em background…");
+          const laudos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-laudos.mjs")], {
+            cwd: root,
+            env: process.env,
+            stdio: "inherit",
+            shell: false,
+            detached: false,
+          });
+          laudos.on("exit", (c2) => {
+            console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+          });
         });
       });
     });

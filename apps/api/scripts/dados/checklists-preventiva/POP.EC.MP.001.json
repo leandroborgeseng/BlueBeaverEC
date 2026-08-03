@@ -1,0 +1,149 @@
+{
+  "codigoPop": "POP.EC.MP.001",
+  "nome": "Preventiva — Banho Maria (POP.EC.MP.001)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A + Quadro 7 · POP.EC.MP.001",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da carcaça do equipamento"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do painel de comando (botões/chave de comando)"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da chave liga-desliga"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física LED indicador de aquecimento"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física cabo de força"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da tampa"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do reservatório de água"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da resistência"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do sensor de temperatura"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Mangueiras de água"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Dreno"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusível de proteção"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Motor de agitação"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "LED indicador de aquecimento"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Temperatura",
+      "tipo": "medicao",
+      "campos": ["valorConfigurado", "valorMedido"],
+      "toleranciaNota": "Variações de ±5°C em relação ao valor configurado exigem ajuste; se impossível, item N.C."
+    }
+  ]
+}
