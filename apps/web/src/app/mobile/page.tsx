@@ -19,6 +19,13 @@ interface Prox {
   equipamento: { tag: string; nome: string; setor: { nome: string } };
 }
 
+const PRIO: Record<string, { bg: string; color: string }> = {
+  URGENTE: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  ALTA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  MEDIA: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
+  BAIXA: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
+};
+
 export default function MobileHomePage() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [proximos, setProximos] = useState<Prox[]>([]);
@@ -39,116 +46,141 @@ export default function MobileHomePage() {
     api<Prox[]>("/mobile/proximos?limit=5").then(setProximos).catch(() => setProximos([]));
   }, []);
 
+  const hora = new Date().getHours();
+  const saudacao = hora < 12 ? "Bom dia," : hora < 18 ? "Boa tarde," : "Boa noite,";
+
   return (
     <MobileFrame title="Início" online={online} pending={pending} onSync={() => void flush()}>
-      <div
-        style={{
-          background: "linear-gradient(135deg, rgb(0,102,178), oklch(0.45 0.12 250))",
-          borderRadius: 16,
-          padding: "18px 16px",
-          color: "white",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ fontSize: 13, opacity: 0.85, fontWeight: 600 }}>Olá,</div>
-        <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>{nome}</div>
-        <div style={{ fontSize: 12.5, marginTop: 4, opacity: 0.8 }}>App de campo · Engenharia Clínica</div>
-      </div>
+      <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{saudacao}</div>
+      <div style={{ fontSize: 21, fontWeight: 800, color: "oklch(0.18 0.015 255)", marginBottom: 16 }}>{nome}</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 18 }}>
-        <MiniKpi label="Abertas" value={kpis?.abertas ?? "—"} />
-        <MiniKpi label="Urgentes" value={kpis?.urgentes ?? "—"} accent />
-        <MiniKpi label="Hoje" value={kpis?.concluidasHoje ?? "—"} />
+        <MiniKpi label="Abertas" value={kpis?.abertas ?? "—"} color="oklch(0.4 0.16 255)" />
+        <MiniKpi label="Urgentes" value={kpis?.urgentes ?? "—"} color="oklch(0.5 0.16 38)" />
+        <MiniKpi label="Hoje" value={kpis?.concluidasHoje ?? "—"} color="oklch(0.4 0.13 150)" />
       </div>
 
-      <h2 style={{ fontSize: 13, margin: "0 0 8px", fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", color: "oklch(0.45 0.02 250)" }}>
-        Próximos atendimentos
-      </h2>
-      <div style={{ display: "grid", gap: 8, marginBottom: 18 }}>
-        {proximos.map((os) => (
-          <Link
-            key={os.numero}
-            href={`/mobile/os/${os.numero}`}
-            style={{
-              background: "white",
-              border: "1px solid oklch(0.91 0.006 255)",
-              borderLeft: `4px solid ${os.prioridade === "URGENTE" ? "oklch(0.55 0.18 25)" : "oklch(0.64 0.19 38)"}`,
-              borderRadius: 12,
-              padding: 14,
-              fontSize: 13,
-              boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <strong>{os.codigo ?? `OS-${os.numero}`}</strong>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 700, color: "oklch(0.2 0.02 250)" }}>Próximos atendimentos</div>
+        <Link href="/mobile/os" style={{ fontSize: 12, fontWeight: 600, color: "oklch(0.55 0.16 255)" }}>
+          Ver todas ›
+        </Link>
+      </div>
+
+      <div style={{ display: "grid", gap: 9, marginBottom: 18 }}>
+        {proximos.map((os) => {
+          const p = PRIO[os.prioridade] ?? PRIO.MEDIA;
+          return (
+            <Link
+              key={os.numero}
+              href={`/mobile/os/${os.numero}`}
+              style={{
+                background: "white",
+                border: "1px solid oklch(0.91 0.006 255)",
+                borderRadius: 12,
+                padding: 13,
+                display: "flex",
+                alignItems: "center",
+                gap: 11,
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 9,
+                  background: p.bg,
+                  flexShrink: 0,
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: p.color,
+                }}
+              >
+                OS
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    color: "oklch(0.22 0.02 250)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {os.equipamento.nome || os.equipamento.tag}
+                </div>
+                <div style={{ fontSize: 11.5, color: "oklch(0.55 0.02 250)" }}>
+                  {os.codigo ?? `OS-${os.numero}`} · {os.equipamento.setor.nome}
+                </div>
+              </div>
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: 800,
-                  color: os.prioridade === "URGENTE" ? "oklch(0.45 0.16 25)" : "oklch(0.45 0.02 250)",
+                  fontWeight: 700,
+                  padding: "3px 7px",
+                  borderRadius: 5,
+                  background: p.bg,
+                  color: p.color,
+                  whiteSpace: "nowrap",
                 }}
               >
                 {os.prioridade}
               </span>
-            </div>
-            <div style={{ marginTop: 4 }}>{os.equipamento.tag} — {os.equipamento.nome}</div>
-            <div style={{ color: "oklch(0.5 0.02 250)", marginTop: 2 }}>{os.equipamento.setor.nome}</div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
         {proximos.length === 0 && (
-          <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 13, padding: 12, textAlign: "center" }}>
-            Nenhum atendimento na fila
-          </div>
+          <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 13, padding: 8 }}>Nenhum atendimento na fila</div>
         )}
       </div>
 
-      <div style={{ display: "grid", gap: 8 }}>
-        <MobileLink href="/mobile/os" label="Minhas OS" hint="Fila atribuída a você" />
-        <MobileLink href="/mobile/qr" label="Ler QR / Ficha" hint="Consulta rápida do equipamento" />
-        <MobileLink href="/mobile/solicitar" label="Abrir Solicitação" hint="Reportar ocorrência" />
-        <MobileLink href="/dashboard" label="Ir para Desktop" hint="Abrir módulo completo" />
+      <div style={{ fontSize: 14.5, fontWeight: 700, color: "oklch(0.2 0.02 250)", margin: "4px 0 10px" }}>
+        Acesso rápido
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <QuickCard href="/mobile/qr" label="Ler QR do Equipamento" />
+        <QuickCard href="/mobile/solicitar" label="Abrir Solicitação" />
       </div>
     </MobileFrame>
   );
 }
 
-function MiniKpi({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
+function MiniKpi({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div
       style={{
         background: "white",
-        borderRadius: 12,
-        padding: "12px 8px",
         border: "1px solid oklch(0.91 0.006 255)",
+        borderRadius: 12,
+        padding: "12px 10px",
         textAlign: "center",
-        boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
       }}
     >
-      <div style={{ fontSize: 10, fontWeight: 700, color: "oklch(0.5 0.02 250)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 22, fontWeight: 800, marginTop: 2, color: accent ? "oklch(0.5 0.17 25)" : "inherit" }}>
-        {value}
-      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
+      <div style={{ fontSize: 10.5, color: "oklch(0.5 0.02 250)", fontWeight: 600, marginTop: 2 }}>{label}</div>
     </div>
   );
 }
 
-function MobileLink({ href, label, hint }: { href: string; label: string; hint: string }) {
+function QuickCard({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
       style={{
-        display: "block",
         background: "white",
         border: "1px solid oklch(0.91 0.006 255)",
         borderRadius: 12,
-        padding: "14px 16px",
-        boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+        padding: 14,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
       }}
     >
-      <div style={{ fontWeight: 800, fontSize: 15 }}>{label}</div>
-      <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 2 }}>{hint}</div>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: "oklch(0.28 0.02 250)" }}>{label}</span>
     </Link>
   );
 }

@@ -102,7 +102,7 @@ const RAIL: Array<{
   },
 ];
 
-const ACCENT = "oklch(0.92 0.02 250)";
+const ACCENT = "#ffffff";
 
 export function SideRail() {
   const pathname = usePathname();
@@ -169,6 +169,12 @@ export function SideRail() {
                 }
                 setOpenRail((v) => (v === r.key ? null : r.key));
               }}
+              onMouseEnter={(e) => {
+                if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.14)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = active ? "rgba(255,255,255,0.16)" : "transparent";
+              }}
               style={{
                 width: "100%",
                 display: "flex",
@@ -229,6 +235,12 @@ export function SideRail() {
                   key={`${f.href}-${f.label}`}
                   href={f.href}
                   onClick={() => setOpenRail(null)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "oklch(0.95 0.025 255)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -242,6 +254,8 @@ export function SideRail() {
                         : "oklch(0.3 0.02 250)",
                     fontWeight: selected || f.group ? 700 : 500,
                     fontSize: 13,
+                    background: "transparent",
+                    textDecoration: "none",
                   }}
                 >
                   <Icon d={ICONS[f.icon]} size={16} />

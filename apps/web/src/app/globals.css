@@ -2,10 +2,13 @@
 
 :root {
   --nexo-bg: oklch(0.98 0.003 250);
+  --nexo-bg-mobile: oklch(0.965 0.004 255);
   --nexo-surface: oklch(1 0 0);
   --nexo-border: oklch(0.88 0.01 250);
   --nexo-border-soft: oklch(0.91 0.006 255);
+  --nexo-ghost-border: oklch(0.9 0.005 250);
   --nexo-text: oklch(0.25 0.02 250);
+  --nexo-text-title: oklch(0.18 0.015 255);
   --nexo-muted: oklch(0.5 0.02 250);
   --nexo-primary: oklch(0.64 0.19 38);
   --nexo-primary-hover: oklch(0.58 0.19 38);
@@ -16,8 +19,18 @@
   --nexo-danger: oklch(0.45 0.15 25);
   --nexo-warning: oklch(0.45 0.13 85);
   --nexo-rail: rgb(0, 102, 178);
-  --nexo-radius: 8px;
+  --nexo-rail-accent: #ffffff;
+  --nexo-topbar-height: 58px;
+
+  --nexo-radius-badge: 5px;
+  --nexo-radius-btn: 7px;
+  --nexo-radius-input: 8px;
+  --nexo-radius-card: 10px;
+  --nexo-radius-mobile-card: 12px;
+  --nexo-radius: 10px;
+
   --nexo-font: "Inter", system-ui, sans-serif;
+  --nexo-font-mobile: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {

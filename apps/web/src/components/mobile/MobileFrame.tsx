@@ -37,42 +37,99 @@ export function MobileFrame({
         minHeight: "100vh",
         maxWidth: 480,
         margin: "0 auto",
-        background: "oklch(0.975 0.008 250)",
-        padding: "16px 16px 88px",
+        background: "var(--nexo-bg-mobile)",
+        fontFamily: "var(--nexo-font-mobile)",
+        padding: "14px 14px 88px",
+        color: "oklch(0.22 0.02 250)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <img src="/bluebeaver-logo.png" alt="" style={{ height: 28, borderRadius: 6 }} />
-        <strong style={{ fontSize: 20, letterSpacing: "-0.02em" }}>{title}</strong>
-        <span
+      {!online && (
+        <div
+          onClick={() => onSync && void onSync()}
           style={{
-            marginLeft: "auto",
-            fontSize: 11,
-            fontWeight: 700,
-            color: online ? "oklch(0.45 0.13 150)" : "oklch(0.55 0.14 85)",
+            flexShrink: 0,
+            background: "oklch(0.55 0.16 38)",
+            color: "white",
+            padding: "7px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 11.5,
+            fontWeight: 600,
+            borderRadius: 8,
+            marginBottom: 10,
+            cursor: onSync ? "pointer" : "default",
           }}
         >
-          {online ? "Online" : "Offline"}
-          {pending > 0 ? ` · ${pending} pend.` : ""}
-        </span>
-        {pending > 0 && online && onSync && (
-          <button
-            type="button"
-            onClick={() => void onSync()}
+          <div
             style={{
-              border: "none",
-              background: "oklch(0.64 0.19 38)",
-              color: "white",
-              borderRadius: 8,
-              padding: "6px 8px",
-              fontSize: 11,
-              fontWeight: 700,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "white",
+              flexShrink: 0,
             }}
-          >
-            Sync
-          </button>
-        )}
-      </div>
+          />
+          Offline · {pending > 0 ? `${pending} pendente(s)` : "fila vazia"}
+          {pending > 0 && online ? " · tocar para sync" : ""}
+        </div>
+      )}
+      {online && pending > 0 && (
+        <div
+          style={{
+            background: "oklch(0.93 0.09 150)",
+            color: "oklch(0.4 0.13 150)",
+            padding: "6px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 7,
+            fontSize: 11.5,
+            fontWeight: 600,
+            borderRadius: 8,
+            marginBottom: 10,
+          }}
+        >
+          <span>{pending} item(ns) prontos para sincronizar</span>
+          {onSync && (
+            <button
+              type="button"
+              onClick={() => void onSync()}
+              style={{
+                border: "none",
+                background: "oklch(0.64 0.19 38)",
+                color: "white",
+                borderRadius: 7,
+                padding: "5px 10px",
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              Sync
+            </button>
+          )}
+        </div>
+      )}
+      {online && pending === 0 && (
+        <div
+          style={{
+            background: "white",
+            borderBottom: "1px solid oklch(0.93 0.005 255)",
+            color: "oklch(0.55 0.02 250)",
+            padding: "5px 4px 10px",
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            fontSize: 10.5,
+            fontWeight: 600,
+            marginBottom: 4,
+          }}
+        >
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "oklch(0.6 0.14 150)" }} />
+          Online · {title}
+        </div>
+      )}
+
       {lastSyncMsg && (
         <div
           style={{
@@ -121,11 +178,12 @@ export function MobileFrame({
               style={{
                 textAlign: "center",
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 700,
                 padding: "10px 4px",
                 borderRadius: 12,
                 color: active ? "oklch(0.64 0.19 38)" : "oklch(0.4 0.02 250)",
                 background: active ? "oklch(0.96 0.03 55)" : "transparent",
+                textDecoration: "none",
               }}
             >
               {label}

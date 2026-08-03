@@ -19,16 +19,24 @@ export function PageHeader({
         alignItems: "flex-end",
         justifyContent: "space-between",
         gap: 16,
-        marginBottom: 18,
+        marginBottom: 22,
         flexWrap: "wrap",
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>
+        <h1
+          style={{
+            margin: "0 0 2px",
+            fontSize: 21,
+            fontWeight: 700,
+            letterSpacing: "-0.015em",
+            color: "oklch(0.18 0.015 255)",
+          }}
+        >
           {title}
         </h1>
         {subtitle != null && (
-          <div style={{ margin: 0, color: "oklch(0.5 0.02 250)", fontSize: 13, lineHeight: 1.4 }}>
+          <div style={{ margin: 0, color: "oklch(0.5 0.02 250)", fontSize: 13.5, lineHeight: 1.4 }}>
             {subtitle}
           </div>
         )}
@@ -52,9 +60,9 @@ export function Surface({
       style={{
         background: "white",
         border: "1px solid oklch(0.91 0.006 255)",
-        borderRadius: 12,
+        borderRadius: 10,
         boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
-        padding: padded ? 16 : 0,
+        padding: padded ? "16px 18px" : 0,
         overflow: "hidden",
         ...style,
       }}
@@ -66,61 +74,89 @@ export function Surface({
 
 export function Panel({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
-    <Surface style={{ padding: 0 }}>
+    <Surface style={{ padding: 20 }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 16px",
-          borderBottom: "1px solid oklch(0.93 0.005 255)",
+          gap: 12,
+          marginBottom: 14,
         }}
       >
-        <strong style={{ fontSize: 13.5 }}>{title}</strong>
+        <strong style={{ fontSize: 15, fontWeight: 700, color: "oklch(0.2 0.02 250)" }}>{title}</strong>
         {action}
       </div>
-      <div style={{ padding: 16 }}>{children}</div>
+      {children}
     </Surface>
   );
 }
+
+const TONE_RING: Record<string, string> = {
+  neutral: "oklch(0.82 0.02 250)",
+  danger: "oklch(0.58 0.19 25)",
+  success: "oklch(0.55 0.14 150)",
+  warning: "oklch(0.65 0.15 85)",
+  info: "oklch(0.55 0.16 255)",
+};
 
 export function KpiCard({
   label,
   value,
   hint,
   tone = "neutral",
+  ringPct = 72,
 }: {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
   tone?: "neutral" | "danger" | "success" | "warning" | "info";
+  ringPct?: number;
 }) {
-  const ring =
-    tone === "danger"
-      ? "oklch(0.55 0.18 25)"
-      : tone === "success"
-        ? "oklch(0.55 0.14 150)"
-        : tone === "warning"
-          ? "oklch(0.7 0.14 85)"
-          : tone === "info"
-            ? "oklch(0.55 0.14 255)"
-            : "oklch(0.82 0.02 250)";
+  const ringColor = TONE_RING[tone] ?? TONE_RING.neutral;
+  const pct = Math.max(0, Math.min(100, ringPct));
   return (
-    <Surface style={{ padding: "14px 16px", display: "flex", gap: 14, alignItems: "center" }}>
+    <Surface
+      style={{
+        padding: "18px 20px",
+        display: "flex",
+        gap: 16,
+        alignItems: "center",
+      }}
+    >
       <div
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 999,
-          border: `3.5px solid ${ring}`,
+          width: 52,
+          height: 52,
+          borderRadius: "50%",
           flexShrink: 0,
+          background: `conic-gradient(${ringColor} ${pct * 3.6}deg, oklch(0.94 0.003 255) 0deg)`,
+          display: "grid",
+          placeItems: "center",
         }}
-      />
+      >
+        <div
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: "white",
+          }}
+        />
+      </div>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 11.5, fontWeight: 600, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>
-          {label}
+        <div style={{ fontSize: 12, fontWeight: 600, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{label}</div>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            color: "oklch(0.2 0.02 250)",
+          }}
+        >
+          {value}
         </div>
-        <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1 }}>{value}</div>
         {hint != null && (
           <div
             style={{
@@ -165,7 +201,6 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   PENDENTE: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
   APROVADA: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
   RECUSADA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
-  ABERTA_NC: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
   FECHADA: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
   PLANEJADA: { bg: "oklch(0.93 0.04 250)", color: "oklch(0.4 0.14 255)" },
   EM_EXECUCAO: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
@@ -187,10 +222,10 @@ export function Badge({ children, tone }: { children: ReactNode; tone?: string }
       style={{
         display: "inline-flex",
         alignItems: "center",
-        padding: "3px 8px",
-        borderRadius: 999,
+        padding: "3px 9px",
+        borderRadius: 5,
         fontSize: 11,
-        fontWeight: 700,
+        fontWeight: 600,
         background: s.bg,
         color: s.color,
         letterSpacing: "0.01em",
@@ -233,6 +268,7 @@ export function Btn({
   type = "button",
   disabled,
   style,
+  size = "md",
 }: {
   children: ReactNode;
   variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -241,20 +277,22 @@ export function Btn({
   type?: "button" | "submit";
   disabled?: boolean;
   style?: CSSProperties;
+  size?: "md" | "sm";
 }) {
   const base: CSSProperties = {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontSize: 13.5,
-    fontWeight: 700,
+    borderRadius: 7,
+    padding: size === "sm" ? "8px 14px" : "9px 16px",
+    fontSize: size === "sm" ? 12.5 : 13.5,
+    fontWeight: 600,
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.6 : 1,
     textDecoration: "none",
     border: "1px solid transparent",
+    boxShadow: variant === "primary" ? "0 1px 2px rgba(16,24,40,0.08)" : undefined,
     ...style,
   };
   const variants: Record<string, CSSProperties> = {
@@ -266,8 +304,8 @@ export function Btn({
     },
     ghost: {
       background: "white",
-      color: "oklch(0.3 0.02 250)",
-      borderColor: "oklch(0.88 0.01 250)",
+      color: "oklch(0.4 0.02 250)",
+      borderColor: "oklch(0.9 0.005 250)",
     },
     danger: { background: "oklch(0.45 0.15 25)", color: "white", borderColor: "oklch(0.45 0.15 25)" },
   };
@@ -289,23 +327,29 @@ export function Btn({
 export const fieldStyle: CSSProperties = {
   width: "100%",
   border: "1px solid oklch(0.88 0.01 250)",
-  borderRadius: 10,
-  padding: "10px 12px",
-  fontSize: 13.5,
+  borderRadius: 8,
+  padding: "8px 10px",
+  fontSize: 13,
   background: "white",
   color: "oklch(0.28 0.02 250)",
+};
+
+/** Campos de formulário de página (mais confortáveis que filtros). */
+export const formFieldStyle: CSSProperties = {
+  ...fieldStyle,
+  padding: "10px 12px",
+  fontSize: 13.5,
+  borderRadius: 8,
 };
 
 export function FieldLabel({ children }: { children: ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 11,
-        fontWeight: 700,
+        fontSize: 11.5,
+        fontWeight: 600,
         color: "oklch(0.5 0.02 250)",
-        marginBottom: 6,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
+        marginBottom: 5,
       }}
     >
       {children}
@@ -319,9 +363,10 @@ export function FilterBar({ children }: { children: ReactNode }) {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-        gap: 10,
-        marginBottom: 14,
+        gap: 12,
+        marginBottom: 16,
         alignItems: "end",
+        padding: "16px 18px",
       }}
     >
       {children}
@@ -338,20 +383,20 @@ export function DataTable({ children }: { children: ReactNode }) {
 }
 
 export const th: CSSProperties = {
-  padding: "11px 14px",
-  fontSize: 11,
-  fontWeight: 700,
-  color: "oklch(0.5 0.02 250)",
-  letterSpacing: "0.04em",
+  padding: "11px 18px",
+  fontSize: 10.5,
+  fontWeight: 600,
+  color: "oklch(0.48 0.015 255)",
+  letterSpacing: "0.05em",
   textTransform: "uppercase",
-  background: "oklch(0.975 0.005 250)",
+  background: "oklch(0.975 0.004 255)",
   borderBottom: "1px solid oklch(0.93 0.005 255)",
   textAlign: "left",
 };
 
 export const td: CSSProperties = {
-  padding: "12px 14px",
-  borderTop: "1px solid oklch(0.94 0.005 255)",
+  padding: "12px 18px",
+  borderTop: "1px solid oklch(0.945 0.004 255)",
   verticalAlign: "middle",
 };
 
@@ -369,7 +414,7 @@ export function Err({ children }: { children: ReactNode }) {
       style={{
         marginBottom: 12,
         padding: "10px 12px",
-        borderRadius: 10,
+        borderRadius: 8,
         background: "oklch(0.96 0.03 25)",
         color: "oklch(0.45 0.15 25)",
         fontSize: 13,
@@ -383,7 +428,7 @@ export function Err({ children }: { children: ReactNode }) {
 
 export function ResultCount({ n }: { n: number }) {
   return (
-    <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)", margin: "0 0 10px", textAlign: "right" }}>
+    <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.5 0.02 250)", margin: "0 0 10px" }}>
       {n} resultado(s)
     </div>
   );

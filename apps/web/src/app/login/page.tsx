@@ -71,7 +71,12 @@ export default function LoginPage() {
           Gestão de Engenharia Clínica
         </div>
 
-        <div style={label}>USUÁRIO</div>
+        <div style={label}>UNIDADE</div>
+        <select style={{ ...input, marginBottom: 0 }} defaultValue="Hospital e Maternidade Modelo" disabled>
+          <option>Hospital e Maternidade Modelo</option>
+        </select>
+
+        <div style={{ ...label, marginTop: 14 }}>USUÁRIO</div>
         <input
           style={input}
           value={email}

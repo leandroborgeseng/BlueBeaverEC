@@ -61,28 +61,31 @@ export default function DashboardPage() {
       <PageHeader title="Visão geral" subtitle={hoje.charAt(0).toUpperCase() + hoje.slice(1)} />
       {erro && <Err>{erro}</Err>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
-        <KpiCard label="Equipamentos ativos" value={kpis?.equipamentosAtivos ?? "—"} tone="info" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, marginBottom: 22 }}>
+        <KpiCard label="Equipamentos ativos" value={kpis?.equipamentosAtivos ?? "—"} tone="info" ringPct={78} />
         <KpiCard
           label="OS abertas"
           value={kpis?.osAbertas ?? "—"}
           hint={atrasadas.length > 0 ? `${atrasadas.length} atrasadas` : "sem atraso"}
           tone={atrasadas.length > 0 ? "danger" : "neutral"}
+          ringPct={atrasadas.length > 0 ? 55 : 40}
         />
         <KpiCard
           label="Disponibilidade média"
           value={kpis?.disponibilidadePct != null ? `${kpis.disponibilidadePct}%` : "—"}
           tone="success"
+          ringPct={kpis?.disponibilidadePct ?? 70}
         />
         <KpiCard
           label="Contratos a vencer"
           value={contratos.length}
           hint="próximos 30 dias"
           tone={contratos.length > 0 ? "warning" : "neutral"}
+          ringPct={contratos.length > 0 ? 45 : 20}
         />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 14, marginTop: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16 }}>
         <Panel title="Ordens de Serviço por situação">
           {osSituacao.length === 0 ? (
             <Empty />
@@ -94,13 +97,13 @@ export default function DashboardPage() {
                   <div
                     style={{
                       height: `${Math.max(8, (row.total / maxBar) * 110)}px`,
-                      borderRadius: "6px 6px 2px 2px",
+                      borderRadius: "5px 5px 0 0",
                       background: barColor(row.situacao),
                       margin: "0 auto",
                       maxWidth: 48,
                     }}
                   />
-                  <div style={{ fontSize: 11, color: "oklch(0.5 0.02 250)", marginTop: 8, lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 10.5, color: "oklch(0.5 0.02 250)", marginTop: 8, lineHeight: 1.2 }}>
                     {prettyStatus(row.situacao)}
                   </div>
                 </div>
@@ -120,8 +123,8 @@ export default function DashboardPage() {
                     display: "flex",
                     justifyContent: "space-between",
                     gap: 10,
-                    padding: "10px 0",
-                    borderBottom: "1px solid oklch(0.94 0.005 255)",
+                    padding: "11px 0",
+                    borderBottom: "1px solid oklch(0.945 0.004 255)",
                     fontSize: 13,
                   }}
                 >
@@ -136,7 +139,7 @@ export default function DashboardPage() {
         </Panel>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
         <Panel
           title="Ordens de Serviço recentes"
           action={
