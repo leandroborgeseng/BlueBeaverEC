@@ -1,0 +1,380 @@
+{
+  "codigoPop": "POP.EC.MP.004",
+  "nome": "Preventiva — Unidades Anestesia (POP.EC.MP.004)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.004",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza externa do"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos rotâmetros e"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos botões de controle e"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da válvula ‘APL’"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexões: vias"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Reservatório de cal"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamen"
+    },
+    {
+      "id": "02-16",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamento das"
+    },
+    {
+      "id": "02-17",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "03 AUTOTESTE"
+    },
+    {
+      "id": "02-18",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Autoteste"
+    },
+    {
+      "id": "02-19",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "04 CÉLULA/SENSOR DE O2"
+    },
+    {
+      "id": "02-20",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Validade da"
+    },
+    {
+      "id": "02-21",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Calibração da"
+    },
+    {
+      "id": "02-22",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "05 FORNECIMENTO DE GASES"
+    },
+    {
+      "id": "02-23",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Válvulas reguladoras"
+    },
+    {
+      "id": "02-24",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Filtros coalescentes - entrada de Ar"
+    },
+    {
+      "id": "02-25",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Rotâmetro de O2"
+    },
+    {
+      "id": "02-26",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "– Mobilidade do"
+    },
+    {
+      "id": "02-27",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme: Alta"
+    },
+    {
+      "id": "02-28",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Rotâmetro de N2O"
+    },
+    {
+      "id": "02-29",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Relação O2/N2O"
+    },
+    {
+      "id": "02-30",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de interrupção"
+    },
+    {
+      "id": "02-31",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Rotâmetro de Ar comprimido –"
+    },
+    {
+      "id": "02-32",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão dos cilindros"
+    },
+    {
+      "id": "02-33",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de segurança –"
+    },
+    {
+      "id": "02-34",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "06 VAPORIZADOR"
+    },
+    {
+      "id": "02-35",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Suporte dos"
+    },
+    {
+      "id": "02-36",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Vaporizadores"
+    },
+    {
+      "id": "02-37",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de acionamento"
+    },
+    {
+      "id": "02-38",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "07 ALARMES"
+    },
+    {
+      "id": "02-39",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme: limite de pressão – pressão"
+    },
+    {
+      "id": "02-40",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme:"
+    },
+    {
+      "id": "02-41",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme: volume"
+    },
+    {
+      "id": "02-42",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Ventilação assistida"
+    },
+    {
+      "id": "02-43",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "08 VÁLVULAS E SENSOR DE FLUXO"
+    },
+    {
+      "id": "02-44",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza da válvula"
+    },
+    {
+      "id": "02-45",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do sensor de"
+    },
+    {
+      "id": "02-46",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "09 SISTEMA RESPIRATÓRIO"
+    },
+    {
+      "id": "02-47",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de vazamento"
+    },
+    {
+      "id": "02-48",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de fuga no fole"
+    },
+    {
+      "id": "02-49",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Teste de fuga no"
+    },
+    {
+      "id": "02-50",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do sistema"
+    },
+    {
+      "id": "02-51",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "10 ALIMENTAÇÃO - REDE ELÉTRICA E BATERIA"
+    },
+    {
+      "id": "02-52",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "LED indicador de"
+    },
+    {
+      "id": "02-53",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme ausência de"
+    },
+    {
+      "id": "02-54",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Funcionamento da"
+    },
+    {
+      "id": "02-55",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "11 PEÇAS DE REPOSIÇÃO"
+    },
+    {
+      "id": "02-56",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Vedação dos"
+    },
+    {
+      "id": "02-57",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Vedação do sistema"
+    },
+    {
+      "id": "02-58",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Baterias"
+    },
+    {
+      "id": "02-59",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Kit de manutenção"
+    }
+  ]
+}

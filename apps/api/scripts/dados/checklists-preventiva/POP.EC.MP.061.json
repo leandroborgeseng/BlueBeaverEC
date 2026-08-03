@@ -1,0 +1,170 @@
+{
+  "codigoPop": "POP.EC.MP.061",
+  "nome": "Preventiva — Esteira Ergometrica (POP.EC.MP.061)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.061",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "EQUIPAMENTOS"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da cinta"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da barra de apoio para as mãos"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do painel de controle e botão liga-desliga"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do botão de emergência"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos conectores fêmeas (no equipamento)"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Cabos de conexão com computador"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Correia e eixos"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Motor de movimentação da cinta"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Motor de inclinação"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Armazenamento"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Teste de"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Conexão à rede"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Teste funcional"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Funcionamento do botão de emergência"
+    }
+  ]
+}

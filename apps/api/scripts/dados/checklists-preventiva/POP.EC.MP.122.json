@@ -1,0 +1,128 @@
+{
+  "codigoPop": "POP.EC.MP.122",
+  "nome": "Preventiva — Unitarizadora Medicamentos (POP.EC.MP.122)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.122",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "medicamentos. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle do equipamento"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Display(s)"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "impressora, quanto a rachaduras e acúmulo de resídu"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Seladora"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Saídas de ar"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Botão de emergência"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Chave liga-desliga"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusíveis"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física cabo de força"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Compressor de ar"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Motor"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Correias e engrenagens"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 5,
+      "pergunta": "Teste de"
+    }
+  ]
+}

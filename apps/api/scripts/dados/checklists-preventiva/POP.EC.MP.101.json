@@ -1,0 +1,194 @@
+{
+  "codigoPop": "POP.EC.MP.101",
+  "nome": "Preventiva — Sis Digitalização Imagem Radiografia (POP.EC.MP.101)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.101",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "imagem radiografia. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da(s) bandeja(s) de inserção"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da chave/botão liga-desliga"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do conector e cabo de"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusíveis"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física cabo de força"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos rodízios"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Rolos de transporte de ecrã"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Comparti mento da"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Fotomultiplicador"
+    },
+    {
+      "id": "04-07",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Correias e engrenagens"
+    },
+    {
+      "id": "04-08",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Filtro de ar"
+    },
+    {
+      "id": "04-09",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "05 COMPUTADOR"
+    },
+    {
+      "id": "04-12",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Armazenamento"
+    },
+    {
+      "id": "04-13",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Teste de"
+    },
+    {
+      "id": "04-14",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "06 CASSETES"
+    },
+    {
+      "id": "04-15",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade e limpeza d ( )"
+    },
+    {
+      "id": "04-16",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "t ( )"
+    },
+    {
+      "id": "04-17",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade e limpeza do(s) cassete(s)"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 7,
+      "pergunta": "Funcionamento"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 7,
+      "pergunta": "Teste do sistema"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 7,
+      "pergunta": "Teste de imagem"
+    }
+  ]
+}

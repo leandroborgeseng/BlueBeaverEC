@@ -1,0 +1,122 @@
+{
+  "codigoPop": "POP.EC.MP.070",
+  "nome": "Preventiva — Insuflador CO2 (POP.EC.MP.070)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.070",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da chave"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos conectores de"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do(s)"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Mangueiras e"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 ACESSÓRIOS E TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Teste de"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 ACESSÓRIOS E TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Elemento térmico"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 ACESSÓRIOS E TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: fornecimento"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 ACESSÓRIOS E TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: oclusão"
+    }
+  ]
+}

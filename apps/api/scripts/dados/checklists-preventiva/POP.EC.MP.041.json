@@ -1,0 +1,200 @@
+{
+  "codigoPop": "POP.EC.MP.041",
+  "nome": "Preventiva — Bisturi Eletronico Argonio (POP.EC.MP.041)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.041",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da chave liga-desliga"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do carro de transporte"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Filtro HEPA"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Pedal simples"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Pedal duplo"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Placa de retorno (placa de paciente)"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Eletrodo ativo (caneta"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE GÁS ARGÔNIO",
+      "secaoOrdem": 5,
+      "pergunta": "Integridade do(s) cilindro(s) de gás argônio"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE GÁS ARGÔNIO",
+      "secaoOrdem": 5,
+      "pergunta": "Mangueiras e conexões"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE GÁS ARGÔNIO",
+      "secaoOrdem": 5,
+      "pergunta": "Teste de"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE GÁS ARGÔNIO",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: fornecimento de gás argônio"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE GÁS ARGÔNIO",
+      "secaoOrdem": 5,
+      "pergunta": "Nível de gás argônio"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Conexão da placa"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Contato da placa"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Função: corte - monopolar"
+    },
+    {
+      "id": "06-05",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Monopolar"
+    },
+    {
+      "id": "06-06",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Função: Coagulação"
+    },
+    {
+      "id": "06-07",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "- Monopolar"
+    }
+  ]
+}

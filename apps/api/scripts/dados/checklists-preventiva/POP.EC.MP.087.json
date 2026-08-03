@@ -1,0 +1,164 @@
+{
+  "codigoPop": "POP.EC.MP.087",
+  "nome": "Preventiva — Banho Turbilhão (POP.EC.MP.087)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.087",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "limpeza do painel de controle do equipamento."
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos rodízios"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusíveis"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Cabo de força"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza do tanque"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do tanque"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Dreno"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Dispositivo de sucção"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Bicos injetores"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES GERAIS – TANQUE",
+      "secaoOrdem": 3,
+      "pergunta": "Sensor de nível"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – TURBINA",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade da turbina"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – TURBINA",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade mangueira e conexões"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES GERAIS – TURBINA",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade chave liga-"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Teclado"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Termostato"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Temporizador"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade da tubulação interna"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Aquecedor"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Resistencia"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Bomba hidráulica"
+    },
+    {
+      "id": "06-05",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Registros e tubulações"
+    },
+    {
+      "id": "06-06",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Dispositivo de proteção"
+    },
+    {
+      "id": "06-08",
+      "secao": "06 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 6,
+      "pergunta": "Teste de"
+    }
+  ]
+}

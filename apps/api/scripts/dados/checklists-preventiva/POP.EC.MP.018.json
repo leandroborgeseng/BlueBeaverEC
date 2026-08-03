@@ -1,0 +1,260 @@
+{
+  "codigoPop": "POP.EC.MP.018",
+  "nome": "Preventiva — Incubadora Neonatal (POP.EC.MP.018)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.018",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "neonatal"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da cúpula"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamento"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do painel de entrada de"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos botões de"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das mangueiras/tubos"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do suporte de soro e"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade sensor de"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do elemento aquecedor"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Cilindros e suportes de"
+    },
+    {
+      "id": "02-16",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Colchão e leito do"
+    },
+    {
+      "id": "02-17",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Oxímetro de Pulso"
+    },
+    {
+      "id": "02-18",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamento das"
+    },
+    {
+      "id": "02-19",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "LED indicador de"
+    },
+    {
+      "id": "02-20",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme ausência de rede elétrica"
+    },
+    {
+      "id": "02-21",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Funcionamento da"
+    },
+    {
+      "id": "02-22",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Sistema de oxigenação"
+    },
+    {
+      "id": "02-23",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Sistema de"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "04 ALARMES"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: temperatura"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: desconexão"
+    },
+    {
+      "id": "03-07",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: limite superior da"
+    },
+    {
+      "id": "03-08",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: limite inferior"
+    },
+    {
+      "id": "03-09",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: limite superior"
+    },
+    {
+      "id": "03-10",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: umidade"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Mesa:"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Balança:"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Balança: tara"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Nível de som"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Nível de som –"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Velocidad e do ar –"
+    }
+  ]
+}

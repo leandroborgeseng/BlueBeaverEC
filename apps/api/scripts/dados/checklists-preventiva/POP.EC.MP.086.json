@@ -1,0 +1,248 @@
+{
+  "codigoPop": "POP.EC.MP.086",
+  "nome": "Preventiva — Lavadora descontaminadora (POP.EC.MP.086)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.086",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "descontaminadora. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÕES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das resistências •"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÕES",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e verificação do filtro da câmara"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade da câmara"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza e verificação i"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Lâmpada"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza da câmara interna"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOILER DE AQUECIMENTO",
+      "secaoOrdem": 4,
+      "pergunta": "Sensor de nível"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOILER DE AQUECIMENTO",
+      "secaoOrdem": 4,
+      "pergunta": "Termostatos e sensores"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Integridade física – tubos de compressão"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Teclado"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Botões de emergência"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Impressora"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E VENTILADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade física: bomba(s) de água"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E VENTILADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade física: i"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E VENTILADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Alimentação: bomba de água"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Abertura e fechamento das portas"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Sistema de movimentação"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Sensores das portas"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Parafusos das guias inferiores e laterais das"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Vazamentos"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Válvula de alívio"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Válvulas solenoides"
+    },
+    {
+      "id": "09-03",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Redutores de pressão"
+    },
+    {
+      "id": "10-01",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Conexões elétricas"
+    },
+    {
+      "id": "10-02",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Teste dos dispositivos"
+    },
+    {
+      "id": "10-03",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Filtro do cooler"
+    },
+    {
+      "id": "10-04",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Cabos e canaletas"
+    },
+    {
+      "id": "11-01",
+      "secao": "11 VERIFICAÇÕES GERAIS – GIRANTES",
+      "secaoOrdem": 11,
+      "pergunta": "Limpeza dos girantes"
+    },
+    {
+      "id": "11-02",
+      "secao": "11 VERIFICAÇÕES GERAIS – GIRANTES",
+      "secaoOrdem": 11,
+      "pergunta": "Funcionalidade dos girantes"
+    },
+    {
+      "id": "12-01",
+      "secao": "12 VERIFICAÇÕES GERAIS – DOSADORES",
+      "secaoOrdem": 12,
+      "pergunta": "Integridade í"
+    },
+    {
+      "id": "12-02",
+      "secao": "12 VERIFICAÇÕES GERAIS – DOSADORES",
+      "secaoOrdem": 12,
+      "pergunta": "Teste de funcionament"
+    },
+    {
+      "id": "13-01",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "Rodízios"
+    },
+    {
+      "id": "13-02",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "Nivelamento"
+    },
+    {
+      "id": "13-03",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "14 FILTRO DE AR BACTERIOLÓGICO"
+    },
+    {
+      "id": "13-04",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "Filtro de ar bacteriológico"
+    },
+    {
+      "id": "15-01",
+      "secao": "15 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 15,
+      "pergunta": "Ciclo de desinfecção"
+    },
+    {
+      "id": "16-01",
+      "secao": "16 VERIFICAÇÕES GERAIS – QUALIDADE DA ÁGUA",
+      "secaoOrdem": 16,
+      "pergunta": "condutividade da água."
+    }
+  ]
+}

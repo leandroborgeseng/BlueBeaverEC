@@ -1,0 +1,212 @@
+{
+  "codigoPop": "POP.EC.MP.010",
+  "nome": "Preventiva — Cama Eletrica (POP.EC.MP.010)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.010",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das travas"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da secção"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos rodízios e"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física e funcionamento do"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos suportes"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamento"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Colchão"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-16",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "LED indicador de"
+    },
+    {
+      "id": "02-17",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme ausência de rede elétrica"
+    },
+    {
+      "id": "02-18",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Funcionamento da"
+    },
+    {
+      "id": "02-19",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "04 ALARMES"
+    },
+    {
+      "id": "02-20",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme: saída da cama"
+    },
+    {
+      "id": "02-21",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Alarme: agitação de"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Posição CPR"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Bloqueio e"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento de"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento de descida"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento do dorso"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento das pernas"
+    },
+    {
+      "id": "05-07",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento dos"
+    },
+    {
+      "id": "05-08",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Movimento"
+    },
+    {
+      "id": "05-09",
+      "secao": "05 TESTES FUNCIONAIS – CONTROLES",
+      "secaoOrdem": 5,
+      "pergunta": "Posição de cadeira"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 TESTES FUNCIONAIS - BALANÇA",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 TESTES FUNCIONAIS - BALANÇA",
+      "secaoOrdem": 6,
+      "pergunta": "Tara do sistema"
+    }
+  ]
+}

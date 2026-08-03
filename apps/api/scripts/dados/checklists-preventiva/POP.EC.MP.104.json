@@ -1,0 +1,188 @@
+{
+  "codigoPop": "POP.EC.MP.104",
+  "nome": "Preventiva — Lavadora US (POP.EC.MP.104)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.104",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do tanque"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza do tanque"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade bicos para"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Sensor de nível"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Sensor de temperatura"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Registro de entrada de"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Registro de drenagem"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Fusíveis"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física cabo"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – TAMPA",
+      "secaoOrdem": 3,
+      "pergunta": "Abertura e"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – TAMPA",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade dos"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Bomba de circulação"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Válvulas solenoides"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Unidades de"
+    },
+    {
+      "id": "04-07",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Driver ultrassônico e"
+    },
+    {
+      "id": "04-08",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Tubulação e"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 5,
+      "pergunta": "Teste: limpeza, temperatura e"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 5,
+      "pergunta": "tempo de ciclo"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 5,
+      "pergunta": "Teste de"
+    }
+  ]
+}

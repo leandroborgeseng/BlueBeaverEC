@@ -1,0 +1,128 @@
+{
+  "codigoPop": "POP.EC.MP.063",
+  "nome": "Preventiva — Estufa De Secagem (POP.EC.MP.063)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.063",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel frontal"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da porta"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Câmara interna"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Termômetro"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Resistência"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Termostato"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ventilador"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TESTES FUNCIONAIS",
+      "secaoOrdem": 4,
+      "pergunta": "Alarme: temperatura"
+    }
+  ]
+}

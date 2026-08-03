@@ -1,0 +1,170 @@
+{
+  "codigoPop": "POP.EC.MP.080",
+  "nome": "Preventiva — Sis Topografia Cornea (POP.EC.MP.080)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.080",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "EQUIPAMENTOS"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Botão de nivelamento do apoio de queixo"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade anéis de iluminação (disco de Plácido)"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade LED’s de iluminação"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da chave liga-desliga"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do joystick de controle"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da lente do canal de captura"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza da lente do canal de captura"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade mesa de apoio"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "04 COMPUTADOR"
+    },
+    {
+      "id": "03-07",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Armazenamento interno"
+    },
+    {
+      "id": "03-08",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Movimentação: base"
+    }
+  ]
+}

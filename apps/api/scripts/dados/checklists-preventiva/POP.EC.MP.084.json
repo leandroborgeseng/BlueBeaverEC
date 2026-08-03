@@ -1,0 +1,278 @@
+{
+  "codigoPop": "POP.EC.MP.084",
+  "nome": "Preventiva — Sistema Ultrasonografia (POP.EC.MP.084)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.084",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "ultrassonografia. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos conectores dos transdutores"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e limpeza do trackball"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Sistema de aquecimento de gel"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Filtro de ar"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Transdutor: linear"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Transdutor: convexo"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Transdutor: cardíaco"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "impressora quanto a rachaduras."
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Inicializa ção e"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Armazenam"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Backup do sistema"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Uniformidade da imagem"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Zona morta"
+    },
+    {
+      "id": "05-07",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Exatidão"
+    },
+    {
+      "id": "05-08",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "medida das"
+    },
+    {
+      "id": "05-09",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "distância s vertical"
+    },
+    {
+      "id": "05-10",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "horizontal."
+    },
+    {
+      "id": "05-11",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Resolução axial e lateral"
+    },
+    {
+      "id": "05-12",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "lateral"
+    },
+    {
+      "id": "05-14",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Transdut ual"
+    },
+    {
+      "id": "05-16",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "obj eto"
+    },
+    {
+      "id": "05-18",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Limiar de sensibilidade à baixo contraste"
+    },
+    {
+      "id": "05-19",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Especificação do fabricante"
+    },
+    {
+      "id": "05-20",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Limiar identificado"
+    },
+    {
+      "id": "05-21",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Velocidade modo Doppler"
+    },
+    {
+      "id": "05-22",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Transdutor ade"
+    },
+    {
+      "id": "05-24",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "Doppler"
+    },
+    {
+      "id": "05-25",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "transdutor deve permanecer fixo."
+    },
+    {
+      "id": "05-26",
+      "secao": "05 TESTES FUNCIONAIS",
+      "secaoOrdem": 5,
+      "pergunta": "nsi bili"
+    }
+  ]
+}

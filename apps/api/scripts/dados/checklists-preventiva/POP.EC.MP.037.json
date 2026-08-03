@@ -1,0 +1,122 @@
+{
+  "codigoPop": "POP.EC.MP.037",
+  "nome": "Preventiva — Autoclave Vertical (POP.EC.MP.037)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.037",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÃO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da caldeira e cestos"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÃO",
+      "secaoOrdem": 2,
+      "pergunta": "limpeza do painel frontal do equipamento."
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – CALDEIRA",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza da caldeira e dos cestos"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – CALDEIRA",
+      "secaoOrdem": 3,
+      "pergunta": "Dreno"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES GERAIS – CALDEIRA",
+      "secaoOrdem": 3,
+      "pergunta": "Resistências"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES GERAIS – CALDEIRA",
+      "secaoOrdem": 3,
+      "pergunta": "Sensor de nível"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES GERAIS – CALDEIRA",
+      "secaoOrdem": 3,
+      "pergunta": "Sensor de temperatura"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Teclado"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – TAMPA",
+      "secaoOrdem": 5,
+      "pergunta": "Abertura e fechamento da tampa"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – TAMPA",
+      "secaoOrdem": 5,
+      "pergunta": "Sensores de fim de curso da tampa"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO E VÁLVULAS",
+      "secaoOrdem": 6,
+      "pergunta": "Vazamentos"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO E VÁLVULAS",
+      "secaoOrdem": 6,
+      "pergunta": "Manômetro"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO E VÁLVULAS",
+      "secaoOrdem": 6,
+      "pergunta": "Válvula controladora de pressão"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO E VÁLVULAS",
+      "secaoOrdem": 6,
+      "pergunta": "Válvula de segurança"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÕES GERAIS – CONTATOS ELÉTRICOS",
+      "secaoOrdem": 7,
+      "pergunta": "Conexões elétricas"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES GERAIS – CONTATOS ELÉTRICOS",
+      "secaoOrdem": 7,
+      "pergunta": "Teste do dispositivo de"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÕES GERAIS – CONTATOS ELÉTRICOS",
+      "secaoOrdem": 7,
+      "pergunta": "Teste de"
+    }
+  ]
+}

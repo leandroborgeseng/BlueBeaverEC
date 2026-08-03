@@ -1,0 +1,272 @@
+{
+  "codigoPop": "POP.EC.MP.115",
+  "nome": "Preventiva — Ressonância Magnética (POP.EC.MP.115)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.115",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS-AMBIENTE",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura e umidade da sala de máquinas"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS-AMBIENTE",
+      "secaoOrdem": 2,
+      "pergunta": "Quadro de força – Sala de máquinas"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS-AMBIENTE",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da linha de cinco Gauss – Sala de exames"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS-AMBIENTE",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do botão"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS-AMBIENTE",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da porta da sala de exames"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Painel de controle"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Display"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Laser de posicionamento"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MAGNETO",
+      "secaoOrdem": 3,
+      "pergunta": "Ruídos"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES ESTRUTURAIS – MESA DE EXAMES",
+      "secaoOrdem": 4,
+      "pergunta": "Teste funcional:"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Bobina para corpo"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Bobina para espinha"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Bobina para cabeça"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Bobina para pescoço"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Bobinas flexíveis"
+    },
+    {
+      "id": "05-07",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Módulo de elastografia"
+    },
+    {
+      "id": "05-08",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "06 GÁS HÉLIO"
+    },
+    {
+      "id": "05-10",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Nível de Hélio"
+    },
+    {
+      "id": "05-11",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Pressão de hélio"
+    },
+    {
+      "id": "05-12",
+      "secao": "05 ACESSÓRIOS",
+      "secaoOrdem": 5,
+      "pergunta": "Compressor"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 7,
+      "pergunta": "Conexão à rede"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 7,
+      "pergunta": "Armazenamento interno"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 7,
+      "pergunta": "Log de erros do sistema"
+    },
+    {
+      "id": "07-05",
+      "secao": "07 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 7,
+      "pergunta": "Comunicaç ão com o"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE TRABALHO",
+      "secaoOrdem": 8,
+      "pergunta": "Monitor(es)"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Frequência central"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Exatidão geométrica"
+    },
+    {
+      "id": "09-04",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "T1 - Corte 1"
+    },
+    {
+      "id": "09-05",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "T2 – Corte 1"
+    },
+    {
+      "id": "09-06",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Espessur a de"
+    },
+    {
+      "id": "09-07",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "corte"
+    },
+    {
+      "id": "09-08",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Exatidão da posição de corte"
+    },
+    {
+      "id": "09-09",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "posição de corte"
+    },
+    {
+      "id": "09-10",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Uniformidade"
+    },
+    {
+      "id": "09-11",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "SÉRIE T1 dade"
+    },
+    {
+      "id": "09-12",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Intensidade do sinal"
+    },
+    {
+      "id": "09-14",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "SÉRIE T2"
+    },
+    {
+      "id": "09-16",
+      "secao": "09 TESTES FUNCIONAIS",
+      "secaoOrdem": 9,
+      "pergunta": "Razão de sinal residual:"
+    }
+  ]
+}

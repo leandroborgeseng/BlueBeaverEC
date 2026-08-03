@@ -1,0 +1,284 @@
+{
+  "codigoPop": "POP.EC.MP.005",
+  "nome": "Preventiva — Autoclave Horizontal Barreira (POP.EC.MP.005)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.005",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "de barreira"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÕES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS - GUARNIÇÕES",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade da câmara"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza e verificação"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza da câmara"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Teclado"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Botões de emergência"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Impressora"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 5,
+      "pergunta": "Conexões"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 5,
+      "pergunta": "Resistências"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 5,
+      "pergunta": "Sensores de"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 5,
+      "pergunta": "Pressostato"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E BOMBA DE VÁCUO",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade física:"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E BOMBA DE VÁCUO",
+      "secaoOrdem": 6,
+      "pergunta": "Alimentação: bomba de água"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E BOMBA DE VÁCUO",
+      "secaoOrdem": 6,
+      "pergunta": "Alimentação: bomba de vácuo"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Abertura e"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Sistema de"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Sensores das portas"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÕES GERAIS – PORTAS",
+      "secaoOrdem": 7,
+      "pergunta": "Parafusos das guias inferiores e laterais das"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Vazamentos"
+    },
+    {
+      "id": "08-02",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Válvula termostática"
+    },
+    {
+      "id": "08-03",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Termostatos e"
+    },
+    {
+      "id": "08-04",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Transdutor de pressão"
+    },
+    {
+      "id": "08-05",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Manovacuômetro"
+    },
+    {
+      "id": "08-06",
+      "secao": "08 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 8,
+      "pergunta": "Limpeza dos filtros"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Válvula de segurança"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Válvulas solenóides"
+    },
+    {
+      "id": "09-03",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA PNEUMÁTICO E VÁLVULAS",
+      "secaoOrdem": 9,
+      "pergunta": "Redutores de pressão"
+    },
+    {
+      "id": "10-01",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Conexões elétricas"
+    },
+    {
+      "id": "10-02",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Teste dos dispositivos"
+    },
+    {
+      "id": "10-03",
+      "secao": "10 VERIFICAÇÕES GERAIS – PAINEL ELÉTRICO",
+      "secaoOrdem": 10,
+      "pergunta": "Filtro do cooler"
+    },
+    {
+      "id": "11-01",
+      "secao": "11 VERIFICAÇÕES GERAIS – SISTEMA DE FORMALDEÍDO",
+      "secaoOrdem": 11,
+      "pergunta": "Sensor de presença de"
+    },
+    {
+      "id": "11-02",
+      "secao": "11 VERIFICAÇÕES GERAIS – SISTEMA DE FORMALDEÍDO",
+      "secaoOrdem": 11,
+      "pergunta": "Sensores da porta"
+    },
+    {
+      "id": "11-03",
+      "secao": "11 VERIFICAÇÕES GERAIS – SISTEMA DE FORMALDEÍDO",
+      "secaoOrdem": 11,
+      "pergunta": "Sensores da agulha de"
+    },
+    {
+      "id": "11-04",
+      "secao": "11 VERIFICAÇÕES GERAIS – SISTEMA DE FORMALDEÍDO",
+      "secaoOrdem": 11,
+      "pergunta": "Válvulas de controle"
+    },
+    {
+      "id": "12-01",
+      "secao": "12 VERIFICAÇÕES GERAIS – SISTEMA DE ÓXIDO DE ETILENO",
+      "secaoOrdem": 12,
+      "pergunta": "Recipiente para cartucho de"
+    },
+    {
+      "id": "12-02",
+      "secao": "12 VERIFICAÇÕES GERAIS – SISTEMA DE ÓXIDO DE ETILENO",
+      "secaoOrdem": 12,
+      "pergunta": "Sensor de reconhecimento do"
+    },
+    {
+      "id": "13-01",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "Rodízios"
+    },
+    {
+      "id": "13-02",
+      "secao": "13 ACESSÓRIOS - RACKS",
+      "secaoOrdem": 13,
+      "pergunta": "Nivelamento"
+    },
+    {
+      "id": "14-01",
+      "secao": "14 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 14,
+      "pergunta": "Estanqueidade"
+    },
+    {
+      "id": "14-02",
+      "secao": "14 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 14,
+      "pergunta": "Bowie & Dick"
+    },
+    {
+      "id": "15-01",
+      "secao": "15 VERIFICAÇÕES GERAIS – QUALIDADE DA ÁGUA",
+      "secaoOrdem": 15,
+      "pergunta": "Condutividade"
+    }
+  ]
+}

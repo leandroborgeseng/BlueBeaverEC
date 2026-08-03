@@ -1,0 +1,356 @@
+{
+  "codigoPop": "POP.EC.MP.007",
+  "nome": "Preventiva — Ventilador UTI (POP.EC.MP.007)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 4,
+  "fonte": "Anexo A · POP.EC.MP.007",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física do carro"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Braço articulado"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos botões de controle e"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade das"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexões: vias"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Filtros"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Conectores internos"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Cooler"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "04 AUTOTESTE"
+    },
+    {
+      "id": "03-07",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Autoteste"
+    },
+    {
+      "id": "03-08",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "05 CÉLULA/SENSOR DE O2"
+    },
+    {
+      "id": "03-09",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade física da"
+    },
+    {
+      "id": "03-10",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Validade da"
+    },
+    {
+      "id": "03-11",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Calibração da"
+    },
+    {
+      "id": "03-12",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "06 FORNECIMENTO DE GASES"
+    },
+    {
+      "id": "03-13",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Válvulas reguladoras"
+    },
+    {
+      "id": "03-14",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Filtros coalescentes - entrada de Ar"
+    },
+    {
+      "id": "03-15",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Módulo de entrada de"
+    },
+    {
+      "id": "03-16",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de ciclagem a"
+    },
+    {
+      "id": "03-17",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "07 UMIDIFICADOR"
+    },
+    {
+      "id": "03-18",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Suporte do"
+    },
+    {
+      "id": "03-19",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Umidificador"
+    },
+    {
+      "id": "03-20",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "08 ALARMES"
+    },
+    {
+      "id": "03-21",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: limite de pressão – Pressão"
+    },
+    {
+      "id": "03-22",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme:"
+    },
+    {
+      "id": "03-23",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: volume"
+    },
+    {
+      "id": "03-24",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme: Alta"
+    },
+    {
+      "id": "03-25",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de segurança –"
+    },
+    {
+      "id": "03-26",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "09 VÁLVULAS E SENSOR DE FLUXO"
+    },
+    {
+      "id": "03-27",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade da válvula"
+    },
+    {
+      "id": "03-28",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do sensor"
+    },
+    {
+      "id": "03-29",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do cassete"
+    },
+    {
+      "id": "03-30",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "10 ALIMENTAÇÃO - REDE ELÉTRICA E BATERIA"
+    },
+    {
+      "id": "03-31",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "LED indicador de"
+    },
+    {
+      "id": "03-32",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Alarme ausência de"
+    },
+    {
+      "id": "03-33",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Funcionamento da"
+    },
+    {
+      "id": "11-01",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Modo controlado a"
+    },
+    {
+      "id": "11-02",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "12PEÇAS DE REPOSIÇÃO"
+    },
+    {
+      "id": "11-03",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "11-04",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Bateria do módulo do"
+    },
+    {
+      "id": "11-05",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Célula de O2"
+    },
+    {
+      "id": "11-06",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Sensor de O2"
+    },
+    {
+      "id": "11-07",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Diafragma da válvula"
+    },
+    {
+      "id": "11-08",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Filtros de poeira"
+    },
+    {
+      "id": "11-09",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Kit de manutenção"
+    },
+    {
+      "id": "11-10",
+      "secao": "11 TESTES FUNCIONAIS – MODOS VENTILATÓRIO",
+      "secaoOrdem": 11,
+      "pergunta": "Turbina"
+    }
+  ]
+}

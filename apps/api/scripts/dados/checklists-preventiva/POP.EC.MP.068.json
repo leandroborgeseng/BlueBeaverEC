@@ -1,0 +1,122 @@
+{
+  "codigoPop": "POP.EC.MP.068",
+  "nome": "Preventiva — Videogastroscópio (POP.EC.MP.068)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.068",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "MANUTENÇÃ"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "PREVENTIVA"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do tubo de inserção"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos botões de controle"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do conector: guia de iluminação e tubo de ar"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do canal de biópsia"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e funcionamento:"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 ACESSÓRIOS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade válvula de"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 ACESSÓRIOS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade tampa da"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 ACESSÓRIOS",
+      "secaoOrdem": 2,
+      "pergunta": "Cabo de conexão do"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 TESTES FUNCIONAIS",
+      "secaoOrdem": 3,
+      "pergunta": "Imagem"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 TESTES FUNCIONAIS",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de vazamento"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 TESTES FUNCIONAIS",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de"
+    }
+  ]
+}

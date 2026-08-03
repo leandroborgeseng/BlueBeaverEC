@@ -1,0 +1,146 @@
+{
+  "codigoPop": "POP.EC.MP.105",
+  "nome": "Preventiva — Litotripsia extracorporea (POP.EC.MP.105)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.105",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "extracorpórea. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Painel de controle"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da membrana"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do cabo de conexão com a"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Movimentação da fonte de terapia"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS – FONTE DE TERAPIA",
+      "secaoOrdem": 2,
+      "pergunta": "Tratamento de água"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS – UNIDADE DE CONTROLE",
+      "secaoOrdem": 3,
+      "pergunta": "Monitor/ Display"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS – UNIDADE DE CONTROLE",
+      "secaoOrdem": 3,
+      "pergunta": "Conector da fonte de terapia"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS – UNIDADE DE CONTROLE",
+      "secaoOrdem": 3,
+      "pergunta": "Disparador"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS – UNIDADE DE CONTROLE",
+      "secaoOrdem": 3,
+      "pergunta": "Rodízios"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – MESA DE TRATAMENTO",
+      "secaoOrdem": 4,
+      "pergunta": "Teste funcional:"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE LOCALIZAÇÃO",
+      "secaoOrdem": 5,
+      "pergunta": "Sistema de localização por"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – SISTEMA DE LOCALIZAÇÃO",
+      "secaoOrdem": 5,
+      "pergunta": "Sistema de localização i"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Teste de alta tensão"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Teste do botão de"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Teste de alvo cruzado"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 TESTES FUNCIONAIS",
+      "secaoOrdem": 6,
+      "pergunta": "Teste de fragmentação"
+    }
+  ]
+}

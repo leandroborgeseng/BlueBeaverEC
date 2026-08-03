@@ -1,0 +1,188 @@
+{
+  "codigoPop": "POP.EC.MP.118",
+  "nome": "Preventiva — Torre de videocirurgia (POP.EC.MP.118)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.118",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "EQUIPAMENTOS"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do suporte para monitor"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da(s) porta(s)"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da régua de alimentação"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Nobreak"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Suporte para cilindro de CO2"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Fonte de luz"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Irrigador cirúrgico"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR E EQUIPAMENTOS AUXILIARES",
+      "secaoOrdem": 2,
+      "pergunta": "Insuflador de CO2"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Configurações do monitor"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – PROCESSADORA DE IMAGEM E CÂMERA DE VÍDEO",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade da chave liga-desliga"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – PROCESSADORA DE IMAGEM E CÂMERA DE VÍDEO",
+      "secaoOrdem": 4,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES GERAIS – PROCESSADORA DE IMAGEM E CÂMERA DE VÍDEO",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade da câmera de vídeo"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES INTERNAS - PROCESSADORA DE IMAGEM",
+      "secaoOrdem": 5,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES INTERNAS - PROCESSADORA DE IMAGEM",
+      "secaoOrdem": 5,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES INTERNAS - PROCESSADORA DE IMAGEM",
+      "secaoOrdem": 5,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA DE GERENCIAMENTO DE IMAGENS",
+      "secaoOrdem": 6,
+      "pergunta": "Pedal"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – SISTEMA DE GERENCIAMENTO DE IMAGENS",
+      "secaoOrdem": 6,
+      "pergunta": "Teclado e mouse"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 TESTES FUNCIONAIS – SISTEMA DE IMAGEM",
+      "secaoOrdem": 9,
+      "pergunta": "Teste funcional: white"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 TESTES FUNCIONAIS – SISTEMA DE IMAGEM",
+      "secaoOrdem": 9,
+      "pergunta": "Teste funcional:"
+    }
+  ]
+}

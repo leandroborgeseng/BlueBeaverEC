@@ -1,0 +1,200 @@
+{
+  "codigoPop": "POP.EC.MP.036",
+  "nome": "Preventiva — Autoclave Bancada (POP.EC.MP.036)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.036",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "OPERACIONAL PADRÃO"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e condutividade do"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Nivelamento do"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS - GUARNIÇÃO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade da guarnição"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS - GUARNIÇÃO",
+      "secaoOrdem": 3,
+      "pergunta": "limpeza do painel frontal do equipamento."
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade da câmara"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza e verificação i"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES GERAIS – CÂMARA INTERNA",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza da câmara interna"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Integridade física: bomba de vácuo"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Teclado"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES GERAIS – PAINEL DE CONTROLE",
+      "secaoOrdem": 5,
+      "pergunta": "Impressora"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 6,
+      "pergunta": "Resistências"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 6,
+      "pergunta": "Sensores de nível"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 VERIFICAÇÕES GERAIS – GERADOR DE VAPOR",
+      "secaoOrdem": 6,
+      "pergunta": "Limpeza (Anual)"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E BOMBA DE VÁCUO",
+      "secaoOrdem": 7,
+      "pergunta": "Alimentação: bomba de água"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 VERIFICAÇÕES GERAIS – BOMBA DE ÁGUA E BOMBA DE VÁCUO",
+      "secaoOrdem": 7,
+      "pergunta": "Alimentação: bomba de vácuo"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 VERIFICAÇÕES GERAIS – PORTA",
+      "secaoOrdem": 8,
+      "pergunta": "Abertura e fechamento da porta"
+    },
+    {
+      "id": "08-02",
+      "secao": "08 VERIFICAÇÕES GERAIS – PORTA",
+      "secaoOrdem": 8,
+      "pergunta": "Sensor da porta"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 9,
+      "pergunta": "vazamentos."
+    },
+    {
+      "id": "09-02",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 9,
+      "pergunta": "Termostatos e"
+    },
+    {
+      "id": "09-03",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 9,
+      "pergunta": "Transdutor de pressão"
+    },
+    {
+      "id": "09-04",
+      "secao": "09 VERIFICAÇÕES GERAIS – SISTEMA HIDRÁULICO",
+      "secaoOrdem": 9,
+      "pergunta": "Manovacuômetro"
+    },
+    {
+      "id": "10-01",
+      "secao": "10 VERIFICAÇÕES GERAIS – VÁLVULAS",
+      "secaoOrdem": 10,
+      "pergunta": "Válvula de segurança"
+    },
+    {
+      "id": "10-02",
+      "secao": "10 VERIFICAÇÕES GERAIS – VÁLVULAS",
+      "secaoOrdem": 10,
+      "pergunta": "Válvulas solenóides"
+    },
+    {
+      "id": "10-03",
+      "secao": "10 VERIFICAÇÕES GERAIS – VÁLVULAS",
+      "secaoOrdem": 10,
+      "pergunta": "Redutores de pressão"
+    },
+    {
+      "id": "11-01",
+      "secao": "11 VERIFICAÇÕES GERAIS – CONEXÕES ELÉTRICAS",
+      "secaoOrdem": 11,
+      "pergunta": "Conexões elétricas"
+    },
+    {
+      "id": "11-02",
+      "secao": "11 VERIFICAÇÕES GERAIS – CONEXÕES ELÉTRICAS",
+      "secaoOrdem": 11,
+      "pergunta": "Teste dos dispositivos"
+    },
+    {
+      "id": "13-01",
+      "secao": "13 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 13,
+      "pergunta": "Bowie & Dick"
+    },
+    {
+      "id": "13-02",
+      "secao": "13 TESTES DE FUNCIONAMENTO",
+      "secaoOrdem": 13,
+      "pergunta": "Interrupção de ciclo"
+    }
+  ]
+}

@@ -1,0 +1,350 @@
+{
+  "codigoPop": "POP.EC.MP.094",
+  "nome": "Preventiva — Aparelho De Raios XFixo (POP.EC.MP.094)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.094",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "*Item aplicável apenas aos equipamentos digitais"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça do tubo de raios-x"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do cabo de força"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle do colimador"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Disparador"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS – ESTAÇÃO DE COMANDO",
+      "secaoOrdem": 2,
+      "pergunta": "Monitor(es)*"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – MESA",
+      "secaoOrdem": 3,
+      "pergunta": "Grade do detector"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – MESA",
+      "secaoOrdem": 3,
+      "pergunta": "Pedal"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – MESA",
+      "secaoOrdem": 3,
+      "pergunta": "Teste de movimento"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES GERAIS – TUBO DE RAIOS-X E COLIMADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Integridade dos cabos de conexão"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 VERIFICAÇÕES GERAIS – TUBO DE RAIOS-X E COLIMADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Teste: iluminação e"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 VERIFICAÇÕES GERAIS – TUBO DE RAIOS-X E COLIMADOR",
+      "secaoOrdem": 6,
+      "pergunta": "Teste: movimentação do conjunto tubo de"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Aplicável apenas aos equipamentos digitais"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Exa tidã"
+    },
+    {
+      "id": "07-06",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Exatidão do indicador"
+    },
+    {
+      "id": "07-07",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "de campo luminoso e"
+    },
+    {
+      "id": "07-08",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "alinhamento do eixo central do feixe de raios-x"
+    },
+    {
+      "id": "07-10",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Resolução espacial"
+    },
+    {
+      "id": "07-11",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Artefatos na imagem"
+    },
+    {
+      "id": "07-12",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Exame"
+    },
+    {
+      "id": "07-13",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Coluna lombar lor"
+    },
+    {
+      "id": "07-14",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Abdome"
+    },
+    {
+      "id": "07-15",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Pelve"
+    },
+    {
+      "id": "07-16",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Bacia"
+    },
+    {
+      "id": "07-17",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Tórax"
+    },
+    {
+      "id": "07-18",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Coluna torácica"
+    },
+    {
+      "id": "07-19",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Crânio"
+    },
+    {
+      "id": "07-20",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Parâmetro"
+    },
+    {
+      "id": "07-21",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Exatidão dos indicadores da distância foco-receptor"
+    },
+    {
+      "id": "07-22",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Tensão tidã"
+    },
+    {
+      "id": "07-23",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Tempo de exposição o e"
+    },
+    {
+      "id": "07-24",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Exatidão repr"
+    },
+    {
+      "id": "07-25",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "odu tibili"
+    },
+    {
+      "id": "07-26",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Reprodutibilidade dad"
+    },
+    {
+      "id": "07-28",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "reprodutibilidade de tensão."
+    },
+    {
+      "id": "07-29",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Valor 1 rod"
+    },
+    {
+      "id": "07-30",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "20mAs utib"
+    },
+    {
+      "id": "07-31",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "25mAs ilida"
+    },
+    {
+      "id": "07-32",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "35mAs de e"
+    },
+    {
+      "id": "07-34",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Linearidade line"
+    },
+    {
+      "id": "07-35",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Rendimento do tubo"
+    },
+    {
+      "id": "07-36",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Parâmet Valor 1 ment"
+    },
+    {
+      "id": "07-37",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Dose o do"
+    },
+    {
+      "id": "07-38",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Filtra tubo"
+    },
+    {
+      "id": "07-41",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "Valores de tensão"
+    },
+    {
+      "id": "07-42",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "60kVp; corrente-tempo: 30mAs."
+    },
+    {
+      "id": "07-43",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "70 kVp"
+    },
+    {
+      "id": "07-44",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "80 kVp"
+    },
+    {
+      "id": "07-46",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "90 kVp"
+    },
+    {
+      "id": "07-48",
+      "secao": "07 VERIFICAÇÕES GERAIS – SISTEMA DE DETECÇÃO",
+      "secaoOrdem": 7,
+      "pergunta": "100 kVp dut"
+    }
+  ]
+}

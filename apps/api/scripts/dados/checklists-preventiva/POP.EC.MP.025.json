@@ -1,0 +1,194 @@
+{
+  "codigoPop": "POP.EC.MP.025",
+  "nome": "Preventiva — Eletroneuromiógrafo (POP.EC.MP.025)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.025",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "MANUTENÇÃ"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "PREVENTIVA"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da chave"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos conectores"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Suporte do"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Cabos e conexões"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Cabos para eletrodos"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Pedal"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Estimulador elétrico"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Estimulador auditivo"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Estimulador visual"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Sensor de temperatura"
+    },
+    {
+      "id": "04-07",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "05 COMPUTADOR"
+    },
+    {
+      "id": "04-08",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade"
+    },
+    {
+      "id": "04-09",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "04-10",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Impressora"
+    },
+    {
+      "id": "04-11",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Inicialização de"
+    },
+    {
+      "id": "04-12",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Conexão à rede"
+    },
+    {
+      "id": "04-13",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Botão de impressão"
+    },
+    {
+      "id": "04-15",
+      "secao": "04 ACESSÓRIOS",
+      "secaoOrdem": 4,
+      "pergunta": "Teste de impedância"
+    }
+  ]
+}

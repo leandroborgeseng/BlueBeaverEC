@@ -1,0 +1,314 @@
+{
+  "codigoPop": "POP.EC.MP.003",
+  "nome": "Preventiva — Monitor Fisiologico Multiuso (POP.EC.MP.003)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.003",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza externa do"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da chave"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade dos conectores"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Calibração da tela"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e testes"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Impressora"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Suporte do"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Ausência de pontos de"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 4,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Sensor de oximetria"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Estabilidade da leitura"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Curva pletismográfica"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: limite superior da"
+    },
+    {
+      "id": "05-05",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: limite inferior"
+    },
+    {
+      "id": "05-06",
+      "secao": "05 TESTES FUNCIONAIS E ACESSÓRIOS - OXIMETRIA",
+      "secaoOrdem": 5,
+      "pergunta": "Alarme: limite superior"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 TESTES FUNCIONAIS E ACESSÓRIOS - ECG",
+      "secaoOrdem": 6,
+      "pergunta": "Pré-cabo de ECG"
+    },
+    {
+      "id": "06-02",
+      "secao": "06 TESTES FUNCIONAIS E ACESSÓRIOS - ECG",
+      "secaoOrdem": 6,
+      "pergunta": "Rabicho"
+    },
+    {
+      "id": "06-03",
+      "secao": "06 TESTES FUNCIONAIS E ACESSÓRIOS - ECG",
+      "secaoOrdem": 6,
+      "pergunta": "Garras/Pinos"
+    },
+    {
+      "id": "06-04",
+      "secao": "06 TESTES FUNCIONAIS E ACESSÓRIOS - ECG",
+      "secaoOrdem": 6,
+      "pergunta": "Verificação da qualidade de"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 TESTES FUNCIONAIS E ACESSÓRIOS – PRESSÃO NÃO INVASIVA (PNI)",
+      "secaoOrdem": 7,
+      "pergunta": "Cabo de PNI"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 TESTES FUNCIONAIS E ACESSÓRIOS – PRESSÃO NÃO INVASIVA (PNI)",
+      "secaoOrdem": 7,
+      "pergunta": "Braçadeira e teste de"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 TESTES FUNCIONAIS E ACESSÓRIOS – PRESSÃO NÃO INVASIVA (PNI)",
+      "secaoOrdem": 7,
+      "pergunta": "Alarmes: limites"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 TESTES FUNCIONAIS E ACESSÓRIOS - TEMPERATURA",
+      "secaoOrdem": 8,
+      "pergunta": "Sensor de temperatura"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 TESTES FUNCIONAIS E ACESSÓRIOS – PRESSÃO INVASIVA",
+      "secaoOrdem": 9,
+      "pergunta": "Cabo de Pressão"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 TESTES FUNCIONAIS E ACESSÓRIOS – PRESSÃO INVASIVA",
+      "secaoOrdem": 9,
+      "pergunta": "Condutividade do cabo"
+    },
+    {
+      "id": "10-01",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Integridade física do cabo"
+    },
+    {
+      "id": "10-02",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Integridade física do transdutor de"
+    },
+    {
+      "id": "10-03",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Integridade física dos"
+    },
+    {
+      "id": "10-04",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Limpeza na célula do transdutor de"
+    },
+    {
+      "id": "10-05",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Calibração do sensor de capnografia"
+    },
+    {
+      "id": "10-06",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Sensor sidestream"
+    },
+    {
+      "id": "10-07",
+      "secao": "10 TESTES FUNCIONAIS E ACESSÓRIOS - CAPNOGRAFIA",
+      "secaoOrdem": 10,
+      "pergunta": "Coletor de água"
+    },
+    {
+      "id": "11-01",
+      "secao": "11 TESTES FUNCIONAIS E ACESSÓRIOS – ÍNDICE BISPECTRAL (BIS)",
+      "secaoOrdem": 11,
+      "pergunta": "Módulo de BIS"
+    },
+    {
+      "id": "11-02",
+      "secao": "11 TESTES FUNCIONAIS E ACESSÓRIOS – ÍNDICE BISPECTRAL (BIS)",
+      "secaoOrdem": 11,
+      "pergunta": "Cabo de BIS"
+    },
+    {
+      "id": "12-01",
+      "secao": "12 TESTES FUNCIONAIS E ACESSÓRIOS – DÉBITO CARDÍACO (DC)",
+      "secaoOrdem": 12,
+      "pergunta": "Módulo de débito"
+    },
+    {
+      "id": "12-02",
+      "secao": "12 TESTES FUNCIONAIS E ACESSÓRIOS – DÉBITO CARDÍACO (DC)",
+      "secaoOrdem": 12,
+      "pergunta": "Cabo de débito"
+    },
+    {
+      "id": "13-01",
+      "secao": "13 TESTES FUNCIONAIS E ACESSÓRIOS – ELETROENCEFALOGRAMA (EEG)",
+      "secaoOrdem": 13,
+      "pergunta": "Módulo de EEG"
+    },
+    {
+      "id": "13-02",
+      "secao": "13 TESTES FUNCIONAIS E ACESSÓRIOS – ELETROENCEFALOGRAMA (EEG)",
+      "secaoOrdem": 13,
+      "pergunta": "Cabo de EEG"
+    },
+    {
+      "id": "14-01",
+      "secao": "14 TESTES FUNCIONAIS E ACESSÓRIOS – TRANSMISSÃO NEUROMUSCULAR (TNM)",
+      "secaoOrdem": 14,
+      "pergunta": "Módulo de TNM"
+    },
+    {
+      "id": "14-02",
+      "secao": "14 TESTES FUNCIONAIS E ACESSÓRIOS – TRANSMISSÃO NEUROMUSCULAR (TNM)",
+      "secaoOrdem": 14,
+      "pergunta": "Cabo de TNM"
+    },
+    {
+      "id": "15-01",
+      "secao": "15 TESTES FUNCIONAIS E ACESSÓRIOS – AGENTES ANESTÉSICOS (AA)",
+      "secaoOrdem": 15,
+      "pergunta": "Módulo de agentes"
+    },
+    {
+      "id": "15-02",
+      "secao": "15 TESTES FUNCIONAIS E ACESSÓRIOS – AGENTES ANESTÉSICOS (AA)",
+      "secaoOrdem": 15,
+      "pergunta": "Sensor mainstream"
+    }
+  ]
+}

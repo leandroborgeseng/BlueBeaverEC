@@ -1,0 +1,128 @@
+{
+  "codigoPop": "POP.EC.MP.029",
+  "nome": "Preventiva — Balanca Paciente Infantil Eletronica (POP.EC.MP.029)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.029",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "infantil eletrônica"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Pés niveladores"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Plataforma de"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Colchonete"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade fonte de"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos botões de"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Lacre de proteção"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Selo de inspeção"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Ponto de medição"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Superior esquerdo"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Superior direito"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Inferior esquerdo"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Inferior direito"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 TESTES FUNCIONAIS – PESAGEM 5000,00 g",
+      "secaoOrdem": 3,
+      "pergunta": "Centro da plataforma"
+    }
+  ]
+}

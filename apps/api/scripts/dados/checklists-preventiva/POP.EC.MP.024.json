@@ -1,0 +1,134 @@
+{
+  "codigoPop": "POP.EC.MP.024",
+  "nome": "Preventiva — Balanca Antropometrica Adulto (POP.EC.MP.024)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 6,
+  "fonte": "Anexo A · POP.EC.MP.024",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "EQUIPAMENTOS"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "antropométrica adulto"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Pés niveladores"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Plataforma de"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Régua antropométrica"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade fonte de"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física dos botões de"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Lacre de proteção"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Selo de inspeção"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Ponto de medição"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Superior esquerdo"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Superior direito"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Inferior esquerdo"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Inferior direito"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 TESTES FUNCIONAIS – PESAGEM 20,0 Kg",
+      "secaoOrdem": 4,
+      "pergunta": "Centro da plataforma"
+    }
+  ]
+}

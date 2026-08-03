@@ -1,0 +1,194 @@
+{
+  "codigoPop": "POP.EC.MP.117",
+  "nome": "Preventiva — Tomógrafo (POP.EC.MP.117)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 4,
+  "fonte": "Anexo A · POP.EC.MP.117",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "computadorizado"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Painel de controle"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Display"
+    },
+    {
+      "id": "02-06",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Laser de posicionamento"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Teste funcional:"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Ruídos"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES ESTRUTURAIS - GANTRY",
+      "secaoOrdem": 2,
+      "pergunta": "Temperatura da sala"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES ESTRUTURAIS - MESA",
+      "secaoOrdem": 3,
+      "pergunta": "Suportes de pé e cabeça"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Conexão à rede"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Armazenamento interno"
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Log de erros do sistema"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE CONTROLE",
+      "secaoOrdem": 4,
+      "pergunta": "Comunicaç ão com o"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES ESTRUTURAIS - ESTAÇÃO DE TRABALHO",
+      "secaoOrdem": 5,
+      "pergunta": "Monitor(es)"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Teste"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Exatidão do indicador de posicionamento da mesa"
+    },
+    {
+      "id": "07-03",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "80 kVp"
+    },
+    {
+      "id": "07-04",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "indicador da tensão no"
+    },
+    {
+      "id": "07-06",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Exatidão do número CT"
+    },
+    {
+      "id": "07-07",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Uniformida de do"
+    },
+    {
+      "id": "07-08",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "número CT e ruído"
+    },
+    {
+      "id": "07-09",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Valores representativo"
+    },
+    {
+      "id": "07-10",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Resolução espacial"
+    },
+    {
+      "id": "07-12",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Exati dão"
+    },
+    {
+      "id": "07-13",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "Exatid ão do"
+    },
+    {
+      "id": "07-14",
+      "secao": "07 TESTES FUNCIONAIS",
+      "secaoOrdem": 7,
+      "pergunta": "indicad"
+    }
+  ]
+}

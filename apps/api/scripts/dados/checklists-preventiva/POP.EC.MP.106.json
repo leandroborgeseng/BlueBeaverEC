@@ -1,0 +1,266 @@
+{
+  "codigoPop": "POP.EC.MP.106",
+  "nome": "Preventiva — Maquina Circulação Extracorpórea (POP.EC.MP.106)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 4,
+  "fonte": "Anexo A · POP.EC.MP.106",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "extracorpórea"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conectores"
+    },
+    {
+      "id": "02-07",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Reservatório de água"
+    },
+    {
+      "id": "02-08",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Tanque de água fria"
+    },
+    {
+      "id": "02-09",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Dreno de água"
+    },
+    {
+      "id": "02-10",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Suportes e bandejas"
+    },
+    {
+      "id": "02-11",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Lâmpada auxiliar"
+    },
+    {
+      "id": "02-12",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "02-13",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "02-14",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conjunto de disjuntores"
+    },
+    {
+      "id": "02-15",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "02-16",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Bateria"
+    },
+    {
+      "id": "02-17",
+      "secao": "02 VERIFICAÇÕES GERAIS",
+      "secaoOrdem": 2,
+      "pergunta": "Rodízios"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "resistência ao movimento."
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES INTERNAS",
+      "secaoOrdem": 3,
+      "pergunta": "Bomba de água"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Painel de controle"
+    },
+    {
+      "id": "04-03",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "display."
+    },
+    {
+      "id": "04-04",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Horímetro"
+    },
+    {
+      "id": "04-05",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Tampa"
+    },
+    {
+      "id": "04-06",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Interior da caçapa"
+    },
+    {
+      "id": "04-07",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Regulador de abertura dos roletes"
+    },
+    {
+      "id": "04-08",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Guias do equipo"
+    },
+    {
+      "id": "04-09",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Roletes da bomba"
+    },
+    {
+      "id": "04-10",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Chave liga/desliga"
+    },
+    {
+      "id": "04-11",
+      "secao": "04 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 4,
+      "pergunta": "Cooler"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES GERAIS – BOMBA PERISTÁLTICA N.S.:_____________________________",
+      "secaoOrdem": 5,
+      "pergunta": "Travas da canaleta"
+    },
+    {
+      "id": "08-01",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Autoteste"
+    },
+    {
+      "id": "08-02",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Teste de sensor da"
+    },
+    {
+      "id": "08-03",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Teste de rotação"
+    },
+    {
+      "id": "08-04",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Velocidade de rotação"
+    },
+    {
+      "id": "08-05",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Teste de funcioname"
+    },
+    {
+      "id": "08-06",
+      "secao": "08 TESTES FUNCIONAIS",
+      "secaoOrdem": 8,
+      "pergunta": "Teste de funcionament"
+    }
+  ]
+}

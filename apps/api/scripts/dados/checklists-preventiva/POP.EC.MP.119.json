@@ -1,0 +1,176 @@
+{
+  "codigoPop": "POP.EC.MP.119",
+  "nome": "Preventiva — Torre de videoendoscopia (POP.EC.MP.119)",
+  "tipo": "PREVENTIVA",
+  "validadeMeses": 12,
+  "fonte": "Anexo A · POP.EC.MP.119",
+  "legenda": {
+    "C": "Conforme",
+    "N.C": "Não conforme",
+    "N.A": "Não aplicável"
+  },
+  "itens": [
+    {
+      "id": "01-01",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Localização do equipamento"
+    },
+    {
+      "id": "01-02",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Identificação do equipamento"
+    },
+    {
+      "id": "01-03",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "EQUIPAMENTOS"
+    },
+    {
+      "id": "01-04",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "videoendoscopia. Estão habilitados a executar este procedimento os profissionais que:"
+    },
+    {
+      "id": "01-05",
+      "secao": "01 DISPONIBILIDADE DO EQUIPAMENTO",
+      "secaoOrdem": 1,
+      "pergunta": "Disponibilidade do equipamento"
+    },
+    {
+      "id": "02-01",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR",
+      "secaoOrdem": 2,
+      "pergunta": "Limpeza e desinfecção externa do equipamento"
+    },
+    {
+      "id": "02-02",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da carcaça"
+    },
+    {
+      "id": "02-03",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade do suporte para monitor"
+    },
+    {
+      "id": "02-04",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade da(s) porta(s)"
+    },
+    {
+      "id": "02-05",
+      "secao": "02 VERIFICAÇÕES GERAIS – ARMÁRIO ORGANIZADOR",
+      "secaoOrdem": 2,
+      "pergunta": "Integridade física da régua de alimentação"
+    },
+    {
+      "id": "03-01",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do display"
+    },
+    {
+      "id": "03-02",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade do painel de controle"
+    },
+    {
+      "id": "03-03",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Integridade e i"
+    },
+    {
+      "id": "03-04",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Porta fusíveis e fusíveis"
+    },
+    {
+      "id": "03-05",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Conexão à rede elétrica"
+    },
+    {
+      "id": "03-06",
+      "secao": "03 VERIFICAÇÕES GERAIS – MONITOR DE VÍDEO",
+      "secaoOrdem": 3,
+      "pergunta": "Configurações do monitor"
+    },
+    {
+      "id": "04-01",
+      "secao": "04 VERIFICAÇÕES GERAIS – FONTE DE LUZ",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade da chave liga-desliga"
+    },
+    {
+      "id": "04-02",
+      "secao": "04 VERIFICAÇÕES GERAIS – FONTE DE LUZ",
+      "secaoOrdem": 4,
+      "pergunta": "Integridade do conector de endoscópio"
+    },
+    {
+      "id": "05-01",
+      "secao": "05 VERIFICAÇÕES INTERNAS – FONTE DE LUZ",
+      "secaoOrdem": 5,
+      "pergunta": "Ausência de oxidação"
+    },
+    {
+      "id": "05-02",
+      "secao": "05 VERIFICAÇÕES INTERNAS – FONTE DE LUZ",
+      "secaoOrdem": 5,
+      "pergunta": "Ausência de pontos de solda fria"
+    },
+    {
+      "id": "05-03",
+      "secao": "05 VERIFICAÇÕES INTERNAS – FONTE DE LUZ",
+      "secaoOrdem": 5,
+      "pergunta": "Limpeza Interna"
+    },
+    {
+      "id": "05-04",
+      "secao": "05 VERIFICAÇÕES INTERNAS – FONTE DE LUZ",
+      "secaoOrdem": 5,
+      "pergunta": "Lâmpada"
+    },
+    {
+      "id": "06-01",
+      "secao": "06 VERIFICAÇÕES INTERNAS – BOMBA DE ASPIRAÇÃO",
+      "secaoOrdem": 6,
+      "pergunta": "Motor"
+    },
+    {
+      "id": "07-01",
+      "secao": "07 VERIFICAÇÕES GERAIS – PROCESSADORA DE IMAGEM",
+      "secaoOrdem": 7,
+      "pergunta": "Integridade do(s) conector(es)"
+    },
+    {
+      "id": "07-02",
+      "secao": "07 VERIFICAÇÕES GERAIS – PROCESSADORA DE IMAGEM",
+      "secaoOrdem": 7,
+      "pergunta": "Reservatório de água"
+    },
+    {
+      "id": "09-01",
+      "secao": "09 TESTES FUNCIONAIS – SISTEMA DE IMAGEM",
+      "secaoOrdem": 9,
+      "pergunta": "Teste funcional:"
+    },
+    {
+      "id": "09-02",
+      "secao": "09 TESTES FUNCIONAIS – SISTEMA DE IMAGEM",
+      "secaoOrdem": 9,
+      "pergunta": "Teste funcional: white"
+    }
+  ]
+}
