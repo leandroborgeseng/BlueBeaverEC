@@ -9,7 +9,7 @@ import {
   PageHeader,
   Surface,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Proc {
   id: string;
@@ -151,7 +151,7 @@ export default function NovoLaudoPage() {
     <div style={{ maxWidth: 820 }}>
       <PageHeader
         title="Novo Laudo"
-        subtitle="Recebimento · Preventiva · Calibração · TSE"
+        subtitle="Recebimento · Preventiva · Calibração · TSE · Qualificação"
         actions={
           <Btn
             variant="secondary"
@@ -178,6 +178,7 @@ export default function NovoLaudoPage() {
                 <option value="PREVENTIVA">Preventiva</option>
                 <option value="CALIBRACAO">Calibração</option>
                 <option value="TSE">TSE</option>
+                <option value="QUALIFICACAO">Qualificação</option>
               </select>
             </div>
             <div>

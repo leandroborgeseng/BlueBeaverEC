@@ -7,7 +7,7 @@ import {
   PageHeader,
   PriorityBar,
   Surface,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface OsCard {
   id: string;

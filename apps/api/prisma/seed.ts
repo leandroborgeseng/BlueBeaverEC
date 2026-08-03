@@ -4,7 +4,14 @@ import * as bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const senhaHash = await bcrypt.hash("nexo1234", 10);
+  const senhaHash = await bcrypt.hash("aion1234", 10);
+
+  // Migra credenciais demo do rebrand Nexo → Aion (idempotente)
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Usuario"
+    SET email = REPLACE(email, '@nexo.local', '@aion.local')
+    WHERE email LIKE '%@nexo.local'
+  `);
 
   const hospital = await prisma.estabelecimento.upsert({
     where: { id: "estab_modelo" },
@@ -16,30 +23,30 @@ async function main() {
   });
 
   const engenheiro = await prisma.usuario.upsert({
-    where: { email: "engenheiro@nexo.local" },
+    where: { email: "engenheiro@aion.local" },
     update: { senhaHash, nome: "Ana Engenheira" },
     create: {
-      email: "engenheiro@nexo.local",
+      email: "engenheiro@aion.local",
       nome: "Ana Engenheira",
       senhaHash,
     },
   });
 
   const tecnico = await prisma.usuario.upsert({
-    where: { email: "tecnico@nexo.local" },
+    where: { email: "tecnico@aion.local" },
     update: { senhaHash, nome: "Carlos Técnico" },
     create: {
-      email: "tecnico@nexo.local",
+      email: "tecnico@aion.local",
       nome: "Carlos Técnico",
       senhaHash,
     },
   });
 
   const solicitante = await prisma.usuario.upsert({
-    where: { email: "solicitante@nexo.local" },
+    where: { email: "solicitante@aion.local" },
     update: { senhaHash, nome: "Maria Solicitante" },
     create: {
-      email: "solicitante@nexo.local",
+      email: "solicitante@aion.local",
       nome: "Maria Solicitante",
       senhaHash,
     },
@@ -430,8 +437,8 @@ async function main() {
   });
 
   console.log("Seed OK");
-  console.log("Logins: engenheiro@nexo.local / tecnico@nexo.local / solicitante@nexo.local");
-  console.log("Senha: nexo1234");
+  console.log("Logins: engenheiro@aion.local / tecnico@aion.local / solicitante@aion.local");
+  console.log("Senha: aion1234");
 }
 
 main()

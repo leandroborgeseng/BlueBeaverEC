@@ -21,13 +21,13 @@ const prisma = new PrismaClient();
 
 try {
   if (!existsSync(dir)) {
-    console.log("[nexo] import pops biblioteca: pasta ausente — skip");
+    console.log("[aion] import pops biblioteca: pasta ausente — skip");
     process.exit(0);
   }
 
   const expected = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".pdf")).length;
   if (expected === 0) {
-    console.log("[nexo] import pops biblioteca: nenhum PDF — skip");
+    console.log("[aion] import pops biblioteca: nenhum PDF — skip");
     process.exit(0);
   }
 
@@ -35,17 +35,17 @@ try {
     where: { conteudo: { not: null } },
   });
 
-  console.log(`[nexo] import pops biblioteca: ${comPdf}/${expected} PDFs no banco`);
+  console.log(`[aion] import pops biblioteca: ${comPdf}/${expected} PDFs no banco`);
 
   if (!force && comPdf >= expected) {
-    console.log("[nexo] import pops biblioteca skipped (PDFs já no banco)");
+    console.log("[aion] import pops biblioteca skipped (PDFs já no banco)");
     process.exit(0);
   }
 
   console.log(
     force
-      ? "[nexo] IMPORT_POPS_ON_BOOT=true — reimportando PDFs…"
-      : `[nexo] gravando PDFs da biblioteca (${expected - comPdf} faltando)…`,
+      ? "[aion] IMPORT_POPS_ON_BOOT=true — reimportando PDFs…"
+      : `[aion] gravando PDFs da biblioteca (${expected - comPdf} faltando)…`,
   );
 
   const args = ["exec", "tsx", "scripts/import-pops-biblioteca.ts", "scripts/dados/pops-biblioteca"];
@@ -64,7 +64,7 @@ try {
   }
   process.exit(result.status ?? 1);
 } catch (e) {
-  console.error("[nexo] import pops biblioteca falhou:", e);
+  console.error("[aion] import pops biblioteca falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();

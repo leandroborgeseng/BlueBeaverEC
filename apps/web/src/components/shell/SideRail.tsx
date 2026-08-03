@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { ModuloPermissao } from "@nexo/shared";
-import { temPermissao } from "@nexo/shared";
+import type { ModuloPermissao } from "@aion/shared";
+import { temPermissao } from "@aion/shared";
 import { useSession } from "@/lib/session";
 import { ICONS, Icon, type IconKey } from "./icons";
 
@@ -27,10 +27,11 @@ const RAIL: Array<{
     items: [
       { label: "Equipamentos", href: "/equipamentos", icon: "equip", modulo: "equipamentos" },
       { label: "Ficha Vida do Equipamento", href: "/equipamentos/ficha-vida", icon: "history", modulo: "equipamentos" },
+      { label: "Laudos", href: "/laudos", icon: "clipboard", modulo: "laudos" },
       { label: "Novo Laudo", href: "/laudos/novo", icon: "plus", modulo: "laudos" },
-      { label: "Plano de Descrições", href: "/cadastros", icon: "clipboard", modulo: "equipamentos" },
-      { label: "Fabricantes", href: "/cadastros", icon: "factory", modulo: "equipamentos" },
-      { label: "Modelos", href: "/cadastros", icon: "layers", modulo: "equipamentos" },
+      { label: "Plano de Descrições", href: "/cadastros?tab=planos", icon: "clipboard", modulo: "equipamentos" },
+      { label: "Fabricantes", href: "/cadastros?tab=fabricantes", icon: "factory", modulo: "equipamentos" },
+      { label: "Modelos", href: "/cadastros?tab=modelos", icon: "layers", modulo: "equipamentos" },
       { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "clipboard", modulo: "laudos" },
       { label: "Biblioteca de POPs", href: "/biblioteca-pops", icon: "folder", modulo: "laudos" },
       { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "clipboard", modulo: "laudos" },
@@ -154,11 +155,17 @@ export function SideRail() {
       pathname.startsWith("/procedimentos") ||
       pathname.startsWith("/instrumentos") ||
       pathname.startsWith("/certificados") ||
-      pathname.startsWith("/laudos")
+      pathname.startsWith("/laudos") ||
+      pathname.startsWith("/biblioteca-pops")
     )
       return "equip";
     if (pathname.startsWith("/os")) return "os";
-    if (pathname.startsWith("/contratos") || pathname.startsWith("/pessoas")) return "gestao";
+    if (
+      pathname.startsWith("/contratos") ||
+      pathname.startsWith("/pessoas") ||
+      pathname.startsWith("/gestao/cronograma-manutencao")
+    )
+      return "gestao";
     if (pathname.startsWith("/gestao") || pathname.startsWith("/auditorias") || pathname.startsWith("/config"))
       return "evolucao";
     if (pathname.startsWith("/estoque")) return "estoque";
@@ -196,7 +203,7 @@ export function SideRail() {
             backgroundPosition: "left center",
             backgroundRepeat: "no-repeat",
           }}
-          title="Nexo"
+          title="Aion Engenharia Clínica"
         />
 
         {visibleRail.map((r) => {

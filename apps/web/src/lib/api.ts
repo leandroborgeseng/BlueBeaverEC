@@ -6,14 +6,25 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nexo_token");
+  const current = localStorage.getItem("aion_token");
+  if (current) return current;
+  // migração one-shot do token antigo
+  const legacy = localStorage.getItem("nexo_token");
+  if (legacy) {
+    localStorage.setItem("aion_token", legacy);
+    localStorage.removeItem("nexo_token");
+    return legacy;
+  }
+  return null;
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("nexo_token", token);
+  localStorage.setItem("aion_token", token);
+  localStorage.removeItem("nexo_token");
 }
 
 export function clearToken() {
+  localStorage.removeItem("aion_token");
   localStorage.removeItem("nexo_token");
 }
 

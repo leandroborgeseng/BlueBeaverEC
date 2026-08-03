@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import type { MapaPermissoes, PerfilAcesso } from "@nexo/shared";
+import type { MapaPermissoes, PerfilAcesso } from "@aion/shared";
 
 export interface AuthUser {
   userId: string;

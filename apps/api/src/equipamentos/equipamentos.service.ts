@@ -7,7 +7,7 @@ import {
 import { Prisma, SituacaoEquipamento } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
-import { podeEditarCadastros } from "@nexo/shared";
+import { podeEditarCadastros } from "@aion/shared";
 
 @Injectable()
 export class EquipamentosService {
@@ -54,6 +54,7 @@ export class EquipamentosService {
           fabricante: true,
           modelo: true,
           descricao: true,
+          tipoEquipamentoPlano: { select: { id: true, nome: true } },
         },
         orderBy: { tag: "asc" },
         skip: (page - 1) * pageSize,
@@ -127,6 +128,20 @@ export class EquipamentosService {
         fornecedor: true,
         centroCusto: true,
         historicoTags: { orderBy: { createdAt: "desc" }, take: 20 },
+        tipoEquipamentoPlano: {
+          include: {
+            testes: {
+              where: { ativo: true },
+              orderBy: { tipoTeste: "asc" },
+              select: {
+                tipoTeste: true,
+                procedimentoCodigo: true,
+                periodicidadeMeses: true,
+                ativo: true,
+              },
+            },
+          },
+        },
       },
     });
 

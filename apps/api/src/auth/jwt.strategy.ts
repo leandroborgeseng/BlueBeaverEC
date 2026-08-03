@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { permissoesDoPerfil, type PerfilAcesso } from "@nexo/shared";
+import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthTokenPayload } from "./auth.service";
 

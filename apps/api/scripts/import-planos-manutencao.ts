@@ -109,7 +109,7 @@ async function main() {
     process.argv.find((a) => a.endsWith(".json") && a.includes("planos")) ??
       "scripts/dados/planos_manutencao_referencia.json",
   );
-  const v2File = resolve("scripts/dados/nexo_extract_v2.json");
+  const v2File = resolve("scripts/dados/aion_extract_v2.json");
 
   if (!existsSync(refFile)) {
     console.error(`Catálogo não encontrado: ${refFile}`);
@@ -135,14 +135,14 @@ async function main() {
     });
     if (vinculados > 0) {
       console.log(
-        `[nexo] planos: catálogo já seedado (${existentes} tipos, ${vinculados} eq vinculados) — skip (use --force)`,
+        `[aion] planos: catálogo já seedado (${existentes} tipos, ${vinculados} eq vinculados) — skip (use --force)`,
       );
       return;
     }
   }
 
   const catalogo = JSON.parse(readFileSync(refFile, "utf8")) as PlanoRef[];
-  console.log(`[nexo] planos: seed ${catalogo.length} tipos · estab=${estab.nome}`);
+  console.log(`[aion] planos: seed ${catalogo.length} tipos · estab=${estab.nome}`);
 
   let tipos = 0;
 

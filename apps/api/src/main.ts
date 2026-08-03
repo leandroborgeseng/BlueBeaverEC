@@ -25,7 +25,7 @@ async function bootstrap() {
   const host = process.env.LISTEN_HOST || "0.0.0.0";
   await app.listen(port, host);
   // eslint-disable-next-line no-console
-  console.log(`Nexo API listening on ${host}:${port}`);
+  console.log(`Aion API listening on ${host}:${port}`);
 }
 
 void bootstrap();

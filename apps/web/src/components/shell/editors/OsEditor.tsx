@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/nexo-ui";
+import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api } from "@/lib/api";
 
 interface Colaborador {

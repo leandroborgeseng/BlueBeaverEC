@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
-import type { PerfilAcesso } from "@nexo/shared";
+import type { PerfilAcesso } from "@aion/shared";
 
 export interface AuthTokenPayload {
   sub: string;

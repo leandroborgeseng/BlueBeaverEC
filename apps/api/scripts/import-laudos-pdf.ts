@@ -130,8 +130,8 @@ async function main() {
   }
 
   const files = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".pdf"));
-  console.log(`[nexo] laudos PDF: ${files.length} arquivo(s) em ${dir}`);
-  console.log(`[nexo] estabelecimento: ${estab.nome}`);
+  console.log(`[aion] laudos PDF: ${files.length} arquivo(s) em ${dir}`);
+  console.log(`[aion] estabelecimento: ${estab.nome}`);
 
   let criados = 0;
   let pulados = 0;
@@ -344,7 +344,7 @@ async function main() {
 
       criados += 1;
       console.log(
-        `[nexo] OK ${file} → tag ${eq.tag} · OS-${osNumero} · ${resultado}${
+        `[aion] OK ${file} → tag ${eq.tag} · OS-${osNumero} · ${resultado}${
           planoTeste ? ` · ${planoTeste.procedimentoCodigo}` : ""
         }`,
       );

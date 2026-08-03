@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import {
   Badge,
@@ -14,7 +15,7 @@ import {
   fieldStyle,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Named {
   id: string;
@@ -31,16 +32,28 @@ interface Plano extends Named {
   vidaUtilAnos: number;
 }
 
+type CadastroTab = "fabricantes" | "modelos" | "setores" | "planos" | "fornecedores";
+const TAB_KEYS: CadastroTab[] = ["fabricantes", "modelos", "setores", "planos", "fornecedores"];
+
 export default function CadastrosPage() {
+  const router = useRouter();
   const [fabricantes, setFabricantes] = useState<Named[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [setores, setSetores] = useState<Named[]>([]);
   const [planos, setPlanos] = useState<Plano[]>([]);
   const [fornecedores, setFornecedores] = useState<Named[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
-  const [tab, setTab] = useState<"fabricantes" | "modelos" | "setores" | "planos" | "fornecedores">(
-    "fabricantes",
-  );
+  const [tab, setTab] = useState<CadastroTab>("fabricantes");
+
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t && TAB_KEYS.includes(t as CadastroTab)) setTab(t as CadastroTab);
+  }, []);
+
+  function selectTab(next: CadastroTab) {
+    setTab(next);
+    router.replace(`/cadastros?tab=${next}`);
+  }
 
   async function reload() {
     const [f, m, s, p, fo] = await Promise.all([
@@ -115,7 +128,7 @@ export default function CadastrosPage() {
 
       <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
         {tabs.map((t) => (
-          <Btn key={t.key} variant={tab === t.key ? "primary" : "ghost"} onClick={() => setTab(t.key)}>
+          <Btn key={t.key} variant={tab === t.key ? "primary" : "ghost"} onClick={() => selectTab(t.key)}>
             {t.label} ({t.count})
           </Btn>
         ))}

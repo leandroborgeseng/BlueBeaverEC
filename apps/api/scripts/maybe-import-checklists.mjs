@@ -22,13 +22,13 @@ const prisma = new PrismaClient();
 
 try {
   if (!existsSync(dir)) {
-    console.log("[nexo] import checklists preventiva: pasta ausente — skip");
+    console.log("[aion] import checklists preventiva: pasta ausente — skip");
     process.exit(0);
   }
 
   const expected = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".json")).length;
   if (expected === 0) {
-    console.log("[nexo] import checklists preventiva: nenhum JSON — skip");
+    console.log("[aion] import checklists preventiva: nenhum JSON — skip");
     process.exit(0);
   }
 
@@ -40,18 +40,18 @@ try {
   });
 
   console.log(
-    `[nexo] import checklists preventiva: ${vinculados}/${expected} POPs MP com procedimento`,
+    `[aion] import checklists preventiva: ${vinculados}/${expected} POPs MP com procedimento`,
   );
 
   if (!force && vinculados >= expected) {
-    console.log("[nexo] import checklists preventiva skipped (carga completa)");
+    console.log("[aion] import checklists preventiva skipped (carga completa)");
     process.exit(0);
   }
 
   console.log(
     force
-      ? "[nexo] IMPORT_CHECKLISTS_ON_BOOT=true — reimportando…"
-      : `[nexo] importando checklists (${expected - vinculados} faltando)…`,
+      ? "[aion] IMPORT_CHECKLISTS_ON_BOOT=true — reimportando…"
+      : `[aion] importando checklists (${expected - vinculados} faltando)…`,
   );
 
   const args = [
@@ -75,7 +75,7 @@ try {
   }
   process.exit(result.status ?? 1);
 } catch (e) {
-  console.error("[nexo] import checklists preventiva falhou:", e);
+  console.error("[aion] import checklists preventiva falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * O Nexo não usa Server Actions ("use server").
+ * O Aion não usa Server Actions ("use server").
  * Scanners (React2Shell / CVE probes) enviam POST com `next-action` lixo
  * (ex.: "3f6c8f1a", zeros) e poluem o log do Railway.
  * Rejeitamos cedo com 400.

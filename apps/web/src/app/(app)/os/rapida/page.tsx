@@ -10,7 +10,7 @@ import {
   PageHeader,
   Surface,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Colaborador {
   id: string;

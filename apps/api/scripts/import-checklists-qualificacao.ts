@@ -38,7 +38,7 @@ async function main() {
   const files = readdirSync(dir).filter(
     (f) => f.toLowerCase().endsWith(".json") && !f.startsWith("_"),
   );
-  console.log(`[nexo] checklists qualificação: ${files.length} arquivo(s) · ${estab.nome}`);
+  console.log(`[aion] checklists qualificação: ${files.length} arquivo(s) · ${estab.nome}`);
 
   let upserts = 0;
   const erros: string[] = [];
@@ -71,7 +71,7 @@ async function main() {
           Array.isArray(existing.itens) &&
           (existing.itens as unknown[]).length >= raw.itens.length
         ) {
-          console.log(`[nexo] ${raw.codigoPop}: já completo — skip`);
+          console.log(`[aion] ${raw.codigoPop}: já completo — skip`);
           continue;
         }
         if (existing) {
@@ -137,7 +137,7 @@ async function main() {
 
       upserts += 1;
       console.log(
-        `[nexo] OK ${raw.codigoPop} → ${procId} · ${raw.itens.length} itens` +
+        `[aion] OK ${raw.codigoPop} → ${procId} · ${raw.itens.length} itens` +
           (pop ? " · Pop" : ""),
       );
     } catch (e) {

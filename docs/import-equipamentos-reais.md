@@ -1,11 +1,11 @@
-# Importar equipamentos reais → Nexo
+# Importar equipamentos reais → Aion
 
 ## Fluxo
 
 1. Você cola a tabela (Excel/CSV/print/texto) no Claude.
 2. Claude devolve **apenas** um JSON no formato abaixo.
 3. Você cola o JSON aqui no chat (ou salva em `apps/api/scripts/dados/equipamentos-reais.json`).
-4. Rodamos o script de carga no banco do Nexo.
+4. Rodamos o script de carga no banco do Aion.
 5. Depois: PDFs de calibração/TSE entram como anexos (lista de caminhos no JSON).
 
 ---
@@ -13,7 +13,7 @@
 ## Prompt para colar no Claude
 
 ```
-Você é um extrator de dados para o sistema Nexo (engenharia clínica).
+Você é um extrator de dados para o sistema Aion (engenharia clínica).
 
 TAREFA: ler a tabela de equipamentos que eu vou colar e devolver APENAS um JSON válido (sem markdown, sem comentários, sem texto fora do JSON).
 
@@ -90,7 +90,7 @@ Agora extraia desta tabela:
 
 ## Depois de extrair
 
-- Cole o JSON no chat e peça: **“importe estes equipamentos no Nexo”**
+- Cole o JSON no chat e peça: **“importe estes equipamentos no Aion”**
 - Ou salve o arquivo e rode:
 
 ```bash

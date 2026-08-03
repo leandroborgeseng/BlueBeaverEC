@@ -14,7 +14,7 @@ RUN pnpm install --frozen-lockfile=false
 FROM deps AS build
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
-RUN pnpm --filter @nexo/shared build
+RUN pnpm --filter @aion/shared build
 WORKDIR /app/apps/api
 RUN pnpm prisma generate
 RUN pnpm build

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { StatusAuditoria, StatusNC } from "@prisma/client";
-import { podeEditarCadastros } from "@nexo/shared";
+import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 

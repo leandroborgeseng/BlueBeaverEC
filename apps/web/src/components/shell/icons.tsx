@@ -1,4 +1,4 @@
-/** Ícones SVG do protótipo Nexo.dc.html (stroke currentColor). */
+/** Ícones SVG do protótipo Aion (design handoff) (stroke currentColor). */
 export function Icon({
   d,
   size = 19,

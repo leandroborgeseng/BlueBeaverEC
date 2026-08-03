@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Res, UseGuards } from "@nestjs/comm
 import { FrequenciaRelatorio } from "@prisma/client";
 import { IsArray, IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import type { Response } from "express";
-import { PERMISSAO_NIVEL } from "@nexo/shared";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";

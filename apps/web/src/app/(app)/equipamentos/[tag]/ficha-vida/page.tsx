@@ -9,7 +9,7 @@ import {
   KpiCard,
   PageHeader,
   Panel,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Ficha {
   equipamento: { tag: string; nome: string; criticidade: string; vidaUtilAnos: number };

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Badge, PageHeader, Surface } from "@/components/ui/nexo-ui";
+import { Badge, PageHeader, Surface } from "@/components/ui/aion-ui";
 
 const LABELS: Record<string, string> = {
   DIAGNOSTICO: "Diagnóstico",

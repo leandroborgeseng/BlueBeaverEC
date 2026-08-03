@@ -24,7 +24,7 @@ const prisma = new PrismaClient();
 
 try {
   if (!existsSync(dir)) {
-    console.log("[nexo] import checklists TSE: pasta ausente — skip");
+    console.log("[aion] import checklists TSE: pasta ausente — skip");
     process.exit(0);
   }
 
@@ -32,7 +32,7 @@ try {
     (f) => f.toLowerCase().endsWith(".json") && !f.startsWith("_"),
   ).length;
   if (expected === 0) {
-    console.log("[nexo] import checklists TSE: nenhum JSON — skip");
+    console.log("[aion] import checklists TSE: nenhum JSON — skip");
     process.exit(0);
   }
 
@@ -44,18 +44,18 @@ try {
   });
 
   console.log(
-    `[nexo] import checklists TSE: ${vinculados}/${expected} POPs SEG com procedimento`,
+    `[aion] import checklists TSE: ${vinculados}/${expected} POPs SEG com procedimento`,
   );
 
   if (!force && vinculados >= expected) {
-    console.log("[nexo] import checklists TSE skipped (carga completa)");
+    console.log("[aion] import checklists TSE skipped (carga completa)");
     process.exit(0);
   }
 
   console.log(
     force
-      ? "[nexo] force — reimportando checklists TSE…"
-      : `[nexo] importando checklists TSE (${expected - vinculados} faltando)…`,
+      ? "[aion] force — reimportando checklists TSE…"
+      : `[aion] importando checklists TSE (${expected - vinculados} faltando)…`,
   );
 
   const args = [
@@ -79,7 +79,7 @@ try {
   }
   process.exit(result.status ?? 1);
 } catch (e) {
-  console.error("[nexo] import checklists TSE falhou:", e);
+  console.error("[aion] import checklists TSE falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();

@@ -25,7 +25,7 @@ const prisma = new PrismaClient();
 
 try {
   if (!existsSync(importFile)) {
-    console.log("[nexo] import equipamentos: arquivo ausente — skip");
+    console.log("[aion] import equipamentos: arquivo ausente — skip");
     process.exit(0);
   }
 
@@ -33,7 +33,7 @@ try {
   const tags = (payload.equipamentos ?? []).map((e) => String(e.tag).trim()).filter(Boolean);
   const expected = tags.length;
   if (expected === 0) {
-    console.log("[nexo] import equipamentos: JSON vazio — skip");
+    console.log("[aion] import equipamentos: JSON vazio — skip");
     process.exit(0);
   }
 
@@ -41,17 +41,17 @@ try {
     where: { tag: { in: tags } },
   });
 
-  console.log(`[nexo] import equipamentos: ${presentes}/${expected} tags do JSON já no banco`);
+  console.log(`[aion] import equipamentos: ${presentes}/${expected} tags do JSON já no banco`);
 
   if (!force && presentes >= expected) {
-    console.log("[nexo] import equipamentos skipped (carga completa)");
+    console.log("[aion] import equipamentos skipped (carga completa)");
     process.exit(0);
   }
 
   console.log(
     force
-      ? "[nexo] IMPORT_EQUIPAMENTOS_ON_BOOT=true — reimportando…"
-      : `[nexo] retomando import (${expected - presentes} faltando)…`,
+      ? "[aion] IMPORT_EQUIPAMENTOS_ON_BOOT=true — reimportando…"
+      : `[aion] retomando import (${expected - presentes} faltando)…`,
   );
 
   const result = spawnSync(
@@ -71,7 +71,7 @@ try {
   }
   process.exit(result.status ?? 1);
 } catch (e) {
-  console.error("[nexo] import equipamentos falhou:", e);
+  console.error("[aion] import equipamentos falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();

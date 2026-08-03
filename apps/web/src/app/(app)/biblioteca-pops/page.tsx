@@ -15,7 +15,7 @@ import {
   fieldStyle,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface PopItem {
   id: string;

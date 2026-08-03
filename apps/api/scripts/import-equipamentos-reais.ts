@@ -277,7 +277,7 @@ async function main() {
 
     if (processed % 25 === 0 || processed === total) {
       console.log(
-        `[nexo] import progresso ${processed}/${total} (criados=${ok} upd=${upd} erros=${erros.length})`,
+        `[aion] import progresso ${processed}/${total} (criados=${ok} upd=${upd} erros=${erros.length})`,
       );
     }
   }

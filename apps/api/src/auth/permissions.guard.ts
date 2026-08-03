@@ -14,10 +14,10 @@ import {
   type ModuloPermissao,
   type NivelPermissao,
   type PerfilAcesso,
-} from "@nexo/shared";
+} from "@aion/shared";
 import type { AuthUser } from "./current-user.decorator";
 
-export const PERMISSAO_KEY = "nexo_permissao";
+export const PERMISSAO_KEY = "aion_permissao";
 
 export const RequirePermission = (modulo: ModuloPermissao, minimo: NivelPermissao = PERMISSAO_NIVEL.LEITURA) =>
   SetMetadata(PERMISSAO_KEY, { modulo, minimo });

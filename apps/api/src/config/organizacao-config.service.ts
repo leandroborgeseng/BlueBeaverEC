@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-import { PERMISSAO_NIVEL, temPermissao } from "@nexo/shared";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 

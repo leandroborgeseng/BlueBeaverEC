@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrioridadeOS, StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
-import { podeAlterarStatusOS } from "@nexo/shared";
+import { podeAlterarStatusOS } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import type { AuthUser } from "../auth/current-user.decorator";

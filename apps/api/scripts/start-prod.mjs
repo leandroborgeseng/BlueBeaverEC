@@ -29,10 +29,10 @@ function logTarget(url) {
   try {
     const u = new URL(url);
     console.log(
-      `[nexo] DB target user=${decodeURIComponent(u.username)} host=${u.hostname} port=${u.port || "5432"} db=${u.pathname.replace(/^\//, "")}`,
+      `[aion] DB target user=${decodeURIComponent(u.username)} host=${u.hostname} port=${u.port || "5432"} db=${u.pathname.replace(/^\//, "")}`,
     );
   } catch {
-    console.log("[nexo] DB target: (URL inválida)");
+    console.log("[aion] DB target: (URL inválida)");
   }
 }
 
@@ -75,7 +75,7 @@ const api = spawn(process.execPath, ["dist/main.js"], {
 });
 
 setTimeout(() => {
-  console.log("[nexo] iniciando import de equipamentos em background…");
+  console.log("[aion] iniciando import de equipamentos em background…");
   const imp = spawn(process.execPath, [path.join(root, "scripts/maybe-import-equipamentos.mjs")], {
     cwd: root,
     env: process.env,
@@ -84,8 +84,8 @@ setTimeout(() => {
     detached: false,
   });
   imp.on("exit", (code) => {
-    console.log(`[nexo] import equipamentos finalizado (code=${code ?? "?"})`);
-    console.log("[nexo] iniciando import de planos de manutenção…");
+    console.log(`[aion] import equipamentos finalizado (code=${code ?? "?"})`);
+    console.log("[aion] iniciando import de planos de manutenção…");
     const planos = spawn(process.execPath, [path.join(root, "scripts/maybe-import-planos.mjs")], {
       cwd: root,
       env: process.env,
@@ -94,8 +94,8 @@ setTimeout(() => {
       detached: false,
     });
     planos.on("exit", (c1) => {
-      console.log(`[nexo] import planos finalizado (code=${c1 ?? "?"})`);
-      console.log("[nexo] iniciando import da biblioteca de POPs…");
+      console.log(`[aion] import planos finalizado (code=${c1 ?? "?"})`);
+      console.log("[aion] iniciando import da biblioteca de POPs…");
       const pops = spawn(process.execPath, [path.join(root, "scripts/maybe-import-pops.mjs")], {
         cwd: root,
         env: process.env,
@@ -104,8 +104,8 @@ setTimeout(() => {
         detached: false,
       });
       pops.on("exit", (cp) => {
-        console.log(`[nexo] import pops biblioteca finalizado (code=${cp ?? "?"})`);
-        console.log("[nexo] iniciando import de checklists preventiva…");
+        console.log(`[aion] import pops biblioteca finalizado (code=${cp ?? "?"})`);
+        console.log("[aion] iniciando import de checklists preventiva…");
         const checks = spawn(
           process.execPath,
           [path.join(root, "scripts/maybe-import-checklists.mjs")],
@@ -118,8 +118,8 @@ setTimeout(() => {
           },
         );
         checks.on("exit", (cc) => {
-          console.log(`[nexo] import checklists preventiva finalizado (code=${cc ?? "?"})`);
-          console.log("[nexo] iniciando import de checklists TSE…");
+          console.log(`[aion] import checklists preventiva finalizado (code=${cc ?? "?"})`);
+          console.log("[aion] iniciando import de checklists TSE…");
           const tse = spawn(
             process.execPath,
             [path.join(root, "scripts/maybe-import-checklists-tse.mjs")],
@@ -132,8 +132,8 @@ setTimeout(() => {
             },
           );
           tse.on("exit", (ct) => {
-            console.log(`[nexo] import checklists TSE finalizado (code=${ct ?? "?"})`);
-            console.log("[nexo] iniciando import de checklists calibração…");
+            console.log(`[aion] import checklists TSE finalizado (code=${ct ?? "?"})`);
+            console.log("[aion] iniciando import de checklists calibração…");
             const cal = spawn(
               process.execPath,
               [path.join(root, "scripts/maybe-import-checklists-calibracao.mjs")],
@@ -146,8 +146,8 @@ setTimeout(() => {
               },
             );
             cal.on("exit", (cca) => {
-              console.log(`[nexo] import checklists calibração finalizado (code=${cca ?? "?"})`);
-              console.log("[nexo] iniciando import de checklists qualificação…");
+              console.log(`[aion] import checklists calibração finalizado (code=${cca ?? "?"})`);
+              console.log("[aion] iniciando import de checklists qualificação…");
               const qlf = spawn(
                 process.execPath,
                 [path.join(root, "scripts/maybe-import-checklists-qualificacao.mjs")],
@@ -160,8 +160,8 @@ setTimeout(() => {
                 },
               );
               qlf.on("exit", (cq) => {
-                console.log(`[nexo] import checklists qualificação finalizado (code=${cq ?? "?"})`);
-                console.log("[nexo] iniciando import de laudos PDF em background…");
+                console.log(`[aion] import checklists qualificação finalizado (code=${cq ?? "?"})`);
+                console.log("[aion] iniciando import de laudos PDF em background…");
                 const laudos = spawn(
                   process.execPath,
                   [path.join(root, "scripts/maybe-import-laudos.mjs")],
@@ -174,7 +174,7 @@ setTimeout(() => {
                   },
                 );
                 laudos.on("exit", (c2) => {
-                  console.log(`[nexo] import laudos PDF finalizado (code=${c2 ?? "?"})`);
+                  console.log(`[aion] import laudos PDF finalizado (code=${c2 ?? "?"})`);
                 });
               });
             });

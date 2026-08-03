@@ -37,8 +37,8 @@ export function MobileFrame({
         minHeight: "100vh",
         maxWidth: 480,
         margin: "0 auto",
-        background: "var(--nexo-bg-mobile)",
-        fontFamily: "var(--nexo-font-mobile)",
+        background: "var(--aion-bg-mobile)",
+        fontFamily: "var(--aion-font-mobile)",
         padding: "14px 14px 88px",
         color: "oklch(0.22 0.02 250)",
       }}

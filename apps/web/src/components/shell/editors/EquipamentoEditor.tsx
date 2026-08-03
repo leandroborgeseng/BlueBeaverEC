@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/nexo-ui";
+import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
 
@@ -41,10 +41,22 @@ interface EquipDetail {
   modelo?: { id: string; nome: string };
   fornecedor?: { id: string; nome: string } | null;
   descricao?: { nome: string; criticidade: string };
+  planoMatchTipo?: string | null;
+  planoMatchObs?: string | null;
+  tipoEquipamentoPlano?: {
+    id: string;
+    nome: string;
+    testes?: Array<{
+      tipoTeste: string;
+      procedimentoCodigo: string;
+      periodicidadeMeses: number;
+      ativo: boolean;
+    }>;
+  } | null;
   historicoTags?: HistoricoTag[];
 }
 
-type Tab = "geral" | "regulatorio" | "historico";
+type Tab = "geral" | "plano" | "regulatorio" | "historico";
 
 const tabStyle = (active: boolean): React.CSSProperties => ({
   padding: "8px 14px",
@@ -203,9 +215,15 @@ export function EquipamentoEditor({
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid oklch(0.91 0.006 255)", marginBottom: 4 }}>
-        {(["geral", "regulatorio", "historico"] as Tab[]).map((t) => (
+        {(["geral", "plano", "regulatorio", "historico"] as Tab[]).map((t) => (
           <button key={t} type="button" style={tabStyle(tab === t)} onClick={() => setTab(t)}>
-            {t === "geral" ? "Geral" : t === "regulatorio" ? "Regulatório" : "Histórico TAG"}
+            {t === "geral"
+              ? "Geral"
+              : t === "plano"
+                ? "Plano / POP"
+                : t === "regulatorio"
+                  ? "Regulatório"
+                  : "Histórico TAG"}
           </button>
         ))}
       </div>
@@ -345,6 +363,79 @@ export function EquipamentoEditor({
               Arquivar
             </Btn>
           </div>
+        </div>
+      )}
+
+      {tab === "plano" && (
+        <div style={{ display: "grid", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Tipo de equipamento (plano)</FieldLabel>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>
+                {data.tipoEquipamentoPlano?.nome ?? "Sem plano vinculado"}
+              </div>
+            </div>
+            <div>
+              <FieldLabel>Match do mapping</FieldLabel>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                {data.planoMatchTipo ? (
+                  <Badge
+                    tone={
+                      data.planoMatchTipo === "exato"
+                        ? "success"
+                        : data.planoMatchTipo === "aproximado"
+                          ? "warning"
+                          : "danger"
+                    }
+                  >
+                    {data.planoMatchTipo}
+                  </Badge>
+                ) : (
+                  <span style={{ color: "oklch(0.5 0.02 250)" }}>—</span>
+                )}
+              </div>
+              {data.planoMatchObs && (
+                <div style={{ fontSize: 12, color: "oklch(0.45 0.02 250)", marginTop: 6 }}>
+                  {data.planoMatchObs}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {(data.tipoEquipamentoPlano?.testes?.length ?? 0) === 0 ? (
+            <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
+              Nenhum teste de plano ativo (preventiva / TSE / calibração / qualificação).
+            </div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "6px 4px", borderBottom: "1px solid oklch(0.9 0.01 250)" }}>
+                    Tipo
+                  </th>
+                  <th style={{ textAlign: "left", padding: "6px 4px", borderBottom: "1px solid oklch(0.9 0.01 250)" }}>
+                    POP / procedimento
+                  </th>
+                  <th style={{ textAlign: "left", padding: "6px 4px", borderBottom: "1px solid oklch(0.9 0.01 250)" }}>
+                    Periodicidade
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.tipoEquipamentoPlano!.testes!.map((t) => (
+                  <tr key={`${t.tipoTeste}-${t.procedimentoCodigo}`}>
+                    <td style={{ padding: "6px 4px" }}>
+                      <Badge tone="info">{t.tipoTeste}</Badge>
+                    </td>
+                    <td style={{ padding: "6px 4px", fontFamily: "ui-monospace, monospace" }}>
+                      {t.procedimentoCodigo}
+                    </td>
+                    <td style={{ padding: "6px 4px" }}>{t.periodicidadeMeses} meses</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 

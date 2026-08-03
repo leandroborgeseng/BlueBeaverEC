@@ -37,7 +37,7 @@ async function main() {
   }
 
   const files = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".json"));
-  console.log(`[nexo] checklists preventiva: ${files.length} arquivo(s) · ${estab.nome}`);
+  console.log(`[aion] checklists preventiva: ${files.length} arquivo(s) · ${estab.nome}`);
 
   let upserts = 0;
   const erros: string[] = [];
@@ -60,7 +60,7 @@ async function main() {
       });
 
       if (!pop && !force) {
-        console.log(`[nexo] ${raw.codigoPop}: Pop ainda não na biblioteca — cria procedimento mesmo assim`);
+        console.log(`[aion] ${raw.codigoPop}: Pop ainda não na biblioteca — cria procedimento mesmo assim`);
       }
 
       let procId = pop?.procedimentoLaudoId ?? null;
@@ -68,7 +68,7 @@ async function main() {
       if (procId) {
         const existing = await prisma.procedimentoLaudo.findUnique({ where: { id: procId } });
         if (existing && !force && Array.isArray(existing.itens) && (existing.itens as unknown[]).length >= raw.itens.length) {
-          console.log(`[nexo] ${raw.codigoPop}: procedimento já completo (${(existing.itens as unknown[]).length} itens) — skip`);
+          console.log(`[aion] ${raw.codigoPop}: procedimento já completo (${(existing.itens as unknown[]).length} itens) — skip`);
           continue;
         }
         if (existing) {
@@ -135,7 +135,7 @@ async function main() {
 
       upserts += 1;
       console.log(
-        `[nexo] OK ${raw.codigoPop} → procedimento ${procId} · ${raw.itens.length} itens` +
+        `[aion] OK ${raw.codigoPop} → procedimento ${procId} · ${raw.itens.length} itens` +
           (pop ? " · vinculado ao Pop" : ""),
       );
     } catch (e) {

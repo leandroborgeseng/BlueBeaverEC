@@ -16,8 +16,8 @@ ARG NEXT_PUBLIC_API_URL=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
-RUN pnpm --filter @nexo/shared build
-RUN pnpm --filter @nexo/web build
+RUN pnpm --filter @aion/shared build
+RUN pnpm --filter @aion/web build
 
 FROM base AS runner
 WORKDIR /app

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { OrigemCapex, StatusCapex } from "@prisma/client";
 import { IsEnum, IsNumber, IsOptional, IsString, MinLength } from "class-validator";
-import { PERMISSAO_NIVEL } from "@nexo/shared";
+import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";

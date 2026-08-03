@@ -12,7 +12,7 @@ import {
   PriorityBar,
   Surface,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface OsRow {
   id: string;

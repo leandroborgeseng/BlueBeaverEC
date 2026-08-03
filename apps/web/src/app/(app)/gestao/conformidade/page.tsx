@@ -9,7 +9,7 @@ import {
   PageHeader,
   Panel,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Req {
   id: string;

@@ -119,11 +119,11 @@ function WindowFrame({
             onDone={onClose}
           />
         ) : win.payload ? (
-          <pre style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--nexo-text)" }}>
+          <pre style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--aion-text)" }}>
             {JSON.stringify(win.payload, null, 2)}
           </pre>
         ) : (
-          <p style={{ color: "var(--nexo-muted)" }}>
+          <p style={{ color: "var(--aion-muted)" }}>
             Janela `{win.kind}` — conteúdo será ligado às fichas reais nas próximas sprints.
           </p>
         )}
@@ -136,7 +136,7 @@ const btn: React.CSSProperties = {
   width: 28,
   height: 28,
   borderRadius: 8,
-  border: "1px solid var(--nexo-border)",
+  border: "1px solid var(--aion-border)",
   background: "white",
   cursor: "pointer",
 };

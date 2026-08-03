@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Btn, FieldLabel, fieldStyle } from "@/components/ui/nexo-ui";
+import { Btn, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 
 export function ConfirmModal({
   open,

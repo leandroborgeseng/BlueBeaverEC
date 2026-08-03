@@ -11,7 +11,7 @@ import {
   PageHeader,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface InventarioRow {
   tag: string;

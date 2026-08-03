@@ -181,7 +181,7 @@ export default function ExecucaoOsPage() {
               flex: 1,
               padding: 8,
               borderRadius: 8,
-              border: step === s ? "2px solid var(--nexo-primary)" : "1px solid var(--nexo-border)",
+              border: step === s ? "2px solid var(--aion-primary)" : "1px solid var(--aion-border)",
               background: step === s ? "oklch(0.95 0.03 250)" : "white",
               fontWeight: 700,
               fontSize: 12,
@@ -246,7 +246,7 @@ export default function ExecucaoOsPage() {
               ref={canvasRef}
               width={360}
               height={140}
-              style={{ width: "100%", height: 140, border: "1px dashed var(--nexo-border)", borderRadius: 8, touchAction: "none", background: "white" }}
+              style={{ width: "100%", height: 140, border: "1px dashed var(--aion-border)", borderRadius: 8, touchAction: "none", background: "white" }}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
@@ -260,14 +260,14 @@ export default function ExecucaoOsPage() {
         </div>
       )}
 
-      {msg && <div style={{ marginTop: 10, color: "var(--nexo-success)", fontWeight: 600 }}>{msg}</div>}
+      {msg && <div style={{ marginTop: 10, color: "var(--aion-success)", fontWeight: 600 }}>{msg}</div>}
     </MobileFrame>
   );
 }
 
 const card: React.CSSProperties = {
   background: "white",
-  border: "1px solid var(--nexo-border)",
+  border: "1px solid var(--aion-border)",
   borderRadius: 12,
   padding: 14,
   width: "100%",
@@ -276,13 +276,13 @@ const input: React.CSSProperties = {
   width: "100%",
   padding: "8px 10px",
   borderRadius: 8,
-  border: "1px solid var(--nexo-border)",
+  border: "1px solid var(--aion-border)",
 };
 const primaryBtn: React.CSSProperties = {
   border: "none",
   borderRadius: 12,
   padding: 14,
-  background: "var(--nexo-primary)",
+  background: "var(--aion-primary)",
   color: "white",
   fontWeight: 800,
 };

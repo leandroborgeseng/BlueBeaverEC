@@ -42,7 +42,7 @@ async function main() {
   const files = readdirSync(dir).filter(
     (f) => f.toLowerCase().endsWith(".json") && !f.startsWith("_"),
   );
-  console.log(`[nexo] checklists calibração: ${files.length} arquivo(s) · ${estab.nome}`);
+  console.log(`[aion] checklists calibração: ${files.length} arquivo(s) · ${estab.nome}`);
 
   let upserts = 0;
   const erros: string[] = [];
@@ -65,7 +65,7 @@ async function main() {
       });
 
       if (!pop && !force) {
-        console.log(`[nexo] ${raw.codigoPop}: Pop ainda não na biblioteca — cria procedimento mesmo assim`);
+        console.log(`[aion] ${raw.codigoPop}: Pop ainda não na biblioteca — cria procedimento mesmo assim`);
       }
 
       // metadados metrológicos ficam nos itens + campos no JSON do procedimento via itens
@@ -83,7 +83,7 @@ async function main() {
           (existing.itens as unknown[]).length >= raw.itens.length
         ) {
           console.log(
-            `[nexo] ${raw.codigoPop}: procedimento já completo (${(existing.itens as unknown[]).length} itens) — skip`,
+            `[aion] ${raw.codigoPop}: procedimento já completo (${(existing.itens as unknown[]).length} itens) — skip`,
           );
           continue;
         }
@@ -150,7 +150,7 @@ async function main() {
 
       upserts += 1;
       console.log(
-        `[nexo] OK ${raw.codigoPop} → procedimento ${procId} · ${raw.itens.length} itens` +
+        `[aion] OK ${raw.codigoPop} → procedimento ${procId} · ${raw.itens.length} itens` +
           (pop ? " · vinculado ao Pop" : ""),
       );
     } catch (e) {

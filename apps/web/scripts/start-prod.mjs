@@ -15,7 +15,7 @@ const listenHost = process.env.LISTEN_HOST || process.env.HOST || "0.0.0.0";
 
 process.env.PORT = port;
 
-console.log(`[nexo/web] starting next on ${listenHost}:${port}`);
+console.log(`[aion/web] starting next on ${listenHost}:${port}`);
 
 const child = spawn(
   "pnpm",

@@ -8,7 +8,7 @@ import {
   PageHeader,
   Surface,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Dom {
   id: string;

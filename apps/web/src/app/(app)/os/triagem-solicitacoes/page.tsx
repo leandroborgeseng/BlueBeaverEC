@@ -13,7 +13,7 @@ import {
   PageHeader,
   Surface,
   fieldStyle,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Solicitacao {
   id: string;

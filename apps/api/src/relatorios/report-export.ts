@@ -73,7 +73,7 @@ export async function buildPdfBuffer(payload: ReportPayload): Promise<Buffer> {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    doc.fillColor("#2f4f9a").fontSize(18).text("Nexo — Engenharia Clínica", { continued: false });
+    doc.fillColor("#2f4f9a").fontSize(18).text("Aion Engenharia Clínica", { continued: false });
     doc.moveDown(0.3);
     doc.fillColor("#111").fontSize(14).text(titulo);
     doc.fontSize(9).fillColor("#666").text(`Gerado em ${geradoEm}`);
@@ -147,7 +147,7 @@ function buildCalendarioPdf(payload: ReportPayload): Promise<Buffer> {
     const pageW = doc.page.width - 80;
 
     const drawHeader = () => {
-      doc.fillColor("#2f4f9a").fontSize(16).text("Nexo — Engenharia Clínica", 40, 36, { width: pageW });
+      doc.fillColor("#2f4f9a").fontSize(16).text("Aion Engenharia Clínica", 40, 36, { width: pageW });
       doc.fillColor("#111").fontSize(12).text("Calendário de Manutenção (Preventiva · TSE · Calibração)", {
         width: pageW,
       });
@@ -325,7 +325,7 @@ function buildInventarioPdf(payload: ReportPayload): Promise<Buffer> {
     const pageW = doc.page.width - 72;
 
     const drawHeader = () => {
-      doc.fillColor("#2f4f9a").fontSize(15).text("Nexo — Engenharia Clínica", 36, 32, { width: pageW });
+      doc.fillColor("#2f4f9a").fontSize(15).text("Aion Engenharia Clínica", 36, 32, { width: pageW });
       doc.fillColor("#111").fontSize(12).text("Inventário de Equipamentos", { width: pageW });
       doc
         .fontSize(8)
@@ -439,7 +439,7 @@ export async function buildXlsxBuffer(payload: ReportPayload): Promise<Buffer> {
   }
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Nexo";
+  workbook.creator = "Aion Engenharia Clínica";
   workbook.created = new Date();
 
   const meta = workbook.addWorksheet("Resumo");
@@ -594,7 +594,7 @@ export async function buildXlsxBuffer(payload: ReportPayload): Promise<Buffer> {
 
 async function buildInventarioXlsx(payload: ReportPayload): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Nexo";
+  workbook.creator = "Aion Engenharia Clínica";
   workbook.created = new Date();
 
   const meta = workbook.addWorksheet("Resumo");

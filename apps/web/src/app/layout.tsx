@@ -3,12 +3,12 @@ import "./globals.css";
 import { RegisterSw } from "@/components/RegisterSw";
 
 export const metadata: Metadata = {
-  title: "Nexo — Engenharia Clínica",
-  description: "Gestão de Engenharia Clínica hospitalar",
+  title: "Aion Engenharia Clínica",
+  description: "Aion Engenharia Clínica — gestão hospitalar · desenvolvido por Bluebeaver",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Nexo Campo",
+    title: "Aion Campo",
   },
   icons: {
     icon: [

@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { MapaPermissoes, ModuloPermissao, NivelPermissao } from "@nexo/shared";
-import { temPermissao as tem } from "@nexo/shared";
+import type { MapaPermissoes, ModuloPermissao, NivelPermissao } from "@aion/shared";
+import { temPermissao as tem } from "@aion/shared";
 
 export interface SessionMe {
   id: string;

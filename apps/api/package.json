@@ -1,10 +1,10 @@
 {
-  "name": "@nexo/api",
+  "name": "@aion/api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "pnpm --filter @nexo/shared build && prisma generate && nest build",
+    "build": "pnpm --filter @aion/shared build && prisma generate && nest build",
     "start": "node scripts/start-prod.mjs",
     "start:prod": "node scripts/start-prod.mjs",
     "lint": "tsc -p tsconfig.json --noEmit",
@@ -29,7 +29,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.3",
-    "@nexo/shared": "workspace:*",
+    "@aion/shared": "workspace:*",
     "@prisma/client": "^6.11.1",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",

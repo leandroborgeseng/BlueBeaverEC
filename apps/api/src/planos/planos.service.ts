@@ -9,7 +9,7 @@ import {
   TipoTestePlano,
 } from "@prisma/client";
 import { ForbiddenException, Injectable } from "@nestjs/common";
-import { podeEditarCadastros } from "@nexo/shared";
+import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { tipoOsFromLaudo } from "./proxima-os-plano";

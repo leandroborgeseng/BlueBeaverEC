@@ -16,7 +16,7 @@ import {
   fieldStyle,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 interface Lookup {
   id: string;
@@ -33,6 +33,8 @@ interface EquipamentoRow {
   fabricante: { nome: string };
   modelo: { nome: string };
   descricao: { nome: string; criticidade: string };
+  tipoEquipamentoPlano?: { id: string; nome: string } | null;
+  planoMatchTipo?: string | null;
 }
 
 interface EquipListResponse {
@@ -274,6 +276,7 @@ export default function EquipamentosPage() {
             <th style={th}>Equipamento</th>
             <th style={th}>Setor</th>
             <th style={th}>Fabricante / Modelo</th>
+            <th style={th}>Plano</th>
             <th style={th}>Criticidade</th>
             <th style={th}>Situação</th>
           </tr>
@@ -321,6 +324,13 @@ export default function EquipamentosPage() {
                 {eq.fabricante.nome} / {eq.modelo.nome}
               </td>
               <td style={td}>
+                {eq.tipoEquipamentoPlano?.nome ? (
+                  <span title={eq.planoMatchTipo ?? undefined}>{eq.tipoEquipamentoPlano.nome}</span>
+                ) : (
+                  <span style={{ color: "oklch(0.55 0.02 250)" }}>—</span>
+                )}
+              </td>
+              <td style={td}>
                 <Badge tone={eq.descricao.criticidade}>{eq.descricao.criticidade}</Badge>
               </td>
               <td style={td}>
@@ -330,7 +340,7 @@ export default function EquipamentosPage() {
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={7}>
                 <Empty text="Nenhum equipamento encontrado" />
               </td>
             </tr>

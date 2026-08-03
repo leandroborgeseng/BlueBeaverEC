@@ -1,5 +1,5 @@
-/* Nexo Campo — Service Worker mínimo (shell mobile) */
-const CACHE = "nexo-mobile-v1";
+/* Aion Campo — Service Worker mínimo (shell mobile) */
+const CACHE = "aion-mobile-v1";
 const PRECACHE = ["/mobile", "/mobile/os", "/mobile/qr", "/mobile/solicitar", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

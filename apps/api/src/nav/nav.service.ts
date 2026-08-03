@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { StatusNC, StatusOS, TipoLaudo } from "@prisma/client";
-import { SLA_HORAS, type PrioridadeOS as PrioridadeShared } from "@nexo/shared";
+import { SLA_HORAS, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 

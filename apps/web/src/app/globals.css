@@ -1,36 +1,36 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --nexo-bg: oklch(0.98 0.003 250);
-  --nexo-bg-mobile: oklch(0.965 0.004 255);
-  --nexo-surface: oklch(1 0 0);
-  --nexo-border: oklch(0.88 0.01 250);
-  --nexo-border-soft: oklch(0.91 0.006 255);
-  --nexo-ghost-border: oklch(0.9 0.005 250);
-  --nexo-text: oklch(0.25 0.02 250);
-  --nexo-text-title: oklch(0.18 0.015 255);
-  --nexo-muted: oklch(0.5 0.02 250);
-  --nexo-primary: oklch(0.64 0.19 38);
-  --nexo-primary-hover: oklch(0.58 0.19 38);
-  --nexo-brand: oklch(0.45 0.14 255);
-  --nexo-brand-deep: oklch(0.32 0.12 258);
-  --nexo-link: oklch(0.55 0.16 255);
-  --nexo-success: oklch(0.4 0.13 150);
-  --nexo-danger: oklch(0.45 0.15 25);
-  --nexo-warning: oklch(0.45 0.13 85);
-  --nexo-rail: rgb(0, 102, 178);
-  --nexo-rail-accent: #ffffff;
-  --nexo-topbar-height: 58px;
+  --aion-bg: oklch(0.98 0.003 250);
+  --aion-bg-mobile: oklch(0.965 0.004 255);
+  --aion-surface: oklch(1 0 0);
+  --aion-border: oklch(0.88 0.01 250);
+  --aion-border-soft: oklch(0.91 0.006 255);
+  --aion-ghost-border: oklch(0.9 0.005 250);
+  --aion-text: oklch(0.25 0.02 250);
+  --aion-text-title: oklch(0.18 0.015 255);
+  --aion-muted: oklch(0.5 0.02 250);
+  --aion-primary: oklch(0.64 0.19 38);
+  --aion-primary-hover: oklch(0.58 0.19 38);
+  --aion-brand: oklch(0.45 0.14 255);
+  --aion-brand-deep: oklch(0.32 0.12 258);
+  --aion-link: oklch(0.55 0.16 255);
+  --aion-success: oklch(0.4 0.13 150);
+  --aion-danger: oklch(0.45 0.15 25);
+  --aion-warning: oklch(0.45 0.13 85);
+  --aion-rail: rgb(0, 102, 178);
+  --aion-rail-accent: #ffffff;
+  --aion-topbar-height: 58px;
 
-  --nexo-radius-badge: 5px;
-  --nexo-radius-btn: 7px;
-  --nexo-radius-input: 8px;
-  --nexo-radius-card: 10px;
-  --nexo-radius-mobile-card: 12px;
-  --nexo-radius: 10px;
+  --aion-radius-badge: 5px;
+  --aion-radius-btn: 7px;
+  --aion-radius-input: 8px;
+  --aion-radius-card: 10px;
+  --aion-radius-mobile-card: 12px;
+  --aion-radius: 10px;
 
-  --nexo-font: "Inter", system-ui, sans-serif;
-  --nexo-font-mobile: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --aion-font: "Inter", system-ui, sans-serif;
+  --aion-font-mobile: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -42,13 +42,13 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--nexo-bg);
-  color: var(--nexo-text);
-  font-family: var(--nexo-font);
+  background: var(--aion-bg);
+  color: var(--aion-text);
+  font-family: var(--aion-font);
 }
 
 a {
-  color: var(--nexo-link);
+  color: var(--aion-link);
   text-decoration: none;
 }
 

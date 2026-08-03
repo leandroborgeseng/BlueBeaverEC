@@ -58,12 +58,12 @@ async function main() {
   });
 
   if (!force && comPdf >= files.length && files.length > 0) {
-    console.log(`[nexo] pops biblioteca: ${comPdf} PDFs no banco · skip (use --force)`);
+    console.log(`[aion] pops biblioteca: ${comPdf} PDFs no banco · skip (use --force)`);
     return;
   }
 
   console.log(
-    `[nexo] pops biblioteca: ${files.length} PDF(s) → banco · estab=${estab.nome}` +
+    `[aion] pops biblioteca: ${files.length} PDF(s) → banco · estab=${estab.nome}` +
       (comPdf > 0 ? ` (já havia ${comPdf} com conteúdo)` : ""),
   );
 
@@ -134,7 +134,7 @@ async function main() {
     });
     upserts += 1;
     if (upserts % 25 === 0) {
-      console.log(`[nexo] pops: ${upserts}/${files.length} gravados…`);
+      console.log(`[aion] pops: ${upserts}/${files.length} gravados…`);
     }
   }
 

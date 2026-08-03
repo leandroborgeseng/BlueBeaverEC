@@ -1,13 +1,13 @@
 [
  {
-  "nomeEquipamentoNexo": "Agitador de Tubos (Vórtex)",
+  "nomeEquipamentoAion": "Agitador de Tubos (Vórtex)",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Nenhum tipo de agitador/vórtex de laboratório consta na planilha de referência.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Aparelho de Anestesia",
+  "nomeEquipamentoAion": "Aparelho de Anestesia",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Unidade de anestesia",
   "observacao": null,
@@ -34,7 +34,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Aparelho de Raios X - Fixo Digital",
+  "nomeEquipamentoAion": "Aparelho de Raios X - Fixo Digital",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Aparelho de raios-x fixo",
   "observacao": null,
@@ -50,7 +50,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Aparelho de Raios X - Móvel",
+  "nomeEquipamentoAion": "Aparelho de Raios X - Móvel",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Aparelho de raios-x móvel",
   "observacao": null,
@@ -66,7 +66,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Aparelho para Hemodiálise",
+  "nomeEquipamentoAion": "Aparelho para Hemodiálise",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Uni Hemodiálise",
   "observacao": null,
@@ -88,7 +88,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Arco Cirúrgico",
+  "nomeEquipamentoAion": "Arco Cirúrgico",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Arco cirúrgico",
   "observacao": null,
@@ -104,7 +104,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Audiômetro",
+  "nomeEquipamentoAion": "Audiômetro",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Audiômetro",
   "observacao": null,
@@ -122,7 +122,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "BERA Sistema de Potencial Evocado",
+  "nomeEquipamentoAion": "BERA Sistema de Potencial Evocado",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Sis triagem auditiva RN",
   "observacao": "BERA (potencial evocado auditivo) não tem linha própria; usada a linha de triagem auditiva por potencial evocado como referência mais próxima — confirmar com metrologia.",
@@ -140,7 +140,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Balança Antropométrica Adulto",
+  "nomeEquipamentoAion": "Balança Antropométrica Adulto",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Balança antropométrica adulto",
   "observacao": null,
@@ -161,7 +161,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Balança Antropométrica Infantil",
+  "nomeEquipamentoAion": "Balança Antropométrica Infantil",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Balança paciente infantil eletrônica",
   "observacao": null,
@@ -182,7 +182,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Balança Digital Portátil",
+  "nomeEquipamentoAion": "Balança Digital Portátil",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Balança antropométrica adulto",
   "observacao": "Sem linha específica para balança digital portátil; usada a linha de balança antropométrica adulto (faixa de massa similar).",
@@ -203,7 +203,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Balança Tipo Plataforma",
+  "nomeEquipamentoAion": "Balança Tipo Plataforma",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Balança antropométrica adulto",
   "observacao": "Sem linha específica para balança tipo plataforma; usada a linha de balança antropométrica adulto como referência mais próxima.",
@@ -224,7 +224,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Banho-Maria",
+  "nomeEquipamentoAion": "Banho-Maria",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Banho maria",
   "observacao": null,
@@ -245,7 +245,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Berço Aquecido",
+  "nomeEquipamentoAion": "Berço Aquecido",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Berço aquecido",
   "observacao": null,
@@ -272,7 +272,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Bisturi Elétrico (até 150 W)",
+  "nomeEquipamentoAion": "Bisturi Elétrico (até 150 W)",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Bisturi eletrônico",
   "observacao": null,
@@ -299,7 +299,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Bomba de Infusão",
+  "nomeEquipamentoAion": "Bomba de Infusão",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Bomba de infusão uso geral",
   "observacao": null,
@@ -320,7 +320,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Bomba de Infusão de Seringa",
+  "nomeEquipamentoAion": "Bomba de Infusão de Seringa",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Bomba de infusão de seringa",
   "observacao": null,
@@ -341,35 +341,35 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Cadeira Oftalmológica",
+  "nomeEquipamentoAion": "Cadeira Oftalmológica",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário sem linha de calibração/TSE na planilha; sugerir cadastro apenas com plano de preventiva a definir pela engenharia clínica.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Cadeira de Banho/ Higiênica",
+  "nomeEquipamentoAion": "Cadeira de Banho/ Higiênica",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Cadeira de Rodas Adulto",
+  "nomeEquipamentoAion": "Cadeira de Rodas Adulto",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Cadeira de Rodas para Obeso",
+  "nomeEquipamentoAion": "Cadeira de Rodas para Obeso",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário/acessório de mobilidade sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Cama Hospitalar Tipo Fawler Mecânica",
+  "nomeEquipamentoAion": "Cama Hospitalar Tipo Fawler Mecânica",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Cama elétrica",
   "observacao": "Planilha só lista 'Cama elétrica' (PM 12m / TSE 36m Classe I B). Confirmar se a MI-508 do inventário é mecânica ou elétrica (RENEM já sinalizou essa dúvida): se for mecânica (sem componentes elétricos), TSE não se aplica — usar apenas periodicidade de preventiva.",
@@ -391,7 +391,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Cama hospitalar infantil",
+  "nomeEquipamentoAion": "Cama hospitalar infantil",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Cama elétrica",
   "observacao": "Sem linha específica para cama infantil; usada a linha de cama elétrica como referência — confirmar se o modelo é elétrico antes de aplicar bloco de TSE.",
@@ -413,21 +413,21 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Carro Maca Simples",
+  "nomeEquipamentoAion": "Carro Maca Simples",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário de transporte sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Carro p/medicamentos",
+  "nomeEquipamentoAion": "Carro p/medicamentos",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Mobiliário sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Central de Monitoração para UTI",
+  "nomeEquipamentoAion": "Central de Monitoração para UTI",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Monitor fisiológico multiuso",
   "observacao": "Central de monitoração (estação/display) não tem linha própria; usada a linha de monitor multiparâmetros, mas os parâmetros de calibração listados (oximetria, PNI etc.) só se aplicam se a central realizar aquisição direta — confirmar aplicabilidade.",
@@ -454,7 +454,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Centrífuga Laboratorial",
+  "nomeEquipamentoAion": "Centrífuga Laboratorial",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Centrífuga",
   "observacao": null,
@@ -475,7 +475,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Coluna Oftalmológica",
+  "nomeEquipamentoAion": "Coluna Oftalmológica",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Coluna oftalmológica",
   "observacao": null,
@@ -491,7 +491,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Câmara para Conservação de Hemoderivados/ Imuno/ Termolábeis",
+  "nomeEquipamentoAion": "Câmara para Conservação de Hemoderivados/ Imuno/ Termolábeis",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Câmara de conservação",
   "observacao": null,
@@ -515,7 +515,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Câmara para Conservação de Imunobiológicos",
+  "nomeEquipamentoAion": "Câmara para Conservação de Imunobiológicos",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Câmara de conservação",
   "observacao": null,
@@ -539,7 +539,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Desfibrilador Convencional",
+  "nomeEquipamentoAion": "Desfibrilador Convencional",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Desfibrilador - cardioversor",
   "observacao": null,
@@ -566,7 +566,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Detector Fetal",
+  "nomeEquipamentoAion": "Detector Fetal",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Detector fetal",
   "observacao": null,
@@ -582,7 +582,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Eletroencefalógrafo",
+  "nomeEquipamentoAion": "Eletroencefalógrafo",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Monitor EEG",
   "observacao": "Planilha só lista 'Monitor EEG'; usada como referência para o eletroencefalógrafo diagnóstico do inventário.",
@@ -609,7 +609,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Foco Refletor Ambulatorial",
+  "nomeEquipamentoAion": "Foco Refletor Ambulatorial",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Foco cirúrgico móvel",
   "observacao": "Sem linha específica para foco/refletor ambulatorial (luz de exame); usada a linha de foco cirúrgico móvel como referência mais próxima — sem calibração/TSE listados, apenas preventiva.",
@@ -625,7 +625,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Freezer para Armazenamento de Hemocomponentes",
+  "nomeEquipamentoAion": "Freezer para Armazenamento de Hemocomponentes",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Freezer de armazenamento biológico",
   "observacao": null,
@@ -649,7 +649,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Imitanciômetro",
+  "nomeEquipamentoAion": "Imitanciômetro",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Impedânciometro timpanométrico",
   "observacao": "Imitanciômetro e impedanciômetro timpanométrico são o mesmo equipamento.",
@@ -667,7 +667,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Lâmpada de Fenda",
+  "nomeEquipamentoAion": "Lâmpada de Fenda",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Lâmpada de fenda",
   "observacao": null,
@@ -683,7 +683,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "MAPA - Monitor Ambulatorial de Pressão Arterial",
+  "nomeEquipamentoAion": "MAPA - Monitor Ambulatorial de Pressão Arterial",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "MAPA",
   "observacao": null,
@@ -704,7 +704,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Marcapasso Cardíaco Externo",
+  "nomeEquipamentoAion": "Marcapasso Cardíaco Externo",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Marcapasso cardíaco - eletrodo invasivo",
   "observacao": "Planilha só lista a linha de marcapasso com eletrodo invasivo; o inventário tem marcapasso EXTERNO (transcutâneo) — confirmar com metrologia se os mesmos parâmetros/tolerâncias se aplicam.",
@@ -731,7 +731,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Medidor de Cuff",
+  "nomeEquipamentoAion": "Medidor de Cuff",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Cuffômetro",
   "observacao": "Medidor de cuff e cuffômetro são o mesmo equipamento.",
@@ -749,7 +749,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Mesa Cirúrgica Elétrica",
+  "nomeEquipamentoAion": "Mesa Cirúrgica Elétrica",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Mesa cirúrgica",
   "observacao": null,
@@ -771,14 +771,14 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Mesa Ginecológica",
+  "nomeEquipamentoAion": "Mesa Ginecológica",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Sem linha correspondente na planilha.",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Microscópio Laboratorial Básico",
+  "nomeEquipamentoAion": "Microscópio Laboratorial Básico",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Microscópio Lab",
   "observacao": null,
@@ -794,7 +794,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Monitor Multiparâmetros",
+  "nomeEquipamentoAion": "Monitor Multiparâmetros",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Monitor fisiológico multiuso",
   "observacao": null,
@@ -821,7 +821,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Oftalmoscópio Binocular Indireto",
+  "nomeEquipamentoAion": "Oftalmoscópio Binocular Indireto",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Oftalmoscópio indireto",
   "observacao": null,
@@ -837,7 +837,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Oxímetro de Pulso",
+  "nomeEquipamentoAion": "Oxímetro de Pulso",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Oxímetro de pulso",
   "observacao": null,
@@ -864,7 +864,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Refrator de Greens",
+  "nomeEquipamentoAion": "Refrator de Greens",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Refrator de greens",
   "observacao": null,
@@ -880,7 +880,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Seladora",
+  "nomeEquipamentoAion": "Seladora",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Selador pacote",
   "observacao": null,
@@ -904,7 +904,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Sistema Holter - Analisador e Gravador",
+  "nomeEquipamentoAion": "Sistema Holter - Analisador e Gravador",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Holter",
   "observacao": null,
@@ -925,7 +925,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Sistema de Vídeo Endoscopia Flexível",
+  "nomeEquipamentoAion": "Sistema de Vídeo Endoscopia Flexível",
   "tipoMatch": "aproximado",
   "equipamentoPlanilha": "Torre de videoendoscopia",
   "observacao": "Planilha não tem linha genérica de 'sistema de endoscopia flexível'; usada 'Torre de videoendoscopia' como referência — confirmar se não seria mais adequado 'Videogastroscópio', 'Videocolonoscópio' ou 'Nasofibroscópio' conforme aplicação clínica real do equipamento.",
@@ -941,14 +941,14 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Tela de acuidade visual",
+  "nomeEquipamentoAion": "Tela de acuidade visual",
   "tipoMatch": "sem_correspondencia",
   "equipamentoPlanilha": null,
   "observacao": "Sem linha correspondente na planilha (item óptico simples, provavelmente sem calibração/TSE aplicável).",
   "plano": null
  },
  {
-  "nomeEquipamentoNexo": "Tonômetro",
+  "nomeEquipamentoAion": "Tonômetro",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Tonometro oftalmológico",
   "observacao": null,
@@ -964,7 +964,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Ultrassom Diagnóstico com Aplicação Transesofágica",
+  "nomeEquipamentoAion": "Ultrassom Diagnóstico com Aplicação Transesofágica",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Sistema de ultrassonografia",
   "observacao": null,
@@ -980,7 +980,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Ultrassom Diagnóstico sem Aplicação Transesofágica",
+  "nomeEquipamentoAion": "Ultrassom Diagnóstico sem Aplicação Transesofágica",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Sistema de ultrassonografia",
   "observacao": null,
@@ -996,7 +996,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Ventilador Pulmonar Pressométrico e Volumétrico",
+  "nomeEquipamentoAion": "Ventilador Pulmonar Pressométrico e Volumétrico",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Ventilador UTI",
   "observacao": null,
@@ -1023,7 +1023,7 @@
   }
  },
  {
-  "nomeEquipamentoNexo": "Vídeo Laringoscópio",
+  "nomeEquipamentoAion": "Vídeo Laringoscópio",
   "tipoMatch": "exato",
   "equipamentoPlanilha": "Videolaringoscópio",
   "observacao": null,

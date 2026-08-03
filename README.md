@@ -1,6 +1,7 @@
-# Nexo — Monorepo
+# Aion Engenharia Clínica — Monorepo
 
 Sistema de Gestão de Engenharia Clínica (desktop + PWA de campo).
+Produto: **Aion Engenharia Clínica** · desenvolvido por **Bluebeaver**.
 
 ## Estrutura
 
@@ -19,7 +20,7 @@ packages/shared   tipos e regras compartilhadas
 ```bash
 cp .env.example .env
 pnpm install
-pnpm --filter @nexo/shared build
+pnpm --filter @aion/shared build
 pnpm db:generate
 # com Postgres no ar:
 pnpm db:migrate
@@ -35,9 +36,9 @@ pnpm dev
 
 | E-mail | Senha | Perfil |
 |--------|-------|--------|
-| engenheiro@nexo.local | nexo1234 | Engenheiro |
-| tecnico@nexo.local | nexo1234 | Técnico |
-| solicitante@nexo.local | nexo1234 | Solicitante |
+| engenheiro@aion.local | aion1234 | Engenheiro |
+| tecnico@aion.local | aion1234 | Técnico |
+| solicitante@aion.local | aion1234 | Solicitante |
 
 No boot da API (`scripts/start-prod.mjs`) rodam automaticamente:
 
@@ -63,7 +64,7 @@ Use **Docker Compose** apontando para `docker-compose.yml` na raiz.
 2. Defina as variáveis (mínimo):
    - `POSTGRES_PASSWORD`
    - `JWT_SECRET` (longo e aleatório)
-   - `DATABASE_URL=postgresql://nexo:<senha>@db:5432/nexo?schema=public`
+   - `DATABASE_URL=postgresql://aion:<senha>@db:5432/aion?schema=public`
    - `CORS_ORIGIN` / `WEB_ORIGIN` = URL pública do front
    - `NEXT_PUBLIC_API_URL` = URL pública da API (build arg + runtime)
 3. Publique as portas / domínios:
@@ -80,5 +81,5 @@ O compose sobe `db` + `api` + `web`. A API aplica migrations no start.
 ## Docs de produto
 
 - `HANDOFF-Cursor.md`
-- `Especificacao-Tecnica-Nexo.md`
+- `Especificacao-Tecnica-Aion.md`
 - `design_handoff_nexo/` (protótipos)

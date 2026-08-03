@@ -4,7 +4,7 @@
 
 1. **`Nexo.dc.html`** — protótipo funcional completo do desktop (todo o núcleo operacional homologado: Equipamentos, Ordens de Serviço, Laudos, Portal do Solicitante, Contratos, Estoque, Pessoas, Auditorias/NC, Módulo Estratégico, Indicadores). Abra direto no navegador — é a referência visual e de interação pixel-a-pixel. Todo dado exibido é fictício/mock (ver seção "Dados fictícios" abaixo).
 2. **`Nexo Mobile.dc.html`** — protótipo do app de campo (PWA): execução de OS, Ficha do Equipamento via QR, Abrir Solicitação, Lista de OS atribuídas, indicador offline/sincronização.
-3. **`Especificacao-Tecnica-Nexo.md`** — especificação técnica módulo a módulo: dados/entidades, regras de negócio, API sugerida (estilo OpenAPI), critérios de aceite em Dado/Quando/Então. **Este é o documento-fonte para implementação** — o `.dc.html` mostra o "como fica", a especificação define o "como funciona".
+3. **`Especificacao-Tecnica-Aion.md`** — especificação técnica módulo a módulo: dados/entidades, regras de negócio, API sugerida (estilo OpenAPI), critérios de aceite em Dado/Quando/Então. **Este é o documento-fonte para implementação** — o `.dc.html` mostra o "como fica", a especificação define o "como funciona".
 
 ## Como usar isso no Cursor / Claude Code
 

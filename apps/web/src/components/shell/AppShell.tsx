@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!me) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "var(--nexo-muted)" }}>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "var(--aion-muted)" }}>
         Carregando sessão…
       </div>
     );
@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider value={me}>
-      <div style={{ minHeight: "100vh", display: "flex", background: "var(--nexo-bg)" }}>
+      <div style={{ minHeight: "100vh", display: "flex", background: "var(--aion-bg)" }}>
         <SideRail />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           <TopBar

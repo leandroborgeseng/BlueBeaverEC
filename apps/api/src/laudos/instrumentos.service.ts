@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { podeEditarCadastros } from "@nexo/shared";
+import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -125,7 +125,7 @@ export class InstrumentosService {
         pontosVigente: vigente?._count.pontos ?? 0,
         statusCertificado: st,
         vencido: st === "VENCIDO",
-        selecionavel: st === "VALIDO" || st === "A_VENCER",
+        selecionavel: (st === "VALIDO" || st === "A_VENCER") && (vigente?._count.pontos ?? 0) > 0,
       };
     });
   }
@@ -158,7 +158,9 @@ export class InstrumentosService {
       })),
       statusCertificado: st,
       vencido: st === "VENCIDO",
-      selecionavel: st === "VALIDO" || st === "A_VENCER",
+      pontosVigente: vigente?.pontos?.length ?? 0,
+      selecionavel:
+        (st === "VALIDO" || st === "A_VENCER") && (vigente?.pontos?.length ?? 0) > 0,
     };
   }
 

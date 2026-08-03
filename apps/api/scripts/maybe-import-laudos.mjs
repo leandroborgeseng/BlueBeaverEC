@@ -59,7 +59,7 @@ async function countAnexosForDir(dirName) {
 try {
   const dirs = listLaudoDirs();
   if (dirs.length === 0) {
-    console.log("[nexo] import laudos PDF: nenhuma pasta laudos-* — skip");
+    console.log("[aion] import laudos PDF: nenhuma pasta laudos-* — skip");
     process.exit(0);
   }
 
@@ -68,22 +68,22 @@ try {
   for (const dir of dirs) {
     const rel = path.relative(root, dir);
     const { expected, anexos } = await countAnexosForDir(dir);
-    console.log(`[nexo] import laudos PDF (${path.basename(dir)}): ${anexos}/${expected} anexos`);
+    console.log(`[aion] import laudos PDF (${path.basename(dir)}): ${anexos}/${expected} anexos`);
 
     if (expected === 0) {
-      console.log(`[nexo] ${path.basename(dir)}: vazia — skip`);
+      console.log(`[aion] ${path.basename(dir)}: vazia — skip`);
       continue;
     }
 
     if (!force && anexos >= expected) {
-      console.log(`[nexo] ${path.basename(dir)}: carga completa — skip`);
+      console.log(`[aion] ${path.basename(dir)}: carga completa — skip`);
       continue;
     }
 
     console.log(
       force
-        ? `[nexo] IMPORT_LAUDOS_ON_BOOT=true — reimportando ${rel}…`
-        : `[nexo] importando ${rel} (${expected - anexos} faltando)…`,
+        ? `[aion] IMPORT_LAUDOS_ON_BOOT=true — reimportando ${rel}…`
+        : `[aion] importando ${rel} (${expected - anexos} faltando)…`,
     );
 
     const result = spawnSync("pnpm", ["exec", "tsx", "scripts/import-laudos-pdf.ts", rel], {
@@ -103,7 +103,7 @@ try {
 
   process.exit(exitCode);
 } catch (e) {
-  console.error("[nexo] import laudos PDF falhou:", e);
+  console.error("[aion] import laudos PDF falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();

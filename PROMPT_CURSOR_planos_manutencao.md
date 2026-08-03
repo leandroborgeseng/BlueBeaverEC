@@ -1,4 +1,4 @@
-Estou implementando o módulo de planos de manutenção do sistema Nexo (engenharia clínica). Já existe uma base de equipamentos importada (schema abaixo). Preciso agora importar a lógica de periodicidade e tipos de teste por tipo de equipamento, e deixar o sistema pronto para receber laudos em PDF (calibração, TSE, preventiva, qualificação) vinculando cada um ao equipamento e à ordem de serviço correta.
+Estou implementando o módulo de planos de manutenção do sistema Aion (engenharia clínica). Já existe uma base de equipamentos importada (schema abaixo). Preciso agora importar a lógica de periodicidade e tipos de teste por tipo de equipamento, e deixar o sistema pronto para receber laudos em PDF (calibração, TSE, preventiva, qualificação) vinculando cada um ao equipamento e à ordem de serviço correta.
 
 ## Arquivos fornecidos
 

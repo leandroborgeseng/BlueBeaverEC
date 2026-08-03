@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { permissoesDoPerfil, type PerfilAcesso } from "@nexo/shared";
+import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 

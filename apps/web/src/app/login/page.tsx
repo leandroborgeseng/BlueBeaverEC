@@ -6,8 +6,8 @@ import { API_URL, setToken } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("engenheiro@nexo.local");
-  const [senha, setSenha] = useState("nexo1234");
+  const [email, setEmail] = useState("engenheiro@aion.local");
+  const [senha, setSenha] = useState("aion1234");
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
       const target = API_URL || "/api (proxy)";
       setErro(
         /load failed|failed to fetch|networkerror/i.test(msg)
-          ? `Sem conexão com a API (${target}). Confira se @nexo/api está online e se o web tem API_INTERNAL_URL.`
+          ? `Sem conexão com a API (${target}). Confira se @aion/api está online e se o web tem API_INTERNAL_URL.`
           : msg,
       );
     } finally {
@@ -68,7 +68,7 @@ export default function LoginPage() {
           />
         </div>
         <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 28 }}>
-          Gestão de Engenharia Clínica
+          Aion Engenharia Clínica
         </div>
 
         <div style={label}>UNIDADE</div>
@@ -128,7 +128,7 @@ export default function LoginPage() {
             color: "oklch(0.65 0.01 250)",
           }}
         >
-          © 2026 BlueBeaver · demo: engenheiro@nexo.local / nexo1234
+          © 2026 Bluebeaver · Aion Engenharia Clínica · demo: engenheiro@aion.local / aion1234
         </div>
       </form>
     </div>

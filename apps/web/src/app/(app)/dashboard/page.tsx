@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Badge, Empty, Err, KpiCard, PageHeader, Panel } from "@/components/ui/nexo-ui";
+import { Badge, Empty, Err, KpiCard, PageHeader, Panel } from "@/components/ui/aion-ui";
 
 interface Kpis {
   equipamentosAtivos: number;

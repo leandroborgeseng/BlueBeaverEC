@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { MODULOS } from "@nexo/shared";
+import { MODULOS } from "@aion/shared";
 import { api } from "@/lib/api";
 import {
   Btn,
@@ -14,7 +14,7 @@ import {
   fieldStyle,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 const NIVEIS = ["NENHUM", "LEITURA", "EDICAO", "EDICAO_APROVACAO"] as const;
 

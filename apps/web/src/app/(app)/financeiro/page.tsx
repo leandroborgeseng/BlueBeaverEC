@@ -13,7 +13,7 @@ import {
   Panel,
   td,
   th,
-} from "@/components/ui/nexo-ui";
+} from "@/components/ui/aion-ui";
 
 type Agrupar = "equipamento" | "setor" | "centroCusto";
 

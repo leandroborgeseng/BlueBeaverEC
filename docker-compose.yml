@@ -3,13 +3,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-nexo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexo_change_me}
-      POSTGRES_DB: ${POSTGRES_DB:-nexo}
+      POSTGRES_USER: ${POSTGRES_USER:-aion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aion_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-aion}
     volumes:
-      - nexo_pg:/var/lib/postgresql/data
+      - aion_pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexo} -d ${POSTGRES_DB:-nexo}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aion} -d ${POSTGRES_DB:-aion}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,7 +23,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://nexo:nexo_change_me@db:5432/nexo?schema=public}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://aion:aion_change_me@db:5432/aion?schema=public}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       API_PORT: 3001
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
@@ -52,4 +52,4 @@ services:
       - "3000:3000"
 
 volumes:
-  nexo_pg:
+  aion_pg:

@@ -37,18 +37,18 @@ function run(cmd, args) {
 try {
   const userCount = await prisma.usuario.count();
   if (!forceSeed && userCount > 0) {
-    console.log(`[nexo] seed skipped (${userCount} usuário(s) já existem)`);
+    console.log(`[aion] seed skipped (${userCount} usuário(s) já existem)`);
   } else {
     console.log(
       forceSeed
-        ? "[nexo] SEED_ON_BOOT=true — executando seed…"
-        : "[nexo] banco sem usuários — executando seed demo…",
+        ? "[aion] SEED_ON_BOOT=true — executando seed…"
+        : "[aion] banco sem usuários — executando seed demo…",
     );
     run("pnpm", ["exec", "tsx", "prisma/seed.ts"]);
   }
   process.exit(0);
 } catch (e) {
-  console.error("[nexo] boot seed falhou:", e);
+  console.error("[aion] boot seed falhou:", e);
   process.exit(1);
 } finally {
   await prisma.$disconnect();
