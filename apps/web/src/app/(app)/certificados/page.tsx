@@ -1,7 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  DataTable,
+  Empty,
+  Err,
+  FieldLabel,
+  FilterBar,
+  PageHeader,
+  Panel,
+  ResultCount,
+  fieldStyle,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
 
 interface Cert {
   id: string;
@@ -18,6 +33,8 @@ export default function CertificadosPage() {
   const [doc, setDoc] = useState<unknown>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [qStatus, setQStatus] = useState("Todos");
+  const [qTipo, setQTipo] = useState("Todos");
 
   async function load() {
     setItems(await api<Cert[]>("/certificados"));
@@ -26,6 +43,17 @@ export default function CertificadosPage() {
   useEffect(() => {
     void load().catch((e) => setErro(e.message));
   }, []);
+
+  const filtered = useMemo(() => {
+    return items.filter((c) => {
+      if (qStatus !== "Todos" && c.statusCertificado !== qStatus) return false;
+      if (qTipo !== "Todos" && c.tipo !== qTipo) return false;
+      return true;
+    });
+  }, [items, qStatus, qTipo]);
+
+  const vencidos = items.filter((c) => c.statusCertificado === "VENCIDO").length;
+  const aVencer = items.filter((c) => c.statusCertificado === "A_VENCER").length;
 
   async function consultar(id: string) {
     setDoc(await api(`/certificados/${id}/documento`));
@@ -45,84 +73,105 @@ export default function CertificadosPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Certificados</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Calibração + TSE · A Vencer ≤ 60 dias · consultar / reabrir
-      </p>
-      {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
-      <div style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ textAlign: "left", background: "oklch(0.97 0.01 250)" }}>
-              <th style={th}>Nº</th>
-              <th style={th}>Tipo</th>
-              <th style={th}>Equipamento</th>
-              <th style={th}>Setor</th>
-              <th style={th}>Validade</th>
-              <th style={th}>Status</th>
-              <th style={th}>Ações</th>
+      <PageHeader
+        title="Certificados"
+        subtitle={
+          <span>
+            Calibração + TSE · A Vencer ≤ 60 dias ·{" "}
+            <strong style={{ color: vencidos ? "oklch(0.5 0.17 25)" : undefined }}>{vencidos} vencidos</strong>
+            {" · "}
+            <strong style={{ color: aVencer ? "oklch(0.55 0.12 75)" : undefined }}>{aVencer} a vencer</strong>
+          </span>
+        }
+      />
+
+      {erro && <Err>{erro}</Err>}
+      {msg && (
+        <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.13 150)" }}>{msg}</div>
+      )}
+
+      <FilterBar>
+        <div>
+          <FieldLabel>Status</FieldLabel>
+          <select value={qStatus} onChange={(e) => setQStatus(e.target.value)} style={fieldStyle}>
+            <option>Todos</option>
+            <option value="VALIDO">Válido</option>
+            <option value="A_VENCER">A vencer</option>
+            <option value="VENCIDO">Vencido</option>
+          </select>
+        </div>
+        <div>
+          <FieldLabel>Tipo</FieldLabel>
+          <select value={qTipo} onChange={(e) => setQTipo(e.target.value)} style={fieldStyle}>
+            <option>Todos</option>
+            <option value="CALIBRACAO">Calibração</option>
+            <option value="TSE">TSE</option>
+          </select>
+        </div>
+      </FilterBar>
+
+      <ResultCount n={filtered.length} />
+
+      <DataTable>
+        <thead>
+          <tr>
+            <th style={th}>Nº</th>
+            <th style={th}>Tipo</th>
+            <th style={th}>Equipamento</th>
+            <th style={th}>Setor</th>
+            <th style={th}>Validade</th>
+            <th style={th}>Status</th>
+            <th style={th}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((c) => (
+            <tr key={c.id}>
+              <td style={td}>
+                <strong>{c.numero}</strong>
+              </td>
+              <td style={td}>{c.tipo}</td>
+              <td style={td}>
+                {c.equipamento.tag}
+                <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{c.equipamento.nome}</div>
+              </td>
+              <td style={td}>{c.equipamento.setor.nome}</td>
+              <td style={td}>{c.validadeAte ? new Date(c.validadeAte).toLocaleDateString("pt-BR") : "—"}</td>
+              <td style={td}>
+                <Badge tone={c.statusCertificado}>{c.statusCertificado.replace("_", " ")}</Badge>
+              </td>
+              <td style={td}>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <Btn variant="ghost" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void consultar(c.id)}>
+                    Documento
+                  </Btn>
+                  <Btn variant="secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => void reabrir(c.id)}>
+                    Reabrir
+                  </Btn>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {items.map((c) => (
-              <tr key={c.id} style={{ borderTop: "1px solid var(--nexo-border)" }}>
-                <td style={td}>{c.numero}</td>
-                <td style={td}>{c.tipo}</td>
-                <td style={td}>{c.equipamento.tag} — {c.equipamento.nome}</td>
-                <td style={td}>{c.equipamento.setor.nome}</td>
-                <td style={td}>{c.validadeAte ? new Date(c.validadeAte).toLocaleDateString("pt-BR") : "—"}</td>
-                <td style={{ ...td, fontWeight: 700, color: statusColor(c.statusCertificado) }}>
-                  {c.statusCertificado}
-                </td>
-                <td style={td}>
-                  <button type="button" onClick={() => void consultar(c.id)} style={btn}>Documento</button>{" "}
-                  <button type="button" onClick={() => void reabrir(c.id)} style={btn}>Reabrir</button>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
-              <tr>
-                <td colSpan={7} style={{ ...td, color: "var(--nexo-muted)" }}>Nenhum certificado</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DataTable>
+      {filtered.length === 0 && <Empty text="Nenhum certificado neste filtro." />}
+
       {doc != null && (
-        <pre
-          style={{
-            marginTop: 14,
-            padding: 14,
-            borderRadius: 12,
-            border: "1px solid var(--nexo-border)",
-            background: "var(--nexo-surface)",
-            fontSize: 11,
-            overflow: "auto",
-            maxHeight: 360,
-          }}
-        >
-          {JSON.stringify(doc, null, 2)}
-        </pre>
+        <Panel title="Documento do certificado" action={<Btn variant="ghost" onClick={() => setDoc(null)}>Fechar</Btn>}>
+          <pre
+            style={{
+              margin: 0,
+              fontSize: 11,
+              overflow: "auto",
+              maxHeight: 360,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          >
+            {JSON.stringify(doc, null, 2)}
+          </pre>
+        </Panel>
       )}
     </div>
   );
 }
-
-function statusColor(s: string) {
-  if (s === "VENCIDO") return "var(--nexo-danger)";
-  if (s === "A_VENCER") return "var(--nexo-warning)";
-  return "var(--nexo-success)";
-}
-
-const th: React.CSSProperties = { padding: "12px 14px", fontSize: 12, color: "var(--nexo-muted)" };
-const td: React.CSSProperties = { padding: "12px 14px" };
-const btn: React.CSSProperties = {
-  border: "1px solid var(--nexo-border)",
-  background: "white",
-  borderRadius: 6,
-  padding: "4px 8px",
-  fontSize: 11,
-  fontWeight: 700,
-  cursor: "pointer",
-};

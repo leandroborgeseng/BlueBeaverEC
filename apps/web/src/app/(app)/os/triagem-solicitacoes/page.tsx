@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  Empty,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Solicitacao {
   id: string;
@@ -19,6 +29,7 @@ interface Solicitacao {
 export default function TriagemPage() {
   const [items, setItems] = useState<Solicitacao[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState<Record<string, string>>({});
 
   async function load() {
@@ -26,7 +37,7 @@ export default function TriagemPage() {
   }
 
   useEffect(() => {
-    void load().catch((e) => setMsg(e.message));
+    void load().catch((e) => setErro(e.message));
   }, []);
 
   async function vincular(id: string) {
@@ -38,9 +49,10 @@ export default function TriagemPage() {
         body: JSON.stringify({ equipamentoTag: tag.trim() }),
       });
       setMsg("Equipamento vinculado");
+      setErro(null);
       await load();
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Erro");
+      setErro(e instanceof Error ? e.message : "Erro");
     }
   }
 
@@ -50,12 +62,11 @@ export default function TriagemPage() {
         `/solicitacoes/${id}/aprovar`,
         { method: "POST", body: "{}" },
       );
-      setMsg(
-        `Convertida em ${res.os.codigo}${res.avisoDuplicidade ? ` — ${res.avisoDuplicidade}` : ""}`,
-      );
+      setMsg(`Convertida em ${res.os.codigo}${res.avisoDuplicidade ? ` — ${res.avisoDuplicidade}` : ""}`);
+      setErro(null);
       await load();
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Erro");
+      setErro(e instanceof Error ? e.message : "Erro");
     }
   }
 
@@ -68,95 +79,99 @@ export default function TriagemPage() {
         body: JSON.stringify({ justificativa }),
       });
       setMsg("Solicitação recusada");
+      setErro(null);
       await load();
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Erro");
+      setErro(e instanceof Error ? e.message : "Erro");
     }
   }
 
+  const pendentes = items.filter((s) => s.status === "PENDENTE").length;
+
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Triagem de Solicitações</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Aprovar cria OS vinculada · recusar exige justificativa
-      </p>
-      {msg && <div style={{ marginBottom: 12, color: "var(--nexo-brand)" }}>{msg}</div>}
+      <PageHeader
+        title="Triagem de Solicitações"
+        subtitle={
+          <span>
+            Aprovar cria OS vinculada · recusar exige justificativa · <strong>{pendentes}</strong> pendente(s)
+          </span>
+        }
+      />
+
+      {erro && <Err>{erro}</Err>}
+      {msg && (
+        <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 255)" }}>{msg}</div>
+      )}
 
       <div style={{ display: "grid", gap: 12 }}>
         {items.map((s) => (
-          <article
-            key={s.id}
-            style={{
-              background: "var(--nexo-surface)",
-              border: "1px solid var(--nexo-border)",
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <Surface key={s.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <div>
-                <strong>{s.protocolo}</strong> · {s.urgencia} · {s.status}
-                <div style={{ fontSize: 13, color: "var(--nexo-muted)", marginTop: 4 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <strong style={{ fontSize: 15 }}>{s.protocolo}</strong>
+                  <Badge tone={s.urgencia}>{s.urgencia}</Badge>
+                  <Badge tone={s.status}>{s.status}</Badge>
+                </div>
+                <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginTop: 6 }}>
                   {s.solicitanteNome} · {s.setorNome}
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>
-                {s.equipamento ? `${s.equipamento.tag} — ${s.equipamento.nome}` : "Sem equipamento"}
-                {s.ordemServico ? ` · ${s.ordemServico.codigo}` : ""}
+              <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)", textAlign: "right" }}>
+                {s.equipamento ? (
+                  <>
+                    <strong>{s.equipamento.tag}</strong> — {s.equipamento.nome}
+                  </>
+                ) : (
+                  "Sem equipamento"
+                )}
+                {s.ordemServico ? (
+                  <div>
+                    OS: <strong>{s.ordemServico.codigo}</strong>
+                  </div>
+                ) : null}
               </div>
             </div>
-            <p style={{ margin: "12px 0", fontSize: 14 }}>{s.descricao}</p>
+
+            <p style={{ margin: "14px 0 0", fontSize: 14, lineHeight: 1.45 }}>{s.descricao}</p>
+
             {s.justificativaRecusa && (
-              <p style={{ color: "var(--nexo-danger)", fontSize: 13 }}>Recusa: {s.justificativaRecusa}</p>
+              <p style={{ margin: "10px 0 0", color: "oklch(0.45 0.15 25)", fontSize: 13, fontWeight: 600 }}>
+                Recusa: {s.justificativaRecusa}
+              </p>
             )}
+
             {s.status === "PENDENTE" && (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end", marginTop: 14 }}>
                 {!s.equipamento && (
-                  <>
+                  <div style={{ minWidth: 160, flex: 1 }}>
+                    <FieldLabel>TAG equipamento</FieldLabel>
                     <input
-                      placeholder="TAG equipamento"
+                      placeholder="Ex: EQ-0001"
                       value={tagDraft[s.id] ?? ""}
                       onChange={(e) => setTagDraft((d) => ({ ...d, [s.id]: e.target.value }))}
-                      style={input}
+                      style={fieldStyle}
                     />
-                    <button type="button" style={btnGhost} onClick={() => void vincular(s.id)}>
-                      Vincular
-                    </button>
-                  </>
+                  </div>
                 )}
-                <button type="button" style={btn} onClick={() => void aprovar(s.id)} disabled={!s.equipamento}>
+                {!s.equipamento && (
+                  <Btn variant="ghost" onClick={() => void vincular(s.id)}>
+                    Vincular
+                  </Btn>
+                )}
+                <Btn variant="primary" onClick={() => void aprovar(s.id)} disabled={!s.equipamento}>
                   Aprovar → OS
-                </button>
-                <button type="button" style={btnGhost} onClick={() => void recusar(s.id)}>
+                </Btn>
+                <Btn variant="danger" onClick={() => void recusar(s.id)}>
                   Recusar
-                </button>
+                </Btn>
               </div>
             )}
-          </article>
+          </Surface>
         ))}
-        {items.length === 0 && <div style={{ color: "var(--nexo-muted)" }}>Nenhuma solicitação</div>}
+        {items.length === 0 && <Empty text="Nenhuma solicitação na fila." />}
       </div>
     </div>
   );
 }
-
-const input: React.CSSProperties = {
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 10,
-  padding: "8px 10px",
-};
-const btn: React.CSSProperties = {
-  border: "none",
-  borderRadius: 10,
-  padding: "9px 12px",
-  background: "var(--nexo-primary)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-const btnGhost: React.CSSProperties = {
-  ...btn,
-  background: "white",
-  color: "var(--nexo-text)",
-  border: "1px solid var(--nexo-border)",
-};

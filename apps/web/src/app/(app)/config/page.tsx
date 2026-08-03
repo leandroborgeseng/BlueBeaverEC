@@ -2,6 +2,18 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  DataTable,
+  Empty,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Panel,
+  fieldStyle,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
 
 export default function ConfigPage() {
   const [org, setOrg] = useState<{ nome: string; cnpj?: string | null; fusoHorario: string; slaUrgenteHoras: number } | null>(null);
@@ -81,11 +93,8 @@ export default function ConfigPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Configurações</h1>
-      <p style={{ margin: "0 0 12px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Organização · usuários · perfis custom · logs de acesso
-      </p>
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
+      <PageHeader title="Configurações" subtitle="Organização · usuários · perfis custom · logs de acesso" />
+      {msg && <Err>{msg}</Err>}
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {([
           ["org", "Organização"],
@@ -93,83 +102,161 @@ export default function ConfigPage() {
           ["perfis", "Perfis"],
           ["logs", "Logs"],
         ] as const).map(([k, l]) => (
-          <button key={k} type="button" onClick={() => setTab(k)} style={{ ...btn, background: tab === k ? "var(--nexo-brand)" : "var(--nexo-surface)", color: tab === k ? "white" : "inherit", border: "1px solid var(--nexo-border)" }}>
+          <Btn key={k} variant={tab === k ? "primary" : "ghost"} onClick={() => setTab(k)}>
             {l}
-          </button>
+          </Btn>
         ))}
       </div>
 
       {tab === "org" && org && (
-        <form onSubmit={(e) => void saveOrg(e)} style={{ ...card, display: "grid", gap: 10, maxWidth: 480 }}>
-          <input name="nome" defaultValue={org.nome} required style={input} />
-          <input name="cnpj" defaultValue={org.cnpj ?? ""} placeholder="CNPJ" style={input} />
-          <input name="fuso" defaultValue={org.fusoHorario} style={input} />
-          <input name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={input} />
-          <button type="submit" style={btn}>Salvar</button>
-        </form>
+        <Panel title="Organização">
+          <form onSubmit={(e) => void saveOrg(e)} style={{ display: "grid", gap: 10, maxWidth: 480 }}>
+            <div>
+              <FieldLabel>Nome</FieldLabel>
+              <input name="nome" defaultValue={org.nome} required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>CNPJ</FieldLabel>
+              <input name="cnpj" defaultValue={org.cnpj ?? ""} placeholder="CNPJ" style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Fuso horário</FieldLabel>
+              <input name="fuso" defaultValue={org.fusoHorario} style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>SLA urgente (horas)</FieldLabel>
+              <input name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={fieldStyle} />
+            </div>
+            <Btn type="submit">Salvar</Btn>
+          </form>
+        </Panel>
       )}
 
       {tab === "users" && (
-        <div>
-          <form onSubmit={(e) => void createUser(e)} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto", gap: 8, marginBottom: 14 }}>
-            <input name="email" type="email" placeholder="E-mail" required style={input} />
-            <input name="nome" placeholder="Nome" required style={input} />
-            <input name="senha" type="password" placeholder="Senha" required style={input} />
-            <select name="perfil" style={input}>
-              {["ENGENHEIRO", "GESTOR", "TECNICO", "SOLICITANTE", "AUDITORIA", "ADMIN"].map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            <button type="submit" style={btn}>Adicionar</button>
-          </form>
-          {usuarios.map((u) => (
-            <div key={u.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 13 }}>
-              <strong>{u.usuario.nome}</strong> · {u.usuario.email} · {u.perfil} · {u.usuario.ativo ? "ativo" : "inativo"}
+        <Panel title="Usuários">
+          <form onSubmit={(e) => void createUser(e)} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 14 }}>
+            <div>
+              <FieldLabel>E-mail</FieldLabel>
+              <input name="email" type="email" placeholder="E-mail" required style={fieldStyle} />
             </div>
-          ))}
-        </div>
+            <div>
+              <FieldLabel>Nome</FieldLabel>
+              <input name="nome" placeholder="Nome" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Senha</FieldLabel>
+              <input name="senha" type="password" placeholder="Senha" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Perfil</FieldLabel>
+              <select name="perfil" style={fieldStyle}>
+                {["ENGENHEIRO", "GESTOR", "TECNICO", "SOLICITANTE", "AUDITORIA", "ADMIN"].map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <Btn type="submit">Adicionar</Btn>
+          </form>
+          <DataTable>
+            <thead>
+              <tr>
+                <th style={th}>Nome</th>
+                <th style={th}>E-mail</th>
+                <th style={th}>Perfil</th>
+                <th style={th}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usuarios.length === 0 ? (
+                <tr><td colSpan={4} style={td}><Empty /></td></tr>
+              ) : (
+                usuarios.map((u) => (
+                  <tr key={u.id}>
+                    <td style={td}><strong>{u.usuario.nome}</strong></td>
+                    <td style={td}>{u.usuario.email}</td>
+                    <td style={td}>{u.perfil}</td>
+                    <td style={td}>{u.usuario.ativo ? "ativo" : "inativo"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </DataTable>
+        </Panel>
       )}
 
       {tab === "perfis" && (
-        <div>
-          <form onSubmit={(e) => void createPerfil(e)} style={{ ...card, display: "grid", gap: 8, marginBottom: 14, maxWidth: 520 }}>
-            <input name="nome" placeholder="Nome do perfil" required style={input} />
+        <Panel title="Perfis customizados">
+          <form onSubmit={(e) => void createPerfil(e)} style={{ display: "grid", gap: 10, marginBottom: 14, maxWidth: 520 }}>
+            <div>
+              <FieldLabel>Nome do perfil</FieldLabel>
+              <input name="nome" placeholder="Nome do perfil" required style={fieldStyle} />
+            </div>
             {(["equipamentos", "os", "financeiro"] as const).map((m) => (
-              <label key={m} style={{ fontSize: 13, display: "flex", justifyContent: "space-between", gap: 8 }}>
-                {m}
-                <select name={m} style={input}>
+              <div key={m}>
+                <FieldLabel>{m}</FieldLabel>
+                <select name={m} style={fieldStyle}>
                   <option value="NENHUM">Nenhum</option>
                   <option value="LEITURA">Leitura</option>
                   <option value="EDICAO">Edição</option>
                   <option value="EDICAO_APROVACAO">Edição+Aprovação</option>
                 </select>
-              </label>
+              </div>
             ))}
-            <button type="submit" style={btn}>Criar perfil</button>
+            <Btn type="submit">Criar perfil</Btn>
           </form>
-          {perfis.map((p) => (
-            <div key={p.id} style={{ fontSize: 13, padding: "8px 0", borderBottom: "1px solid var(--nexo-border)" }}>
-              <strong>{p.nome}</strong>
-              <pre style={{ margin: 0, fontSize: 11 }}>{JSON.stringify(p.permissoes)}</pre>
-            </div>
-          ))}
-        </div>
+          <DataTable>
+            <thead>
+              <tr>
+                <th style={th}>Nome</th>
+                <th style={th}>Permissões</th>
+              </tr>
+            </thead>
+            <tbody>
+              {perfis.length === 0 ? (
+                <tr><td colSpan={2} style={td}><Empty /></td></tr>
+              ) : (
+                perfis.map((p) => (
+                  <tr key={p.id}>
+                    <td style={td}><strong>{p.nome}</strong></td>
+                    <td style={td}><code style={{ fontSize: 11 }}>{JSON.stringify(p.permissoes)}</code></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </DataTable>
+        </Panel>
       )}
 
       {tab === "logs" && (
-        <div style={{ maxHeight: 480, overflow: "auto" }}>
-          {logs.map((l) => (
-            <div key={l.id} style={{ fontSize: 12, padding: "8px 0", borderBottom: "1px solid var(--nexo-border)" }}>
-              <strong>{l.acao}</strong> · {l.usuario?.nome ?? "sistema"} · {String(l.createdAt).slice(0, 19)}
-              {l.detalhe && <div style={{ color: "var(--nexo-muted)" }}>{l.detalhe}</div>}
-            </div>
-          ))}
-        </div>
+        <Panel title="Logs de acesso">
+          <div style={{ maxHeight: 480, overflow: "auto" }}>
+            {logs.length === 0 ? (
+              <Empty />
+            ) : (
+              <DataTable>
+                <thead>
+                  <tr>
+                    <th style={th}>Ação</th>
+                    <th style={th}>Usuário</th>
+                    <th style={th}>Data</th>
+                    <th style={th}>Detalhe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((l) => (
+                    <tr key={l.id}>
+                      <td style={td}><strong>{l.acao}</strong></td>
+                      <td style={td}>{l.usuario?.nome ?? "sistema"}</td>
+                      <td style={td}>{String(l.createdAt).slice(0, 19)}</td>
+                      <td style={td}>{l.detalhe ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </DataTable>
+            )}
+          </div>
+        </Panel>
       )}
     </div>
   );
 }
-
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 };
-const input: React.CSSProperties = { padding: "8px 10px", borderRadius: 8, border: "1px solid var(--nexo-border)", background: "var(--nexo-bg)", width: "100%" };
-const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "none", background: "var(--nexo-brand)", color: "white", fontWeight: 700, cursor: "pointer", height: "fit-content" };

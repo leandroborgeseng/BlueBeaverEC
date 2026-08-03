@@ -51,7 +51,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           perfil={me.perfil}
           estabelecimentos={me.estabelecimentos}
         />
-        <main style={{ flex: 1, padding: 20, position: "relative" }}>{children}</main>
+        <main style={{ flex: 1, padding: "18px 22px 56px", position: "relative", overflow: "auto" }}>
+          {children}
+        </main>
       </div>
       <FloatingWindowLayer />
       <Dock />

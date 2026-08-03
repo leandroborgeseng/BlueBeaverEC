@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Empty,
+  Err,
+  KpiCard,
+  PageHeader,
+  Panel,
+} from "@/components/ui/nexo-ui";
 
 interface Dash {
   indiceMaturidadePct: number | null;
@@ -27,16 +35,31 @@ export default function DashboardExecutivoPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Dashboard Executivo</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Índice de maturidade calculado automaticamente a partir dos domínios avaliados
-      </p>
-      {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
+      <PageHeader title="Dashboard Executivo" subtitle="Índice de maturidade calculado automaticamente a partir dos domínios avaliados" />
+      {erro && <Err>{erro}</Err>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-        <Kpi label="Maturidade" value={d?.indiceMaturidadePct != null ? `${d.indiceMaturidadePct}%` : "—"} sub={d?.nivelMaturidade != null ? `Nível ${d.nivelMaturidade}` : undefined} />
-        <Kpi label="Conformidade" value={d?.indiceConformidadePct != null ? `${d.indiceConformidadePct}%` : "—"} />
-        <Kpi label="Disponibilidade" value={d?.disponibilidadePct != null ? `${d.disponibilidadePct}%` : "—"} />
-        <Kpi label="Riscos críticos" value={d?.riscosCriticos.total ?? "—"} sub={d ? `NC ${d.riscosCriticos.ncAbertas} · Urg ${d.riscosCriticos.osUrgentes}` : undefined} />
+        <KpiCard
+          label="Maturidade"
+          value={d?.indiceMaturidadePct != null ? `${d.indiceMaturidadePct}%` : "—"}
+          hint={d?.nivelMaturidade != null ? `Nível ${d.nivelMaturidade}` : undefined}
+          tone="info"
+        />
+        <KpiCard
+          label="Conformidade"
+          value={d?.indiceConformidadePct != null ? `${d.indiceConformidadePct}%` : "—"}
+          tone="success"
+        />
+        <KpiCard
+          label="Disponibilidade"
+          value={d?.disponibilidadePct != null ? `${d.disponibilidadePct}%` : "—"}
+          tone="neutral"
+        />
+        <KpiCard
+          label="Riscos críticos"
+          value={d?.riscosCriticos.total ?? "—"}
+          hint={d ? `NC ${d.riscosCriticos.ncAbertas} · Urg ${d.riscosCriticos.osUrgentes}` : undefined}
+          tone="danger"
+        />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 14, marginTop: 16 }}>
@@ -48,9 +71,9 @@ export default function DashboardExecutivoPage() {
         <Panel title="Recomendações institucionais">
           {(d?.recomendacoes ?? []).length === 0 && <Empty />}
           {(d?.recomendacoes ?? []).map((r) => (
-            <div key={r.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 13 }}>
-              <strong>{r.prioridade}</strong> · {r.titulo}
-              <div style={{ color: "var(--nexo-muted)", fontSize: 12 }}>{r.origem}</div>
+            <div key={r.id} style={{ padding: "8px 0", borderBottom: "1px solid oklch(0.94 0.005 255)", fontSize: 13 }}>
+              <Badge tone={r.prioridade}>{r.prioridade}</Badge> · {r.titulo}
+              <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 12, marginTop: 4 }}>{r.origem}</div>
             </div>
           ))}
         </Panel>
@@ -74,34 +97,11 @@ export default function DashboardExecutivoPage() {
   );
 }
 
-function Kpi({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 }}>
-      <div style={{ fontSize: 11, color: "var(--nexo-muted)", fontWeight: 700 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 800, marginTop: 4 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>{sub}</div>}
-    </div>
-  );
-}
-
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 }}>
-      <h2 style={{ margin: "0 0 8px", fontSize: 14 }}>{title}</h2>
-      {children}
-    </section>
-  );
-}
-
 function Row({ left, right }: { left: string; right: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 13 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid oklch(0.94 0.005 255)", fontSize: 13 }}>
       <span>{left}</span>
       <strong>{right}</strong>
     </div>
   );
-}
-
-function Empty() {
-  return <div style={{ fontSize: 13, color: "var(--nexo-muted)" }}>Nenhum item</div>;
 }

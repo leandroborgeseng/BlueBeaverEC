@@ -2,6 +2,13 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Dom {
   id: string;
@@ -46,30 +53,22 @@ export default function MaturidadePage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Avaliação de Maturidade</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Domínios com nível 1–5 · gaps e plano de ação
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
+      <PageHeader title="Avaliação de Maturidade" subtitle="Domínios com nível 1–5 · gaps e plano de ação" />
+      {msg && <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
         {dominios.map((d) => (
           <button
             key={d.id}
             type="button"
             onClick={() => setSel(d)}
-            style={{
-              textAlign: "left",
-              padding: 14,
-              borderRadius: 12,
-              border: "1px solid var(--nexo-border)",
-              background: "var(--nexo-surface)",
-              cursor: "pointer",
-            }}
+            style={{ textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}
           >
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{d.nome}</div>
-            <div style={{ fontSize: 12, color: "var(--nexo-muted)", marginTop: 4 }}>
-              {d.avaliacao ? `Nível ${d.avaliacao.nivel}` : "Não avaliado"} · peso {d.peso}
-            </div>
+            <Surface>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{d.nome}</div>
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
+                {d.avaliacao ? `Nível ${d.avaliacao.nivel}` : "Não avaliado"} · peso {d.peso}
+              </div>
+            </Surface>
           </button>
         ))}
       </div>
@@ -86,59 +85,31 @@ export default function MaturidadePage() {
           }}
           onClick={() => setSel(null)}
         >
-          <form
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={(e) => void salvar(e)}
-            style={{
-              width: 420,
-              background: "var(--nexo-surface)",
-              borderRadius: 14,
-              padding: 18,
-              display: "grid",
-              gap: 10,
-            }}
-          >
-            <h2 style={{ margin: 0, fontSize: 16 }}>{sel.nome}</h2>
-            <label style={{ fontSize: 13 }}>
-              Nível (1–5)
-              <input name="nivel" type="number" min={1} max={5} defaultValue={sel.avaliacao?.nivel ?? 3} required style={input} />
-            </label>
-            <label style={{ fontSize: 13 }}>
-              Gaps (um por linha)
-              <textarea name="gaps" rows={3} style={input} placeholder="Lacuna 1&#10;Lacuna 2" />
-            </label>
-            <label style={{ fontSize: 13 }}>
-              Plano de ação
-              <textarea name="planoAcao" rows={2} defaultValue={sel.avaliacao?.planoAcao ?? ""} style={input} />
-            </label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button type="submit" style={btn}>Salvar</button>
-              <button type="button" onClick={() => setSel(null)} style={{ ...btn, background: "transparent", color: "var(--nexo-text)", border: "1px solid var(--nexo-border)" }}>
-                Cancelar
-              </button>
-            </div>
-          </form>
+          <div onClick={(e) => e.stopPropagation()}>
+          <Surface style={{ width: 420 }}>
+            <form onSubmit={(e) => void salvar(e)} style={{ display: "grid", gap: 10 }}>
+              <h2 style={{ margin: 0, fontSize: 16 }}>{sel.nome}</h2>
+              <div>
+                <FieldLabel>Nível (1–5)</FieldLabel>
+                <input name="nivel" type="number" min={1} max={5} defaultValue={sel.avaliacao?.nivel ?? 3} required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Gaps (um por linha)</FieldLabel>
+                <textarea name="gaps" rows={3} style={fieldStyle} placeholder="Lacuna 1&#10;Lacuna 2" />
+              </div>
+              <div>
+                <FieldLabel>Plano de ação</FieldLabel>
+                <textarea name="planoAcao" rows={2} defaultValue={sel.avaliacao?.planoAcao ?? ""} style={fieldStyle} />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn type="submit">Salvar</Btn>
+                <Btn variant="ghost" onClick={() => setSel(null)}>Cancelar</Btn>
+              </div>
+            </form>
+          </Surface>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
-const input: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  marginTop: 4,
-  padding: "8px 10px",
-  borderRadius: 8,
-  border: "1px solid var(--nexo-border)",
-  background: "var(--nexo-bg)",
-};
-const btn: React.CSSProperties = {
-  padding: "8px 14px",
-  borderRadius: 8,
-  border: "none",
-  background: "var(--nexo-brand)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-};

@@ -42,8 +42,10 @@ export default function LoginPage() {
     <div
       style={{
         minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         background: "linear-gradient(160deg, oklch(0.4 0.15 258) 0%, oklch(0.26 0.13 262) 100%)",
         padding: 24,
       }}
@@ -52,60 +54,83 @@ export default function LoginPage() {
         onSubmit={onSubmit}
         style={{
           width: 400,
-          background: "white",
+          background: "oklch(1 0 0)",
           borderRadius: 16,
           padding: "40px 36px",
           boxShadow: "0 30px 60px -20px rgba(0,0,0,0.4)",
         }}
       >
-        <div style={{ fontWeight: 800, fontSize: 28, color: "var(--nexo-brand)" }}>Nexo</div>
-        <div style={{ fontSize: 13, color: "var(--nexo-muted)", marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+          <img
+            src="/bluebeaver-logo.png"
+            alt="BlueBeaver"
+            style={{ height: 34, borderRadius: 6 }}
+          />
+        </div>
+        <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 28 }}>
           Gestão de Engenharia Clínica
         </div>
 
-        <label style={label}>E-mail</label>
-        <input style={input} value={email} onChange={(e) => setEmail(e.target.value)} />
+        <div style={label}>USUÁRIO</div>
+        <input
+          style={input}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="username"
+        />
 
-        <label style={{ ...label, marginTop: 14 }}>Senha</label>
+        <div style={{ ...label, marginTop: 14 }}>SENHA</div>
         <input
           style={input}
           type="password"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          autoComplete="current-password"
         />
 
+        <div style={{ textAlign: "right", marginBottom: 8, marginTop: 8 }}>
+          <span style={{ fontSize: 12.5, color: "oklch(0.55 0.16 255)" }}>Esqueci minha senha</span>
+        </div>
+
         {erro && (
-          <div style={{ marginTop: 12, color: "var(--nexo-danger)", fontSize: 13 }}>{erro}</div>
+          <div style={{ marginTop: 8, color: "oklch(0.45 0.15 25)", fontSize: 13 }}>{erro}</div>
         )}
 
         <button
           type="submit"
           disabled={loading}
           style={{
-            marginTop: 22,
+            marginTop: 12,
             width: "100%",
             border: "none",
             borderRadius: 10,
-            padding: "12px 14px",
-            background: "var(--nexo-primary)",
+            padding: 12,
+            background: "oklch(0.64 0.19 38)",
             color: "white",
-            fontWeight: 700,
+            fontSize: 14.5,
+            fontWeight: 600,
             cursor: "pointer",
           }}
         >
           {loading ? "Entrando…" : "Entrar"}
         </button>
 
-        <p style={{ marginTop: 16, fontSize: 12, color: "var(--nexo-muted)", lineHeight: 1.5 }}>
-          Demo: engenheiro@nexo.local · tecnico@nexo.local · senha nexo1234
-        </p>
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 22,
+            fontSize: 11.5,
+            color: "oklch(0.65 0.01 250)",
+          }}
+        >
+          © 2026 BlueBeaver · demo: engenheiro@nexo.local / nexo1234
+        </div>
       </form>
     </div>
   );
 }
 
 const label: React.CSSProperties = {
-  display: "block",
   fontSize: 12,
   fontWeight: 600,
   color: "oklch(0.45 0.02 250)",
@@ -118,4 +143,5 @@ const input: React.CSSProperties = {
   borderRadius: 10,
   padding: "11px 14px",
   fontSize: 14,
+  color: "oklch(0.3 0.02 250)",
 };

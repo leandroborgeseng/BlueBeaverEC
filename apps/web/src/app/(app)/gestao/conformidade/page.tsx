@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  FieldLabel,
+  PageHeader,
+  Panel,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Req {
   id: string;
@@ -61,56 +69,54 @@ export default function ConformidadePage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Conformidade e POPs</h1>
-      <p style={{ margin: "0 0 12px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Catálogo de requisitos pré-cadastrado · evidências · biblioteca de POPs
-      </p>
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
+      <PageHeader title="Conformidade e POPs" subtitle="Catálogo de requisitos pré-cadastrado · evidências · biblioteca de POPs" />
+      {msg && <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {(["conf", "req", "pop"] as const).map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} style={{ ...btn, background: tab === t ? "var(--nexo-brand)" : "var(--nexo-surface)", color: tab === t ? "white" : "var(--nexo-text)", border: "1px solid var(--nexo-border)" }}>
+          <Btn key={t} variant={tab === t ? "primary" : "ghost"} onClick={() => setTab(t)}>
             {t === "conf" ? "Central" : t === "req" ? "Catálogo" : "POPs"}
-          </button>
+          </Btn>
         ))}
       </div>
 
       {tab !== "pop" && (
-        <div style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "grid", gap: 10 }}>
           {itens.map((r) => (
-            <div key={r.id} style={{ padding: 12, borderRadius: 10, border: "1px solid var(--nexo-border)", background: "var(--nexo-surface)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                <div>
-                  <strong>{r.codigo}</strong> · {r.norma}
-                  <div style={{ fontSize: 13 }}>{r.texto}</div>
-                  <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>{r.categoria} · {r.status ?? "SEM_EVIDENCIA"}</div>
-                </div>
-                {tab === "conf" && (
-                  <button type="button" onClick={() => void evidenciar(r.id)} style={btn}>Evidenciar</button>
-                )}
+            <Panel key={r.id} title={`${r.codigo} · ${r.norma}`} action={tab === "conf" ? <Btn variant="secondary" onClick={() => void evidenciar(r.id)}>Evidenciar</Btn> : undefined}>
+              <div style={{ fontSize: 13, marginBottom: 8 }}>{r.texto}</div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                {r.categoria}
+                <Badge tone={r.status ?? "PENDENTE"}>{r.status ?? "SEM_EVIDENCIA"}</Badge>
               </div>
-            </div>
+            </Panel>
           ))}
         </div>
       )}
 
       {tab === "pop" && (
-        <div>
-          <form onSubmit={(e) => void createPop(e)} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr auto", gap: 8, marginBottom: 14 }}>
-            <input name="codigo" placeholder="Código" required style={input} />
-            <input name="titulo" placeholder="Título" required style={input} />
-            <input name="procedimentoLaudoId" placeholder="ID procedimento (opcional)" style={input} />
-            <button type="submit" style={btn}>Novo POP</button>
+        <Panel title="Biblioteca de POPs">
+          <form onSubmit={(e) => void createPop(e)} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 14 }}>
+            <div>
+              <FieldLabel>Código</FieldLabel>
+              <input name="codigo" placeholder="Código" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Título</FieldLabel>
+              <input name="titulo" placeholder="Título" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Procedimento</FieldLabel>
+              <input name="procedimentoLaudoId" placeholder="ID (opcional)" style={fieldStyle} />
+            </div>
+            <Btn type="submit">Novo POP</Btn>
           </form>
           {pops.map((p) => (
-            <div key={p.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 13 }}>
+            <div key={p.id} style={{ padding: "10px 0", borderBottom: "1px solid oklch(0.94 0.005 255)", fontSize: 13 }}>
               <strong>{p.codigo}</strong> · {p.titulo} · v{p.versao}
             </div>
           ))}
-        </div>
+        </Panel>
       )}
     </div>
   );
 }
-
-const input: React.CSSProperties = { padding: "8px 10px", borderRadius: 8, border: "1px solid var(--nexo-border)", background: "var(--nexo-bg)" };
-const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "none", background: "var(--nexo-brand)", color: "white", fontWeight: 700, cursor: "pointer", height: "fit-content" };

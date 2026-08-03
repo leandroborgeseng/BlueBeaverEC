@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { Badge, PageHeader, Surface } from "@/components/ui/nexo-ui";
 
 const LABELS: Record<string, string> = {
   DIAGNOSTICO: "Diagnóstico",
@@ -35,37 +36,33 @@ export default function JornadaPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Jornada de Evolução</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Navegação livre entre etapas — sem gate de aprovação
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <PageHeader title="Jornada de Evolução" subtitle="Navegação livre entre etapas — sem gate de aprovação" />
+      {msg && <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {etapas.map((e, i) => (
           <button
             key={e}
             type="button"
             onClick={() => void ir(e)}
             style={{
-              padding: "10px 14px",
-              borderRadius: 999,
-              border: e === etapa ? "2px solid var(--nexo-brand)" : "1px solid var(--nexo-border)",
-              background: e === etapa ? "oklch(0.95 0.03 145)" : "var(--nexo-surface)",
-              fontWeight: e === etapa ? 800 : 500,
+              padding: 0,
+              border: "none",
+              background: "none",
               cursor: "pointer",
-              fontSize: 13,
             }}
           >
-            {i + 1}. {LABELS[e] ?? e}
+            <Badge tone={e === etapa ? "ATIVO" : "INATIVO"}>
+              {i + 1}. {LABELS[e] ?? e}
+            </Badge>
           </button>
         ))}
       </div>
-      <div style={{ marginTop: 20, padding: 16, borderRadius: 12, border: "1px solid var(--nexo-border)", background: "var(--nexo-surface)" }}>
+      <Surface>
         <h2 style={{ marginTop: 0, fontSize: 16 }}>{LABELS[etapa]}</h2>
-        <p style={{ fontSize: 13, color: "var(--nexo-muted)", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", margin: 0 }}>
           Registre entregáveis, evidências e indicadores desta etapa na Avaliação de Maturidade e na Central de Conformidade.
         </p>
-      </div>
+      </Surface>
     </div>
   );
 }

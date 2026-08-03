@@ -2,6 +2,13 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Proc {
   id: string;
@@ -135,116 +142,145 @@ export default function NovoLaudoPage() {
 
   return (
     <div style={{ maxWidth: 820 }}>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Novo Laudo</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Recebimento · Preventiva · Calibração · TSE
-      </p>
+      <PageHeader title="Novo Laudo" subtitle="Recebimento · Preventiva · Calibração · TSE" />
 
-      <form onSubmit={(e) => void onSubmit(e)} style={{ ...card, display: "grid", gap: 12 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={input}>
-            <option value="RECEBIMENTO">Recebimento</option>
-            <option value="PREVENTIVA">Preventiva</option>
-            <option value="CALIBRACAO">Calibração</option>
-            <option value="TSE">TSE</option>
-          </select>
-          <input name="equipamentoTag" placeholder="TAG equipamento" required defaultValue="EQ-0001" style={input} />
-        </div>
-
-        <select value={procId} onChange={(e) => setProcId(e.target.value)} style={input}>
-          <option value="">Procedimento</option>
-          {procs.map((p) => (
-            <option key={p.id} value={p.id}>{p.nome}</option>
-          ))}
-        </select>
-
-        {(tipo === "CALIBRACAO" || tipo === "TSE") && (
-          <>
-            <select name="responsavelTecnicoId" required style={input} defaultValue="">
-              <option value="" disabled>Responsável técnico (CREA)</option>
-              {cols.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}{c.registroProfissional ? ` · ${c.registroProfissional}` : ""}
-                </option>
-              ))}
-            </select>
-            <select name="instrumentoId" style={input} defaultValue="">
-              <option value="">Instrumento padrão</option>
-              {insts.map((i) => (
-                <option key={i.id} value={i.id}>{i.nome} · {i.nSerie}</option>
-              ))}
-            </select>
-          </>
-        )}
-
-        {(tipo === "RECEBIMENTO" || tipo === "PREVENTIVA") && (
-          <input name="tecnicoNome" placeholder="Nome do técnico" style={input} />
-        )}
-
-        {tipo === "CALIBRACAO" && (
-          <input name="criterioAceitacao" type="number" step="0.1" defaultValue={2} placeholder="Critério ±%" style={input} />
-        )}
-        {tipo === "TSE" && (
-          <select name="norma" defaultValue="EC" style={input}>
-            <option value="FABRICA">Ensaio de Fábrica</option>
-            <option value="EC">NBR IEC 60601-1 / EC</option>
-          </select>
-        )}
-        {tipo === "PREVENTIVA" && (
-          <input name="proximaPreventiva" type="date" style={input} />
-        )}
-
-        <div style={{ display: "grid", gap: 8 }}>
-          <strong style={{ fontSize: 13 }}>Checklist / Pontos / Testes</strong>
-          {respostas.map((r, idx) => (
-            <div key={r.id ?? idx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 13 }}>{r.pergunta}</span>
-              {(tipo === "CALIBRACAO" || tipo === "TSE") ? (
-                <input
-                  type="number"
-                  step="0.01"
-                  value={r.valorMedido ?? ""}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)));
-                  }}
-                  style={input}
-                />
-              ) : (
-                <select
-                  value={r.status}
-                  onChange={(e) =>
-                    setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)))
-                  }
-                  style={input}
-                >
-                  <option value="SIM">Sim</option>
-                  <option value="NAO">Não</option>
-                  <option value="NA">N/A</option>
-                </select>
-              )}
-              <input
-                placeholder="Obs."
-                value={r.observacao ?? ""}
-                onChange={(e) =>
-                  setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)))
-                }
-                style={input}
-              />
+      <Surface>
+        <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Tipo</FieldLabel>
+              <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={fieldStyle}>
+                <option value="RECEBIMENTO">Recebimento</option>
+                <option value="PREVENTIVA">Preventiva</option>
+                <option value="CALIBRACAO">Calibração</option>
+                <option value="TSE">TSE</option>
+              </select>
             </div>
-          ))}
-        </div>
+            <div>
+              <FieldLabel>TAG equipamento</FieldLabel>
+              <input name="equipamentoTag" placeholder="TAG equipamento" required defaultValue="EQ-0001" style={fieldStyle} />
+            </div>
+          </div>
 
-        <input name="justificativaRessalva" placeholder="Justificativa ressalva (se aplicável)" style={input} />
+          <div>
+            <FieldLabel>Procedimento</FieldLabel>
+            <select value={procId} onChange={(e) => setProcId(e.target.value)} style={fieldStyle}>
+              <option value="">Procedimento</option>
+              {procs.map((p) => (
+                <option key={p.id} value={p.id}>{p.nome}</option>
+              ))}
+            </select>
+          </div>
 
-        <button type="submit" style={btn}>Salvar laudo</button>
-        {laudoId && (
-          <button type="button" onClick={() => void gerarOs()} style={{ ...btn, background: "var(--nexo-brand)" }}>
-            Gerar OS Corretiva (agregada)
-          </button>
-        )}
-        {msg && <div>{msg}</div>}
-      </form>
+          {(tipo === "CALIBRACAO" || tipo === "TSE") && (
+            <>
+              <div>
+                <FieldLabel>Responsável técnico (CREA)</FieldLabel>
+                <select name="responsavelTecnicoId" required style={fieldStyle} defaultValue="">
+                  <option value="" disabled>Responsável técnico (CREA)</option>
+                  {cols.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nome}{c.registroProfissional ? ` · ${c.registroProfissional}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FieldLabel>Instrumento padrão</FieldLabel>
+                <select name="instrumentoId" style={fieldStyle} defaultValue="">
+                  <option value="">Instrumento padrão</option>
+                  {insts.map((i) => (
+                    <option key={i.id} value={i.id}>{i.nome} · {i.nSerie}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {(tipo === "RECEBIMENTO" || tipo === "PREVENTIVA") && (
+            <div>
+              <FieldLabel>Nome do técnico</FieldLabel>
+              <input name="tecnicoNome" placeholder="Nome do técnico" style={fieldStyle} />
+            </div>
+          )}
+
+          {tipo === "CALIBRACAO" && (
+            <div>
+              <FieldLabel>Critério ±%</FieldLabel>
+              <input name="criterioAceitacao" type="number" step="0.1" defaultValue={2} placeholder="Critério ±%" style={fieldStyle} />
+            </div>
+          )}
+          {tipo === "TSE" && (
+            <div>
+              <FieldLabel>Norma</FieldLabel>
+              <select name="norma" defaultValue="EC" style={fieldStyle}>
+                <option value="FABRICA">Ensaio de Fábrica</option>
+                <option value="EC">NBR IEC 60601-1 / EC</option>
+              </select>
+            </div>
+          )}
+          {tipo === "PREVENTIVA" && (
+            <div>
+              <FieldLabel>Próxima preventiva</FieldLabel>
+              <input name="proximaPreventiva" type="date" style={fieldStyle} />
+            </div>
+          )}
+
+          <div style={{ display: "grid", gap: 8 }}>
+            <FieldLabel>Checklist / Pontos / Testes</FieldLabel>
+            {respostas.map((r, idx) => (
+              <div key={r.id ?? idx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 13 }}>{r.pergunta}</span>
+                {(tipo === "CALIBRACAO" || tipo === "TSE") ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={r.valorMedido ?? ""}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, valorMedido: v } : x)));
+                    }}
+                    style={fieldStyle}
+                  />
+                ) : (
+                  <select
+                    value={r.status}
+                    onChange={(e) =>
+                      setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, status: e.target.value } : x)))
+                    }
+                    style={fieldStyle}
+                  >
+                    <option value="SIM">Sim</option>
+                    <option value="NAO">Não</option>
+                    <option value="NA">N/A</option>
+                  </select>
+                )}
+                <input
+                  placeholder="Obs."
+                  value={r.observacao ?? ""}
+                  onChange={(e) =>
+                    setRespostas((prev) => prev.map((x, i) => (i === idx ? { ...x, observacao: e.target.value } : x)))
+                  }
+                  style={fieldStyle}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <FieldLabel>Justificativa ressalva</FieldLabel>
+            <input name="justificativaRessalva" placeholder="Justificativa ressalva (se aplicável)" style={fieldStyle} />
+          </div>
+
+          <Btn type="submit">Salvar laudo</Btn>
+          {laudoId && (
+            <Btn type="button" variant="secondary" onClick={() => void gerarOs()}>
+              Gerar OS Corretiva (agregada)
+            </Btn>
+          )}
+          {msg && <div style={{ fontSize: 13, fontWeight: 600 }}>{msg}</div>}
+        </form>
+      </Surface>
 
       <p style={{ marginTop: 16, fontSize: 13 }}>
         <a href="/equipamentos/EQ-0001/ficha-vida">Ver Ficha Vida EQ-0001 →</a>
@@ -252,7 +288,3 @@ export default function NovoLaudoPage() {
     </div>
   );
 }
-
-const input: React.CSSProperties = { width: "100%", border: "1px solid var(--nexo-border)", borderRadius: 10, padding: "10px 12px" };
-const btn: React.CSSProperties = { border: "none", borderRadius: 10, padding: "12px 14px", background: "var(--nexo-primary)", color: "white", fontWeight: 700, cursor: "pointer" };
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 16 };

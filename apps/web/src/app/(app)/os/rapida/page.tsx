@@ -3,6 +3,14 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Colaborador {
   id: string;
@@ -90,110 +98,117 @@ export default function OsRapidaPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>OS Rápida</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Abertura + execução em um passo · Fechar ou deixar aberta
-      </p>
-      {aviso && <div style={{ marginBottom: 10, color: "var(--nexo-warning)", fontWeight: 700 }}>{aviso}</div>}
-      {erro && <div style={{ marginBottom: 10, color: "var(--nexo-danger)" }}>{erro}</div>}
+      <PageHeader title="OS Rápida" subtitle="Abertura + execução em um passo · Fechar ou deixar aberta" />
+      {aviso && <div style={{ marginBottom: 10, color: "oklch(0.55 0.14 85)", fontWeight: 700 }}>{aviso}</div>}
+      {erro && <Err>{erro}</Err>}
 
-      <form
-        ref={formRef}
-        onSubmit={(e: FormEvent) => {
-          e.preventDefault();
-          void submit(false);
-        }}
-        style={{
-          display: "grid",
-          gap: 10,
-          maxWidth: 640,
-          background: "var(--nexo-surface)",
-          border: "1px solid var(--nexo-border)",
-          borderRadius: 12,
-          padding: 16,
-        }}
-      >
-        <input
-          name="equipamentoTag"
-          placeholder="TAG do equipamento"
-          required
-          style={input}
-          onBlur={(e) => void onTagBlur(e.target.value)}
-        />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <select name="tipo" defaultValue="CORRETIVA" style={input}>
-            <option value="CORRETIVA">Corretiva</option>
-            <option value="PREVENTIVA">Preventiva</option>
-            <option value="CALIBRACAO">Calibração</option>
-            <option value="TSE">TSE</option>
-          </select>
-          <select name="prioridade" defaultValue="MEDIA" style={input}>
-            <option value="BAIXA">Baixa</option>
-            <option value="MEDIA">Média</option>
-            <option value="ALTA">Alta</option>
-            <option value="URGENTE">Urgente</option>
-          </select>
-        </div>
-        <input name="oficina" placeholder="Oficina" style={input} />
-        <select name="responsavelId" style={input}>
-          <option value="">Responsável…</option>
-          {cols.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome}
-            </option>
-          ))}
-        </select>
-        <textarea name="ocorrencia" placeholder="Ocorrência / reclamação" rows={2} style={input} />
-        <textarea name="servicoExecutado" placeholder="Serviço executado (Interno/Externo)" rows={2} style={input} />
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
-          <input name="maoDeObraDesc" placeholder="Mão de obra (descrição)" defaultValue="Mão de obra técnica" style={input} />
-          <input name="horas" type="number" step="0.25" min="0" placeholder="Horas" style={input} />
-          <input name="valorHora" type="number" step="0.01" min="0" placeholder="R$/h" style={input} />
-        </div>
-        <input name="deslocamentoKm" type="number" min="0" step="0.1" placeholder="Deslocamento (km)" style={input} />
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
-          <select name="pecaCodigo" style={input}>
-            <option value="">Peça (opcional)</option>
-            {pecas.map((p) => (
-              <option key={p.codigo} value={p.codigo}>
-                {p.codigo} — {p.descricao}
-              </option>
-            ))}
-          </select>
-          <input name="pecaQtd" type="number" min="0.01" step="0.01" defaultValue={1} style={input} />
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="submit" style={ghost}>
-            Deixar OS aberta
-          </button>
-          <button type="button" style={primary} onClick={() => void submit(true)}>
-            Fechar OS
-          </button>
-        </div>
-      </form>
+      <Surface style={{ maxWidth: 640 }}>
+        <form
+          ref={formRef}
+          onSubmit={(e: FormEvent) => {
+            e.preventDefault();
+            void submit(false);
+          }}
+          style={{ display: "grid", gap: 10 }}
+        >
+          <div>
+            <FieldLabel>TAG do equipamento</FieldLabel>
+            <input
+              name="equipamentoTag"
+              placeholder="TAG do equipamento"
+              required
+              style={fieldStyle}
+              onBlur={(e) => void onTagBlur(e.target.value)}
+            />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div>
+              <FieldLabel>Tipo</FieldLabel>
+              <select name="tipo" defaultValue="CORRETIVA" style={fieldStyle}>
+                <option value="CORRETIVA">Corretiva</option>
+                <option value="PREVENTIVA">Preventiva</option>
+                <option value="CALIBRACAO">Calibração</option>
+                <option value="TSE">TSE</option>
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Prioridade</FieldLabel>
+              <select name="prioridade" defaultValue="MEDIA" style={fieldStyle}>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Oficina</FieldLabel>
+            <input name="oficina" placeholder="Oficina" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Responsável</FieldLabel>
+            <select name="responsavelId" style={fieldStyle}>
+              <option value="">Responsável…</option>
+              {cols.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Ocorrência / reclamação</FieldLabel>
+            <textarea name="ocorrencia" placeholder="Ocorrência / reclamação" rows={2} style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Serviço executado</FieldLabel>
+            <textarea name="servicoExecutado" placeholder="Serviço executado (Interno/Externo)" rows={2} style={fieldStyle} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
+            <div>
+              <FieldLabel>Mão de obra</FieldLabel>
+              <input name="maoDeObraDesc" placeholder="Mão de obra (descrição)" defaultValue="Mão de obra técnica" style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Horas</FieldLabel>
+              <input name="horas" type="number" step="0.25" min="0" placeholder="Horas" style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>R$/h</FieldLabel>
+              <input name="valorHora" type="number" step="0.01" min="0" placeholder="R$/h" style={fieldStyle} />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Deslocamento (km)</FieldLabel>
+            <input name="deslocamentoKm" type="number" min="0" step="0.1" placeholder="Deslocamento (km)" style={fieldStyle} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
+            <div>
+              <FieldLabel>Peça (opcional)</FieldLabel>
+              <select name="pecaCodigo" style={fieldStyle}>
+                <option value="">Peça (opcional)</option>
+                {pecas.map((p) => (
+                  <option key={p.codigo} value={p.codigo}>
+                    {p.codigo} — {p.descricao}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Qtd</FieldLabel>
+              <input name="pecaQtd" type="number" min="0.01" step="0.01" defaultValue={1} style={fieldStyle} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Btn type="submit" variant="ghost">
+              Deixar OS aberta
+            </Btn>
+            <Btn type="button" onClick={() => void submit(true)}>
+              Fechar OS
+            </Btn>
+          </div>
+        </form>
+      </Surface>
     </div>
   );
 }
-
-const input: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid var(--nexo-border)",
-  background: "var(--nexo-bg)",
-};
-const primary: React.CSSProperties = {
-  border: "none",
-  borderRadius: 10,
-  padding: "10px 14px",
-  background: "var(--nexo-primary)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-const ghost: React.CSSProperties = {
-  ...primary,
-  background: "white",
-  color: "var(--nexo-text)",
-  border: "1px solid var(--nexo-border)",
-};

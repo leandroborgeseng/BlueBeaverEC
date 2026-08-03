@@ -2,6 +2,15 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Setor {
   id: string;
@@ -62,87 +71,67 @@ export default function AbrirSolicitacaoPage() {
 
   return (
     <div style={{ maxWidth: 640 }}>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Abrir Solicitação</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Portal do solicitante
-      </p>
-      <form
-        onSubmit={(e) => void onSubmit(e)}
-        style={{
-          background: "var(--nexo-surface)",
-          border: "1px solid var(--nexo-border)",
-          borderRadius: 12,
-          padding: 18,
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        <select name="setorNome" required defaultValue="" style={input}>
-          <option value="" disabled>
-            Setor
-          </option>
-          {setores.map((s) => (
-            <option key={s.id} value={s.nome}>
-              {s.nome}
-            </option>
-          ))}
-        </select>
-        <input name="equipamentoTag" placeholder="TAG do equipamento (opcional)" style={input} />
-        <textarea name="descricao" placeholder="Descrição do problema" rows={4} style={input} required />
-        <select name="urgencia" defaultValue="MEDIA" style={input}>
-          <option value="BAIXA">Urgência: Baixa</option>
-          <option value="MEDIA">Urgência: Média</option>
-          <option value="ALTA">Urgência: Alta</option>
-          <option value="PARADA_CRITICA">Parada de Equipamento Crítico</option>
-        </select>
-        <input name="ramal" placeholder="Ramal" style={input} />
-        <button type="submit" style={btn}>
-          Enviar solicitação
-        </button>
-        {ok && <div style={{ color: "var(--nexo-success)", fontSize: 13 }}>{ok}</div>}
-        {erro && <div style={{ color: "var(--nexo-danger)", fontSize: 13 }}>{erro}</div>}
-      </form>
+      <PageHeader title="Abrir Solicitação" subtitle="Portal do solicitante" />
+      <Surface>
+        <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>
+          <div>
+            <FieldLabel>Setor</FieldLabel>
+            <select name="setorNome" required defaultValue="" style={fieldStyle}>
+              <option value="" disabled>
+                Setor
+              </option>
+              {setores.map((s) => (
+                <option key={s.id} value={s.nome}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <FieldLabel>TAG do equipamento</FieldLabel>
+            <input name="equipamentoTag" placeholder="TAG do equipamento (opcional)" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Descrição do problema</FieldLabel>
+            <textarea name="descricao" placeholder="Descrição do problema" rows={4} style={fieldStyle} required />
+          </div>
+          <div>
+            <FieldLabel>Urgência</FieldLabel>
+            <select name="urgencia" defaultValue="MEDIA" style={fieldStyle}>
+              <option value="BAIXA">Urgência: Baixa</option>
+              <option value="MEDIA">Urgência: Média</option>
+              <option value="ALTA">Urgência: Alta</option>
+              <option value="PARADA_CRITICA">Parada de Equipamento Crítico</option>
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Ramal</FieldLabel>
+            <input name="ramal" placeholder="Ramal" style={fieldStyle} />
+          </div>
+          <Btn type="submit">Enviar solicitação</Btn>
+          {ok && <div style={{ color: "oklch(0.45 0.13 150)", fontSize: 13, fontWeight: 600 }}>{ok}</div>}
+          {erro && <Err>{erro}</Err>}
+        </form>
+      </Surface>
 
       <h2 style={{ marginTop: 28, fontSize: 16 }}>Recentes</h2>
       <div style={{ display: "grid", gap: 8 }}>
         {minhas.map((s) => (
-          <div
-            key={s.id}
-            style={{
-              background: "var(--nexo-surface)",
-              border: "1px solid var(--nexo-border)",
-              borderRadius: 10,
-              padding: 12,
-              fontSize: 13,
-            }}
-          >
-            <strong>{s.protocolo}</strong> · {s.status}
-            {s.ordemServico ? ` · ${s.ordemServico.codigo}` : ""}
-            <div style={{ color: "var(--nexo-muted)", marginTop: 4 }}>{s.descricao}</div>
+          <Surface key={s.id} style={{ padding: 12, fontSize: 13 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <strong>{s.protocolo}</strong>
+              <Badge tone={s.status}>{s.status}</Badge>
+              {s.ordemServico && <span>{s.ordemServico.codigo}</span>}
+            </div>
+            <div style={{ color: "oklch(0.5 0.02 250)", marginTop: 4 }}>{s.descricao}</div>
             {s.justificativaRecusa && (
-              <div style={{ color: "var(--nexo-danger)", marginTop: 4 }}>
+              <div style={{ color: "oklch(0.5 0.17 25)", marginTop: 4 }}>
                 Motivo: {s.justificativaRecusa}
               </div>
             )}
-          </div>
+          </Surface>
         ))}
       </div>
     </div>
   );
 }
-
-const input: React.CSSProperties = {
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 10,
-  padding: "10px 12px",
-  width: "100%",
-};
-const btn: React.CSSProperties = {
-  border: "none",
-  borderRadius: 10,
-  padding: "11px 14px",
-  background: "var(--nexo-primary)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-};

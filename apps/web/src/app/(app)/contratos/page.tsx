@@ -2,6 +2,15 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Contrato {
   id: string;
@@ -87,46 +96,70 @@ export default function ContratosPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Contratos</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        N:N com equipamentos · rateio igualitário · alertas 90/60/30
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
+      <PageHeader title="Contratos" subtitle="N:N com equipamentos · rateio igualitário · alertas 90/60/30" />
+      {msg && <Err>{msg}</Err>}
 
-      <form onSubmit={(e) => void onCreate(e)} style={{ ...card, display: "grid", gap: 8, marginBottom: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 8 }}>
-          <input name="numero" placeholder="Número" required style={input} />
-          <input name="descricao" placeholder="Descrição" required style={input} />
-          <input name="valor" type="number" placeholder="Valor" required style={input} />
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr auto", gap: 8 }}>
-          <select name="fornecedorId" required defaultValue="" style={input}>
-            <option value="" disabled>Fornecedor</option>
-            {fornecedores.map((f) => (
-              <option key={f.id} value={f.id}>{f.nome}</option>
-            ))}
-          </select>
-          <input name="vigenciaInicio" type="date" required style={input} />
-          <input name="vigenciaFim" type="date" required style={input} />
-          <input name="equipamentoTags" placeholder="TAGs (EQ-0001,EQ-0002)" style={input} />
-          <button type="submit" style={btn}>+</button>
-        </div>
-      </form>
+      <Surface style={{ marginBottom: 16 }}>
+        <form onSubmit={(e) => void onCreate(e)} style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Número</FieldLabel>
+              <input name="numero" placeholder="Número" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Descrição</FieldLabel>
+              <input name="descricao" placeholder="Descrição" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Valor</FieldLabel>
+              <input name="valor" type="number" placeholder="Valor" required style={fieldStyle} />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+            <div>
+              <FieldLabel>Fornecedor</FieldLabel>
+              <select name="fornecedorId" required defaultValue="" style={fieldStyle}>
+                <option value="" disabled>Fornecedor</option>
+                {fornecedores.map((f) => (
+                  <option key={f.id} value={f.id}>{f.nome}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Início</FieldLabel>
+              <input name="vigenciaInicio" type="date" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Fim</FieldLabel>
+              <input name="vigenciaFim" type="date" required style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>TAGs</FieldLabel>
+              <input name="equipamentoTags" placeholder="EQ-0001,EQ-0002" style={fieldStyle} />
+            </div>
+            <Btn type="submit">+</Btn>
+          </div>
+        </form>
+      </Surface>
 
       <div style={{ display: "grid", gap: 10 }}>
         {items.map((c) => (
-          <article key={c.id} style={card}>
+          <Surface key={c.id}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <strong>{c.numero}</strong> · {c.fornecedor.nome}
-                <div style={{ fontSize: 13, color: "var(--nexo-muted)" }}>{c.descricao}</div>
+                <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>{c.descricao}</div>
               </div>
               <div style={{ textAlign: "right", fontSize: 12 }}>
-                <div style={{ fontWeight: 700, color: sevColor(c.alertaSeveridade) }}>
-                  {c.situacaoCalculada}
-                  {c.alertaSeveridade ? ` · ${c.alertaSeveridade}d` : ""}
+                <Badge tone={c.situacaoCalculada}>{c.situacaoCalculada}</Badge>
+                {c.alertaSeveridade ? (
+                  <div style={{ marginTop: 6, fontWeight: 700, color: sevColor(c.alertaSeveridade) }}>
+                    alerta {c.alertaSeveridade}d
+                  </div>
+                ) : null}
+                <div style={{ marginTop: 4, color: "oklch(0.5 0.02 250)" }}>
+                  Fim {new Date(c.vigenciaFim).toLocaleDateString("pt-BR")}
                 </div>
-                <div>Fim {new Date(c.vigenciaFim).toLocaleDateString("pt-BR")}</div>
               </div>
             </div>
             <div style={{ marginTop: 8, fontSize: 13 }}>
@@ -135,10 +168,10 @@ export default function ContratosPage() {
               {" · "}glosas {c.totalGlosas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               {" · "}{c.equipamentos.map((e) => e.equipamento.tag).join(", ") || "sem cobertura"}
             </div>
-            <button type="button" style={{ ...btn, marginTop: 10, background: "var(--nexo-brand)" }} onClick={() => void glosa(c.numero)}>
+            <Btn variant="secondary" style={{ marginTop: 10 }} onClick={() => void glosa(c.numero)}>
               Registrar glosa
-            </button>
-          </article>
+            </Btn>
+          </Surface>
         ))}
       </div>
     </div>
@@ -146,12 +179,8 @@ export default function ContratosPage() {
 }
 
 function sevColor(s: string | null) {
-  if (s === "VENCIDO" || s === "30") return "var(--nexo-danger)";
-  if (s === "60") return "var(--nexo-warning)";
-  if (s === "90") return "var(--nexo-primary)";
-  return "var(--nexo-success)";
+  if (s === "VENCIDO" || s === "30") return "oklch(0.5 0.17 25)";
+  if (s === "60") return "oklch(0.55 0.14 85)";
+  if (s === "90") return "oklch(0.55 0.14 255)";
+  return "oklch(0.45 0.13 150)";
 }
-
-const input: React.CSSProperties = { border: "1px solid var(--nexo-border)", borderRadius: 10, padding: "10px 12px", width: "100%" };
-const btn: React.CSSProperties = { border: "none", borderRadius: 10, padding: "10px 14px", background: "var(--nexo-primary)", color: "white", fontWeight: 700, cursor: "pointer" };
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 };

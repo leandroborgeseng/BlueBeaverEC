@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Proc {
   id: string;
@@ -95,52 +103,52 @@ export default function ProcedimentosPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Procedimentos de Laudo</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Base reutilizável · vínculo exclusivo por modelo/tipo
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
+      <PageHeader title="Procedimentos de Laudo" subtitle="Base reutilizável · vínculo exclusivo por modelo/tipo" />
+      {msg && <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
 
-      <form
-        onSubmit={(e) => void onCreate(e)}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr auto",
-          gap: 8,
-          marginBottom: 16,
-          background: "var(--nexo-surface)",
-          border: "1px solid var(--nexo-border)",
-          borderRadius: 12,
-          padding: 12,
-        }}
-      >
-        <input name="nome" placeholder="Nome do procedimento" required style={input} />
-        <select name="tipo" defaultValue="PREVENTIVA" style={input}>
-          <option value="RECEBIMENTO">Recebimento</option>
-          <option value="PREVENTIVA">Preventiva</option>
-          <option value="CALIBRACAO">Calibração</option>
-          <option value="TSE">TSE</option>
-        </select>
-        <input name="validadeMeses" type="number" defaultValue={12} min={1} style={input} />
-        <button type="submit" style={btn}>
-          + Novo
-        </button>
-      </form>
+      <Surface style={{ marginBottom: 16 }}>
+        <form
+          onSubmit={(e) => void onCreate(e)}
+          style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr auto", gap: 10, alignItems: "end" }}
+        >
+          <div>
+            <FieldLabel>Nome</FieldLabel>
+            <input name="nome" placeholder="Nome do procedimento" required style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Tipo</FieldLabel>
+            <select name="tipo" defaultValue="PREVENTIVA" style={fieldStyle}>
+              <option value="RECEBIMENTO">Recebimento</option>
+              <option value="PREVENTIVA">Preventiva</option>
+              <option value="CALIBRACAO">Calibração</option>
+              <option value="TSE">TSE</option>
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Validade (meses)</FieldLabel>
+            <input name="validadeMeses" type="number" defaultValue={12} min={1} style={fieldStyle} />
+          </div>
+          <Btn type="submit">+ Novo</Btn>
+        </form>
+      </Surface>
 
       <div style={{ display: "grid", gap: 12 }}>
         {items.map((p) => (
-          <article key={p.id} style={card}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <Surface key={p.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
               <div>
                 <strong>{p.nome}</strong>
-                <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>
-                  {p.tipo} · validade {p.validadeMeses} meses · {(p.itens as unknown[]).length} itens
+                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                  <Badge tone="ATIVO">{p.tipo}</Badge>
+                  <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                    validade {p.validadeMeses} meses · {(p.itens as unknown[]).length} itens
+                  </span>
                 </div>
               </div>
               <select
                 defaultValue=""
                 onChange={(e) => void vincular(p.id, e.target.value)}
-                style={{ ...input, width: 260 }}
+                style={{ ...fieldStyle, width: 260 }}
               >
                 <option value="">Vincular modelo…</option>
                 {modelos.map((m) => (
@@ -157,13 +165,9 @@ export default function ProcedimentosPage() {
                     .map((m) => `${m.modelo.fabricante.nome} / ${m.modelo.nome}`)
                     .join(" · ")}
             </div>
-          </article>
+          </Surface>
         ))}
       </div>
     </div>
   );
 }
-
-const input: React.CSSProperties = { border: "1px solid var(--nexo-border)", borderRadius: 10, padding: "10px 12px" };
-const btn: React.CSSProperties = { border: "none", borderRadius: 10, padding: "10px 14px", background: "var(--nexo-primary)", color: "white", fontWeight: 700 };
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 };

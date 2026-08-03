@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  FieldLabel,
+  KpiCard,
+  PageHeader,
+  Panel,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Ind {
   id: string;
@@ -51,30 +59,29 @@ export default function IndicadoresPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Indicadores</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Cards com valor, meta e tendência · histórico de 6 meses
-      </p>
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginBottom: 18 }}>
+      <PageHeader title="Indicadores" subtitle="Cards com valor, meta e tendência · histórico de 6 meses" />
+      {msg && <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginBottom: 18 }}>
         {inds.map((i) => (
           <button
             key={i.id}
             type="button"
             onClick={() => void openHist(i)}
-            style={{ textAlign: "left", padding: 14, borderRadius: 12, border: "1px solid var(--nexo-border)", background: "var(--nexo-surface)", cursor: "pointer" }}
+            style={{ textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}
           >
-            <div style={{ fontSize: 11, color: "var(--nexo-muted)" }}>{i.categoria}{i.sistema ? " · sistema" : ""}</div>
-            <div style={{ fontWeight: 700, fontSize: 14, marginTop: 4 }}>{i.nome}</div>
-            <div style={{ fontSize: 24, fontWeight: 800, marginTop: 6 }}>{i.valorAtual}</div>
-            <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>Meta: {i.meta ?? "—"} · {i.tendencia}</div>
+            <KpiCard
+              label={`${i.categoria}${i.sistema ? " · sistema" : ""}`}
+              value={i.valorAtual}
+              hint={`Meta: ${i.meta ?? "—"} · ${i.tendencia}`}
+              tone={i.tendencia.includes("↓") ? "danger" : i.tendencia.includes("↑") ? "success" : "neutral"}
+            />
+            <div style={{ fontWeight: 700, fontSize: 14, marginTop: -8, paddingLeft: 16, paddingBottom: 8 }}>{i.nome}</div>
           </button>
         ))}
       </div>
 
       {sel && hist && (
-        <section style={{ padding: 14, borderRadius: 12, border: "1px solid var(--nexo-border)", background: "var(--nexo-surface)", marginBottom: 18 }}>
-          <h2 style={{ marginTop: 0, fontSize: 15 }}>{sel.nome} — 6 meses</h2>
+        <Panel title={`${sel.nome} — 6 meses`}>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 120 }}>
             {hist.map((h) => {
               const max = Math.max(...hist.map((x) => x.valor), 1);
@@ -82,34 +89,42 @@ export default function IndicadoresPage() {
               return (
                 <div key={h.periodo} style={{ flex: 1, textAlign: "center" }}>
                   <div style={{ height: 100, alignItems: "flex-end", display: "flex" }}>
-                    <div style={{ width: "100%", height: hgt, background: "var(--nexo-brand)", borderRadius: "6px 6px 0 0" }} title={String(h.valor)} />
+                    <div style={{ width: "100%", height: hgt, background: "oklch(0.64 0.19 38)", borderRadius: "6px 6px 0 0" }} title={String(h.valor)} />
                   </div>
-                  <div style={{ fontSize: 10, color: "var(--nexo-muted)" }}>{h.periodo.slice(5)}</div>
+                  <div style={{ fontSize: 10, color: "oklch(0.5 0.02 250)" }}>{h.periodo.slice(5)}</div>
                 </div>
               );
             })}
           </div>
-        </section>
+        </Panel>
       )}
 
-      <section style={{ padding: 14, borderRadius: 12, border: "1px solid var(--nexo-border)", background: "var(--nexo-surface)" }}>
-        <h2 style={{ marginTop: 0, fontSize: 15 }}>Construtor</h2>
-        <form onSubmit={(e) => void criar(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr auto", gap: 8 }}>
-          <input name="nome" placeholder="Nome" required style={input} />
-          <select name="formula" style={input}>
-            <option value="PERCENTUAL">Percentual</option>
-            <option value="CONTAGEM">Contagem</option>
-            <option value="MEDIA">Média</option>
-            <option value="SOMA">Soma</option>
-          </select>
-          <input name="campos" placeholder="Campos (OS,Equipamentos…)" style={input} />
-          <input name="meta" placeholder="Meta" style={input} />
-          <button type="submit" style={btn}>Criar</button>
+      <Panel title="Construtor">
+        <form onSubmit={(e) => void criar(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr auto", gap: 10, alignItems: "end" }}>
+          <div>
+            <FieldLabel>Nome</FieldLabel>
+            <input name="nome" placeholder="Nome" required style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Fórmula</FieldLabel>
+            <select name="formula" style={fieldStyle}>
+              <option value="PERCENTUAL">Percentual</option>
+              <option value="CONTAGEM">Contagem</option>
+              <option value="MEDIA">Média</option>
+              <option value="SOMA">Soma</option>
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Campos</FieldLabel>
+            <input name="campos" placeholder="Campos (OS,Equipamentos…)" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Meta</FieldLabel>
+            <input name="meta" placeholder="Meta" style={fieldStyle} />
+          </div>
+          <Btn type="submit">Criar</Btn>
         </form>
-      </section>
+      </Panel>
     </div>
   );
 }
-
-const input: React.CSSProperties = { padding: "8px 10px", borderRadius: 8, border: "1px solid var(--nexo-border)", background: "var(--nexo-bg)" };
-const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "none", background: "var(--nexo-brand)", color: "white", fontWeight: 700, cursor: "pointer" };

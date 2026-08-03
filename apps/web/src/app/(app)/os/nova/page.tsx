@@ -3,6 +3,14 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import {
+  Btn,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Colaborador {
   id: string;
@@ -82,100 +90,98 @@ export default function NovaOsPage() {
 
   return (
     <div style={{ maxWidth: 720 }}>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Abrir Ordem de Serviço</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Duplicidade não bloqueia · peça reserva estoque até fechar/cancelar
-      </p>
+      <PageHeader title="Abrir Ordem de Serviço" subtitle="Duplicidade não bloqueia · peça reserva estoque até fechar/cancelar" />
 
-      <form
-        onSubmit={(e) => void onSubmit(e)}
-        style={{
-          background: "var(--nexo-surface)",
-          border: "1px solid var(--nexo-border)",
-          borderRadius: 12,
-          padding: 18,
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        <input
-          name="equipamentoTag"
-          placeholder="TAG do equipamento"
-          required
-          style={input}
-          onBlur={(e) => void onTagBlur(e.target.value)}
-        />
-        {aviso && (
-          <div style={{ background: "oklch(0.97 0.05 85)", borderRadius: 10, padding: 10, fontSize: 13 }}>
-            {aviso}
+      <Surface>
+        <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>
+          <div>
+            <FieldLabel>TAG do equipamento</FieldLabel>
+            <input
+              name="equipamentoTag"
+              placeholder="TAG do equipamento"
+              required
+              style={fieldStyle}
+              onBlur={(e) => void onTagBlur(e.target.value)}
+            />
           </div>
-        )}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <select name="tipo" defaultValue="CORRETIVA" style={input}>
-            <option value="CORRETIVA">Corretiva</option>
-            <option value="PREVENTIVA">Preventiva</option>
-            <option value="CALIBRACAO">Calibração</option>
-            <option value="TSE">TSE</option>
-          </select>
-          <select name="prioridade" defaultValue="MEDIA" style={input}>
-            <option value="BAIXA">Baixa</option>
-            <option value="MEDIA">Média</option>
-            <option value="ALTA">Alta</option>
-            <option value="URGENTE">Urgente</option>
-          </select>
-        </div>
-        <input name="oficina" placeholder="Oficina" style={input} />
-        <select name="responsavelId" defaultValue="" style={input}>
-          <option value="">Sem responsável (Não Atribuída)</option>
-          {cols.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome}
-            </option>
-          ))}
-        </select>
-        <textarea name="observacaoRequisicao" placeholder="Ocorrência / observação" rows={3} style={input} />
-        <input name="pendencia" placeholder="Pendência (bloqueia fechamento se preenchida)" style={input} />
+          {aviso && (
+            <div style={{ background: "oklch(0.97 0.05 85)", borderRadius: 10, padding: 10, fontSize: 13 }}>
+              {aviso}
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Tipo</FieldLabel>
+              <select name="tipo" defaultValue="CORRETIVA" style={fieldStyle}>
+                <option value="CORRETIVA">Corretiva</option>
+                <option value="PREVENTIVA">Preventiva</option>
+                <option value="CALIBRACAO">Calibração</option>
+                <option value="TSE">TSE</option>
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Prioridade</FieldLabel>
+              <select name="prioridade" defaultValue="MEDIA" style={fieldStyle}>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Oficina</FieldLabel>
+            <input name="oficina" placeholder="Oficina" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Responsável</FieldLabel>
+            <select name="responsavelId" defaultValue="" style={fieldStyle}>
+              <option value="">Sem responsável (Não Atribuída)</option>
+              {cols.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Ocorrência / observação</FieldLabel>
+            <textarea name="observacaoRequisicao" placeholder="Ocorrência / observação" rows={3} style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Pendência</FieldLabel>
+            <input name="pendencia" placeholder="Pendência (bloqueia fechamento se preenchida)" style={fieldStyle} />
+          </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
-          <select value={pecaCodigo} onChange={(e) => setPecaCodigo(e.target.value)} style={input}>
-            <option value="">Peça (opcional)</option>
-            {pecas.map((p) => (
-              <option key={p.codigo} value={p.codigo}>
-                {p.codigo} — {p.descricao} (disp. {p.disponivel})
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min={0.01}
-            step={0.01}
-            value={pecaQtd}
-            onChange={(e) => setPecaQtd(Number(e.target.value))}
-            style={input}
-          />
-        </div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
+            <div>
+              <FieldLabel>Peça (opcional)</FieldLabel>
+              <select value={pecaCodigo} onChange={(e) => setPecaCodigo(e.target.value)} style={fieldStyle}>
+                <option value="">Peça (opcional)</option>
+                {pecas.map((p) => (
+                  <option key={p.codigo} value={p.codigo}>
+                    {p.codigo} — {p.descricao} (disp. {p.disponivel})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Quantidade</FieldLabel>
+              <input
+                type="number"
+                min={0.01}
+                step={0.01}
+                value={pecaQtd}
+                onChange={(e) => setPecaQtd(Number(e.target.value))}
+                style={fieldStyle}
+              />
+            </div>
+          </div>
 
-        {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
-        <button type="submit" style={btn}>
-          Abrir OS
-        </button>
-      </form>
+          {erro && <Err>{erro}</Err>}
+          <Btn type="submit">Abrir OS</Btn>
+        </form>
+      </Surface>
     </div>
   );
 }
-
-const input: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 10,
-  padding: "10px 12px",
-};
-const btn: React.CSSProperties = {
-  border: "none",
-  borderRadius: 10,
-  padding: "12px 14px",
-  background: "var(--nexo-primary)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-};

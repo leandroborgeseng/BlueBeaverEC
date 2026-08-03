@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
+import {
+  Btn,
+  FieldLabel,
+  PageHeader,
+  Panel,
+  Surface,
+  fieldStyle,
+} from "@/components/ui/nexo-ui";
 
 interface Tpl {
   codigo: string;
@@ -79,89 +87,71 @@ export default function RelatoriosPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Relatórios Executivos</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Templates pré-definidos · PDF (pdfkit) · Excel (exceljs) · agendamento
-      </p>
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
+      <PageHeader title="Relatórios Executivos" subtitle="Templates pré-definidos · PDF (pdfkit) · Excel (exceljs) · agendamento" />
+      {msg && <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10, marginBottom: 18 }}>
         {templates.map((t) => (
-          <div key={t.codigo} style={card}>
+          <Surface key={t.codigo}>
             <strong>{t.nome}</strong>
-            <p style={{ fontSize: 12, color: "var(--nexo-muted)", margin: "6px 0 10px" }}>{t.descricao}</p>
+            <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", margin: "6px 0 10px" }}>{t.descricao}</p>
             <div style={{ display: "flex", gap: 6 }}>
-              <button type="button" disabled={!!busy} onClick={() => void gerar(t.codigo, "json")} style={btn}>
+              <Btn variant="ghost" disabled={!!busy} style={{ fontSize: 12, padding: "6px 10px" }} onClick={() => void gerar(t.codigo, "json")}>
                 JSON
-              </button>
-              <button type="button" disabled={!!busy} onClick={() => void gerar(t.codigo, "xlsx")} style={btn}>
+              </Btn>
+              <Btn variant="secondary" disabled={!!busy} style={{ fontSize: 12, padding: "6px 10px" }} onClick={() => void gerar(t.codigo, "xlsx")}>
                 Excel
-              </button>
-              <button type="button" disabled={!!busy} onClick={() => void gerar(t.codigo, "pdf")} style={btn}>
+              </Btn>
+              <Btn disabled={!!busy} style={{ fontSize: 12, padding: "6px 10px" }} onClick={() => void gerar(t.codigo, "pdf")}>
                 PDF
-              </button>
+              </Btn>
             </div>
-          </div>
+          </Surface>
         ))}
       </div>
 
-      <section style={{ ...card, marginBottom: 16 }}>
-        <h2 style={{ marginTop: 0, fontSize: 15 }}>Agendamentos</h2>
-        <form onSubmit={(e) => void agendar(e)} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 8, marginBottom: 12 }}>
-          <select name="template" style={input}>
-            {templates.map((t) => (
-              <option key={t.codigo} value={t.codigo}>
-                {t.nome}
-              </option>
-            ))}
-          </select>
-          <select name="frequencia" style={input}>
-            <option value="MENSAL">Mensal</option>
-            <option value="SEMANAL">Semanal</option>
-            <option value="TRIMESTRAL">Trimestral</option>
-          </select>
-          <input name="destinatarios" placeholder="e-mails separados por vírgula" required style={input} />
-          <button type="submit" style={btn}>
-            Agendar
-          </button>
+      <Panel title="Agendamentos">
+        <form onSubmit={(e) => void agendar(e)} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 10, alignItems: "end", marginBottom: 12 }}>
+          <div>
+            <FieldLabel>Template</FieldLabel>
+            <select name="template" style={fieldStyle}>
+              {templates.map((t) => (
+                <option key={t.codigo} value={t.codigo}>
+                  {t.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Frequência</FieldLabel>
+            <select name="frequencia" style={fieldStyle}>
+              <option value="MENSAL">Mensal</option>
+              <option value="SEMANAL">Semanal</option>
+              <option value="TRIMESTRAL">Trimestral</option>
+            </select>
+          </div>
+          <div>
+            <FieldLabel>Destinatários</FieldLabel>
+            <input name="destinatarios" placeholder="e-mails separados por vírgula" required style={fieldStyle} />
+          </div>
+          <Btn type="submit">Agendar</Btn>
         </form>
         {agends.map((a) => (
-          <div key={a.id} style={{ fontSize: 13, padding: "6px 0", borderTop: "1px solid var(--nexo-border)" }}>
+          <div key={a.id} style={{ fontSize: 13, padding: "6px 0", borderTop: "1px solid oklch(0.94 0.005 255)" }}>
             {a.template} · {a.frequencia} · {a.destinatarios.join(", ")}
             {a.proximoEnvio && (
-              <span style={{ color: "var(--nexo-muted)" }}> · próximo {String(a.proximoEnvio).slice(0, 10)}</span>
+              <span style={{ color: "oklch(0.5 0.02 250)" }}> · próximo {String(a.proximoEnvio).slice(0, 10)}</span>
             )}
           </div>
         ))}
-      </section>
+      </Panel>
 
       {preview != null && (
-        <pre style={{ ...card, fontSize: 11, overflow: "auto", maxHeight: 320 }}>
-          {JSON.stringify(preview, null, 2)}
-        </pre>
+        <Surface style={{ marginTop: 16 }}>
+          <pre style={{ fontSize: 11, overflow: "auto", maxHeight: 320, margin: 0 }}>
+            {JSON.stringify(preview, null, 2)}
+          </pre>
+        </Surface>
       )}
     </div>
   );
 }
-
-const card: React.CSSProperties = {
-  background: "var(--nexo-surface)",
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 12,
-  padding: 14,
-};
-const input: React.CSSProperties = {
-  padding: "8px 10px",
-  borderRadius: 8,
-  border: "1px solid var(--nexo-border)",
-  background: "var(--nexo-bg)",
-};
-const btn: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 8,
-  border: "none",
-  background: "var(--nexo-brand)",
-  color: "white",
-  fontWeight: 700,
-  cursor: "pointer",
-  fontSize: 12,
-};

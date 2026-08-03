@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  PageHeader,
+  PriorityBar,
+  Surface,
+} from "@/components/ui/nexo-ui";
 
 interface OsCard {
   id: string;
@@ -15,6 +21,13 @@ type Quadro = Record<string, OsCard[]>;
 
 const COLS = ["ABERTA", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"] as const;
 
+const COL_LABELS: Record<string, string> = {
+  ABERTA: "Aberta",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDA: "Concluída",
+  CANCELADA: "Cancelada",
+};
+
 export default function QuadroPage() {
   const [quadro, setQuadro] = useState<Quadro>({});
 
@@ -24,43 +37,35 @@ export default function QuadroPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Quadro de Processos</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Kanban por status · drag-and-drop fora desta fase
-      </p>
+      <PageHeader title="Quadro de Processos" subtitle="Kanban por status · drag-and-drop fora desta fase" />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
         {COLS.map((col) => (
-          <section key={col} style={colStyle}>
-            <h2 style={{ margin: "0 0 10px", fontSize: 13 }}>{col.replace("_", " ")}</h2>
+          <Surface key={col} style={{ background: "oklch(0.975 0.005 250)", minHeight: 320 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <strong style={{ fontSize: 13 }}>{COL_LABELS[col] ?? col}</strong>
+              <Badge tone={col}>{(quadro[col] ?? []).length}</Badge>
+            </div>
             <div style={{ display: "grid", gap: 8 }}>
               {(quadro[col] ?? []).map((os) => (
-                <div key={os.id} style={card}>
-                  <strong>{os.codigo}</strong>
-                  <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>
+                <Surface key={os.id} style={{ padding: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <PriorityBar prioridade={os.prioridade} />
+                    <strong style={{ fontSize: 13 }}>{os.codigo}</strong>
+                  </div>
+                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4, paddingLeft: 12 }}>
                     {os.equipamento.tag} · {os.prioridade}
                   </div>
                   {os.atrasada && (
-                    <div style={{ color: "var(--nexo-danger)", fontSize: 11, fontWeight: 700 }}>ATRASADA</div>
+                    <div style={{ marginTop: 6, paddingLeft: 12 }}>
+                      <Badge tone="ATRASADA">ATRASADA</Badge>
+                    </div>
                   )}
-                </div>
+                </Surface>
               ))}
             </div>
-          </section>
+          </Surface>
         ))}
       </div>
     </div>
   );
 }
-
-const colStyle: React.CSSProperties = {
-  background: "oklch(0.97 0.01 250)",
-  borderRadius: 12,
-  padding: 12,
-  minHeight: 320,
-};
-const card: React.CSSProperties = {
-  background: "white",
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 10,
-  padding: 10,
-};

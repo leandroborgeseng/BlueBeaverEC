@@ -2,6 +2,19 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  DataTable,
+  Empty,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Surface,
+  fieldStyle,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
 
 interface Inst {
   id: string;
@@ -49,35 +62,65 @@ export default function InstrumentosPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Instrumentos e Padrões</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Certificado vencido bloqueia uso em novos laudos
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
+      <PageHeader title="Instrumentos e Padrões" subtitle="Certificado vencido bloqueia uso em novos laudos" />
+      {msg && <Err>{msg}</Err>}
 
-      <form onSubmit={(e) => void onCreate(e)} style={{ ...card, display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr auto", gap: 8, marginBottom: 16 }}>
-        <input name="nome" placeholder="Nome" required style={input} />
-        <input name="nSerie" placeholder="Nº série" required style={input} />
-        <input name="certificadoNumero" placeholder="Certificado" style={input} />
-        <input name="certificadoValidade" type="date" style={input} />
-        <button type="submit" style={btn}>+</button>
-      </form>
-
-      <div style={{ display: "grid", gap: 10 }}>
-        {items.map((i) => (
-          <div key={i.id} style={card}>
-            <strong>{i.nome}</strong> · {i.nSerie}
-            <div style={{ fontSize: 12, color: i.vencido ? "var(--nexo-danger)" : "var(--nexo-muted)" }}>
-              {i.vencido ? "CERTIFICADO VENCIDO — bloqueado" : "Selecionável para laudos"}
-              {i.certificadoValidade ? ` · val. ${new Date(i.certificadoValidade).toLocaleDateString("pt-BR")}` : ""}
-            </div>
+      <Surface style={{ marginBottom: 16 }}>
+        <form onSubmit={(e) => void onCreate(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+          <div>
+            <FieldLabel>Nome</FieldLabel>
+            <input name="nome" placeholder="Nome" required style={fieldStyle} />
           </div>
-        ))}
-      </div>
+          <div>
+            <FieldLabel>Nº série</FieldLabel>
+            <input name="nSerie" placeholder="Nº série" required style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Certificado</FieldLabel>
+            <input name="certificadoNumero" placeholder="Certificado" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Validade</FieldLabel>
+            <input name="certificadoValidade" type="date" style={fieldStyle} />
+          </div>
+          <Btn type="submit">+</Btn>
+        </form>
+      </Surface>
+
+      <DataTable>
+        <thead>
+          <tr>
+            <th style={th}>Nome</th>
+            <th style={th}>Nº série</th>
+            <th style={th}>Validade</th>
+            <th style={th}>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={4} style={td}><Empty /></td>
+            </tr>
+          ) : (
+            items.map((i) => (
+              <tr key={i.id}>
+                <td style={td}><strong>{i.nome}</strong></td>
+                <td style={td}>{i.nSerie}</td>
+                <td style={td}>
+                  {i.certificadoValidade
+                    ? new Date(i.certificadoValidade).toLocaleDateString("pt-BR")
+                    : "—"}
+                </td>
+                <td style={td}>
+                  <Badge tone={i.vencido ? "VENCIDO" : "VALIDO"}>
+                    {i.vencido ? "Certificado vencido" : "Selecionável"}
+                  </Badge>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </DataTable>
     </div>
   );
 }
-
-const input: React.CSSProperties = { border: "1px solid var(--nexo-border)", borderRadius: 10, padding: "10px 12px" };
-const btn: React.CSSProperties = { border: "none", borderRadius: 10, padding: "10px 14px", background: "var(--nexo-primary)", color: "white", fontWeight: 700 };
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 14 };

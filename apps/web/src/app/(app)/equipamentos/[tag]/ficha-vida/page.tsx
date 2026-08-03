@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
+import {
+  Empty,
+  Err,
+  KpiCard,
+  PageHeader,
+  Panel,
+} from "@/components/ui/nexo-ui";
 
 interface Ficha {
   equipamento: { tag: string; nome: string; criticidade: string; vidaUtilAnos: number };
@@ -24,23 +31,20 @@ export default function FichaVidaPage() {
       .catch((e) => setErro(e.message));
   }, [tag]);
 
-  if (erro) return <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>;
-  if (!ficha) return <div style={{ color: "var(--nexo-muted)" }}>Carregando…</div>;
+  if (erro) return <Err>{erro}</Err>;
+  if (!ficha) return <div style={{ color: "oklch(0.5 0.02 250)" }}>Carregando…</div>;
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>
-        Ficha Vida · {ficha.equipamento.tag}
-      </h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        {ficha.equipamento.nome} · criticidade {ficha.equipamento.criticidade} · vida útil{" "}
-        {ficha.equipamento.vidaUtilAnos} anos
-      </p>
+      <PageHeader
+        title={`Ficha Vida · ${ficha.equipamento.tag}`}
+        subtitle={`${ficha.equipamento.nome} · criticidade ${ficha.equipamento.criticidade} · vida útil ${ficha.equipamento.vidaUtilAnos} anos`}
+      />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 18 }}>
-        <Kpi label="MTBF (dias)" value={ficha.confiabilidade.mtbf} />
-        <Kpi label="MTTF (dias)" value={ficha.confiabilidade.mttf} />
-        <Kpi
+        <KpiCard label="MTBF (dias)" value={ficha.confiabilidade.mtbf} tone="info" />
+        <KpiCard label="MTTF (dias)" value={ficha.confiabilidade.mttf} tone="neutral" />
+        <KpiCard
           label="Valor depreciado"
           value={
             ficha.depreciacao.valorDepreciado == null
@@ -50,57 +54,44 @@ export default function FichaVidaPage() {
                   currency: "BRL",
                 })
           }
+          tone="warning"
         />
-        <Kpi
+        <KpiCard
           label="Custo OS"
           value={ficha.custos.totalOS.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          hint={`${ficha.custos.nOS} ordens`}
+          tone="success"
         />
       </div>
 
-      <section style={card}>
-        <h2 style={{ marginTop: 0, fontSize: 15 }}>Histórico unificado</h2>
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {ficha.historico.map((h, i) => (
-            <li
-              key={`${h.tipo}-${h.ref}-${i}`}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                padding: "10px 0",
-                borderBottom: "1px solid var(--nexo-border)",
-                fontSize: 13,
-              }}
-            >
-              <span>
-                <strong>{h.tipo}</strong> {h.ref} · {h.detalhe}
-              </span>
-              <span style={{ color: "var(--nexo-muted)" }}>
-                {new Date(h.data).toLocaleDateString("pt-BR")}
-              </span>
-            </li>
-          ))}
-          {ficha.historico.length === 0 && (
-            <li style={{ color: "var(--nexo-muted)" }}>Sem histórico</li>
-          )}
-        </ul>
-      </section>
+      <Panel title="Histórico unificado">
+        {ficha.historico.length === 0 ? (
+          <Empty text="Sem histórico" />
+        ) : (
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {ficha.historico.map((h, i) => (
+              <li
+                key={`${h.tipo}-${h.ref}-${i}`}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  padding: "10px 0",
+                  borderBottom: "1px solid oklch(0.94 0.005 255)",
+                  fontSize: 13,
+                }}
+              >
+                <span>
+                  <strong>{h.tipo}</strong> {h.ref} · {h.detalhe}
+                </span>
+                <span style={{ color: "oklch(0.5 0.02 250)" }}>
+                  {new Date(h.data).toLocaleDateString("pt-BR")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
     </div>
   );
 }
-
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div style={card}>
-      <div style={{ fontSize: 12, color: "var(--nexo-muted)", marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800 }}>{value}</div>
-    </div>
-  );
-}
-
-const card: React.CSSProperties = {
-  background: "var(--nexo-surface)",
-  border: "1px solid var(--nexo-border)",
-  borderRadius: 12,
-  padding: 14,
-};

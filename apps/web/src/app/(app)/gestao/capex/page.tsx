@@ -2,6 +2,19 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  DataTable,
+  Empty,
+  FieldLabel,
+  PageHeader,
+  Panel,
+  Surface,
+  fieldStyle,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
 
 interface Cand {
   equipamentoId: string;
@@ -110,91 +123,137 @@ export default function CapexPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>CAPEX e Plano Diretor</h1>
-      <p style={{ margin: "0 0 12px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Candidatos por idade, custo e regularidade · CAPEX manual ou de substituição
-      </p>
-      {msg && <div style={{ marginBottom: 10 }}>{msg}</div>}
+      <PageHeader title="CAPEX e Plano Diretor" subtitle="Candidatos por idade, custo e regularidade · CAPEX manual ou de substituição" />
+      {msg && <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {([
           ["sub", "Substituição"],
           ["capex", "CAPEX"],
           ["plano", "Plano Diretor"],
         ] as const).map(([k, l]) => (
-          <button key={k} type="button" onClick={() => setTab(k)} style={{ ...btn, background: tab === k ? "var(--nexo-brand)" : "var(--nexo-surface)", color: tab === k ? "white" : "inherit", border: "1px solid var(--nexo-border)" }}>
+          <Btn key={k} variant={tab === k ? "primary" : "ghost"} onClick={() => setTab(k)}>
             {l}
-          </button>
+          </Btn>
         ))}
       </div>
 
       {tab === "sub" && (
-        <div style={{ display: "grid", gap: 8 }}>
-          {cands.length === 0 && <div style={{ color: "var(--nexo-muted)" }}>Nenhum candidato no momento</div>}
+        <div style={{ display: "grid", gap: 10 }}>
+          {cands.length === 0 && <Empty text="Nenhum candidato no momento" />}
           {cands.map((c) => (
-            <div key={c.equipamentoId} style={{ ...card, display: "flex", justifyContent: "space-between", gap: 12 }}>
-              <div>
-                <strong>{c.tag}</strong> · {c.nome}
-                <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>
-                  Prioridade {c.prioridade} · idade {c.idadeAnos}a · custo R$ {c.custoAcumulado} · {c.criterio.join(", ")}
-                </div>
-                <div style={{ fontSize: 12 }}>
-                  {c.flags.anvisaVencida && "Anvisa vencida · "}
-                  {c.flags.eos && "EoS · "}
-                  {c.flags.eol && "EoL"}
-                </div>
+            <Panel
+              key={c.equipamentoId}
+              title={`${c.tag} · ${c.nome}`}
+              action={<Btn variant="secondary" onClick={() => void gerarCapex(c)}>Gerar CAPEX</Btn>}
+            >
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginBottom: 6 }}>
+                Prioridade {c.prioridade} · idade {c.idadeAnos}a · custo R$ {c.custoAcumulado} · {c.criterio.join(", ")}
               </div>
-              <button type="button" onClick={() => void gerarCapex(c)} style={btn}>Gerar CAPEX</button>
-            </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {c.flags.anvisaVencida && <Badge tone="VENCIDO">Anvisa vencida</Badge>}
+                {c.flags.eos && <Badge tone="MEDIA">EoS</Badge>}
+                {c.flags.eol && <Badge tone="ALTA">EoL</Badge>}
+              </div>
+            </Panel>
           ))}
         </div>
       )}
 
       {tab === "capex" && (
         <div>
-          <form onSubmit={(e) => void createCapex(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr auto", gap: 8, marginBottom: 14 }}>
-            <input name="descricao" placeholder="Descrição" required style={input} />
-            <input name="valor" type="number" placeholder="Valor" required style={input} />
-            <input name="justificativa" placeholder="Justificativa" required style={input} />
-            <button type="submit" style={btn}>Lançar</button>
-          </form>
-          {capex.map((c) => (
-            <div key={c.id} style={{ ...card, marginBottom: 8 }}>
-              <strong>{c.descricao}</strong> · {c.status} · {c.origem}
-              <div style={{ fontSize: 13 }}>{c.justificativa}</div>
-              <div style={{ fontSize: 13, fontWeight: 700 }}>R$ {Number(c.valorEstimado).toLocaleString("pt-BR")}</div>
-              <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                {["PROPOSTO", "APROVADO", "EXECUTADO"].map((s) => (
-                  <button key={s} type="button" onClick={() => void status(c.id, s)} style={{ ...btn, fontSize: 11, padding: "4px 8px", background: c.status === s ? "var(--nexo-brand)" : "var(--nexo-bg)", color: c.status === s ? "white" : "inherit", border: "1px solid var(--nexo-border)" }}>
-                    {s}
-                  </button>
-                ))}
+          <Surface style={{ marginBottom: 14 }}>
+            <form onSubmit={(e) => void createCapex(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr auto", gap: 10, alignItems: "end" }}>
+              <div>
+                <FieldLabel>Descrição</FieldLabel>
+                <input name="descricao" placeholder="Descrição" required style={fieldStyle} />
               </div>
-            </div>
-          ))}
+              <div>
+                <FieldLabel>Valor</FieldLabel>
+                <input name="valor" type="number" placeholder="Valor" required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Justificativa</FieldLabel>
+                <input name="justificativa" placeholder="Justificativa" required style={fieldStyle} />
+              </div>
+              <Btn type="submit">Lançar</Btn>
+            </form>
+          </Surface>
+          <DataTable>
+            <thead>
+              <tr>
+                <th style={th}>Descrição</th>
+                <th style={th}>Status</th>
+                <th style={th}>Origem</th>
+                <th style={th}>Valor</th>
+                <th style={th}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {capex.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={td}><Empty /></td>
+                </tr>
+              ) : (
+                capex.map((c) => (
+                  <tr key={c.id}>
+                    <td style={td}>
+                      <strong>{c.descricao}</strong>
+                      <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{c.justificativa}</div>
+                    </td>
+                    <td style={td}><Badge tone={c.status}>{c.status}</Badge></td>
+                    <td style={td}>{c.origem}</td>
+                    <td style={td}>R$ {Number(c.valorEstimado).toLocaleString("pt-BR")}</td>
+                    <td style={td}>
+                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                        {["PROPOSTO", "APROVADO", "EXECUTADO"].map((s) => (
+                          <Btn key={s} variant={c.status === s ? "primary" : "ghost"} style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => void status(c.id, s)}>
+                            {s}
+                          </Btn>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </DataTable>
         </div>
       )}
 
       {tab === "plano" && (
         <div>
-          <form onSubmit={(e) => void createPlano(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr auto", gap: 8, marginBottom: 14 }}>
-            <input name="iniciativa" placeholder="Iniciativa" required style={input} />
-            <input name="horizonte" placeholder="Horizonte (texto)" style={input} />
-            <input name="investimento" type="number" placeholder="Investimento" style={input} />
-            <button type="submit" style={btn}>Adicionar</button>
-          </form>
-          {plano.map((p) => (
-            <div key={p.id} style={{ ...card, marginBottom: 8 }}>
-              <strong>{p.iniciativa}</strong> · {p.status}
-              <div style={{ fontSize: 12, color: "var(--nexo-muted)" }}>{p.horizonteTexto || "Documento vivo — sem horizonte fixo"}</div>
-              {p.investimentoPrevisto != null && <div style={{ fontSize: 13 }}>R$ {Number(p.investimentoPrevisto).toLocaleString("pt-BR")}</div>}
-            </div>
-          ))}
+          <Surface style={{ marginBottom: 14 }}>
+            <form onSubmit={(e) => void createPlano(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+              <div>
+                <FieldLabel>Iniciativa</FieldLabel>
+                <input name="iniciativa" placeholder="Iniciativa" required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Horizonte</FieldLabel>
+                <input name="horizonte" placeholder="Horizonte (texto)" style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Investimento</FieldLabel>
+                <input name="investimento" type="number" placeholder="Investimento" style={fieldStyle} />
+              </div>
+              <Btn type="submit">Adicionar</Btn>
+            </form>
+          </Surface>
+          <div style={{ display: "grid", gap: 10 }}>
+            {plano.map((p) => (
+              <Panel key={p.id} title={p.iniciativa}>
+                <Badge tone={p.status}>{p.status}</Badge>
+                <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 6 }}>
+                  {p.horizonteTexto || "Documento vivo — sem horizonte fixo"}
+                </div>
+                {p.investimentoPrevisto != null && (
+                  <div style={{ fontSize: 13, marginTop: 4 }}>R$ {Number(p.investimentoPrevisto).toLocaleString("pt-BR")}</div>
+                )}
+              </Panel>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
-
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 12 };
-const input: React.CSSProperties = { padding: "8px 10px", borderRadius: 8, border: "1px solid var(--nexo-border)", background: "var(--nexo-bg)" };
-const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "none", background: "var(--nexo-brand)", color: "white", fontWeight: 700, cursor: "pointer", height: "fit-content" };

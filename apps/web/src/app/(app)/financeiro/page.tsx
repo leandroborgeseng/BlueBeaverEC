@@ -2,6 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  DataTable,
+  Empty,
+  Err,
+  KpiCard,
+  PageHeader,
+  Panel,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
+
+type Agrupar = "equipamento" | "setor" | "centroCusto";
+
+function brl(n: number) {
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 export default function FinanceiroPage() {
   const [dash, setDash] = useState<{
@@ -9,8 +27,10 @@ export default function FinanceiroPage() {
     porTipo: Record<string, number>;
     breakdown: Array<{ chave: string; total: number }>;
   } | null>(null);
-  const [extrato, setExtrato] = useState<Array<{ tipo: string; data: string; descricao: string; valor: number; origem: string }>>([]);
-  const [agrupar, setAgrupar] = useState<"equipamento" | "setor" | "centroCusto">("equipamento");
+  const [extrato, setExtrato] = useState<
+    Array<{ tipo: string; data: string; descricao: string; valor: number; origem: string }>
+  >([]);
+  const [agrupar, setAgrupar] = useState<Agrupar>("equipamento");
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,86 +47,119 @@ export default function FinanceiroPage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Financeiro</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Agregação de custos derivados (OS, rateio, glosas) — sem lançamento manual
-      </p>
-      {erro && <div style={{ color: "var(--nexo-danger)" }}>{erro}</div>}
+      <PageHeader
+        title="Financeiro"
+        subtitle="Agregação de custos derivados (OS, rateio, glosas) — sem lançamento manual"
+        actions={
+          <>
+            <Btn
+              variant="ghost"
+              onClick={() =>
+                void downloadApi("/financeiro/export", { method: "GET" }, "extrato-financeiro.csv").catch((err) =>
+                  setErro(err.message),
+                )
+              }
+            >
+              Exportar CSV
+            </Btn>
+            <Btn
+              variant="secondary"
+              onClick={() =>
+                void downloadApi("/financeiro/export-xlsx", { method: "GET" }, "extrato-financeiro.xlsx").catch(
+                  (err) => setErro(err.message),
+                )
+              }
+            >
+              Exportar Excel
+            </Btn>
+          </>
+        }
+      />
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {erro && <Err>{erro}</Err>}
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {(["equipamento", "setor", "centroCusto"] as const).map((a) => (
-          <button key={a} type="button" onClick={() => setAgrupar(a)} style={{ ...btn, background: agrupar === a ? "var(--nexo-brand)" : "var(--nexo-surface)", color: agrupar === a ? "white" : "inherit", border: "1px solid var(--nexo-border)" }}>
-            {a}
-          </button>
+          <Btn key={a} variant={agrupar === a ? "primary" : "ghost"} onClick={() => setAgrupar(a)}>
+            {a === "centroCusto" ? "Centro de custo" : a.charAt(0).toUpperCase() + a.slice(1)}
+          </Btn>
         ))}
-        <button
-          type="button"
-          onClick={() =>
-            void downloadApi("/financeiro/export-xlsx", { method: "GET" }, "extrato-financeiro.xlsx").catch((err) =>
-              setErro(err.message),
-            )
-          }
-          style={{ ...btn, background: "var(--nexo-brand)", color: "white" }}
-        >
-          Exportar Excel
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            void downloadApi("/financeiro/export", { method: "GET" }, "extrato-financeiro.csv").catch((err) =>
-              setErro(err.message),
-            )
-          }
-          style={{ ...btn, background: "var(--nexo-surface)", color: "inherit", border: "1px solid var(--nexo-border)" }}
-        >
-          Exportar CSV
-        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginBottom: 16 }}>
-        <Kpi label="Total" value={dash?.totalGeral ?? "—"} />
+        <KpiCard
+          label="Total geral"
+          value={dash ? brl(dash.totalGeral) : "—"}
+          tone="info"
+        />
         {(["MATERIAL", "MAO_DE_OBRA", "RATEIO", "GLOSA"] as const).map((t) => (
-          <Kpi key={t} label={t} value={dash?.porTipo?.[t] != null ? Number(dash.porTipo[t].toFixed(2)) : "—"} />
+          <KpiCard
+            key={t}
+            label={t.replace(/_/g, " ")}
+            value={dash?.porTipo?.[t] != null ? brl(Number(dash.porTipo[t])) : "—"}
+            tone={t === "GLOSA" ? "danger" : "neutral"}
+          />
         ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 14 }}>
-        <section style={card}>
-          <h2 style={{ marginTop: 0, fontSize: 15 }}>Breakdown</h2>
+        <Panel title={`Breakdown por ${agrupar}`}>
           {(dash?.breakdown ?? []).slice(0, 15).map((b) => (
-            <div key={b.chave} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 13 }}>
-              <span>{b.chave}</span>
-              <strong>{b.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+            <div
+              key={b.chave}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "10px 0",
+                borderBottom: "1px solid oklch(0.93 0.005 255)",
+                fontSize: 13,
+                gap: 12,
+              }}
+            >
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.chave}</span>
+              <strong>{brl(b.total)}</strong>
             </div>
           ))}
-        </section>
-        <section style={card}>
-          <h2 style={{ marginTop: 0, fontSize: 15 }}>Extrato</h2>
-          <div style={{ maxHeight: 420, overflow: "auto" }}>
-            {extrato.slice(0, 50).map((l, i) => (
-              <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid var(--nexo-border)", fontSize: 12 }}>
-                <strong>{l.tipo}</strong> · {String(l.data).slice(0, 10)} · {l.origem}
-                <div>{l.descricao}</div>
-                <div style={{ color: l.valor < 0 ? "var(--nexo-danger)" : "inherit", fontWeight: 700 }}>
-                  {l.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+          {(dash?.breakdown ?? []).length === 0 && <Empty text="Sem breakdown para este agrupamento." />}
+        </Panel>
+
+        <div>
+          <DataTable>
+            <thead>
+              <tr>
+                <th style={th}>Tipo</th>
+                <th style={th}>Data</th>
+                <th style={th}>Origem</th>
+                <th style={th}>Descrição</th>
+                <th style={th}>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {extrato.slice(0, 50).map((l, i) => (
+                <tr key={i}>
+                  <td style={td}>
+                    <Badge>{l.tipo}</Badge>
+                  </td>
+                  <td style={td}>{String(l.data).slice(0, 10)}</td>
+                  <td style={td}>{l.origem}</td>
+                  <td style={{ ...td, maxWidth: 220 }}>{l.descricao}</td>
+                  <td
+                    style={{
+                      ...td,
+                      fontWeight: 700,
+                      color: l.valor < 0 ? "oklch(0.45 0.16 25)" : undefined,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {brl(l.valor)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </DataTable>
+          {extrato.length === 0 && <Empty text="Extrato vazio." />}
+        </div>
       </div>
     </div>
   );
 }
-
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div style={card}>
-      <div style={{ fontSize: 11, color: "var(--nexo-muted)", fontWeight: 700 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{value}</div>
-    </div>
-  );
-}
-
-const card: React.CSSProperties = { background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, padding: 12 };
-const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "none", fontWeight: 700, cursor: "pointer", fontSize: 12 };

@@ -57,10 +57,10 @@ function WindowFrame({
         top: win.y,
         width: win.width,
         height: win.height,
-        background: "var(--nexo-surface)",
-        border: "1px solid var(--nexo-border)",
-        borderRadius: 12,
-        boxShadow: "0 30px 60px -28px rgba(0,0,0,.45)",
+        background: "white",
+        border: "1px solid oklch(0.88 0.01 250)",
+        borderRadius: 10,
+        boxShadow: "0 24px 48px -20px rgba(16,24,40,0.45)",
         zIndex: 45,
         display: "flex",
         flexDirection: "column",
@@ -72,23 +72,25 @@ function WindowFrame({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         style={{
-          height: 42,
+          height: 40,
           display: "flex",
           alignItems: "center",
           padding: "0 12px",
-          borderBottom: "1px solid var(--nexo-border)",
+          borderBottom: "1px solid oklch(0.91 0.006 255)",
           cursor: "grab",
-          background: "oklch(0.97 0.01 250)",
+          background: "white",
           userSelect: "none",
         }}
       >
-        <strong style={{ fontSize: 13 }}>{win.title}</strong>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-          <button type="button" onClick={onMinimize} style={btn}>
+        <strong style={{ fontSize: 13.5, fontWeight: 700, color: "oklch(0.25 0.02 250)" }}>
+          {win.title}
+        </strong>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+          <button type="button" onClick={onMinimize} style={btn} title="Minimizar">
             —
           </button>
-          <button type="button" onClick={onClose} style={btn}>
-            ✕
+          <button type="button" onClick={onClose} style={btn} title="Fechar">
+            ×
           </button>
         </div>
       </div>

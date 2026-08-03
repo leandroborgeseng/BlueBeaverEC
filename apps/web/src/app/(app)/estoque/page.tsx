@@ -2,6 +2,20 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import {
+  Badge,
+  Btn,
+  DataTable,
+  Empty,
+  Err,
+  FieldLabel,
+  PageHeader,
+  Panel,
+  Surface,
+  fieldStyle,
+  td,
+  th,
+} from "@/components/ui/nexo-ui";
 
 interface Item {
   id: string;
@@ -83,81 +97,105 @@ export default function EstoquePage() {
 
   return (
     <div>
-      <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800 }}>Estoque</h1>
-      <p style={{ margin: "0 0 16px", color: "var(--nexo-muted)", fontSize: 13 }}>
-        Baixa imediata · saldo negativo permitido · componentes recuperados em lista separada
-      </p>
-      {msg && <div style={{ marginBottom: 12 }}>{msg}</div>}
+      <PageHeader title="Estoque" subtitle="Baixa imediata · saldo negativo permitido · componentes recuperados em lista separada" />
+      {msg && <Err>{msg}</Err>}
 
-      <form
-        onSubmit={(e) => void onCreate(e)}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr auto",
-          gap: 8,
-          marginBottom: 16,
-          background: "var(--nexo-surface)",
-          border: "1px solid var(--nexo-border)",
-          borderRadius: 12,
-          padding: 12,
-        }}
-      >
-        <input name="codigo" placeholder="Código" required style={input} />
-        <input name="descricao" placeholder="Descrição" required style={input} />
-        <input name="qtdAtual" type="number" placeholder="Qtd" style={input} />
-        <input name="qtdMinima" type="number" placeholder="Mín." style={input} />
-        <input name="valorUnitario" type="number" step="0.01" placeholder="R$" style={input} />
-        <button type="submit" style={btn}>+ Item</button>
-      </form>
+      <Surface style={{ marginBottom: 16 }}>
+        <form
+          onSubmit={(e) => void onCreate(e)}
+          style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}
+        >
+          <div>
+            <FieldLabel>Código</FieldLabel>
+            <input name="codigo" placeholder="Código" required style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Descrição</FieldLabel>
+            <input name="descricao" placeholder="Descrição" required style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Qtd</FieldLabel>
+            <input name="qtdAtual" type="number" placeholder="Qtd" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Mín.</FieldLabel>
+            <input name="qtdMinima" type="number" placeholder="Mín." style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>R$</FieldLabel>
+            <input name="valorUnitario" type="number" step="0.01" placeholder="R$" style={fieldStyle} />
+          </div>
+          <Btn type="submit">+ Item</Btn>
+        </form>
+      </Surface>
 
-      <div style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 12, marginBottom: 18 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ textAlign: "left", background: "oklch(0.97 0.01 250)" }}>
-              <th style={th}>Código</th>
-              <th style={th}>Descrição</th>
-              <th style={th}>Atual</th>
-              <th style={th}>Reservada</th>
-              <th style={th}>Disponível</th>
-              <th style={th}>Status</th>
+      <DataTable>
+        <thead>
+          <tr>
+            <th style={th}>Código</th>
+            <th style={th}>Descrição</th>
+            <th style={th}>Atual</th>
+            <th style={th}>Reservada</th>
+            <th style={th}>Disponível</th>
+            <th style={th}>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={6} style={td}>
+                <Empty />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {items.map((i) => (
-              <tr key={i.id} style={{ borderTop: "1px solid var(--nexo-border)" }}>
+          ) : (
+            items.map((i) => (
+              <tr key={i.id}>
                 <td style={td}>{i.codigo}</td>
                 <td style={td}>{i.descricao}</td>
                 <td style={td}>{i.qtdAtual}</td>
                 <td style={td}>{i.qtdReservada}</td>
                 <td style={td}>{i.disponivel}</td>
-                <td style={{ ...td, color: i.status === "ABAIXO_DO_MINIMO" ? "var(--nexo-warning)" : undefined, fontWeight: 700 }}>
-                  {i.status === "ABAIXO_DO_MINIMO" ? "Abaixo do mínimo" : "Normal"}
+                <td style={td}>
+                  <Badge tone={i.status === "ABAIXO_DO_MINIMO" ? "MEDIA" : "ATIVO"}>
+                    {i.status === "ABAIXO_DO_MINIMO" ? "Abaixo do mínimo" : "Normal"}
+                  </Badge>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </DataTable>
 
-      <h2 style={{ fontSize: 16 }}>Componentes Recuperados</h2>
-      <form onSubmit={(e) => void onComp(e)} style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 8, marginBottom: 12 }}>
-        <input name="itemDescricao" placeholder="Descrição da peça" required style={input} />
-        <input name="equipamentoOrigemTag" placeholder="TAG origem" required style={input} />
-        <button type="submit" style={btn}>Rastrear</button>
-      </form>
-      <div style={{ display: "grid", gap: 8 }}>
-        {comps.map((c) => (
-          <div key={c.id} style={{ background: "var(--nexo-surface)", border: "1px solid var(--nexo-border)", borderRadius: 10, padding: 12, fontSize: 13 }}>
-            <strong>{c.itemDescricao}</strong> · origem {c.equipamentoOrigem.tag} · {c.situacao}
-            {c.equipamentoDestino ? ` · destino ${c.equipamentoDestino.tag}` : ""}
+      <div style={{ marginTop: 18 }}>
+      <Panel title="Componentes Recuperados">
+        <form
+          onSubmit={(e) => void onComp(e)}
+          style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 14 }}
+        >
+          <div>
+            <FieldLabel>Descrição da peça</FieldLabel>
+            <input name="itemDescricao" placeholder="Descrição da peça" required style={fieldStyle} />
           </div>
-        ))}
+          <div>
+            <FieldLabel>TAG origem</FieldLabel>
+            <input name="equipamentoOrigemTag" placeholder="TAG origem" required style={fieldStyle} />
+          </div>
+          <Btn type="submit">Rastrear</Btn>
+        </form>
+        {comps.length === 0 ? (
+          <Empty text="Nenhum componente recuperado." />
+        ) : (
+          <div style={{ display: "grid", gap: 8 }}>
+            {comps.map((c) => (
+              <Surface key={c.id} style={{ padding: 12, fontSize: 13 }}>
+                <strong>{c.itemDescricao}</strong> · origem {c.equipamentoOrigem.tag} · {c.situacao}
+                {c.equipamentoDestino ? ` · destino ${c.equipamentoDestino.tag}` : ""}
+              </Surface>
+            ))}
+          </div>
+        )}
+      </Panel>
       </div>
     </div>
   );
 }
-
-const input: React.CSSProperties = { border: "1px solid var(--nexo-border)", borderRadius: 10, padding: "10px 12px" };
-const btn: React.CSSProperties = { border: "none", borderRadius: 10, padding: "10px 14px", background: "var(--nexo-primary)", color: "white", fontWeight: 700 };
-const th: React.CSSProperties = { padding: "12px 14px", fontSize: 12, color: "var(--nexo-muted)" };
-const td: React.CSSProperties = { padding: "12px 14px" };
