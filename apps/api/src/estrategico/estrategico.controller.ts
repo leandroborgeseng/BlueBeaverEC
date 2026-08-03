@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { EtapaJornada } from "@prisma/client";
 import {
   IsEnum,
@@ -9,6 +9,7 @@ import {
   Min,
   MinLength,
 } from "class-validator";
+import type { Response } from "express";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { EstrategicoService } from "./estrategico.service";
@@ -123,8 +124,23 @@ export class EstrategicoController {
   }
 
   @Get("pops")
-  pops(@CurrentUser() user: AuthUser) {
-    return this.estrategico.listPops(user.estabelecimentoId);
+  pops(@CurrentUser() user: AuthUser, @Query("categoria") categoria?: string) {
+    return this.estrategico.listPops(user.estabelecimentoId, categoria);
+  }
+
+  @Get("pops/:id/documento.pdf")
+  async popPdf(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.estrategico.popDocumentoPdf(user.estabelecimentoId, id);
+    res.setHeader("Content-Type", doc.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${doc.nomeArquivo.replace(/"/g, "")}"`,
+    );
+    res.send(doc.conteudo);
   }
 
   @Post("pops")

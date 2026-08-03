@@ -904,21 +904,35 @@ model EvidenciaConformidade {
   @@index([estabelecimentoId, requisitoId])
 }
 
+/// Biblioteca de procedimentos operacionais (POP.EC.*) — PDF de referência, sem checklist ainda.
+enum CategoriaPop {
+  PREVENTIVA
+  CALIBRACAO
+  TSE
+  QUALIFICACAO
+}
+
 model Pop {
-  id                   String   @id @default(cuid())
+  id                   String       @id @default(cuid())
   estabelecimentoId    String
   codigo               String
   titulo               String
-  versao               String   @default("1.0")
-  status               String   @default("VIGENTE")
-  procedimentoLaudoId  String?  @unique
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  versao               String       @default("1.0")
+  status               String       @default("VIGENTE")
+  categoria            CategoriaPop?
+  /// Nome amigável do equipamento no POP (ex.: DesfibriladorCardioversor)
+  equipamentoTitulo    String?
+  nomeArquivo          String?
+  tamanhoBytes         Int?
+  procedimentoLaudoId  String?      @unique
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   estabelecimento   Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   procedimentoLaudo ProcedimentoLaudo? @relation(fields: [procedimentoLaudoId], references: [id])
 
   @@unique([estabelecimentoId, codigo])
+  @@index([estabelecimentoId, categoria])
 }
 
 model RecomendacaoInstitucional {

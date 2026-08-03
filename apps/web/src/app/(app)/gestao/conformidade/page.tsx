@@ -115,6 +115,11 @@ export default function ConformidadePage() {
               <strong>{p.codigo}</strong> · {p.titulo} · v{p.versao}
             </div>
           ))}
+          <div style={{ marginTop: 12 }}>
+            <a href="/biblioteca-pops" style={{ fontSize: 13, fontWeight: 600 }}>
+              Abrir biblioteca completa com PDFs →
+            </a>
+          </div>
         </Panel>
       )}
     </div>

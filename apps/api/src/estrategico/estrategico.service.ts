@@ -283,12 +283,53 @@ export class EstrategicoService {
     });
   }
 
-  listPops(estabelecimentoId: string) {
+  listPops(estabelecimentoId: string, categoria?: string) {
     return this.prisma.pop.findMany({
-      where: { estabelecimentoId },
-      include: { procedimentoLaudo: true },
-      orderBy: { codigo: "asc" },
+      where: {
+        estabelecimentoId,
+        ...(categoria ? { categoria: categoria as never } : {}),
+      },
+      include: { procedimentoLaudo: { select: { id: true, nome: true, tipo: true } } },
+      orderBy: [{ categoria: "asc" }, { codigo: "asc" }],
+    }).then((rows) =>
+      rows.map((p) => ({
+        ...p,
+        temDocumento: Boolean(p.nomeArquivo),
+        familia:
+          p.categoria === "PREVENTIVA"
+            ? "MP"
+            : p.categoria === "CALIBRACAO"
+              ? "CAL"
+              : p.categoria === "TSE"
+                ? "SEG"
+                : p.categoria === "QUALIFICACAO"
+                  ? "QLF"
+                  : null,
+      })),
+    );
+  }
+
+  async popDocumentoPdf(estabelecimentoId: string, id: string) {
+    const pop = await this.prisma.pop.findFirst({
+      where: { id, estabelecimentoId },
     });
+    if (!pop) throw new NotFoundException("POP não encontrado");
+    if (!pop.nomeArquivo) throw new NotFoundException("Documento PDF não disponível");
+
+    const { existsSync, readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const dir = join(process.cwd(), "scripts/dados/pops-biblioteca");
+    const full = join(dir, pop.nomeArquivo);
+    if (!existsSync(full)) {
+      throw new NotFoundException(`Arquivo ausente no servidor: ${pop.nomeArquivo}`);
+    }
+    return {
+      nomeArquivo: pop.nomeArquivo,
+      mimeType: "application/pdf",
+      conteudo: readFileSync(full),
+      codigo: pop.codigo,
+      titulo: pop.titulo,
+    };
   }
 
   async createPop(
