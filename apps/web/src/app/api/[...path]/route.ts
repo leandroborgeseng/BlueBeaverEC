@@ -6,19 +6,20 @@ export const runtime = "nodejs";
 
 const DEFAULT_API_PORT = "3001";
 
-/** Dual-stack: rede privada Railway (legado) é IPv6; undici/fetch padrão falha fácil. */
+/** Dual-stack para *.railway.internal (IPv4/IPv6). */
 const upstreamAgent = new Agent({
   connect: { family: 0 },
   connectTimeout: 10_000,
 });
 
+/** Rede privada Railway é HTTP puro — nunca HTTPS. */
 function backendBase() {
-  const fromHost = process.env.API_INTERNAL_HOST?.trim();
   const port =
     process.env.API_INTERNAL_PORT?.trim() ||
     process.env.API_PORT?.trim() ||
     DEFAULT_API_PORT;
 
+  const fromHost = process.env.API_INTERNAL_HOST?.trim();
   if (fromHost) {
     const host = fromHost.replace(/^https?:\/\//, "").replace(/\/$/, "");
     return `http://${host}:${port}`;
@@ -30,15 +31,17 @@ function backendBase() {
     `http://127.0.0.1:${DEFAULT_API_PORT}`;
 
   raw = raw.replace(/\/$/, "");
+  if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
 
   try {
     const u = new URL(raw);
+    if (u.hostname.endsWith(".railway.internal") || u.hostname === "localhost") {
+      u.protocol = "http:";
+    }
     if (!u.port) u.port = port;
-    return u.toString().replace(/\/$/, "");
+    return `${u.protocol}//${u.hostname}:${u.port}`;
   } catch {
-    const m = raw.match(/^(https?:\/\/[^/:]+)(?::(\d*))?$/);
-    if (m) return `${m[1]}:${m[2] || port}`;
-    return raw;
+    return `http://127.0.0.1:${port}`;
   }
 }
 
@@ -81,7 +84,7 @@ async function proxy(req: NextRequest, path: string[]) {
   } catch (err) {
     return NextResponse.json(
       {
-        message: `API inacessível (${base}): ${errorDetail(err)}. Confirme API no ar (PORT=3001, HOST=::) ou use a URL pública HTTPS da API em API_INTERNAL_URL.`,
+        message: `API inacessível (${base}): ${errorDetail(err)}. Use http:// (não https) no host *.railway.internal, mesma PORT da API, e API Active. Alternativa: URL pública https://…up.railway.app.`,
       },
       { status: 502 },
     );
