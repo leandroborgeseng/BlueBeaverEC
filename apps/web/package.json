@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
+    "build": "pnpm --filter @nexo/shared build && next build",
     "start": "node scripts/start-prod.mjs",
     "lint": "next lint"
   },
