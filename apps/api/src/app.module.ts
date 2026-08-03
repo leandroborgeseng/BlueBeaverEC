@@ -23,6 +23,7 @@ import { GestaoModule } from "./gestao/gestao.module";
 import { RelatoriosModule } from "./relatorios/relatorios.module";
 import { ConfigAppModule } from "./config/config.module";
 import { PortalModule } from "./portal/portal.module";
+import { PlanosModule } from "./planos/planos.module";
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { PortalModule } from "./portal/portal.module";
     RelatoriosModule,
     ConfigAppModule,
     PortalModule,
+    PlanosModule,
   ],
 })
 export class AppModule {}

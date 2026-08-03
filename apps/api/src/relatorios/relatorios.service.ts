@@ -3,6 +3,7 @@ import { FrequenciaRelatorio } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { EstrategicoService } from "../estrategico/estrategico.service";
 import { FinanceiroService } from "../financeiro/financeiro.service";
+import { PlanosService } from "../planos/planos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { buildPdfBuffer, buildXlsxBuffer, type ReportPayload } from "./report-export";
 
@@ -27,6 +28,11 @@ const TEMPLATES = [
     nome: "Maturidade da Engenharia Clínica",
     descricao: "Índice e evolução por domínio",
   },
+  {
+    codigo: "calendario_manutencao",
+    nome: "Calendário de Manutenção",
+    descricao: "Agenda anual / mensal / semanal de preventiva, TSE e calibração (exportável)",
+  },
 ] as const;
 
 @Injectable()
@@ -35,13 +41,18 @@ export class RelatoriosService {
     private readonly prisma: PrismaService,
     private readonly estrategico: EstrategicoService,
     private readonly financeiro: FinanceiroService,
+    private readonly planos: PlanosService,
   ) {}
 
   templates() {
     return TEMPLATES;
   }
 
-  async buildPayload(estabelecimentoId: string, template: string): Promise<ReportPayload> {
+  async buildPayload(
+    estabelecimentoId: string,
+    template: string,
+    opts: { de?: string; ate?: string } = {},
+  ): Promise<ReportPayload> {
     switch (template) {
       case "resumo_mensal": {
         const dash = await this.estrategico.dashboardExecutivo(estabelecimentoId);
@@ -77,13 +88,29 @@ export class RelatoriosService {
           dominios: await this.estrategico.listMaturidade(estabelecimentoId),
           recomendacoes: await this.estrategico.listRecomendacoes(estabelecimentoId),
         };
+      case "calendario_manutencao": {
+        const cal = await this.planos.calendario(estabelecimentoId, {
+          de: opts.de,
+          ate: opts.ate,
+        });
+        return {
+          template,
+          geradoEm: new Date().toISOString(),
+          ...cal,
+        };
+      }
       default:
         throw new BadRequestException(`Template desconhecido: ${template}`);
     }
   }
 
-  async gerar(estabelecimentoId: string, template: string, formato: "pdf" | "xlsx" | "json" = "json") {
-    const payload = await this.buildPayload(estabelecimentoId, template);
+  async gerar(
+    estabelecimentoId: string,
+    template: string,
+    formato: "pdf" | "xlsx" | "json" = "json",
+    opts: { de?: string; ate?: string } = {},
+  ) {
+    const payload = await this.buildPayload(estabelecimentoId, template, opts);
 
     if (formato === "json") {
       return { formato: "json" as const, dados: payload };

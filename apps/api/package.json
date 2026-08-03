@@ -19,6 +19,7 @@
     "import:checklists:tse": "tsx scripts/import-checklists-tse.ts",
     "import:checklists:cal": "tsx scripts/import-checklists-calibracao.ts",
     "import:checklists:qlf": "tsx scripts/import-checklists-qualificacao.ts",
+    "gerar:rampup": "tsx scripts/gerar-plano-rampup.ts",
     "import:laudos": "tsx scripts/import-laudos-pdf.ts"
   },
   "dependencies": {

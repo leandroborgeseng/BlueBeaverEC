@@ -15,6 +15,14 @@ class GerarDto {
   @IsOptional()
   @IsString()
   formato?: "pdf" | "xlsx" | "json";
+
+  @IsOptional()
+  @IsString()
+  de?: string;
+
+  @IsOptional()
+  @IsString()
+  ate?: string;
 }
 
 class AgendamentoDto {
@@ -48,7 +56,10 @@ export class RelatoriosController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const formato = body.formato ?? "json";
-    const out = await this.relatorios.gerar(user.estabelecimentoId, body.template, formato);
+    const out = await this.relatorios.gerar(user.estabelecimentoId, body.template, formato, {
+      de: body.de,
+      ate: body.ate,
+    });
 
     if (out.formato === "json") {
       return out;
