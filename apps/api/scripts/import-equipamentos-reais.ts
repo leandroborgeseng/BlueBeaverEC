@@ -103,7 +103,8 @@ async function nextLaudoNumero(estabId: string, tipo: TipoLaudo) {
     create: { estabelecimentoId: estabId, chave, valor: 1 },
     update: { valor: { increment: 1 } },
   });
-  const prefix = tipo === TipoLaudo.CALIBRACAO ? "CAL" : tipo === TipoLaudo.TSE ? "TSE" : tipo.slice(0, 3);
+  const prefix =
+    tipo === TipoLaudo.CALIBRACAO ? "CAL" : tipo === TipoLaudo.TSE ? "TSE" : tipo.slice(0, 3);
   return `${prefix}-${String(row.valor).padStart(4, "0")}`;
 }
 
@@ -127,8 +128,7 @@ async function main() {
   const estab =
     (estabIdArg
       ? await prisma.estabelecimento.findUnique({ where: { id: estabIdArg } })
-      : null) ??
-    (await prisma.estabelecimento.findFirst({ orderBy: { createdAt: "asc" } }));
+      : null) ?? (await prisma.estabelecimento.findFirst({ orderBy: { createdAt: "asc" } }));
 
   if (!estab) {
     console.error("Nenhum estabelecimento. Rode o seed antes.");
@@ -141,23 +141,53 @@ async function main() {
     console.log("Avisos da extração:", payload.meta.avisos.join(" | "));
   }
 
+  const planoCache = new Map<string, Awaited<ReturnType<typeof upsertPlano>>>();
+  const setorCache = new Map<string, Awaited<ReturnType<typeof upsertSetor>>>();
+  const fabCache = new Map<string, Awaited<ReturnType<typeof upsertFabricante>>>();
+  const modeloCache = new Map<string, Awaited<ReturnType<typeof upsertModelo>>>();
+
+  async function planoCached(nome?: string | null) {
+    const k = (nome || "Outros").trim() || "Outros";
+    if (!planoCache.has(k)) planoCache.set(k, await upsertPlano(estab!.id, k));
+    return planoCache.get(k)!;
+  }
+  async function setorCached(nome?: string | null) {
+    const k = (nome || "Não informado").trim() || "Não informado";
+    if (!setorCache.has(k)) setorCache.set(k, await upsertSetor(estab!.id, k));
+    return setorCache.get(k)!;
+  }
+  async function fabCached(nome?: string | null) {
+    const k = (nome || "Não informado").trim() || "Não informado";
+    if (!fabCache.has(k)) fabCache.set(k, await upsertFabricante(estab!.id, k));
+    return fabCache.get(k)!;
+  }
+  async function modeloCached(fabId: string, nome?: string | null) {
+    const n = (nome || "Não informado").trim() || "Não informado";
+    const k = `${fabId}::${n}`;
+    if (!modeloCache.has(k)) modeloCache.set(k, await upsertModelo(fabId, n));
+    return modeloCache.get(k)!;
+  }
+
   let ok = 0;
   let upd = 0;
   let laudosCriados = 0;
+  let processed = 0;
   const erros: string[] = [];
   const pdfsPendentes: string[] = [];
+  const total = payload.equipamentos.length;
 
   for (const row of payload.equipamentos) {
     const tag = String(row.tag ?? "").trim();
+    processed += 1;
     try {
       if (!tag || !row.nome?.trim()) throw new Error("tag/nome obrigatórios");
 
       const [plano, setor, fab] = await Promise.all([
-        upsertPlano(estab.id, row.planoDescricao || "Outros"),
-        upsertSetor(estab.id, row.setor || "Não informado"),
-        upsertFabricante(estab.id, row.fabricante || "Não informado"),
+        planoCached(row.planoDescricao),
+        setorCached(row.setor),
+        fabCached(row.fabricante),
       ]);
-      const modelo = await upsertModelo(fab.id, row.modelo || "Não informado");
+      const modelo = await modeloCached(fab.id, row.modelo);
 
       const obsParts = [
         row.observacao?.trim() || null,
@@ -244,6 +274,12 @@ async function main() {
     } catch (e) {
       erros.push(`${tag || "?"}: ${e instanceof Error ? e.message : e}`);
     }
+
+    if (processed % 25 === 0 || processed === total) {
+      console.log(
+        `[nexo] import progresso ${processed}/${total} (criados=${ok} upd=${upd} erros=${erros.length})`,
+      );
+    }
   }
 
   console.log(
@@ -253,8 +289,8 @@ async function main() {
         atualizados: upd,
         laudosCriados,
         erros: erros.length,
-        detalhesErros: erros,
-        pdfsPendentesUpload: pdfsPendentes,
+        detalhesErros: erros.slice(0, 30),
+        pdfsPendentesUpload: pdfsPendentes.slice(0, 30),
       },
       null,
       2,
