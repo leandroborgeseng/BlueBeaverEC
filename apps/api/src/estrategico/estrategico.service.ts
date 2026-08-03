@@ -284,36 +284,79 @@ export class EstrategicoService {
   }
 
   listPops(estabelecimentoId: string, categoria?: string) {
-    return this.prisma.pop.findMany({
-      where: {
-        estabelecimentoId,
-        ...(categoria ? { categoria: categoria as never } : {}),
-      },
-      include: { procedimentoLaudo: { select: { id: true, nome: true, tipo: true } } },
-      orderBy: [{ categoria: "asc" }, { codigo: "asc" }],
-    }).then((rows) =>
-      rows.map((p) => ({
-        ...p,
-        temDocumento: Boolean(p.nomeArquivo),
-        familia:
-          p.categoria === "PREVENTIVA"
-            ? "MP"
-            : p.categoria === "CALIBRACAO"
-              ? "CAL"
-              : p.categoria === "TSE"
-                ? "SEG"
-                : p.categoria === "QUALIFICACAO"
-                  ? "QLF"
-                  : null,
-      })),
-    );
+    return this.prisma.pop
+      .findMany({
+        where: {
+          estabelecimentoId,
+          ...(categoria ? { categoria: categoria as never } : {}),
+        },
+        select: {
+          id: true,
+          codigo: true,
+          titulo: true,
+          versao: true,
+          status: true,
+          categoria: true,
+          equipamentoTitulo: true,
+          nomeArquivo: true,
+          tamanhoBytes: true,
+          mimeType: true,
+          createdAt: true,
+          updatedAt: true,
+          procedimentoLaudo: { select: { id: true, nome: true, tipo: true } },
+        },
+        orderBy: [{ categoria: "asc" }, { codigo: "asc" }],
+      })
+      .then(async (rows) => {
+        if (rows.length === 0) return [];
+        const comConteudo = await this.prisma.pop.findMany({
+          where: {
+            id: { in: rows.map((r) => r.id) },
+            conteudo: { not: null },
+          },
+          select: { id: true },
+        });
+        const hasBytes = new Set(comConteudo.map((c) => c.id));
+        return rows.map((p) => ({
+          ...p,
+          temDocumento: hasBytes.has(p.id),
+          familia:
+            p.categoria === "PREVENTIVA"
+              ? "MP"
+              : p.categoria === "CALIBRACAO"
+                ? "CAL"
+                : p.categoria === "TSE"
+                  ? "SEG"
+                  : p.categoria === "QUALIFICACAO"
+                    ? "QLF"
+                    : null,
+        }));
+      });
   }
 
   async popDocumentoPdf(estabelecimentoId: string, id: string) {
     const pop = await this.prisma.pop.findFirst({
       where: { id, estabelecimentoId },
+      select: {
+        codigo: true,
+        titulo: true,
+        nomeArquivo: true,
+        mimeType: true,
+        conteudo: true,
+      },
     });
     if (!pop) throw new NotFoundException("POP não encontrado");
+
+    if (pop.conteudo) {
+      return {
+        nomeArquivo: pop.nomeArquivo ?? `${pop.codigo}.pdf`,
+        mimeType: pop.mimeType || "application/pdf",
+        conteudo: Buffer.from(pop.conteudo),
+        codigo: pop.codigo,
+        titulo: pop.titulo,
+      };
+    }
+
     if (!pop.nomeArquivo) throw new NotFoundException("Documento PDF não disponível");
 
     const { existsSync, readFileSync } = await import("node:fs");
@@ -321,11 +364,13 @@ export class EstrategicoService {
     const dir = join(process.cwd(), "scripts/dados/pops-biblioteca");
     const full = join(dir, pop.nomeArquivo);
     if (!existsSync(full)) {
-      throw new NotFoundException(`Arquivo ausente no servidor: ${pop.nomeArquivo}`);
+      throw new NotFoundException(
+        `PDF ainda não importado no banco e arquivo ausente no disco: ${pop.nomeArquivo}`,
+      );
     }
     return {
       nomeArquivo: pop.nomeArquivo,
-      mimeType: "application/pdf",
+      mimeType: pop.mimeType || "application/pdf",
       conteudo: readFileSync(full),
       codigo: pop.codigo,
       titulo: pop.titulo,

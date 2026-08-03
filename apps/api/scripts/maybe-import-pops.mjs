@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Importa metadados da biblioteca de POPs se incompleto.
+ * Importa biblioteca de POPs (metadados + PDF no banco) se incompleto.
  * Force: IMPORT_POPS_ON_BOOT=true
  */
 import { existsSync, readdirSync } from "node:fs";
@@ -31,21 +31,21 @@ try {
     process.exit(0);
   }
 
-  const count = await prisma.pop.count({
-    where: { nomeArquivo: { not: null } },
+  const comPdf = await prisma.pop.count({
+    where: { conteudo: { not: null } },
   });
 
-  console.log(`[nexo] import pops biblioteca: ${count}/${expected} no banco`);
+  console.log(`[nexo] import pops biblioteca: ${comPdf}/${expected} PDFs no banco`);
 
-  if (!force && count >= expected) {
-    console.log("[nexo] import pops biblioteca skipped (carga completa)");
+  if (!force && comPdf >= expected) {
+    console.log("[nexo] import pops biblioteca skipped (PDFs já no banco)");
     process.exit(0);
   }
 
   console.log(
     force
-      ? "[nexo] IMPORT_POPS_ON_BOOT=true — reimportando biblioteca…"
-      : `[nexo] importando biblioteca de POPs (${expected - count} faltando)…`,
+      ? "[nexo] IMPORT_POPS_ON_BOOT=true — reimportando PDFs…"
+      : `[nexo] gravando PDFs da biblioteca (${expected - comPdf} faltando)…`,
   );
 
   const args = ["exec", "tsx", "scripts/import-pops-biblioteca.ts", "scripts/dados/pops-biblioteca"];

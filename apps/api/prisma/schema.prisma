@@ -924,6 +924,9 @@ model Pop {
   equipamentoTitulo    String?
   nomeArquivo          String?
   tamanhoBytes         Int?
+  mimeType             String?      @default("application/pdf")
+  /// PDF completo para pré-visualização/download (espelha LaudoAnexo)
+  conteudo             Bytes?
   procedimentoLaudoId  String?      @unique
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt

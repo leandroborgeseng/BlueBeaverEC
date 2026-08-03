@@ -1,12 +1,12 @@
 /**
- * Importa biblioteca de POPs (PDF Final) — metadados + referência ao arquivo em disco.
+ * Importa biblioteca de POPs — metadados + conteúdo PDF no banco (pré-visualização).
  *
  * Uso:
  *   pnpm exec tsx scripts/import-pops-biblioteca.ts
  *   pnpm exec tsx scripts/import-pops-biblioteca.ts scripts/dados/pops-biblioteca --force
  */
-import { existsSync, readdirSync, statSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
 import { CategoriaPop, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -37,8 +37,8 @@ function humanize(slug: string) {
 
 async function main() {
   const force = process.argv.includes("--force");
-  const dirArg = process.argv.find((a) => !a.startsWith("--") && a !== process.argv[0] && a !== process.argv[1]);
-  const dir = resolve(dirArg && !dirArg.endsWith(".ts") ? dirArg : "scripts/dados/pops-biblioteca");
+  const dirArg = process.argv.slice(2).find((a) => !a.startsWith("--"));
+  const dir = resolve(dirArg ?? "scripts/dados/pops-biblioteca");
 
   if (!existsSync(dir)) {
     console.error(`Pasta não encontrada: ${dir}`);
@@ -52,16 +52,23 @@ async function main() {
   }
 
   const files = readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".pdf"));
-  const existentes = await prisma.pop.count({ where: { estabelecimentoId: estab.id } });
 
-  if (!force && existentes >= files.length && files.length > 0) {
-    console.log(`[nexo] pops biblioteca: ${existentes} registros · skip (use --force)`);
+  const comPdf = await prisma.pop.count({
+    where: { estabelecimentoId: estab.id, conteudo: { not: null } },
+  });
+
+  if (!force && comPdf >= files.length && files.length > 0) {
+    console.log(`[nexo] pops biblioteca: ${comPdf} PDFs no banco · skip (use --force)`);
     return;
   }
 
-  console.log(`[nexo] pops biblioteca: ${files.length} PDF(s) · estab=${estab.nome}`);
+  console.log(
+    `[nexo] pops biblioteca: ${files.length} PDF(s) → banco · estab=${estab.nome}` +
+      (comPdf > 0 ? ` (já havia ${comPdf} com conteúdo)` : ""),
+  );
 
   let upserts = 0;
+  let bytesTotal = 0;
   const erros: string[] = [];
   const porCat: Record<string, number> = {};
 
@@ -78,8 +85,23 @@ async function main() {
     const categoria = CAT_MAP[fam];
     const equipamentoTitulo = humanize(slug);
     const titulo = `${CAT_LABEL[fam] ?? fam} — ${equipamentoTitulo}`;
-    const tamanhoBytes = statSync(resolve(dir, file)).size;
+    const full = join(dir, file);
+    const tamanhoBytes = statSync(full).size;
+    const conteudo = readFileSync(full);
     porCat[fam] = (porCat[fam] ?? 0) + 1;
+    bytesTotal += tamanhoBytes;
+
+    if (!force) {
+      const existing = await prisma.pop.findUnique({
+        where: {
+          estabelecimentoId_codigo: { estabelecimentoId: estab.id, codigo },
+        },
+        select: { id: true, tamanhoBytes: true, conteudo: true },
+      });
+      if (existing?.conteudo && existing.tamanhoBytes === tamanhoBytes) {
+        continue;
+      }
+    }
 
     await prisma.pop.upsert({
       where: {
@@ -91,6 +113,8 @@ async function main() {
         equipamentoTitulo,
         nomeArquivo: file,
         tamanhoBytes,
+        mimeType: "application/pdf",
+        conteudo,
         status: "VIGENTE",
         versao: "1.0",
       },
@@ -102,11 +126,16 @@ async function main() {
         equipamentoTitulo,
         nomeArquivo: file,
         tamanhoBytes,
+        mimeType: "application/pdf",
+        conteudo,
         status: "VIGENTE",
         versao: "1.0",
       },
     });
     upserts += 1;
+    if (upserts % 25 === 0) {
+      console.log(`[nexo] pops: ${upserts}/${files.length} gravados…`);
+    }
   }
 
   console.log(
@@ -115,6 +144,7 @@ async function main() {
         pasta: basename(dir),
         arquivos: files.length,
         upserts,
+        bytesTotalMb: Number((bytesTotal / (1024 * 1024)).toFixed(1)),
         porFamilia: porCat,
         erros: erros.length,
         detalhesErros: erros,
