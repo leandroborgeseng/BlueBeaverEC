@@ -64,6 +64,58 @@ export class EquipamentosService {
     return { total, page, pageSize, items };
   }
 
+  /** Inventário completo para relatório (sem paginação). */
+  async inventarioAtual(estabelecimentoId: string) {
+    const items = await this.prisma.equipamento.findMany({
+      where: {
+        estabelecimentoId,
+        situacao: { not: SituacaoEquipamento.ARQUIVADO },
+      },
+      include: {
+        setor: { select: { nome: true } },
+        fabricante: { select: { nome: true } },
+        modelo: { select: { nome: true } },
+        descricao: { select: { nome: true, criticidade: true } },
+        tipoEquipamentoPlano: { select: { nome: true } },
+      },
+      orderBy: [{ setor: { nome: "asc" } }, { tag: "asc" }],
+    });
+
+    const linhas = items.map((eq) => ({
+      tag: eq.tag,
+      nome: eq.nome,
+      situacao: eq.situacao,
+      setor: eq.setor.nome,
+      fabricante: eq.fabricante.nome,
+      modelo: eq.modelo.nome,
+      descricao: eq.descricao.nome,
+      criticidade: eq.descricao.criticidade,
+      patrimonio: eq.patrimonio ?? "",
+      nSerie: eq.nSerie ?? "",
+      registroAnvisa: eq.registroAnvisa ?? "",
+      plano: eq.tipoEquipamentoPlano?.nome ?? "",
+      dataAquisicao: eq.dataAquisicao ? eq.dataAquisicao.toISOString().slice(0, 10) : "",
+      dataInstalacao: eq.dataInstalacao ? eq.dataInstalacao.toISOString().slice(0, 10) : "",
+    }));
+
+    const porSituacao: Record<string, number> = {};
+    const porSetor: Record<string, number> = {};
+    const porCriticidade: Record<string, number> = {};
+    for (const l of linhas) {
+      porSituacao[l.situacao] = (porSituacao[l.situacao] ?? 0) + 1;
+      porSetor[l.setor] = (porSetor[l.setor] ?? 0) + 1;
+      porCriticidade[l.criticidade] = (porCriticidade[l.criticidade] ?? 0) + 1;
+    }
+
+    return {
+      total: linhas.length,
+      porSituacao,
+      porSetor,
+      porCriticidade,
+      itens: linhas,
+    };
+  }
+
   async byTag(estabelecimentoId: string, tag: string, verValores: boolean) {
     const eq = await this.prisma.equipamento.findUnique({
       where: { estabelecimentoId_tag: { estabelecimentoId, tag } },

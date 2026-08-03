@@ -10,6 +10,7 @@ function templateTitle(codigo: string) {
     custos_manutencao: "Custos de Manutenção",
     maturidade: "Maturidade da Engenharia Clínica",
     calendario_manutencao: "Calendário de Manutenção",
+    inventario_equipamentos: "Inventário de Equipamentos",
   };
   return map[codigo] ?? codigo;
 }
@@ -56,6 +57,9 @@ export async function buildPdfBuffer(payload: ReportPayload): Promise<Buffer> {
   const codigo = String(payload.template ?? "relatorio");
   if (codigo === "calendario_manutencao") {
     return buildCalendarioPdf(payload);
+  }
+  if (codigo === "inventario_equipamentos") {
+    return buildInventarioPdf(payload);
   }
 
   const titulo = templateTitle(codigo);
@@ -289,8 +293,151 @@ function buildCalendarioPdf(payload: ReportPayload): Promise<Buffer> {
   });
 }
 
+type InvLinha = {
+  tag?: string;
+  nome?: string;
+  situacao?: string;
+  setor?: string;
+  fabricante?: string;
+  modelo?: string;
+  descricao?: string;
+  criticidade?: string;
+  patrimonio?: string;
+  nSerie?: string;
+  plano?: string;
+};
+
+function buildInventarioPdf(payload: ReportPayload): Promise<Buffer> {
+  const geradoEm = String(payload.geradoEm ?? new Date().toISOString());
+  const total = Number(payload.total ?? 0);
+  const porSituacao = (payload.porSituacao ?? {}) as Record<string, number>;
+  const porSetor = (payload.porSetor ?? {}) as Record<string, number>;
+  const porCriticidade = (payload.porCriticidade ?? {}) as Record<string, number>;
+  const itens = (Array.isArray(payload.itens) ? payload.itens : []) as InvLinha[];
+
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 36, size: "A4", layout: "landscape" });
+    const chunks: Buffer[] = [];
+    doc.on("data", (c: Buffer) => chunks.push(c));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    const pageW = doc.page.width - 72;
+
+    const drawHeader = () => {
+      doc.fillColor("#2f4f9a").fontSize(15).text("Nexo — Engenharia Clínica", 36, 32, { width: pageW });
+      doc.fillColor("#111").fontSize(12).text("Inventário de Equipamentos", { width: pageW });
+      doc
+        .fontSize(8)
+        .fillColor("#666")
+        .text(`${total} equipamento(s) · excluídos arquivados · Gerado em ${geradoEm}`, { width: pageW });
+      doc.moveDown(0.35);
+      doc.strokeColor("#ccc").moveTo(36, doc.y).lineTo(36 + pageW, doc.y).stroke();
+      doc.moveDown(0.45);
+    };
+
+    drawHeader();
+
+    doc.fillColor("#2f4f9a").fontSize(10).text("Resumo por situação");
+    doc.moveDown(0.25);
+    doc.fillColor("#222").fontSize(8);
+    doc.text(
+      Object.entries(porSituacao)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("   ·   ") || "—",
+      { width: pageW },
+    );
+    doc.moveDown(0.45);
+
+    doc.fillColor("#2f4f9a").fontSize(10).text("Resumo por criticidade");
+    doc.moveDown(0.25);
+    doc.fillColor("#222").fontSize(8);
+    doc.text(
+      Object.entries(porCriticidade)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("   ·   ") || "—",
+      { width: pageW },
+    );
+    doc.moveDown(0.45);
+
+    const setoresTop = Object.entries(porSetor)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20);
+    if (setoresTop.length) {
+      doc.fillColor("#2f4f9a").fontSize(10).text("Principais setores");
+      doc.moveDown(0.25);
+      doc.fillColor("#222").fontSize(8);
+      doc.text(setoresTop.map(([k, v]) => `${k}: ${v}`).join("   ·   "), { width: pageW });
+      doc.moveDown(0.6);
+    }
+
+    doc.addPage();
+    drawHeader();
+    doc.fillColor("#2f4f9a").fontSize(10).text(`Lista detalhada (${itens.length})`);
+    doc.moveDown(0.35);
+
+    const cols = [
+      { key: "tag" as const, label: "TAG", w: 58 },
+      { key: "nome" as const, label: "Nome", w: 120 },
+      { key: "situacao" as const, label: "Situação", w: 72 },
+      { key: "setor" as const, label: "Setor", w: 90 },
+      { key: "fabricante" as const, label: "Fabricante", w: 80 },
+      { key: "modelo" as const, label: "Modelo", w: 80 },
+      { key: "patrimonio" as const, label: "Patrimônio", w: 62 },
+      { key: "nSerie" as const, label: "Nº Série", w: 62 },
+      { key: "criticidade" as const, label: "Crit.", w: 40 },
+      { key: "plano" as const, label: "Plano", w: 70 },
+    ];
+
+    const drawTableHeader = () => {
+      const hy = doc.y;
+      let hx = 36;
+      doc.fontSize(7).fillColor("#444");
+      for (const c of cols) {
+        doc.text(c.label, hx, hy, { width: c.w, lineBreak: false });
+        hx += c.w;
+      }
+      doc.y = hy + 11;
+      doc.strokeColor("#bbb").moveTo(36, doc.y).lineTo(36 + pageW, doc.y).stroke();
+      doc.moveDown(0.2);
+    };
+
+    drawTableHeader();
+
+    if (itens.length === 0) {
+      doc.fillColor("#666").fontSize(9).text("Nenhum equipamento cadastrado.");
+    } else {
+      for (const item of itens) {
+        ensureSpace(doc, 12, () => {
+          drawHeader();
+          doc.fillColor("#2f4f9a").fontSize(10).text("Lista detalhada (cont.)");
+          doc.moveDown(0.25);
+          drawTableHeader();
+        });
+        const y = doc.y;
+        let cx = 36;
+        doc.fillColor("#222").fontSize(6.5);
+        for (const c of cols) {
+          const max = c.key === "nome" ? 36 : c.key === "setor" || c.key === "fabricante" ? 22 : 16;
+          doc.text(String(item[c.key] ?? "").slice(0, max), cx, y, { width: c.w, lineBreak: false });
+          cx += c.w;
+        }
+        doc.y = y + 10;
+      }
+    }
+
+    doc.end();
+  });
+}
+
 export async function buildXlsxBuffer(payload: ReportPayload): Promise<Buffer> {
   const codigo = String(payload.template ?? "relatorio");
+  if (codigo === "inventario_equipamentos") {
+    return buildInventarioXlsx(payload);
+  }
+
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Nexo";
   workbook.created = new Date();
@@ -444,3 +591,64 @@ export async function buildXlsxBuffer(payload: ReportPayload): Promise<Buffer> {
   const buf = await workbook.xlsx.writeBuffer();
   return Buffer.from(buf);
 }
+
+async function buildInventarioXlsx(payload: ReportPayload): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Nexo";
+  workbook.created = new Date();
+
+  const meta = workbook.addWorksheet("Resumo");
+  meta.columns = [
+    { header: "Campo", key: "campo", width: 28 },
+    { header: "Valor", key: "valor", width: 60 },
+  ];
+  meta.addRow({ campo: "Relatório", valor: "Inventário de Equipamentos" });
+  meta.addRow({ campo: "Gerado em", valor: String(payload.geradoEm ?? "") });
+  meta.addRow({ campo: "Total", valor: Number(payload.total ?? 0) });
+  meta.getRow(1).font = { bold: true };
+
+  const addCountSheet = (name: string, data: unknown) => {
+    if (!data || typeof data !== "object") return;
+    const ws = workbook.addWorksheet(name);
+    ws.columns = [
+      { header: "Chave", key: "chave", width: 36 },
+      { header: "Total", key: "total", width: 12 },
+    ];
+    ws.getRow(1).font = { bold: true };
+    for (const [chave, total] of Object.entries(data as Record<string, number>).sort(([a], [b]) =>
+      a.localeCompare(b),
+    )) {
+      ws.addRow({ chave, total });
+    }
+  };
+
+  addCountSheet("Por Situação", payload.porSituacao);
+  addCountSheet("Por Setor", payload.porSetor);
+  addCountSheet("Por Criticidade", payload.porCriticidade);
+
+  const inv = workbook.addWorksheet("Inventário");
+  inv.columns = [
+    { header: "TAG", key: "tag", width: 14 },
+    { header: "Nome", key: "nome", width: 28 },
+    { header: "Situação", key: "situacao", width: 16 },
+    { header: "Setor", key: "setor", width: 22 },
+    { header: "Fabricante", key: "fabricante", width: 18 },
+    { header: "Modelo", key: "modelo", width: 18 },
+    { header: "Descrição", key: "descricao", width: 22 },
+    { header: "Criticidade", key: "criticidade", width: 12 },
+    { header: "Patrimônio", key: "patrimonio", width: 14 },
+    { header: "Nº Série", key: "nSerie", width: 14 },
+    { header: "ANVISA", key: "registroAnvisa", width: 14 },
+    { header: "Plano", key: "plano", width: 18 },
+    { header: "Aquisição", key: "dataAquisicao", width: 12 },
+    { header: "Instalação", key: "dataInstalacao", width: 12 },
+  ];
+  inv.getRow(1).font = { bold: true };
+  for (const item of (Array.isArray(payload.itens) ? payload.itens : []) as InvLinha[]) {
+    inv.addRow(item);
+  }
+
+  const buf = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
+

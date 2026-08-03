@@ -58,6 +58,7 @@ export default function EquipamentosPage() {
   const [importCsv, setImportCsv] = useState("");
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [importErros, setImportErros] = useState<Array<{ tag: string; erro?: string }>>([]);
+  const [exportBusy, setExportBusy] = useState(false);
   const open = useWindowStore((s) => s.open);
 
   useEffect(() => {
@@ -146,6 +147,25 @@ export default function EquipamentosPage() {
     }
   }
 
+  async function exportInventario(formato: "pdf" | "xlsx") {
+    setExportBusy(true);
+    setErro(null);
+    try {
+      await downloadApi(
+        "/relatorios/gerar",
+        {
+          method: "POST",
+          body: JSON.stringify({ template: "inventario_equipamentos", formato }),
+        },
+        `inventario_equipamentos.${formato}`,
+      );
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro no export");
+    } finally {
+      setExportBusy(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -153,6 +173,20 @@ export default function EquipamentosPage() {
         subtitle="Inventário patrimonial com alerta de checklist de recebimento pendente"
         actions={
           <>
+            <Btn
+              variant="secondary"
+              disabled={exportBusy}
+              onClick={() => void exportInventario("pdf")}
+            >
+              Exportar PDF
+            </Btn>
+            <Btn
+              variant="ghost"
+              disabled={exportBusy}
+              onClick={() => void exportInventario("xlsx")}
+            >
+              Exportar XLSX
+            </Btn>
             <Btn
               variant="ghost"
               onClick={() =>

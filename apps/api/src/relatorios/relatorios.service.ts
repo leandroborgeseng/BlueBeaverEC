@@ -4,6 +4,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { EstrategicoService } from "../estrategico/estrategico.service";
 import { FinanceiroService } from "../financeiro/financeiro.service";
 import { PlanosService } from "../planos/planos.service";
+import { EquipamentosService } from "../equipamentos/equipamentos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { buildPdfBuffer, buildXlsxBuffer, type ReportPayload } from "./report-export";
 
@@ -33,6 +34,11 @@ const TEMPLATES = [
     nome: "Calendário de Manutenção",
     descricao: "Agenda anual / mensal / semanal de preventiva, TSE e calibração (exportável)",
   },
+  {
+    codigo: "inventario_equipamentos",
+    nome: "Inventário de Equipamentos",
+    descricao: "Lista atual do parque (PDF/XLSX), excluindo arquivados",
+  },
 ] as const;
 
 @Injectable()
@@ -42,6 +48,7 @@ export class RelatoriosService {
     private readonly estrategico: EstrategicoService,
     private readonly financeiro: FinanceiroService,
     private readonly planos: PlanosService,
+    private readonly equipamentos: EquipamentosService,
   ) {}
 
   templates() {
@@ -97,6 +104,14 @@ export class RelatoriosService {
           template,
           geradoEm: new Date().toISOString(),
           ...cal,
+        };
+      }
+      case "inventario_equipamentos": {
+        const inv = await this.equipamentos.inventarioAtual(estabelecimentoId);
+        return {
+          template,
+          geradoEm: new Date().toISOString(),
+          ...inv,
         };
       }
       default:
