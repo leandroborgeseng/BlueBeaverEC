@@ -69,6 +69,22 @@ class CreateLaudoDto {
   validadeMeses?: number;
 }
 
+class PromoverAssinaturaDto {
+  @IsEnum(ResultadoLaudo)
+  resultado!: ResultadoLaudo;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  justificativaRessalva?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  validadeMeses?: number;
+}
+
 @Controller("laudos")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("laudos", PERMISSAO_NIVEL.LEITURA)
@@ -80,8 +96,9 @@ export class LaudosController {
     @CurrentUser() user: AuthUser,
     @Query("tipo") tipo?: TipoLaudo,
     @Query("equipamentoTag") equipamentoTag?: string,
+    @Query("resultado") resultado?: ResultadoLaudo,
   ) {
-    return this.laudos.list(user.estabelecimentoId, tipo, equipamentoTag);
+    return this.laudos.list(user.estabelecimentoId, tipo, equipamentoTag, resultado);
   }
 
   @Get(":id")
@@ -96,6 +113,16 @@ export class LaudosController {
       ...body,
       respostas: body.respostas as never,
     });
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post(":id/promover-assinatura")
+  promover(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body() body: PromoverAssinaturaDto,
+  ) {
+    return this.laudos.promoverAssinatura(user, id, body);
   }
 
   @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)

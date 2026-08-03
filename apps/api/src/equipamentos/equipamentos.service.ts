@@ -237,6 +237,7 @@ export class EquipamentosService {
       validadeAnvisa?: string | null;
       dataEndOfService?: string | null;
       dataEndOfLife?: string | null;
+      tipoEquipamentoPlanoId?: string | null;
     },
   ) {
     if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
@@ -250,6 +251,17 @@ export class EquipamentosService {
     if (!eq) throw new NotFoundException();
     if (eq.situacao === SituacaoEquipamento.ARQUIVADO || eq.situacao === SituacaoEquipamento.INATIVO) {
       throw new ForbiddenException("Equipamento arquivado/inativo está somente leitura");
+    }
+
+    if (data.tipoEquipamentoPlanoId) {
+      const tipo = await this.prisma.tipoEquipamentoPlano.findFirst({
+        where: {
+          id: data.tipoEquipamentoPlanoId,
+          estabelecimentoId: user.estabelecimentoId,
+          ativo: true,
+        },
+      });
+      if (!tipo) throw new BadRequestException("Tipo de plano inválido");
     }
 
     return this.prisma.equipamento.update({
@@ -280,12 +292,29 @@ export class EquipamentosService {
         ...(data.dataEndOfLife !== undefined
           ? { dataEndOfLife: data.dataEndOfLife ? new Date(data.dataEndOfLife) : null }
           : {}),
+        ...(data.tipoEquipamentoPlanoId !== undefined
+          ? { tipoEquipamentoPlanoId: data.tipoEquipamentoPlanoId || null }
+          : {}),
       },
       include: {
         setor: true,
         fabricante: true,
         modelo: true,
         descricao: true,
+        tipoEquipamentoPlano: {
+          include: {
+            testes: {
+              where: { ativo: true },
+              orderBy: { tipoTeste: "asc" },
+              select: {
+                tipoTeste: true,
+                procedimentoCodigo: true,
+                periodicidadeMeses: true,
+                ativo: true,
+              },
+            },
+          },
+        },
       },
     });
   }

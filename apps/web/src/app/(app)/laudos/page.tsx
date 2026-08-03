@@ -30,19 +30,30 @@ interface LaudoRow {
 }
 
 const TIPOS = ["", "RECEBIMENTO", "PREVENTIVA", "CALIBRACAO", "TSE", "QUALIFICACAO"] as const;
+const RESULTADOS = [
+  "",
+  "PENDENTE_ASSINATURA",
+  "APROVADO",
+  "APROVADO_COM_RESSALVAS",
+  "REPROVADO",
+] as const;
 
 export default function LaudosPage() {
   const open = useWindowStore((s) => s.open);
   const [items, setItems] = useState<LaudoRow[]>([]);
   const [tipo, setTipo] = useState("");
+  const [resultado, setResultado] = useState("");
   const [tag, setTag] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [promoting, setPromoting] = useState<string | null>(null);
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     const t = sp.get("tag");
+    const r = sp.get("resultado");
     if (t) setTag(t);
+    if (r) setResultado(r);
   }, []);
 
   const load = useCallback(async () => {
@@ -51,6 +62,7 @@ export default function LaudosPage() {
     try {
       const params = new URLSearchParams();
       if (tipo) params.set("tipo", tipo);
+      if (resultado) params.set("resultado", resultado);
       if (tag.trim()) params.set("equipamentoTag", tag.trim());
       const data = await api<LaudoRow[]>(`/laudos?${params.toString()}`);
       setItems(data);
@@ -59,11 +71,27 @@ export default function LaudosPage() {
     } finally {
       setBusy(false);
     }
-  }, [tipo, tag]);
+  }, [tipo, tag, resultado]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function promover(id: string) {
+    setPromoting(id);
+    setErro(null);
+    try {
+      await api(`/laudos/${id}/promover-assinatura`, {
+        method: "POST",
+        body: JSON.stringify({ resultado: "APROVADO" }),
+      });
+      await load();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao promover assinatura");
+    } finally {
+      setPromoting(null);
+    }
+  }
 
   return (
     <div>
@@ -96,6 +124,17 @@ export default function LaudosPage() {
             {TIPOS.filter(Boolean).map((t) => (
               <option key={t} value={t}>
                 {t}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <FieldLabel>Resultado</FieldLabel>
+          <select value={resultado} onChange={(e) => setResultado(e.target.value)} style={fieldStyle}>
+            <option value="">Todos</option>
+            {RESULTADOS.filter(Boolean).map((r) => (
+              <option key={r} value={r}>
+                {r.replace(/_/g, " ")}
               </option>
             ))}
           </select>
@@ -153,19 +192,30 @@ export default function LaudosPage() {
                 </td>
                 <td style={td}>{l.responsavelTecnico?.nome ?? "—"}</td>
                 <td style={td}>
-                  <Btn
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      open({
-                        kind: "laudo",
-                        title: `Laudo · ${l.equipamento.tag}`,
-                        payload: { id: l.id, tipo: l.tipo, equipamentoTag: l.equipamento.tag },
-                      })
-                    }
-                  >
-                    Abrir
-                  </Btn>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <Btn
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        open({
+                          kind: "laudo",
+                          title: `Laudo · ${l.equipamento.tag}`,
+                          payload: { id: l.id, tipo: l.tipo, equipamentoTag: l.equipamento.tag },
+                        })
+                      }
+                    >
+                      Abrir
+                    </Btn>
+                    {l.resultado === "PENDENTE_ASSINATURA" && (
+                      <Btn
+                        size="sm"
+                        disabled={promoting === l.id}
+                        onClick={() => void promover(l.id)}
+                      >
+                        {promoting === l.id ? "…" : "Promover assinatura"}
+                      </Btn>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))

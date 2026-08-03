@@ -35,7 +35,7 @@ class RampUpDto {
 export class PlanosController {
   constructor(private readonly planos: PlanosService) {}
 
-  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("ramp-up/preview")
   preview(@CurrentUser() user: AuthUser, @Body() body: RampUpDto) {
     return this.planos.previewRampUp(user.estabelecimentoId, {
@@ -45,7 +45,7 @@ export class PlanosController {
     });
   }
 
-  @RequirePermission("estrategico", PERMISSAO_NIVEL.EDICAO)
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("ramp-up")
   gerar(@CurrentUser() user: AuthUser, @Body() body: RampUpDto) {
     if (body.dryRun) {
@@ -60,6 +60,11 @@ export class PlanosController {
       inicio: body.inicio ? new Date(body.inicio) : undefined,
       forcarAnual: body.forcarAnual,
     });
+  }
+
+  @Get("tipos-equipamento")
+  tiposEquipamento(@CurrentUser() user: AuthUser) {
+    return this.planos.listTiposEquipamento(user.estabelecimentoId);
   }
 
   @Get("calendario")

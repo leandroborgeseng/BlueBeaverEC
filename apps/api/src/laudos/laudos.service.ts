@@ -32,11 +32,17 @@ export class LaudosService {
     private readonly contratos: ContratosService,
   ) {}
 
-  list(estabelecimentoId: string, tipo?: TipoLaudo, equipamentoTag?: string) {
+  list(
+    estabelecimentoId: string,
+    tipo?: TipoLaudo,
+    equipamentoTag?: string,
+    resultado?: ResultadoLaudo,
+  ) {
     return this.prisma.laudo.findMany({
       where: {
         estabelecimentoId,
         ...(tipo ? { tipo } : {}),
+        ...(resultado ? { resultado } : {}),
         ...(equipamentoTag ? { equipamento: { tag: equipamentoTag } } : {}),
       },
       include: {
@@ -183,6 +189,91 @@ export class LaudosService {
     }
 
     return laudo;
+  }
+
+  async promoverAssinatura(
+    user: AuthUser,
+    id: string,
+    data: {
+      resultado: ResultadoLaudo;
+      justificativaRessalva?: string;
+      validadeMeses?: number;
+    },
+  ) {
+    if (
+      data.resultado !== ResultadoLaudo.APROVADO &&
+      data.resultado !== ResultadoLaudo.APROVADO_COM_RESSALVAS
+    ) {
+      throw new BadRequestException("Resultado deve ser APROVADO ou APROVADO_COM_RESSALVAS");
+    }
+    if (
+      data.resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS &&
+      !data.justificativaRessalva?.trim()
+    ) {
+      throw new BadRequestException("Justificativa de ressalva obrigatória");
+    }
+
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+      include: { equipamento: true, planoTeste: true, procedimento: true },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (laudo.resultado !== ResultadoLaudo.PENDENTE_ASSINATURA) {
+      throw new BadRequestException("Laudo não está pendente de assinatura");
+    }
+
+    const validadeMeses =
+      data.validadeMeses ??
+      laudo.validadeMeses ??
+      laudo.planoTeste?.periodicidadeMeses ??
+      laudo.procedimento?.validadeMeses ??
+      12;
+    const validadeAte = new Date();
+    validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
+
+    const meta = (laudo.metadados as Record<string, unknown>) ?? {};
+    const updated = await this.prisma.laudo.update({
+      where: { id },
+      data: {
+        resultado: data.resultado,
+        justificativaRessalva: data.justificativaRessalva?.trim() || null,
+        validadeMeses,
+        validadeAte,
+        metadados: {
+          ...meta,
+          assinaturaPromovida: {
+            em: new Date().toISOString(),
+            por: user.userId,
+          },
+        },
+      },
+      include: { equipamento: true, procedimento: true },
+    });
+
+    if (
+      laudo.tipo === TipoLaudo.RECEBIMENTO &&
+      (data.resultado === ResultadoLaudo.APROVADO ||
+        data.resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS)
+    ) {
+      await this.prisma.equipamento.update({
+        where: { id: laudo.equipamentoId },
+        data: { checklistRecebimentoPendente: false },
+      });
+    }
+
+    if (resultadoFechaCiclo(data.resultado) && laudo.planoTeste) {
+      await agendarProximaOsPlano(this.prisma, {
+        estabelecimentoId: user.estabelecimentoId,
+        equipamentoId: laudo.equipamentoId,
+        tipo: laudo.tipo,
+        dataExecucao: laudo.dataExecucao,
+        periodicidadeMeses: laudo.planoTeste.periodicidadeMeses,
+        resultado: data.resultado,
+        observacao: `Próxima ${laudo.tipo} · ${laudo.planoTeste.procedimentoCodigo}`,
+      });
+    }
+
+    return updated;
   }
 
   async gerarOsCorretiva(user: AuthUser, laudoId: string) {

@@ -23,7 +23,7 @@ interface EquipRow {
   nome: string;
   planoMatchTipo?: string | null;
   planoMatchObs?: string | null;
-  tipoEquipamentoPlano?: { nome: string } | null;
+  tipoEquipamentoPlano?: { id: string; nome: string } | null;
   setor: { nome: string };
 }
 
@@ -32,16 +32,22 @@ interface EquipListResponse {
   total: number;
 }
 
+interface TipoPlano {
+  id: string;
+  nome: string;
+}
+
 export default function MapeamentoPlanosPage() {
   const open = useWindowStore((s) => s.open);
   const [items, setItems] = useState<EquipRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [tipos, setTipos] = useState<TipoPlano[]>([]);
   const [match, setMatch] = useState("sem_correspondencia");
   const [erro, setErro] = useState<string | null>(null);
+  const [busyTag, setBusyTag] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      // carrega páginas até filtrar localmente (endpoint ainda sem filtro de match)
       const all: EquipRow[] = [];
       let page = 1;
       let totalServer = 0;
@@ -66,13 +72,32 @@ export default function MapeamentoPlanosPage() {
 
   useEffect(() => {
     void load();
+    api<TipoPlano[]>("/planos/tipos-equipamento")
+      .then(setTipos)
+      .catch(() => setTipos([]));
   }, [load]);
+
+  async function vincular(eq: EquipRow, tipoId: string) {
+    setBusyTag(eq.tag);
+    setErro(null);
+    try {
+      await api(`/equipamentos/${encodeURIComponent(eq.tag)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ tipoEquipamentoPlanoId: tipoId || null }),
+      });
+      await load();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao vincular");
+    } finally {
+      setBusyTag(null);
+    }
+  }
 
   return (
     <div>
       <PageHeader
         title="Mapeamento de Planos"
-        subtitle="Revisão de equipamentos sem correspondência ou com match aproximado ao catálogo de planos"
+        subtitle="Vincule o tipo de plano aos equipamentos sem correspondência — necessário para o ramp-up"
       />
       {erro && <Err>{erro}</Err>}
       <FilterBar>
@@ -97,7 +122,7 @@ export default function MapeamentoPlanosPage() {
             <th style={th}>Nome</th>
             <th style={th}>Setor</th>
             <th style={th}>Match</th>
-            <th style={th}>Plano</th>
+            <th style={th}>Vincular plano</th>
             <th style={th}>Obs</th>
           </tr>
         </thead>
@@ -110,22 +135,42 @@ export default function MapeamentoPlanosPage() {
             </tr>
           ) : (
             items.map((eq) => (
-              <tr
-                key={eq.id}
-                style={{ cursor: "pointer" }}
-                onClick={() =>
-                  open({ kind: "equipamento", title: `${eq.tag} — ${eq.nome}`, payload: { tag: eq.tag } })
-                }
-              >
+              <tr key={eq.id}>
                 <td style={td}>
-                  <strong>{eq.tag}</strong>
+                  <Btn
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      open({
+                        kind: "equipamento",
+                        title: `${eq.tag} — ${eq.nome}`,
+                        payload: { tag: eq.tag },
+                      })
+                    }
+                  >
+                    <strong>{eq.tag}</strong>
+                  </Btn>
                 </td>
                 <td style={td}>{eq.nome}</td>
                 <td style={td}>{eq.setor.nome}</td>
                 <td style={td}>
                   <Badge tone={eq.planoMatchTipo ?? "warning"}>{eq.planoMatchTipo ?? "—"}</Badge>
                 </td>
-                <td style={td}>{eq.tipoEquipamentoPlano?.nome ?? "—"}</td>
+                <td style={td} onClick={(e) => e.stopPropagation()}>
+                  <select
+                    value={eq.tipoEquipamentoPlano?.id ?? ""}
+                    disabled={busyTag === eq.tag}
+                    onChange={(e) => void vincular(eq, e.target.value)}
+                    style={{ ...fieldStyle, fontSize: 12, minWidth: 180 }}
+                  >
+                    <option value="">Sem vínculo</option>
+                    {tipos.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.nome}
+                      </option>
+                    ))}
+                  </select>
+                </td>
                 <td style={td}>{eq.planoMatchObs ?? "—"}</td>
               </tr>
             ))

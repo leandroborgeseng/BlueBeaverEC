@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -144,6 +145,11 @@ class UpdateEquipamentoDto {
   @IsOptional()
   @IsString()
   dataEndOfLife?: string;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== "")
+  @IsString()
+  tipoEquipamentoPlanoId?: string | null;
 }
 
 class ImportRowDto {

@@ -28,6 +28,7 @@ const RAIL: Array<{
       { label: "Equipamentos", href: "/equipamentos", icon: "equip", modulo: "equipamentos" },
       { label: "Ficha Vida do Equipamento", href: "/equipamentos/ficha-vida", icon: "history", modulo: "equipamentos" },
       { label: "Laudos", href: "/laudos", icon: "clipboard", modulo: "laudos" },
+      { label: "Pendentes de assinatura", href: "/laudos?resultado=PENDENTE_ASSINATURA", icon: "clipboard", modulo: "laudos" },
       { label: "Novo Laudo", href: "/laudos/novo", icon: "plus", modulo: "laudos" },
       { label: "Plano de Descrições", href: "/cadastros?tab=planos", icon: "clipboard", modulo: "equipamentos" },
       { label: "Fabricantes", href: "/cadastros?tab=fabricantes", icon: "factory", modulo: "equipamentos" },

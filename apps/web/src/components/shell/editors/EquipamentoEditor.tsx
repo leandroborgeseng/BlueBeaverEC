@@ -99,6 +99,8 @@ export function EquipamentoEditor({
   const [validadeAnvisa, setValidadeAnvisa] = useState("");
   const [dataEndOfService, setDataEndOfService] = useState("");
   const [dataEndOfLife, setDataEndOfLife] = useState("");
+  const [tipoPlanoId, setTipoPlanoId] = useState("");
+  const [tiposPlano, setTiposPlano] = useState<Lookup[]>([]);
 
   const [novaTag, setNovaTag] = useState("");
   const [justificativaTag, setJustificativaTag] = useState("");
@@ -122,6 +124,7 @@ export function EquipamentoEditor({
     setValidadeAnvisa(eq.validadeAnvisa ? String(eq.validadeAnvisa).slice(0, 10) : "");
     setDataEndOfService(eq.dataEndOfService ? String(eq.dataEndOfService).slice(0, 10) : "");
     setDataEndOfLife(eq.dataEndOfLife ? String(eq.dataEndOfLife).slice(0, 10) : "");
+    setTipoPlanoId(eq.tipoEquipamentoPlano?.id ?? "");
   }
 
   useEffect(() => {
@@ -130,12 +133,14 @@ export function EquipamentoEditor({
       api<Lookup[]>("/setores"),
       api<Lookup[]>("/fabricantes"),
       api<Lookup[]>("/fornecedores"),
+      api<Lookup[]>("/planos/tipos-equipamento"),
     ])
-      .then(([eq, st, fb, fn]) => {
+      .then(([eq, st, fb, fn, tipos]) => {
         applyForm(eq);
         setSetores(st);
         setFabricantes(fb);
         setFornecedores(fn);
+        setTiposPlano(tipos);
         const fabId = eq.fabricanteId ?? eq.fabricante?.id;
         if (fabId) {
           return api<Lookup[]>(`/modelos?fabricanteId=${encodeURIComponent(fabId)}`).then((mods) => {
@@ -175,6 +180,7 @@ export function EquipamentoEditor({
           validadeAnvisa: validadeAnvisa || null,
           dataEndOfService: dataEndOfService || null,
           dataEndOfLife: dataEndOfLife || null,
+          tipoEquipamentoPlanoId: tipoPlanoId || null,
         }),
       });
       applyForm(updated);
@@ -399,9 +405,24 @@ export function EquipamentoEditor({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <FieldLabel>Tipo de equipamento (plano)</FieldLabel>
-              <div style={{ fontWeight: 600, fontSize: 13 }}>
-                {data.tipoEquipamentoPlano?.nome ?? "Sem plano vinculado"}
-              </div>
+              {readonly ? (
+                <div style={{ fontWeight: 600, fontSize: 13 }}>
+                  {data.tipoEquipamentoPlano?.nome ?? "Sem plano vinculado"}
+                </div>
+              ) : (
+                <select
+                  value={tipoPlanoId}
+                  onChange={(e) => setTipoPlanoId(e.target.value)}
+                  style={fieldStyle}
+                >
+                  <option value="">Sem vínculo</option>
+                  {tiposPlano.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nome}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <FieldLabel>Match do mapping</FieldLabel>
@@ -429,6 +450,14 @@ export function EquipamentoEditor({
               )}
             </div>
           </div>
+
+          {!readonly && (
+            <div>
+              <Btn size="sm" onClick={() => void salvar()}>
+                Salvar vínculo do plano
+              </Btn>
+            </div>
+          )}
 
           {(data.tipoEquipamentoPlano?.testes?.length ?? 0) === 0 ? (
             <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>

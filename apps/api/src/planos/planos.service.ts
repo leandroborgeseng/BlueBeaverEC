@@ -69,6 +69,22 @@ function slotDay(index: number, total: number, horizonteDias: number, inicio: Da
 export class PlanosService {
   constructor(private readonly prisma: PrismaService) {}
 
+  listTiposEquipamento(estabelecimentoId: string) {
+    return this.prisma.tipoEquipamentoPlano.findMany({
+      where: { estabelecimentoId, ativo: true },
+      select: {
+        id: true,
+        nome: true,
+        testes: {
+          where: { ativo: true },
+          select: { tipoTeste: true, procedimentoCodigo: true, periodicidadeMeses: true },
+          orderBy: { tipoTeste: "asc" },
+        },
+      },
+      orderBy: { nome: "asc" },
+    });
+  }
+
   previewRampUp(estabelecimentoId: string, opts: RampUpOptions = {}) {
     return this.gerarRampUpInternal(estabelecimentoId, { ...opts, dryRun: true });
   }
