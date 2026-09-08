@@ -16,9 +16,15 @@ const DEMO_PASSWORD = "aion1234";
 const ESTAB_ID = "estab_modelo";
 
 const DEMOS = [
-  { email: "engenheiro@aion.local", nome: "Ana Engenheira", perfil: PerfilAcesso.ENGENHEIRO },
-  { email: "tecnico@aion.local", nome: "Carlos Técnico", perfil: PerfilAcesso.TECNICO },
-  { email: "solicitante@aion.local", nome: "Maria Solicitante", perfil: PerfilAcesso.SOLICITANTE },
+  { email: "engenheiro@aion.local", nome: "Ana Engenheira", perfil: PerfilAcesso.ENGENHEIRO, matricula: "ENG-001" },
+  { email: "tecnico@aion.local", nome: "Carlos Técnico", perfil: PerfilAcesso.TECNICO, matricula: "TEC-001" },
+  {
+    email: "campo@aion.local",
+    nome: "João Campo (restrito)",
+    perfil: PerfilAcesso.TECNICO_RESTRITO,
+    matricula: "TEC-R01",
+  },
+  { email: "solicitante@aion.local", nome: "Maria Solicitante", perfil: PerfilAcesso.SOLICITANTE, matricula: null },
 ];
 
 const prisma = new PrismaClient();
@@ -61,9 +67,33 @@ try {
         perfil: demo.perfil,
       },
     });
+
+    if (demo.matricula) {
+      const existingColab = await prisma.colaborador.findFirst({
+        where: { estabelecimentoId: hospital.id, OR: [{ usuarioId: user.id }, { matricula: demo.matricula }] },
+      });
+      if (existingColab) {
+        await prisma.colaborador.update({
+          where: { id: existingColab.id },
+          data: { usuarioId: user.id, nome: demo.nome, matricula: demo.matricula, ativo: true },
+        });
+      } else {
+        await prisma.colaborador.create({
+          data: {
+            estabelecimentoId: hospital.id,
+            usuarioId: user.id,
+            nome: demo.nome,
+            matricula: demo.matricula,
+            ativo: true,
+          },
+        });
+      }
+    }
   }
 
-  console.log(`[aion] demo users ok · senha ${DEMO_PASSWORD} · engenheiro@aion.local`);
+  console.log(
+    `[aion] demo users ok · senha ${DEMO_PASSWORD} · campo@aion.local (TECNICO_RESTRITO)`,
+  );
   process.exit(0);
 } catch (e) {
   console.error("[aion] ensure-demo-users falhou:", e);

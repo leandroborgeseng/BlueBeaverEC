@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useOfflineQueue } from "@/lib/offline-queue";
+import { useCan } from "@/lib/session";
 
 export function MobileFrame({
   title,
@@ -20,6 +21,8 @@ export function MobileFrame({
 }) {
   const pathname = usePathname();
   const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
+  const canPortal = useCan("portal", 2);
+  const canInventario = useCan("equipamentos", 1);
 
   useEffect(() => {
     void hydrate();
@@ -30,6 +33,17 @@ export function MobileFrame({
     const t = setTimeout(() => clearSyncMsg(), 4000);
     return () => clearTimeout(t);
   }, [lastSyncMsg, clearSyncMsg]);
+
+  const nav = useMemo(() => {
+    const items: Array<[string, string]> = [
+      ["/mobile", "Início"],
+      ["/mobile/os", "OS"],
+    ];
+    if (canInventario) items.push(["/mobile/inventario", "Inventário"]);
+    items.push(["/mobile/qr", "QR"]);
+    if (canPortal) items.push(["/mobile/solicitar", "Solicitar"]);
+    return items;
+  }, [canInventario, canPortal]);
 
   return (
     <div
@@ -61,17 +75,8 @@ export function MobileFrame({
             cursor: onSync ? "pointer" : "default",
           }}
         >
-          <div
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "white",
-              flexShrink: 0,
-            }}
-          />
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white", flexShrink: 0 }} />
           Offline · {pending > 0 ? `${pending} pendente(s)` : "fila vazia"}
-          {pending > 0 && online ? " · tocar para sync" : ""}
         </div>
       )}
       {online && pending > 0 && (
@@ -157,18 +162,13 @@ export function MobileFrame({
           border: "1px solid oklch(0.91 0.006 255)",
           borderRadius: 16,
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: `repeat(${nav.length}, 1fr)`,
           padding: 6,
           boxShadow: "0 12px 30px -18px rgba(0,0,0,.4)",
           zIndex: 30,
         }}
       >
-        {[
-          ["/mobile", "Início"],
-          ["/mobile/os", "OS"],
-          ["/mobile/qr", "QR"],
-          ["/mobile/solicitar", "Solicitar"],
-        ].map(([href, label]) => {
+        {nav.map(([href, label]) => {
           const active =
             href === "/mobile" ? pathname === "/mobile" : pathname === href || pathname.startsWith(`${href}/`);
           return (
@@ -177,9 +177,9 @@ export function MobileFrame({
               href={href}
               style={{
                 textAlign: "center",
-                fontSize: 12,
+                fontSize: 11.5,
                 fontWeight: 700,
-                padding: "10px 4px",
+                padding: "10px 2px",
                 borderRadius: 12,
                 color: active ? "oklch(0.64 0.19 38)" : "oklch(0.4 0.02 250)",
                 background: active ? "oklch(0.96 0.03 55)" : "transparent",

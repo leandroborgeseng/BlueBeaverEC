@@ -2,6 +2,7 @@ export type PerfilAcesso =
   | "ENGENHEIRO"
   | "GESTOR"
   | "TECNICO"
+  | "TECNICO_RESTRITO"
   | "SOLICITANTE"
   | "AUDITORIA"
   | "ADMIN";
@@ -131,6 +132,21 @@ export const PERMISSOES_PADRAO: Record<PerfilAcesso, MapaPermissoes> = {
     portal: L,
     config: N,
   },
+  /** Campo gradual: só OS + inventário (equipamentos). Ampliar módulos conforme rollout. */
+  TECNICO_RESTRITO: {
+    dashboard: N,
+    equipamentos: E,
+    os: E,
+    laudos: N,
+    estoque: L,
+    contratos: N,
+    pessoas: N,
+    financeiro: N,
+    auditorias: N,
+    estrategico: N,
+    portal: N,
+    config: N,
+  },
   SOLICITANTE: {
     dashboard: N,
     equipamentos: L,
@@ -253,6 +269,7 @@ export function podeExecutarAcaoStatusOS(
   }
   return (
     perfil === "TECNICO" ||
+    perfil === "TECNICO_RESTRITO" ||
     perfil === "ENGENHEIRO" ||
     perfil === "GESTOR" ||
     perfil === "ADMIN"

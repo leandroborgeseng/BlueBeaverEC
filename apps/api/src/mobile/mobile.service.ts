@@ -82,8 +82,50 @@ export class MobileService {
     return { abertas, urgentes, concluidasHoje };
   }
 
-  equipamentoQr(user: AuthUser, codigo: string) {
-    return this.equipamentos.byQr(user.estabelecimentoId, codigo);
+  async equipamentoQr(user: AuthUser, codigo: string) {
+    const equipamento = await this.equipamentos.byQr(user.estabelecimentoId, codigo);
+    const osAbertas = await this.os.ativasDoEquipamento(user.estabelecimentoId, equipamento.tag);
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "CONSULTA_QR_MOBILE",
+        detalhe: `tag=${equipamento.tag} · osAbertas=${osAbertas.length}`,
+      },
+    });
+
+    return {
+      equipamento,
+      osAbertas: osAbertas.map((o) => ({
+        numero: o.numero,
+        status: o.status,
+        prioridade: o.prioridade,
+        codigo: `OS-${String(o.numero).padStart(5, "0")}`,
+      })),
+    };
+  }
+
+  async inventario(
+    user: AuthUser,
+    query: { q?: string; page?: number; pageSize?: number } = {},
+  ) {
+    const page = Math.max(1, query.page ?? 1);
+    const pageSize = Math.min(50, Math.max(1, query.pageSize ?? 20));
+    const data = await this.equipamentos.list(user.estabelecimentoId, {
+      q: query.q,
+      page,
+      pageSize,
+    });
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "CONSULTA_INVENTARIO_MOBILE",
+        detalhe: `q=${query.q ?? ""} · page=${page} · total=${data.total ?? data.items?.length ?? 0}`,
+      },
+    });
+
+    return data;
   }
 
   async detalheOs(user: AuthUser, numero: number) {
@@ -178,11 +220,20 @@ export class MobileService {
   ) {
     const os = await this.findOs(user.estabelecimentoId, numero);
     await this.assertPodeExecutar(user, os);
-    return this.prisma.osChecklistMobile.upsert({
+    const row = await this.prisma.osChecklistMobile.upsert({
       where: { ordemServicoId: os.id },
       create: { ordemServicoId: os.id, itens },
       update: { itens },
     });
+    await this.prisma.logOrdemServico.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        acao: "CHECKLIST_MOBILE",
+        justificativa: `${itens.length} item(ns)`,
+      },
+    });
+    return row;
   }
 
   async fotos(user: AuthUser, numero: number, fotos: Array<{ dataUrl: string; legenda?: string }>) {
@@ -204,6 +255,14 @@ export class MobileService {
         }),
       );
     }
+    await this.prisma.logOrdemServico.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        acao: "FOTOS_MOBILE",
+        justificativa: `${created.length} foto(s)`,
+      },
+    });
     return created;
   }
 

@@ -52,7 +52,17 @@ class UsuarioDto {
 class PatchUsuarioDto {
   @IsOptional()
   @IsString()
+  @MinLength(2)
   nome?: string;
+
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  senha?: string;
 
   @IsOptional()
   @IsBoolean()

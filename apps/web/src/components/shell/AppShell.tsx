@@ -34,8 +34,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!me) return;
     if (pathname.startsWith("/mobile")) return;
-    // Técnico/engenheiro em viewport estreita → PWA campo
-    const perfilCampo = me.perfil === "TECNICO" || me.perfil === "ENGENHEIRO" || me.perfil === "ADMIN";
+    const perfilCampo =
+      me.perfil === "TECNICO" ||
+      me.perfil === "TECNICO_RESTRITO" ||
+      me.perfil === "ENGENHEIRO" ||
+      me.perfil === "ADMIN";
     if (perfilCampo && preferMobileShell()) {
       router.replace("/mobile");
     }

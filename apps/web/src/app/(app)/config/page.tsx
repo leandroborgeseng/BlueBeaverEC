@@ -3,7 +3,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import { MODULOS } from "@aion/shared";
 import { api } from "@/lib/api";
+import { FormDialog } from "@/components/ui/FormDialog";
 import {
+  Badge,
   Btn,
   DataTable,
   Empty,
@@ -17,19 +19,59 @@ import {
 } from "@/components/ui/aion-ui";
 
 const NIVEIS = ["NENHUM", "LEITURA", "EDICAO", "EDICAO_APROVACAO"] as const;
+const PERFIS = [
+  "ENGENHEIRO",
+  "GESTOR",
+  "TECNICO",
+  "TECNICO_RESTRITO",
+  "SOLICITANTE",
+  "AUDITORIA",
+  "ADMIN",
+] as const;
+
+type UsuarioRow = {
+  id: string;
+  usuarioId: string;
+  perfil: string;
+  usuario: { id: string; nome: string; email: string; ativo: boolean };
+};
+
+type EditDraft = {
+  usuarioId: string;
+  nome: string;
+  email: string;
+  perfil: string;
+  ativo: boolean;
+  senha: string;
+  confirmarSenha: string;
+};
 
 export default function ConfigPage() {
-  const [org, setOrg] = useState<{ nome: string; cnpj?: string | null; fusoHorario: string; slaUrgenteHoras: number } | null>(null);
-  const [usuarios, setUsuarios] = useState<Array<{ id: string; perfil: string; usuario: { id: string; nome: string; email: string; ativo: boolean } }>>([]);
-  const [perfis, setPerfis] = useState<Array<{ id: string; nome: string; permissoes: Record<string, string | number>; ativo?: boolean }>>([]);
-  const [logs, setLogs] = useState<Array<{ id: string; acao: string; detalhe?: string | null; createdAt: string; usuario?: { nome: string } | null }>>([]);
+  const [org, setOrg] = useState<{
+    nome: string;
+    cnpj?: string | null;
+    fusoHorario: string;
+    slaUrgenteHoras: number;
+  } | null>(null);
+  const [usuarios, setUsuarios] = useState<UsuarioRow[]>([]);
+  const [perfis, setPerfis] = useState<
+    Array<{ id: string; nome: string; permissoes: Record<string, string | number>; ativo?: boolean }>
+  >([]);
+  const [logs, setLogs] = useState<
+    Array<{ id: string; acao: string; detalhe?: string | null; createdAt: string; usuario?: { nome: string } | null }>
+  >([]);
   const [tab, setTab] = useState<"org" | "users" | "perfis" | "logs">("org");
   const [msg, setMsg] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [edit, setEdit] = useState<EditDraft | null>(null);
+  const [dialogBusy, setDialogBusy] = useState(false);
+  const [dialogErro, setDialogErro] = useState<string | null>(null);
 
   async function load() {
     const [o, u, p, l] = await Promise.all([
       api<typeof org>("/config/organizacao"),
-      api<typeof usuarios>("/config/usuarios"),
+      api<UsuarioRow[]>("/config/usuarios"),
       api<typeof perfis>("/config/perfis"),
       api<typeof logs>("/config/logs-acesso"),
     ]);
@@ -40,40 +82,100 @@ export default function ConfigPage() {
   }
 
   useEffect(() => {
-    void load().catch((e) => setMsg(e.message));
+    void load().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, []);
 
   async function saveOrg(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    await api("/config/organizacao", {
-      method: "PATCH",
-      body: JSON.stringify({
-        nome: String(fd.get("nome")),
-        cnpj: String(fd.get("cnpj") || "") || undefined,
-        fusoHorario: String(fd.get("fuso")),
-        slaUrgenteHoras: Number(fd.get("sla")),
-      }),
-    });
-    setMsg("Organização atualizada");
-    await load();
+    try {
+      await api("/config/organizacao", {
+        method: "PATCH",
+        body: JSON.stringify({
+          nome: String(fd.get("nome")),
+          cnpj: String(fd.get("cnpj") || "") || undefined,
+          fusoHorario: String(fd.get("fuso")),
+          slaUrgenteHoras: Number(fd.get("sla")),
+        }),
+      });
+      setErro(null);
+      setMsg("Organização atualizada");
+      await load();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro");
+    }
   }
 
   async function createUser(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    await api("/config/usuarios", {
-      method: "POST",
-      body: JSON.stringify({
-        email: String(fd.get("email")),
-        nome: String(fd.get("nome")),
-        senha: String(fd.get("senha")),
-        perfil: String(fd.get("perfil")),
-      }),
+    try {
+      await api("/config/usuarios", {
+        method: "POST",
+        body: JSON.stringify({
+          email: String(fd.get("email")),
+          nome: String(fd.get("nome")),
+          senha: String(fd.get("senha")),
+          perfil: String(fd.get("perfil")),
+        }),
+      });
+      e.currentTarget.reset();
+      setShowCreateUser(false);
+      setErro(null);
+      setMsg("Usuário vinculado");
+      await load();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
+  function openEdit(u: UsuarioRow) {
+    setDialogErro(null);
+    setEdit({
+      usuarioId: u.usuario.id,
+      nome: u.usuario.nome,
+      email: u.usuario.email,
+      perfil: u.perfil,
+      ativo: u.usuario.ativo,
+      senha: "",
+      confirmarSenha: "",
     });
-    e.currentTarget.reset();
-    setMsg("Usuário vinculado");
-    await load();
+  }
+
+  async function saveEdit() {
+    if (!edit) return;
+    if (edit.senha && edit.senha !== edit.confirmarSenha) {
+      setDialogErro("As senhas não coincidem");
+      return;
+    }
+    if (edit.senha && edit.senha.length < 6) {
+      setDialogErro("Senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+    setDialogBusy(true);
+    setDialogErro(null);
+    try {
+      const body: Record<string, unknown> = {
+        nome: edit.nome.trim(),
+        email: edit.email.trim(),
+        perfil: edit.perfil,
+        ativo: edit.ativo,
+      };
+      if (edit.senha.trim()) body.senha = edit.senha.trim();
+
+      await api(`/config/usuarios/${edit.usuarioId}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+      setEdit(null);
+      setErro(null);
+      setMsg("Usuário atualizado");
+      await load();
+    } catch (err) {
+      setDialogErro(err instanceof Error ? err.message : "Erro");
+    } finally {
+      setDialogBusy(false);
+    }
   }
 
   async function createPerfil(e: FormEvent<HTMLFormElement>) {
@@ -83,29 +185,39 @@ export default function ConfigPage() {
     for (const m of MODULOS) {
       permissoes[m] = String(fd.get(m) || "NENHUM");
     }
-    await api("/config/perfis", {
-      method: "POST",
-      body: JSON.stringify({
-        nome: String(fd.get("nome")),
-        permissoes,
-      }),
-    });
-    e.currentTarget.reset();
-    setMsg("Perfil custom criado — use o mesmo nome do enum (ex.: ENGENHEIRO) para sobrescrever");
-    await load();
+    try {
+      await api("/config/perfis", {
+        method: "POST",
+        body: JSON.stringify({
+          nome: String(fd.get("nome")),
+          permissoes,
+        }),
+      });
+      e.currentTarget.reset();
+      setErro(null);
+      setMsg("Perfil custom criado — use o mesmo nome do enum (ex.: ENGENHEIRO) para sobrescrever");
+      await load();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro");
+    }
   }
 
   return (
     <div>
       <PageHeader title="Configurações" subtitle="Organização · usuários · RBAC por módulo · logs de acesso" />
-      {msg && <Err>{msg}</Err>}
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        {([
-          ["org", "Organização"],
-          ["users", "Usuários"],
-          ["perfis", "Perfis"],
-          ["logs", "Logs"],
-        ] as const).map(([k, l]) => (
+      {erro && <Err>{erro}</Err>}
+      {msg && !erro && (
+        <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.13 150)" }}>{msg}</div>
+      )}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {(
+          [
+            ["org", "Organização"],
+            ["users", "Usuários"],
+            ["perfis", "Perfis"],
+            ["logs", "Logs"],
+          ] as const
+        ).map(([k, l]) => (
           <Btn key={k} variant={tab === k ? "primary" : "ghost"} onClick={() => setTab(k)}>
             {l}
           </Btn>
@@ -116,20 +228,20 @@ export default function ConfigPage() {
         <Panel title="Organização">
           <form onSubmit={(e) => void saveOrg(e)} style={{ display: "grid", gap: 10, maxWidth: 480 }}>
             <div>
-              <FieldLabel>Nome</FieldLabel>
-              <input name="nome" defaultValue={org.nome} required style={fieldStyle} />
+              <FieldLabel htmlFor="org-nome">Nome</FieldLabel>
+              <input id="org-nome" name="nome" defaultValue={org.nome} required style={fieldStyle} />
             </div>
             <div>
-              <FieldLabel>CNPJ</FieldLabel>
-              <input name="cnpj" defaultValue={org.cnpj ?? ""} placeholder="CNPJ" style={fieldStyle} />
+              <FieldLabel htmlFor="org-cnpj">CNPJ</FieldLabel>
+              <input id="org-cnpj" name="cnpj" defaultValue={org.cnpj ?? ""} placeholder="CNPJ" style={fieldStyle} />
             </div>
             <div>
-              <FieldLabel>Fuso horário</FieldLabel>
-              <input name="fuso" defaultValue={org.fusoHorario} style={fieldStyle} />
+              <FieldLabel htmlFor="org-fuso">Fuso horário</FieldLabel>
+              <input id="org-fuso" name="fuso" defaultValue={org.fusoHorario} style={fieldStyle} />
             </div>
             <div>
-              <FieldLabel>SLA urgente (horas)</FieldLabel>
-              <input name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={fieldStyle} />
+              <FieldLabel htmlFor="org-sla">SLA urgente (horas)</FieldLabel>
+              <input id="org-sla" name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={fieldStyle} />
             </div>
             <Btn type="submit">Salvar</Btn>
           </form>
@@ -137,30 +249,50 @@ export default function ConfigPage() {
       )}
 
       {tab === "users" && (
-        <Panel title="Usuários">
-          <form onSubmit={(e) => void createUser(e)} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 14 }}>
-            <div>
-              <FieldLabel>E-mail</FieldLabel>
-              <input name="email" type="email" placeholder="E-mail" required style={fieldStyle} />
-            </div>
-            <div>
-              <FieldLabel>Nome</FieldLabel>
-              <input name="nome" placeholder="Nome" required style={fieldStyle} />
-            </div>
-            <div>
-              <FieldLabel>Senha</FieldLabel>
-              <input name="senha" type="password" placeholder="Senha" required style={fieldStyle} />
-            </div>
-            <div>
-              <FieldLabel>Perfil</FieldLabel>
-              <select name="perfil" style={fieldStyle}>
-                {["ENGENHEIRO", "GESTOR", "TECNICO", "SOLICITANTE", "AUDITORIA", "ADMIN"].map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
-            </div>
-            <Btn type="submit">Adicionar</Btn>
-          </form>
+        <Panel
+          title="Usuários"
+          action={
+            <Btn type="button" size="sm" variant="secondary" onClick={() => setShowCreateUser((v) => !v)}>
+              {showCreateUser ? "Cancelar" : "Novo usuário"}
+            </Btn>
+          }
+        >
+          {showCreateUser && (
+            <form
+              onSubmit={(e) => void createUser(e)}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto",
+                gap: 10,
+                alignItems: "end",
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <FieldLabel htmlFor="new-email">E-mail</FieldLabel>
+                <input id="new-email" name="email" type="email" required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="new-nome">Nome</FieldLabel>
+                <input id="new-nome" name="nome" required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="new-senha">Senha</FieldLabel>
+                <input id="new-senha" name="senha" type="password" minLength={6} required style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="new-perfil">Perfil</FieldLabel>
+                <select id="new-perfil" name="perfil" style={fieldStyle}>
+                  {PERFIS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Btn type="submit">Adicionar</Btn>
+            </form>
+          )}
           <DataTable>
             <thead>
               <tr>
@@ -168,18 +300,34 @@ export default function ConfigPage() {
                 <th style={th}>E-mail</th>
                 <th style={th}>Perfil</th>
                 <th style={th}>Status</th>
+                <th style={th}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.length === 0 ? (
-                <tr><td colSpan={4} style={td}><Empty /></td></tr>
+                <tr>
+                  <td colSpan={5} style={td}>
+                    <Empty />
+                  </td>
+                </tr>
               ) : (
                 usuarios.map((u) => (
                   <tr key={u.id}>
-                    <td style={td}><strong>{u.usuario.nome}</strong></td>
+                    <td style={td}>
+                      <strong>{u.usuario.nome}</strong>
+                    </td>
                     <td style={td}>{u.usuario.email}</td>
                     <td style={td}>{u.perfil}</td>
-                    <td style={td}>{u.usuario.ativo ? "ativo" : "inativo"}</td>
+                    <td style={td}>
+                      <Badge tone={u.usuario.ativo ? "success" : "warning"}>
+                        {u.usuario.ativo ? "ativo" : "inativo"}
+                      </Badge>
+                    </td>
+                    <td style={td}>
+                      <Btn variant="ghost" size="sm" onClick={() => openEdit(u)}>
+                        Editar
+                      </Btn>
+                    </td>
                   </tr>
                 ))
               )}
@@ -195,16 +343,18 @@ export default function ConfigPage() {
           </p>
           <form onSubmit={(e) => void createPerfil(e)} style={{ display: "grid", gap: 10, marginBottom: 14 }}>
             <div>
-              <FieldLabel>Nome do perfil</FieldLabel>
-              <input name="nome" placeholder="ENGENHEIRO / TECNICO / …" required style={fieldStyle} />
+              <FieldLabel htmlFor="perfil-nome">Nome do perfil</FieldLabel>
+              <input id="perfil-nome" name="nome" placeholder="ENGENHEIRO / TECNICO / …" required style={fieldStyle} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
               {MODULOS.map((m) => (
                 <div key={m}>
-                  <FieldLabel>{m}</FieldLabel>
-                  <select name={m} defaultValue="LEITURA" style={fieldStyle}>
+                  <FieldLabel htmlFor={`perfil-${m}`}>{m}</FieldLabel>
+                  <select id={`perfil-${m}`} name={m} defaultValue="LEITURA" style={fieldStyle}>
                     {NIVEIS.map((n) => (
-                      <option key={n} value={n}>{n}</option>
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -221,12 +371,20 @@ export default function ConfigPage() {
             </thead>
             <tbody>
               {perfis.length === 0 ? (
-                <tr><td colSpan={2} style={td}><Empty /></td></tr>
+                <tr>
+                  <td colSpan={2} style={td}>
+                    <Empty />
+                  </td>
+                </tr>
               ) : (
                 perfis.map((p) => (
                   <tr key={p.id}>
-                    <td style={td}><strong>{p.nome}</strong></td>
-                    <td style={td}><code style={{ fontSize: 11 }}>{JSON.stringify(p.permissoes)}</code></td>
+                    <td style={td}>
+                      <strong>{p.nome}</strong>
+                    </td>
+                    <td style={td}>
+                      <code style={{ fontSize: 11 }}>{JSON.stringify(p.permissoes)}</code>
+                    </td>
                   </tr>
                 ))
               )}
@@ -253,7 +411,9 @@ export default function ConfigPage() {
                 <tbody>
                   {logs.map((l) => (
                     <tr key={l.id}>
-                      <td style={td}><strong>{l.acao}</strong></td>
+                      <td style={td}>
+                        <strong>{l.acao}</strong>
+                      </td>
                       <td style={td}>{l.usuario?.nome ?? "sistema"}</td>
                       <td style={td}>{String(l.createdAt).slice(0, 19)}</td>
                       <td style={td}>{l.detalhe ?? "—"}</td>
@@ -265,6 +425,103 @@ export default function ConfigPage() {
           </div>
         </Panel>
       )}
+
+      <FormDialog
+        open={Boolean(edit)}
+        title={edit ? `Editar · ${edit.email}` : "Editar usuário"}
+        confirmLabel="Salvar"
+        busy={dialogBusy}
+        erro={dialogErro}
+        onCancel={() => setEdit(null)}
+        onConfirm={saveEdit}
+      >
+        {edit && (
+          <>
+            <div>
+              <FieldLabel htmlFor="edit-nome">Nome</FieldLabel>
+              <input
+                id="edit-nome"
+                value={edit.nome}
+                onChange={(e) => setEdit({ ...edit, nome: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="edit-email">E-mail</FieldLabel>
+              <input
+                id="edit-email"
+                type="email"
+                value={edit.email}
+                onChange={(e) => setEdit({ ...edit, email: e.target.value })}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="edit-perfil">Perfil neste estabelecimento</FieldLabel>
+              <select
+                id="edit-perfil"
+                value={edit.perfil}
+                onChange={(e) => setEdit({ ...edit, perfil: e.target.value })}
+                style={fieldStyle}
+              >
+                {PERFIS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel htmlFor="edit-ativo">Status</FieldLabel>
+              <select
+                id="edit-ativo"
+                value={edit.ativo ? "1" : "0"}
+                onChange={(e) => setEdit({ ...edit, ativo: e.target.value === "1" })}
+                style={fieldStyle}
+              >
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
+              </select>
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                paddingTop: 12,
+                borderTop: "1px solid oklch(0.92 0.006 255)",
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 600, color: "oklch(0.5 0.02 250)", marginBottom: 8 }}>
+                Trocar senha (opcional — deixe em branco para manter)
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                <div>
+                  <FieldLabel htmlFor="edit-senha">Nova senha</FieldLabel>
+                  <input
+                    id="edit-senha"
+                    type="password"
+                    autoComplete="new-password"
+                    value={edit.senha}
+                    onChange={(e) => setEdit({ ...edit, senha: e.target.value })}
+                    style={fieldStyle}
+                    placeholder="Mín. 6 caracteres"
+                  />
+                </div>
+                <div>
+                  <FieldLabel htmlFor="edit-senha2">Confirmar senha</FieldLabel>
+                  <input
+                    id="edit-senha2"
+                    type="password"
+                    autoComplete="new-password"
+                    value={edit.confirmarSenha}
+                    onChange={(e) => setEdit({ ...edit, confirmarSenha: e.target.value })}
+                    style={fieldStyle}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </FormDialog>
     </div>
   );
 }

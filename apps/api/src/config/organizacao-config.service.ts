@@ -90,18 +90,49 @@ export class OrganizacaoConfigService {
   async patchUsuario(
     user: AuthUser,
     id: string,
-    body: Partial<{ nome: string; ativo: boolean; perfil: PerfilAcesso }>,
+    body: Partial<{ nome: string; email: string; senha: string; ativo: boolean; perfil: PerfilAcesso }>,
   ) {
     this.assertAdmin(user);
-    if (body.nome != null || body.ativo != null) {
+
+    const vinculo = await this.prisma.usuarioEstabelecimento.findUnique({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId: id,
+          estabelecimentoId: user.estabelecimentoId,
+        },
+      },
+      include: { usuario: true },
+    });
+    if (!vinculo) throw new NotFoundException("Usuário não vinculado a este estabelecimento");
+
+    if (body.ativo === false && id === user.userId) {
+      throw new ForbiddenException("Não é possível desativar o próprio usuário");
+    }
+
+    const dataUsuario: { nome?: string; email?: string; senhaHash?: string; ativo?: boolean } = {};
+    if (body.nome != null) dataUsuario.nome = body.nome.trim();
+    if (body.ativo != null) dataUsuario.ativo = body.ativo;
+    if (body.email != null) {
+      const email = body.email.trim().toLowerCase();
+      if (email !== vinculo.usuario.email) {
+        const clash = await this.prisma.usuario.findUnique({ where: { email } });
+        if (clash && clash.id !== id) {
+          throw new ForbiddenException("E-mail já em uso por outro usuário");
+        }
+        dataUsuario.email = email;
+      }
+    }
+    if (body.senha != null && body.senha.trim().length > 0) {
+      dataUsuario.senhaHash = await bcrypt.hash(body.senha.trim(), 10);
+    }
+
+    if (Object.keys(dataUsuario).length > 0) {
       await this.prisma.usuario.update({
         where: { id },
-        data: {
-          ...(body.nome != null ? { nome: body.nome } : {}),
-          ...(body.ativo != null ? { ativo: body.ativo } : {}),
-        },
+        data: dataUsuario,
       });
     }
+
     if (body.perfil != null) {
       await this.prisma.usuarioEstabelecimento.update({
         where: {
@@ -112,14 +143,23 @@ export class OrganizacaoConfigService {
         },
         data: { perfil: body.perfil },
       });
-      await this.prisma.logAcesso.create({
-        data: {
-          usuarioId: user.userId,
-          acao: "EDICAO_PERMISSAO",
-          detalhe: `estab ${user.estabelecimentoId} · perfil ${body.perfil} para ${id}`,
-        },
-      });
     }
+
+    const detalhes: string[] = [];
+    if (body.nome != null) detalhes.push("nome");
+    if (body.email != null) detalhes.push("email");
+    if (body.senha) detalhes.push("senha");
+    if (body.ativo != null) detalhes.push(`ativo=${body.ativo}`);
+    if (body.perfil != null) detalhes.push(`perfil=${body.perfil}`);
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "EDICAO_USUARIO",
+        detalhe: `${vinculo.usuario.email} · ${detalhes.join(", ") || "sem alterações"}`,
+      },
+    });
+
     return this.listUsuarios(user.estabelecimentoId).then((u) => u.find((x) => x.usuarioId === id));
   }
 

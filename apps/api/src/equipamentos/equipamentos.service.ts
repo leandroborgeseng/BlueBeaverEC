@@ -241,7 +241,7 @@ export class EquipamentosService {
     },
   ) {
     if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
-      throw new ForbiddenException("Somente Engenheiro pode salvar alterações");
+      throw new ForbiddenException("Sem permissão para editar inventário");
     }
     const eq = await this.prisma.equipamento.findUnique({
       where: {
@@ -264,7 +264,7 @@ export class EquipamentosService {
       if (!tipo) throw new BadRequestException("Tipo de plano inválido");
     }
 
-    return this.prisma.equipamento.update({
+    const updated = await this.prisma.equipamento.update({
       where: { id: eq.id },
       data: {
         ...(data.nome != null ? { nome: data.nome.trim() } : {}),
@@ -317,6 +317,16 @@ export class EquipamentosService {
         },
       },
     });
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "EDICAO_INVENTARIO",
+        detalhe: `tag=${tag} · campos=${Object.keys(data).join(",")}`,
+      },
+    });
+
+    return updated;
   }
 
   async updateTag(user: AuthUser, tag: string, novaTag: string, justificativa: string) {

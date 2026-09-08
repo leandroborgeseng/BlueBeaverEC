@@ -113,6 +113,21 @@ export class MobileController {
     return this.mobile.equipamentoQr(user, codigo);
   }
 
+  @Get("inventario")
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.LEITURA)
+  inventario(
+    @CurrentUser() user: AuthUser,
+    @Query("q") q?: string,
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
+  ) {
+    return this.mobile.inventario(user, {
+      q,
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 20,
+    });
+  }
+
   @Get("os/:numero")
   detalhe(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
     return this.mobile.detalheOs(user, Number(numero));
