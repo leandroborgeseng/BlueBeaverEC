@@ -6,6 +6,7 @@ import { useEffect, useMemo, type ReactNode } from "react";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
 import { IconBox, IconCalendar, IconHome, IconList, IconPlus, IconQr } from "./icons";
+import { ImpersonationBanner } from "@/components/shell/ImpersonationBanner";
 import { M } from "./ui";
 
 type NavItem = {
@@ -181,6 +182,7 @@ export function MobileFrame({
       )}
 
       <span className="sr-only">{title}</span>
+      <ImpersonationBanner />
       {children}
 
       <nav

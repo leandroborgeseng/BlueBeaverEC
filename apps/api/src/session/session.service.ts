@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { podePersonificar } from "../auth/auth.service";
 
 @Injectable()
 export class SessionService {
@@ -68,6 +69,14 @@ export class SessionService {
         verValoresFinanceiros: (permissoesModulos.financeiro ?? 0) >= 1,
       },
       permissoesModulos,
+      podePersonificar: podePersonificar(perfil) && !user.impersonatorId,
+      impersonadoPor: user.impersonatorId
+        ? {
+            id: user.impersonatorId,
+            nome: user.impersonatorNome ?? "Administrador",
+            perfil: user.impersonatorPerfil ?? "ADMIN",
+          }
+        : null,
     };
   }
 }

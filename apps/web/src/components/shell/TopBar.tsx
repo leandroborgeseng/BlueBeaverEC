@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, clearToken, setToken } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
+import { destinoAposSessao, labelPerfil, useSession } from "@/lib/session";
 import { ICONS, Icon } from "./icons";
 
 interface Estab {
@@ -31,6 +32,13 @@ interface Notificacao {
   detalhe: string;
   href: string;
   severidade: "info" | "warning" | "danger";
+}
+
+interface AlvoPersonificacao {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: string;
 }
 
 interface Recente {
@@ -73,7 +81,10 @@ export function TopBar({
   const [notifs, setNotifs] = useState<{ items: Notificacao[]; unread: number } | null>(null);
   const [recentes, setRecentes] = useState<Recente[]>([]);
   const [favoritos, setFavoritos] = useState<Array<{ id: string; label: string; href: string }>>([]);
+  const [alvos, setAlvos] = useState<AlvoPersonificacao[] | null>(null);
+  const [filtroAlvo, setFiltroAlvo] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const me = useSession();
 
   const fetchBusca = useCallback(async (term: string) => {
     if (term.trim().length < 2) {
@@ -117,6 +128,11 @@ export function TopBar({
         .then(setRecentes)
         .catch(() => setRecentes([]));
     }
+    if (panel === "perfil" && me?.podePersonificar && alvos == null) {
+      void api<AlvoPersonificacao[]>("/auth/impersonation-targets")
+        .then(setAlvos)
+        .catch(() => setAlvos([]));
+    }
     if (panel === "favoritos" && favoritos.length === 0) {
       void api<Array<{ id: string; label: string; href: string }>>("/nav/favoritos")
         .then((defaults) => {
@@ -130,7 +146,7 @@ export function TopBar({
         })
         .catch(() => setFavoritos([]));
     }
-  }, [panel, recentes.length, favoritos.length]);
+  }, [panel, recentes.length, favoritos.length, me?.podePersonificar, alvos]);
 
   function salvarFavoritoAtual() {
     const href = pathname || "/dashboard";
@@ -142,6 +158,15 @@ export function TopBar({
     setFavoritos(next);
     localStorage.setItem("aion_favoritos", JSON.stringify(next));
   }
+  async function personificar(alvo: AlvoPersonificacao) {
+    const res = await api<{ accessToken: string; user: { perfil: string } }>("/auth/impersonate", {
+      method: "POST",
+      body: JSON.stringify({ usuarioId: alvo.id }),
+    });
+    setToken(res.accessToken);
+    window.location.href = destinoAposSessao(res.user.perfil);
+  }
+
   async function trocar(id: string) {
     if (!id || id === estabelecimentoId) return;
     const res = await api<{ accessToken: string }>("/auth/switch-estabelecimento", {
@@ -212,7 +237,7 @@ export function TopBar({
   };
 
   const panelWidth =
-    panel === "busca" ? 360 : panel === "perfil" ? 240 : panel === "favoritos" ? 260 : 320;
+    panel === "busca" ? 360 : panel === "perfil" ? 300 : panel === "favoritos" ? 260 : 320;
 
   return (
     <header
@@ -326,7 +351,9 @@ export function TopBar({
             borderRadius: 6,
           }}
         >
-          <span style={{ fontSize: 11.5, fontWeight: 600, color: "oklch(0.35 0.02 250)" }}>{perfil ?? "Perfil"}</span>
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: "oklch(0.35 0.02 250)" }}>
+            {labelPerfil(perfil)}
+          </span>
           <span style={{ fontSize: 10, color: "oklch(0.55 0.02 250)" }}>▾</span>
           <span
             style={{
@@ -438,8 +465,103 @@ export function TopBar({
               <>
                 <div style={{ padding: "10px 12px", borderBottom: "1px solid oklch(0.93 0.005 255)" }}>
                   <div style={{ fontWeight: 700, fontSize: 13 }}>{nome}</div>
-                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 2 }}>{perfil}</div>
+                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 2 }}>{labelPerfil(perfil)}</div>
                 </div>
+                {me?.impersonadoPor && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void api<{ accessToken: string }>("/auth/stop-impersonation", { method: "POST" }).then((res) => {
+                        setToken(res.accessToken);
+                        window.location.href = "/dashboard";
+                      });
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      border: "none",
+                      background: "oklch(0.96 0.04 55)",
+                      padding: "10px 12px",
+                      borderRadius: 7,
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "oklch(0.45 0.14 38)",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Voltar para {me.impersonadoPor.nome}
+                  </button>
+                )}
+                {me?.podePersonificar && (
+                  <div style={{ padding: "8px 4px 4px", borderBottom: "1px solid oklch(0.93 0.005 255)", marginBottom: 4 }}>
+                    <div
+                      style={{
+                        padding: "4px 8px 8px",
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        color: "oklch(0.5 0.02 250)",
+                      }}
+                    >
+                      Personificar perfil
+                    </div>
+                    <input
+                      value={filtroAlvo}
+                      onChange={(e) => setFiltroAlvo(e.target.value)}
+                      placeholder="Buscar nome, e-mail ou perfil…"
+                      style={{
+                        width: "100%",
+                        border: "1px solid oklch(0.87 0.008 255)",
+                        borderRadius: 7,
+                        padding: "7px 9px",
+                        fontSize: 12.5,
+                        marginBottom: 6,
+                      }}
+                    />
+                    {alvos == null ? (
+                      <div style={{ padding: "8px 10px", fontSize: 12, color: "oklch(0.5 0.02 250)" }}>Carregando…</div>
+                    ) : (
+                      (alvos.filter((a) => {
+                        const s = filtroAlvo.trim().toLowerCase();
+                        if (!s) return true;
+                        return (
+                          a.nome.toLowerCase().includes(s) ||
+                          a.email.toLowerCase().includes(s) ||
+                          labelPerfil(a.perfil).toLowerCase().includes(s) ||
+                          a.perfil.toLowerCase().includes(s)
+                        );
+                      })).map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => void personificar(a)}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            border: "none",
+                            background: "transparent",
+                            padding: "8px 10px",
+                            borderRadius: 7,
+                            cursor: "pointer",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "oklch(0.97 0.01 250)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          <div style={{ fontSize: 13, fontWeight: 700 }}>{a.nome}</div>
+                          <div style={{ fontSize: 11.5, color: "oklch(0.5 0.02 250)", marginTop: 1 }}>
+                            {labelPerfil(a.perfil)} · {a.email}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={logout}

@@ -1,14 +1,24 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import type { PerfilAcesso } from "@aion/shared";
+import type { AuthUser } from "./current-user.decorator";
 
 export interface AuthTokenPayload {
   sub: string;
   email: string;
   estabelecimentoId: string;
   perfil: PerfilAcesso;
+  impersonatorId?: string;
+  impersonatorNome?: string;
+  impersonatorPerfil?: PerfilAcesso;
+}
+
+const PERFIS_PERSONIFICAM: PerfilAcesso[] = ["ADMIN", "GESTOR", "ENGENHEIRO"];
+
+export function podePersonificar(perfil?: string | null) {
+  return PERFIS_PERSONIFICAM.includes((perfil ?? "") as PerfilAcesso);
 }
 
 @Injectable()
@@ -92,7 +102,7 @@ export class AuthService {
     };
 
     return {
-      accessToken: await this.jwt.signAsync(payload),
+      accessToken: await this.sign(payload),
       user: {
         id: usuario.id,
         nome: usuario.nome,
@@ -110,7 +120,8 @@ export class AuthService {
     };
   }
 
-  async switchEstabelecimento(usuarioId: string, estabelecimentoId: string) {
+  async switchEstabelecimento(user: AuthUser, estabelecimentoId: string) {
+    const usuarioId = user.userId;
     const vinculo = await this.prisma.usuarioEstabelecimento.findUnique({
       where: {
         usuarioId_estabelecimentoId: { usuarioId, estabelecimentoId },
@@ -135,14 +146,140 @@ export class AuthService {
       email: vinculo.usuario.email,
       estabelecimentoId,
       perfil: vinculo.perfil as PerfilAcesso,
+      ...(user.impersonatorId
+        ? {
+            impersonatorId: user.impersonatorId,
+            impersonatorNome: user.impersonatorNome,
+            impersonatorPerfil: user.impersonatorPerfil,
+          }
+        : {}),
     };
 
     return {
-      accessToken: await this.jwt.signAsync(payload),
+      accessToken: await this.sign(payload),
       estabelecimento: {
         id: vinculo.estabelecimentoId,
         nome: vinculo.estabelecimento.nome,
         perfil: vinculo.perfil,
+      },
+    };
+  }
+
+  async listarAlvosPersonificacao(user: AuthUser) {
+    this.assertPodePersonificar(user);
+    const vinculos = await this.prisma.usuarioEstabelecimento.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        usuario: { ativo: true, id: { not: user.userId } },
+      },
+      include: { usuario: { select: { id: true, nome: true, email: true } } },
+    });
+    return vinculos
+      .map((v) => ({
+        id: v.usuario.id,
+        nome: v.usuario.nome,
+        email: v.usuario.email,
+        perfil: v.perfil,
+      }))
+      .sort((a, b) => a.perfil.localeCompare(b.perfil) || a.nome.localeCompare(b.nome, "pt-BR"));
+  }
+
+  async personificar(user: AuthUser, alvoId: string) {
+    this.assertPodePersonificar(user);
+    if (alvoId === user.userId) {
+      throw new ForbiddenException("Você já está neste perfil");
+    }
+
+    const vinculo = await this.prisma.usuarioEstabelecimento.findUnique({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId: alvoId,
+          estabelecimentoId: user.estabelecimentoId,
+        },
+      },
+      include: { usuario: true, estabelecimento: true },
+    });
+    if (!vinculo || !vinculo.usuario.ativo) {
+      throw new NotFoundException("Usuário não encontrado neste estabelecimento");
+    }
+
+    const ator = await this.prisma.usuario.findUnique({ where: { id: user.userId } });
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "PERSONIFICAR",
+        detalhe: `${vinculo.usuario.email} · ${vinculo.perfil}`,
+      },
+    });
+
+    const payload: AuthTokenPayload = {
+      sub: vinculo.usuario.id,
+      email: vinculo.usuario.email,
+      estabelecimentoId: vinculo.estabelecimentoId,
+      perfil: vinculo.perfil as PerfilAcesso,
+      impersonatorId: user.userId,
+      impersonatorNome: ator?.nome ?? user.email,
+      impersonatorPerfil: user.perfil,
+    };
+
+    return {
+      accessToken: await this.sign(payload),
+      user: {
+        id: vinculo.usuario.id,
+        nome: vinculo.usuario.nome,
+        email: vinculo.usuario.email,
+        perfil: vinculo.perfil,
+        estabelecimentoId: vinculo.estabelecimentoId,
+        estabelecimentoNome: vinculo.estabelecimento.nome,
+      },
+    };
+  }
+
+  async encerrarPersonificacao(user: AuthUser) {
+    if (!user.impersonatorId) {
+      throw new ForbiddenException("Nenhuma personificação ativa");
+    }
+
+    const atorVinculo = await this.prisma.usuarioEstabelecimento.findUnique({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId: user.impersonatorId,
+          estabelecimentoId: user.estabelecimentoId,
+        },
+      },
+      include: { usuario: true, estabelecimento: true },
+    });
+    if (!atorVinculo || !atorVinculo.usuario.ativo) {
+      throw new UnauthorizedException("Não foi possível restaurar o perfil original");
+    }
+    if (!podePersonificar(atorVinculo.perfil)) {
+      throw new ForbiddenException("Perfil original sem permissão para personificar");
+    }
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.impersonatorId,
+        acao: "ENCERRAR_PERSONIFICACAO",
+        detalhe: `${user.email} · ${user.perfil}`,
+      },
+    });
+
+    const payload: AuthTokenPayload = {
+      sub: atorVinculo.usuario.id,
+      email: atorVinculo.usuario.email,
+      estabelecimentoId: atorVinculo.estabelecimentoId,
+      perfil: atorVinculo.perfil as PerfilAcesso,
+    };
+
+    return {
+      accessToken: await this.sign(payload),
+      user: {
+        id: atorVinculo.usuario.id,
+        nome: atorVinculo.usuario.nome,
+        email: atorVinculo.usuario.email,
+        perfil: atorVinculo.perfil,
+        estabelecimentoId: atorVinculo.estabelecimentoId,
+        estabelecimentoNome: atorVinculo.estabelecimento.nome,
       },
     };
   }
@@ -155,5 +292,18 @@ export class AuthService {
       },
     });
     return { ok: true };
+  }
+
+  private assertPodePersonificar(user: AuthUser) {
+    if (user.impersonatorId) {
+      throw new ForbiddenException("Encerre a personificação atual antes de trocar de perfil");
+    }
+    if (!podePersonificar(user.perfil)) {
+      throw new ForbiddenException("Sem permissão para personificar usuários");
+    }
+  }
+
+  private sign(payload: AuthTokenPayload) {
+    return this.jwt.signAsync(payload);
   }
 }

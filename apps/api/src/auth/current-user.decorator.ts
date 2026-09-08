@@ -7,6 +7,9 @@ export interface AuthUser {
   estabelecimentoId: string;
   perfil: PerfilAcesso;
   permissoesModulos?: MapaPermissoes;
+  impersonatorId?: string;
+  impersonatorNome?: string;
+  impersonatorPerfil?: PerfilAcesso;
 }
 
 export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext): AuthUser => {

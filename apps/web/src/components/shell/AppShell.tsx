@@ -9,6 +9,7 @@ import { SideRail } from "./SideRail";
 import { TopBar } from "./TopBar";
 import { Dock } from "./Dock";
 import { FloatingWindowLayer } from "./FloatingWindow";
+import { ImpersonationBanner } from "./ImpersonationBanner";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -43,19 +44,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider value={me}>
-      <div style={{ minHeight: "100vh", display: "flex", background: "var(--aion-bg)" }}>
-        <SideRail />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <TopBar
-            nome={me.nome}
-            estabelecimentoId={me.estabelecimentoId}
-            estabelecimentoNome={me.estabelecimentoNome}
-            perfil={me.perfil}
-            estabelecimentos={me.estabelecimentos}
-          />
-          <main style={{ flex: 1, padding: "26px 28px 56px", position: "relative", overflow: "auto" }}>
-            {children}
-          </main>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--aion-bg)" }}>
+        <ImpersonationBanner />
+        <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+          <SideRail />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <TopBar
+              nome={me.nome}
+              estabelecimentoId={me.estabelecimentoId}
+              estabelecimentoNome={me.estabelecimentoNome}
+              perfil={me.perfil}
+              estabelecimentos={me.estabelecimentos}
+            />
+            <main style={{ flex: 1, padding: "26px 28px 56px", position: "relative", overflow: "auto" }}>
+              {children}
+            </main>
+          </div>
         </div>
         <FloatingWindowLayer />
         <Dock />

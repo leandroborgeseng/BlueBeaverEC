@@ -39,6 +39,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       estabelecimentoId: payload.estabelecimentoId,
       perfil,
       permissoesModulos,
+      impersonatorId: payload.impersonatorId,
+      impersonatorNome: payload.impersonatorNome,
+      impersonatorPerfil: payload.impersonatorPerfil,
     };
   }
 }

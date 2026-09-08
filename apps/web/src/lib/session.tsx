@@ -20,6 +20,8 @@ export interface SessionMe {
     alterarStatusOS: boolean;
     verValoresFinanceiros: boolean;
   };
+  podePersonificar?: boolean;
+  impersonadoPor?: { id: string; nome: string; perfil: string } | null;
 }
 
 const SessionContext = createContext<SessionMe | null>(null);
@@ -73,4 +75,24 @@ export function preferMobileShell() {
   if (typeof window === "undefined") return false;
   if (window.localStorage.getItem("aion_force_desktop") === "1") return false;
   return window.matchMedia("(max-width: 768px)").matches;
+}
+
+export function labelPerfil(perfil?: string | null) {
+  const map: Record<string, string> = {
+    ADMIN: "Administrador",
+    GESTOR: "Gestor",
+    ENGENHEIRO: "Engenheiro",
+    TECNICO: "Técnico",
+    TECNICO_RESTRITO: "Técnico de campo",
+    SOLICITANTE: "Usuário final",
+    AUDITORIA: "Auditoria",
+  };
+  return map[perfil ?? ""] ?? perfil ?? "Perfil";
+}
+
+export function destinoAposSessao(perfil?: string | null) {
+  if (perfil === "SOLICITANTE" || perfil === "TECNICO" || perfil === "TECNICO_RESTRITO") {
+    return "/mobile";
+  }
+  return "/dashboard";
 }
