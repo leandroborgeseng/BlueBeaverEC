@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ModuloPermissao, NivelPermissao } from "@aion/shared";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
-import { useSession } from "@/lib/session";
+import { irParaMobile, useSession } from "@/lib/session";
 import { ICONS, Icon, type IconKey } from "./icons";
 
 type FlyItem = {
@@ -232,6 +232,11 @@ export function SideRail() {
               aria-expanded={r.items ? expanded : undefined}
               aria-controls={r.items ? `flyout-${r.key}` : undefined}
               onClick={() => {
+                if (r.key === "campo") {
+                  setOpenRail(null);
+                  irParaMobile();
+                  return;
+                }
                 if (r.href) {
                   setOpenRail(null);
                   router.push(r.href);

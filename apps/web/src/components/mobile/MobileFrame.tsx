@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useOfflineQueue } from "@/lib/offline-queue";
-import { useMobilePersona } from "@/lib/session";
+import { irParaDesktop, useMobilePersona, useSession } from "@/lib/session";
 import { IconBox, IconCalendar, IconHome, IconList, IconPlus, IconQr } from "./icons";
 import { ImpersonationBanner } from "@/components/shell/ImpersonationBanner";
 import { M } from "./ui";
@@ -34,6 +34,7 @@ export function MobileFrame({
   const pathname = usePathname();
   const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
   const { canInventario, isEnfermeiro, isTecnico } = useMobilePersona();
+  const me = useSession();
 
   useEffect(() => {
     void hydrate();
@@ -183,6 +184,25 @@ export function MobileFrame({
 
       <span className="sr-only">{title}</span>
       <ImpersonationBanner />
+      <button
+        type="button"
+        onClick={() => irParaDesktop(me?.perfil)}
+        style={{
+          width: "100%",
+          border: `1px solid ${M.border}`,
+          background: "white",
+          borderRadius: 12,
+          padding: "8px 12px",
+          marginBottom: 12,
+          fontSize: 12,
+          fontWeight: 700,
+          color: "oklch(0.4 0.08 255)",
+          cursor: "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        Abrir versão desktop
+      </button>
       {children}
 
       <nav

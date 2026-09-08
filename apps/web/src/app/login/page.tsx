@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL, api, setToken } from "@/lib/api";
-import { perfilVaiParaMobile, preferMobileShell, type SessionMe } from "@/lib/session";
+import { destinoAposSessao, type SessionMe } from "@/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,13 +26,7 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(body.message ?? `Falha no login (${res.status})`);
       setToken(body.accessToken);
       const me = await api<SessionMe>("/session/me");
-      if (preferMobileShell() && perfilVaiParaMobile(me.perfil)) {
-        router.push("/mobile");
-      } else if (me.perfil === "SOLICITANTE") {
-        router.push("/portal/abrir-solicitacao");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push(destinoAposSessao(me.perfil));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro";
       const target = API_URL || "/api (proxy)";

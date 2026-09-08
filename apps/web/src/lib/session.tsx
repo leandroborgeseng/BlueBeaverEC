@@ -71,9 +71,11 @@ export function perfilVaiParaMobile(perfil?: string | null) {
   );
 }
 
+const FORCE_DESKTOP_KEY = "aion_force_desktop";
+
 export function preferMobileShell() {
   if (typeof window === "undefined") return false;
-  if (window.localStorage.getItem("aion_force_desktop") === "1") return false;
+  if (window.localStorage.getItem(FORCE_DESKTOP_KEY) === "1") return false;
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
@@ -90,9 +92,23 @@ export function labelPerfil(perfil?: string | null) {
   return map[perfil ?? ""] ?? perfil ?? "Perfil";
 }
 
-export function destinoAposSessao(perfil?: string | null) {
-  if (perfil === "SOLICITANTE" || perfil === "TECNICO" || perfil === "TECNICO_RESTRITO") {
-    return "/mobile";
-  }
+export function destinoDesktop(perfil?: string | null) {
+  if (perfil === "SOLICITANTE") return "/portal/abrir-solicitacao";
+  if (perfil === "TECNICO" || perfil === "TECNICO_RESTRITO") return "/os";
   return "/dashboard";
+}
+
+export function destinoAposSessao(perfil?: string | null) {
+  if (preferMobileShell() && perfilVaiParaMobile(perfil)) return "/mobile";
+  return destinoDesktop(perfil);
+}
+
+export function irParaDesktop(perfil?: string | null) {
+  window.localStorage.setItem(FORCE_DESKTOP_KEY, "1");
+  window.location.href = destinoDesktop(perfil);
+}
+
+export function irParaMobile() {
+  window.localStorage.removeItem(FORCE_DESKTOP_KEY);
+  window.location.href = "/mobile";
 }
