@@ -91,6 +91,24 @@ try {
     }
   }
 
+  const uti = await prisma.setor.findFirst({
+    where: { estabelecimentoId: hospital.id, nome: "UTI Adulto" },
+  });
+  if (uti) {
+    const solicitante = await prisma.usuario.findUnique({ where: { email: "solicitante@aion.local" } });
+    if (solicitante) {
+      await prisma.usuarioEstabelecimento.update({
+        where: {
+          usuarioId_estabelecimentoId: {
+            usuarioId: solicitante.id,
+            estabelecimentoId: hospital.id,
+          },
+        },
+        data: { setorIds: [uti.id] },
+      });
+    }
+  }
+
   console.log(
     `[aion] demo users ok · senha ${DEMO_PASSWORD} · campo@aion.local (TECNICO_RESTRITO)`,
   );

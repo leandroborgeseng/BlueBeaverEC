@@ -2,9 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { api, getToken } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
+import { IconCalendar, IconList, IconPlus, IconQr, IconWrench } from "@/components/mobile/icons";
+import {
+  EmptyState,
+  HeroAction,
+  MiniKpi,
+  PageTitle,
+  PrioChip,
+  QuickCard,
+  SectionTitle,
+  Skeleton,
+  cardStyle,
+  firstName,
+  saudacaoNow,
+  tonePrio,
+} from "@/components/mobile/ui";
+import { useMobilePersona } from "@/lib/session";
 
 interface Kpis {
   abertas: number;
@@ -19,168 +35,218 @@ interface Prox {
   equipamento: { tag: string; nome: string; setor: { nome: string } };
 }
 
-const PRIO: Record<string, { bg: string; color: string }> = {
-  URGENTE: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
-  ALTA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
-  MEDIA: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
-  BAIXA: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
-};
-
 export default function MobileHomePage() {
+  const { pending, online, flush } = useOfflineQueue();
+  const { me, isEnfermeiro, isTecnico, canSolicitar, canInventario } = useMobilePersona();
+  const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [proximos, setProximos] = useState<Prox[]>([]);
-  const [nome, setNome] = useState("Técnico");
-  const { pending, online, flush } = useOfflineQueue();
 
   useEffect(() => {
-    if (!getToken()) {
-      window.location.href = "/login";
-      return;
+    let cancelled = false;
+    async function load() {
+      try {
+        if (isTecnico) {
+          const [k, p] = await Promise.all([
+            api<Kpis>("/mobile/kpis-hoje").catch(() => ({ abertas: 0, urgentes: 0, concluidasHoje: 0 })),
+            api<Prox[]>("/mobile/proximos?limit=5").catch(() => []),
+          ]);
+          if (!cancelled) {
+            setKpis(k);
+            setProximos(p);
+          }
+        } else {
+          if (!cancelled) setLoading(false);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-    api<{ nome: string }>("/session/me")
-      .then((s) => {
-        if (s.nome) setNome(s.nome.split(" ")[0]);
-      })
-      .catch(() => undefined);
-    api<Kpis>("/mobile/kpis-hoje").then(setKpis).catch(() => setKpis({ abertas: 0, urgentes: 0, concluidasHoje: 0 }));
-    api<Prox[]>("/mobile/proximos?limit=5").then(setProximos).catch(() => setProximos([]));
-  }, []);
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [isTecnico]);
 
-  const hora = new Date().getHours();
-  const saudacao = hora < 12 ? "Bom dia," : hora < 18 ? "Boa tarde," : "Boa noite,";
+  const nome = firstName(me?.nome);
+  const setoresLabel = me?.setores?.map((s) => s.nome).join(" · ") || "Setor não vinculado";
 
   return (
-    <MobileFrame title="Início" online={online} pending={pending} onSync={() => void flush()}>
-      <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{saudacao}</div>
-      <div style={{ fontSize: 21, fontWeight: 800, color: "oklch(0.18 0.015 255)", marginBottom: 16 }}>{nome}</div>
+    <MobileFrame title="Início" online={online} pending={pending} onSync={() => void flush()} badgeOs={kpis?.urgentes}>
+      {!isEnfermeiro && (
+        <>
+          <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{saudacaoNow()}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "oklch(0.18 0.015 255)", marginBottom: 4 }}>{nome}</div>
+          <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)", marginBottom: 16, fontWeight: 600 }}>
+            Campo · Engenharia Clínica
+          </div>
+        </>
+      )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 18 }}>
-        <MiniKpi label="Abertas" value={kpis?.abertas ?? "—"} color="oklch(0.4 0.16 255)" />
-        <MiniKpi label="Urgentes" value={kpis?.urgentes ?? "—"} color="oklch(0.5 0.16 38)" />
-        <MiniKpi label="Hoje" value={kpis?.concluidasHoje ?? "—"} color="oklch(0.4 0.13 150)" />
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontSize: 14.5, fontWeight: 700, color: "oklch(0.2 0.02 250)" }}>Próximos atendimentos</div>
-        <Link href="/mobile/os" style={{ fontSize: 12, fontWeight: 600, color: "oklch(0.55 0.16 255)" }}>
-          Ver todas ›
-        </Link>
-      </div>
-
-      <div style={{ display: "grid", gap: 9, marginBottom: 18 }}>
-        {proximos.map((os) => {
-          const p = PRIO[os.prioridade] ?? PRIO.MEDIA;
-          return (
-            <Link
-              key={os.numero}
-              href={`/mobile/os/${os.numero}`}
-              style={{
-                background: "white",
-                border: "1px solid oklch(0.91 0.006 255)",
-                borderRadius: 12,
-                padding: 13,
-                display: "flex",
-                alignItems: "center",
-                gap: 11,
-              }}
-            >
-              <div
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 9,
-                  background: p.bg,
-                  flexShrink: 0,
-                  display: "grid",
-                  placeItems: "center",
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: p.color,
-                }}
-              >
-                OS
+      {isEnfermeiro && (
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 18,
+              background: "white",
+              border: "1px solid oklch(0.91 0.006 255)",
+              borderRadius: 16,
+              padding: "12px 14px",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/bluebeaver-logo.png"
+              alt="Aion"
+              style={{ height: 40, width: "auto", borderRadius: 8, flexShrink: 0 }}
+            />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em" }}>Aion Campo</div>
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", fontWeight: 600, marginTop: 1 }}>
+                {me?.estabelecimentoNome || "Engenharia Clínica"}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 13.5,
-                    fontWeight: 700,
-                    color: "oklch(0.22 0.02 250)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {os.equipamento.nome || os.equipamento.tag}
-                </div>
-                <div style={{ fontSize: 11.5, color: "oklch(0.55 0.02 250)" }}>
-                  {os.codigo ?? `OS-${os.numero}`} · {os.equipamento.setor.nome}
-                </div>
-              </div>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: "3px 7px",
-                  borderRadius: 5,
-                  background: p.bg,
-                  color: p.color,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {os.prioridade}
-              </span>
-            </Link>
-          );
-        })}
-        {proximos.length === 0 && (
-          <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 13, padding: 8 }}>Nenhum atendimento na fila</div>
-        )}
-      </div>
+            </div>
+          </div>
 
-      <div style={{ fontSize: 14.5, fontWeight: 700, color: "oklch(0.2 0.02 250)", margin: "4px 0 10px" }}>
-        Acesso rápido
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <QuickCard href="/mobile/qr" label="Ler QR do Equipamento" />
-        <QuickCard href="/mobile/solicitar" label="Abrir Solicitação" />
-      </div>
+          <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{saudacaoNow()}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "oklch(0.18 0.015 255)", marginBottom: 4 }}>{nome}</div>
+          <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)", marginBottom: 18, fontWeight: 600 }}>
+            {setoresLabel}
+          </div>
+
+          <div style={{ display: "grid", gap: 10 }}>
+            <HeroAction
+              href="/mobile/abrir"
+              title="Abrir ordem de serviço"
+              subtitle="TAG, QR code ou busca nos equipamentos do seu departamento"
+              accent="oklch(0.55 0.16 38)"
+              accentBg="oklch(0.96 0.04 55)"
+              icon={<IconPlus size={22} color="oklch(0.55 0.16 38)" stroke={2.1} />}
+            />
+            <HeroAction
+              href="/mobile/cronograma"
+              title="Cronograma"
+              subtitle="Calibração, TSE e preventivas do seu setor"
+              accent="oklch(0.45 0.14 255)"
+              accentBg="oklch(0.95 0.03 255)"
+              icon={<IconCalendar size={22} color="oklch(0.45 0.14 255)" stroke={2.1} />}
+            />
+            <HeroAction
+              href="/mobile/pedidos"
+              title="Ordens em andamento"
+              subtitle="Acompanhe OS abertas e os chamados que você enviou"
+              accent="oklch(0.4 0.12 150)"
+              accentBg="oklch(0.94 0.04 150)"
+              icon={<IconList size={22} color="oklch(0.4 0.12 150)" stroke={2.1} />}
+            />
+          </div>
+        </>
+      )}
+
+      {isTecnico && (
+        <>
+          {loading ? (
+            <Skeleton rows={3} />
+          ) : (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 18 }}>
+                <MiniKpi label="Abertas" value={kpis?.abertas ?? 0} color="oklch(0.4 0.16 255)" />
+                <MiniKpi label="Urgentes" value={kpis?.urgentes ?? 0} color="oklch(0.5 0.16 38)" />
+                <MiniKpi label="Hoje" value={kpis?.concluidasHoje ?? 0} color="oklch(0.4 0.13 150)" />
+              </div>
+              <SectionTitle href="/mobile/os">Próximos atendimentos</SectionTitle>
+              {proximos.length === 0 ? (
+                <EmptyState title="Fila limpa" hint="Nenhum atendimento atribuído no momento." />
+              ) : (
+                <div style={{ display: "grid", gap: 9, marginBottom: 18 }}>
+                  {proximos.map((os) => {
+                    const p = tonePrio(os.prioridade);
+                    return (
+                      <Link
+                        key={os.numero}
+                        href={`/mobile/os/${os.numero}`}
+                        style={{
+                          ...cardStyle,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 11,
+                          textDecoration: "none",
+                          color: "inherit",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: 9,
+                            background: p.bg,
+                            flexShrink: 0,
+                            display: "grid",
+                            placeItems: "center",
+                          }}
+                        >
+                          <IconWrench size={18} color={p.color} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: 13.5,
+                              fontWeight: 700,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {os.equipamento.nome || os.equipamento.tag}
+                          </div>
+                          <div style={{ fontSize: 11.5, color: "oklch(0.55 0.02 250)" }}>
+                            {os.codigo ?? `OS-${os.numero}`} · {os.equipamento.setor.nome}
+                          </div>
+                        </div>
+                        <PrioChip value={os.prioridade} />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+              <SectionTitle>Acesso rápido</SectionTitle>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <QuickCard
+                  href="/mobile/qr"
+                  label="Ler QR do equipamento"
+                  icon={<IconQr size={20} color="oklch(0.55 0.16 255)" />}
+                />
+                {canSolicitar ? (
+                  <QuickCard
+                    href="/mobile/solicitar"
+                    label="Abrir solicitação"
+                    icon={<IconPlus size={20} color="oklch(0.55 0.16 255)" />}
+                  />
+                ) : canInventario ? (
+                  <QuickCard
+                    href="/mobile/inventario"
+                    label="Consultar inventário"
+                    icon={<IconWrench size={20} color="oklch(0.55 0.16 255)" />}
+                  />
+                ) : (
+                  <QuickCard
+                    href="/mobile/os"
+                    label="Minhas OS"
+                    icon={<IconWrench size={20} color="oklch(0.55 0.16 255)" />}
+                  />
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {!isTecnico && !isEnfermeiro && (
+        <PageTitle title="Aion Campo" subtitle="Este perfil não tem módulo de campo. Use o desktop ou peça acesso." />
+      )}
     </MobileFrame>
-  );
-}
-
-function MiniKpi({ label, value, color }: { label: string; value: string | number; color: string }) {
-  return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid oklch(0.91 0.006 255)",
-        borderRadius: 12,
-        padding: "12px 10px",
-        textAlign: "center",
-      }}
-    >
-      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
-      <div style={{ fontSize: 10.5, color: "oklch(0.5 0.02 250)", fontWeight: 600, marginTop: 2 }}>{label}</div>
-    </div>
-  );
-}
-
-function QuickCard({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      style={{
-        background: "white",
-        border: "1px solid oklch(0.91 0.006 255)",
-        borderRadius: 12,
-        padding: 14,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: "oklch(0.28 0.02 250)" }}>{label}</span>
-    </Link>
   );
 }

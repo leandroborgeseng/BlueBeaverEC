@@ -1,5 +1,5 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { TipoLaudo } from "@prisma/client";
+import { StatusOS, TipoLaudo } from "@prisma/client";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
@@ -24,7 +24,7 @@ export class PortalController {
     const laudos = await this.prisma.laudo.findMany({
       where: {
         estabelecimentoId: user.estabelecimentoId,
-        tipo: { in: [TipoLaudo.CALIBRACAO, TipoLaudo.TSE] },
+        tipo: { in: [TipoLaudo.CALIBRACAO, TipoLaudo.TSE, TipoLaudo.PREVENTIVA] },
         ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
       },
       include: {
@@ -51,6 +51,40 @@ export class PortalController {
             : (l.validadeAte.getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 60
               ? "A_VENCER"
               : "VALIDO",
+    }));
+  }
+
+  @Get("os-abertas")
+  async osAbertas(@CurrentUser() user: AuthUser, @Query("setor") setor?: string) {
+    const me = await this.session.me(user);
+    const setorFilter = await this.resolveSetorFilter(user.estabelecimentoId, me.setorIds, setor);
+
+    const rows = await this.prisma.ordemServico.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+      },
+      include: {
+        equipamento: { include: { setor: true } },
+      },
+      orderBy: [{ prioridade: "desc" }, { abertura: "desc" }],
+      take: 80,
+    });
+
+    return rows.map((os) => ({
+      id: os.id,
+      numero: os.numero,
+      codigo: os.codigo,
+      tipo: os.tipo,
+      status: os.status,
+      prioridade: os.prioridade,
+      abertura: os.abertura,
+      equipamento: {
+        tag: os.equipamento.tag,
+        nome: os.equipamento.nome,
+        setor: os.equipamento.setor.nome,
+      },
     }));
   }
 

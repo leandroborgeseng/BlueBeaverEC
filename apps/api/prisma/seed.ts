@@ -79,6 +79,16 @@ async function main() {
     create: { estabelecimentoId: hospital.id, nome: "UTI Adulto" },
   });
 
+  await prisma.usuarioEstabelecimento.update({
+    where: {
+      usuarioId_estabelecimentoId: {
+        usuarioId: solicitante.id,
+        estabelecimentoId: hospital.id,
+      },
+    },
+    data: { setorIds: [uti.id] },
+  });
+
   const cc = await prisma.setor.upsert({
     where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "Centro Cirúrgico" } },
     update: {},

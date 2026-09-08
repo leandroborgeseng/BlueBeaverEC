@@ -37,6 +37,15 @@ export class SessionService {
       user.permissoesModulos ??
       permissoesDoPerfil(perfil, custom?.permissoes as Record<string, unknown> | null);
 
+    const setorIds = atual?.setorIds ?? [];
+    const setores = setorIds.length
+      ? await this.prisma.setor.findMany({
+          where: { estabelecimentoId: user.estabelecimentoId, id: { in: setorIds } },
+          select: { id: true, nome: true },
+          orderBy: { nome: "asc" },
+        })
+      : [];
+
     return {
       id: usuario.id,
       nome: usuario.nome,
@@ -44,7 +53,8 @@ export class SessionService {
       perfil,
       estabelecimentoId: user.estabelecimentoId,
       estabelecimentoNome: atual?.estabelecimento.nome ?? "",
-      setorIds: atual?.setorIds ?? [],
+      setorIds,
+      setores,
       colaboradorId: usuario.colaborador?.id ?? null,
       perfilCustomId: custom?.id ?? null,
       estabelecimentos: usuario.estabelecimentos.map((v) => ({

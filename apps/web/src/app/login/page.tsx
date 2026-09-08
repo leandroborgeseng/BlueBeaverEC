@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL, setToken } from "@/lib/api";
+import { API_URL, api, setToken } from "@/lib/api";
+import { perfilVaiParaMobile, preferMobileShell, type SessionMe } from "@/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +25,14 @@ export default function LoginPage() {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.message ?? `Falha no login (${res.status})`);
       setToken(body.accessToken);
-      router.push("/dashboard");
+      const me = await api<SessionMe>("/session/me");
+      if (preferMobileShell() && perfilVaiParaMobile(me.perfil)) {
+        router.push("/mobile");
+      } else if (me.perfil === "SOLICITANTE") {
+        router.push("/portal/abrir-solicitacao");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro";
       const target = API_URL || "/api (proxy)";
@@ -128,7 +136,9 @@ export default function LoginPage() {
             color: "oklch(0.65 0.01 250)",
           }}
         >
-          © 2026 Bluebeaver · Aion Engenharia Clínica · demo: engenheiro@aion.local / aion1234
+          © 2026 Bluebeaver · Aion Engenharia Clínica
+          <br />
+          demo: engenheiro@aion.local · campo@aion.local · solicitante@aion.local / aion1234
         </div>
       </form>
     </div>

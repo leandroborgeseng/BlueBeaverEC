@@ -1,11 +1,11 @@
 {
   "name": "Aion Campo",
-  "short_name": "Aion",
-  "description": "App de campo — Engenharia Clínica",
+  "short_name": "Aion Campo",
+  "description": "App de campo — técnicos e solicitantes da Engenharia Clínica",
   "start_url": "/mobile",
   "display": "standalone",
-  "background_color": "#1faf00",
-  "theme_color": "#1faf00",
+  "background_color": "#f4f6f8",
+  "theme_color": "#e36b1a",
   "lang": "pt-BR",
   "icons": [
     {

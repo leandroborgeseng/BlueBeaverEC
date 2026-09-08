@@ -153,6 +153,7 @@ export function SideRail() {
         ...r,
         items: r.items?.filter((i) => can(i.modulo, i.minNivel ?? PERMISSAO_NIVEL.LEITURA)),
       })).filter((r) => {
+        if (r.key === "campo") return can("os", PERMISSAO_NIVEL.EDICAO) || can("portal", PERMISSAO_NIVEL.EDICAO);
         if (r.href) return can(r.modulo, r.minNivel ?? PERMISSAO_NIVEL.LEITURA);
         return (r.items?.length ?? 0) > 0;
       }),

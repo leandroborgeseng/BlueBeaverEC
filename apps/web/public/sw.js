@@ -1,6 +1,16 @@
 /* Aion Campo — Service Worker mínimo (shell mobile) */
-const CACHE = "aion-mobile-v1";
-const PRECACHE = ["/mobile", "/mobile/os", "/mobile/qr", "/mobile/solicitar", "/manifest.webmanifest"];
+const CACHE = "aion-mobile-v3";
+const PRECACHE = [
+  "/mobile",
+  "/mobile/abrir",
+  "/mobile/cronograma",
+  "/mobile/pedidos",
+  "/mobile/os",
+  "/mobile/qr",
+  "/mobile/solicitar",
+  "/mobile/inventario",
+  "/manifest.webmanifest",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
