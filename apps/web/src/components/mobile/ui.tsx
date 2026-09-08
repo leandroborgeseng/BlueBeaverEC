@@ -445,6 +445,46 @@ export function Banner({
   );
 }
 
+export function BrandHeader({ subtitle }: { subtitle?: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        marginBottom: 18,
+        background: "white",
+        border: `1px solid ${M.border}`,
+        borderRadius: 16,
+        padding: "12px 14px",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/bluebeaver-logo.png"
+        alt="Aion"
+        style={{ height: 40, width: "auto", borderRadius: 8, flexShrink: 0 }}
+      />
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.02em" }}>Aion Campo</div>
+        <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", fontWeight: 600, marginTop: 1 }}>
+          {subtitle || "Engenharia Clínica"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function HomeGreeting({ name, caption }: { name: string; caption: string }) {
+  return (
+    <>
+      <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginBottom: 2 }}>{saudacaoNow()}</div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "oklch(0.18 0.015 255)", marginBottom: 4 }}>{name}</div>
+      <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)", marginBottom: 18, fontWeight: 600 }}>{caption}</div>
+    </>
+  );
+}
+
 export function HeroAction({
   href,
   icon,
@@ -452,6 +492,7 @@ export function HeroAction({
   subtitle,
   accent = "oklch(0.55 0.16 255)",
   accentBg = "oklch(0.95 0.02 255)",
+  badge,
 }: {
   href: string;
   icon: ReactNode;
@@ -459,6 +500,7 @@ export function HeroAction({
   subtitle: string;
   accent?: string;
   accentBg?: string;
+  badge?: number;
 }) {
   return (
     <Link
@@ -491,6 +533,25 @@ export function HeroAction({
         <div style={{ fontSize: 15.5, fontWeight: 800, letterSpacing: "-0.02em" }}>{title}</div>
         <div style={{ fontSize: 12.5, color: M.muted, marginTop: 3, lineHeight: 1.35 }}>{subtitle}</div>
       </div>
+      {badge != null && badge > 0 && (
+        <span
+          style={{
+            minWidth: 22,
+            height: 22,
+            padding: "0 6px",
+            borderRadius: 11,
+            background: "oklch(0.55 0.18 25)",
+            color: "white",
+            fontSize: 11,
+            fontWeight: 800,
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
       <IconChevron size={18} color="oklch(0.72 0.02 250)" />
     </Link>
   );

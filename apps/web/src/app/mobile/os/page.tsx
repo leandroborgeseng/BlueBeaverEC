@@ -2,19 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { api } from "@/lib/api";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
+import { IconWrench } from "@/components/mobile/icons";
 import {
   EmptyState,
   FilterPills,
+  ListCard,
   PageTitle,
   PrioChip,
   Skeleton,
   StatusChip,
-  cardStyle,
+  tonePrio,
 } from "@/components/mobile/ui";
 
 interface OsRow {
@@ -64,7 +65,7 @@ export default function MobileOsPage() {
 
   return (
     <MobileFrame title="Minhas OS" online={online} pending={pending} onSync={() => void flush()} badgeOs={urgentes}>
-      <PageTitle title="Minhas OS" subtitle={`${items.length} atribuída(s)`} />
+      <PageTitle title="Minha fila de OS" subtitle={`${items.length} atribuída(s) · execute checklist, fotos e peças`} />
       <FilterPills
         value={filtro}
         onChange={setFiltro}
@@ -80,27 +81,25 @@ export default function MobileOsPage() {
         <EmptyState title="Nenhuma OS neste filtro" hint="Quando houver atendimento atribuído, ele aparece aqui." />
       ) : (
         <div style={{ display: "grid", gap: 10 }}>
-          {filtered.map((os) => (
-            <Link
-              key={os.id}
-              href={`/mobile/os/${os.numero}`}
-              style={{ ...cardStyle, display: "block", textDecoration: "none", color: "inherit" }}
-            >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-                <div style={{ fontSize: 14.5, fontWeight: 700, flex: 1 }}>
-                  {os.equipamento.nome || os.equipamento.tag}
-                </div>
-                <PrioChip value={os.prioridade} />
-              </div>
-              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginBottom: 8 }}>
-                {os.codigo} · {os.equipamento.setor.nome}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <StatusChip value={os.status} atrasada={os.atrasada} />
-                <span style={{ fontSize: 16, color: "oklch(0.6 0.02 250)" }}>›</span>
-              </div>
-            </Link>
-          ))}
+          {filtered.map((os) => {
+            const p = tonePrio(os.prioridade);
+            return (
+              <ListCard
+                key={os.id}
+                href={`/mobile/os/${os.numero}`}
+                title={os.equipamento.nome || os.equipamento.tag}
+                subtitle={`${os.codigo} · ${os.equipamento.setor.nome}`}
+                icon={<IconWrench size={18} color={p.color} />}
+                iconBg={p.bg}
+                trailing={
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                    <PrioChip value={os.prioridade} />
+                    <StatusChip value={os.status} atrasada={os.atrasada} />
+                  </div>
+                }
+              />
+            );
+          })}
         </div>
       )}
     </MobileFrame>

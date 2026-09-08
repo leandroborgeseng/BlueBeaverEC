@@ -32,7 +32,7 @@ export function MobileFrame({
 }) {
   const pathname = usePathname();
   const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
-  const { canInventario, canSolicitar, isEnfermeiro, isTecnico } = useMobilePersona();
+  const { canInventario, isEnfermeiro, isTecnico } = useMobilePersona();
 
   useEffect(() => {
     void hydrate();
@@ -71,17 +71,14 @@ export function MobileFrame({
         icon: (p) => <IconList {...p} />,
       });
     }
-    if (canInventario) {
+    if (isTecnico && canInventario) {
       items.push({ href: "/mobile/inventario", label: "Inventário", icon: (p) => <IconBox {...p} /> });
     }
-    if (!isEnfermeiro) {
+    if (isTecnico) {
       items.push({ href: "/mobile/qr", label: "QR", icon: (p) => <IconQr {...p} /> });
     }
-    if (canSolicitar && !isEnfermeiro) {
-      items.push({ href: "/mobile/solicitar", label: "Solicitar", icon: (p) => <IconPlus {...p} /> });
-    }
     return items;
-  }, [canInventario, canSolicitar, isEnfermeiro, isTecnico]);
+  }, [canInventario, isEnfermeiro, isTecnico]);
 
   return (
     <div

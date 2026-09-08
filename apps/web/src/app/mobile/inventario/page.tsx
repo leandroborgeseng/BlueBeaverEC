@@ -94,7 +94,7 @@ export default function MobileInventarioPage() {
     <MobileFrame title="Inventário" online={online} pending={pending} onSync={() => void flush()}>
       <PageTitle
         title="Inventário"
-        subtitle={`${total} equipamento(s) · ${canEdit ? "consulta e edição" : "somente leitura"}`}
+        subtitle={`${total} equipamento(s) · ${canEdit ? "consulta e atualização de TAG, patrimônio e situação" : "consulta do parque"}`}
       />
 
       {!canInventario ? (

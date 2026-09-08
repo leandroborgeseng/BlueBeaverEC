@@ -136,8 +136,12 @@ export default function MobileQrInner() {
   return (
     <MobileFrame title="Ler QR" online={online} pending={pending} onSync={() => void flush()}>
       <PageTitle
-        title="Ficha do equipamento"
-        subtitle="Leia o QR ou informe a TAG para abrir o chamado ou a OS."
+        title={isTecnico ? "Identificar equipamento" : "Ficha do equipamento"}
+        subtitle={
+          isTecnico
+            ? "QR code ou TAG para ver ficha, OS abertas e inventário"
+            : "Leia o QR ou informe a TAG para abrir o chamado."
+        }
       />
 
       <div style={{ marginBottom: 10 }}>
