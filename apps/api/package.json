@@ -13,6 +13,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "import:equipamentos": "tsx scripts/import-equipamentos-reais.ts",
+    "reset:inventario": "tsx scripts/reset-inventario-operacional.ts",
     "import:planos": "tsx scripts/import-planos-manutencao.ts",
     "import:pops": "tsx scripts/import-pops-biblioteca.ts",
     "import:checklists": "tsx scripts/import-checklists-preventiva.ts",

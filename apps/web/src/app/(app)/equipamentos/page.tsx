@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
+import { useCan } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 import {
   Badge,
@@ -45,6 +46,8 @@ interface EquipListResponse {
 }
 
 export default function EquipamentosPage() {
+  const podeCadastrar = useCan("equipamentos", 3);
+  const podeAbrirOs = useCan("os", 3);
   const [items, setItems] = useState<EquipamentoRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -189,25 +192,33 @@ export default function EquipamentosPage() {
             >
               Exportar XLSX
             </Btn>
-            <Btn
-              variant="ghost"
-              onClick={() =>
-                void downloadApi("/equipamentos/import/template", { method: "GET" }, "template-equipamentos.xlsx").catch(
-                  (e) => setErro(e instanceof Error ? e.message : "Erro"),
-                )
-              }
-            >
-              Template XLSX
-            </Btn>
-            <Btn variant="secondary" onClick={() => setImportOpen(true)}>
-              Importar CSV
-            </Btn>
-            <Btn href="/os/nova" variant="secondary">
-              Abrir OS
-            </Btn>
-            <Btn href="/os/rapida" variant="primary">
-              + OS Rápida
-            </Btn>
+            {podeCadastrar && (
+              <>
+                <Btn
+                  variant="ghost"
+                  onClick={() =>
+                    void downloadApi("/equipamentos/import/template", { method: "GET" }, "template-equipamentos.xlsx").catch(
+                      (e) => setErro(e instanceof Error ? e.message : "Erro"),
+                    )
+                  }
+                >
+                  Template XLSX
+                </Btn>
+                <Btn variant="secondary" onClick={() => setImportOpen(true)}>
+                  Importar CSV
+                </Btn>
+              </>
+            )}
+            {podeAbrirOs && (
+              <>
+                <Btn href="/os/nova" variant="secondary">
+                  Abrir OS
+                </Btn>
+                <Btn href="/os/rapida" variant="primary">
+                  + OS Rápida
+                </Btn>
+              </>
+            )}
           </>
         }
       />

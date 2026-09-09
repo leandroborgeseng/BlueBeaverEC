@@ -3,6 +3,10 @@
  * Start production: migrate + seed (rápido) + API + import em background.
  * Prefers DATABASE_URL as provided by the host (Railway).
  *
+ * Inventário: maybe-import-equipamentos aplica wipe+JSON oficial HEF uma vez
+ * (CargaInventario / inventario_oficial_hef_v1). Depois só completa tags do JSON
+ * atual — não recria a carga HRTC antiga. Force: RESET_INVENTARIO_OPERACIONAL=1.
+ *
  * Evita `pnpm --filter` (quebra se o host ainda aponta @nexo/*).
  */
 import { spawn, spawnSync } from "node:child_process";

@@ -39,7 +39,7 @@ export default function MobileAbrirPage() {
   const [tagErro, setTagErro] = useState<string | null>(null);
   const [tagOk, setTagOk] = useState<EquipRow | null>(null);
 
-  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "todos os setores";
+  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "setor não vinculado";
 
   useEffect(() => {
     api<EquipRow[]>("/portal/inventario-setor")
@@ -75,7 +75,7 @@ export default function MobileAbrirPage() {
           fabricante?: { nome: string } | null;
           modelo?: { nome: string } | null;
         };
-      }>(`/mobile/equipamento/qr/${encodeURIComponent(code)}`);
+      }>(`/portal/equipamento/${encodeURIComponent(code)}`);
       const eq = data.equipamento;
       setTagOk({
         tag: eq.tag,

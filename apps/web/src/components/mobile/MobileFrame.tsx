@@ -55,6 +55,11 @@ export function MobileFrame({
         icon: (p) => <IconList {...p} />,
         match: (p) => p === "/mobile/os" || p.startsWith("/mobile/os/"),
       });
+      items.push({
+        href: "/mobile/cronograma",
+        label: "Manut.",
+        icon: (p) => <IconCalendar {...p} />,
+      });
     }
     if (isEnfermeiro) {
       items.push({
@@ -64,13 +69,18 @@ export function MobileFrame({
       });
       items.push({
         href: "/mobile/cronograma",
-        label: "Agenda",
+        label: "Manut.",
         icon: (p) => <IconCalendar {...p} />,
       });
       items.push({
         href: "/mobile/pedidos",
         label: "OS",
         icon: (p) => <IconList {...p} />,
+      });
+      items.push({
+        href: "/mobile/inventario-setor",
+        label: "Inventário",
+        icon: (p) => <IconBox {...p} />,
       });
     }
     if (isTecnico && canInventario) {

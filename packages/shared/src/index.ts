@@ -118,27 +118,13 @@ export const PERMISSOES_PADRAO: Record<PerfilAcesso, MapaPermissoes> = {
     portal: E,
     config: E,
   },
+  /** Campo: cronograma, OS atribuídas e inventário editável. */
   TECNICO: {
-    dashboard: L,
-    equipamentos: L,
-    os: E,
-    laudos: E,
-    estoque: L,
-    contratos: N,
-    pessoas: N,
-    financeiro: N,
-    auditorias: N,
-    estrategico: N,
-    portal: L,
-    config: N,
-  },
-  /** Campo gradual: só OS + inventário (equipamentos). Ampliar módulos conforme rollout. */
-  TECNICO_RESTRITO: {
     dashboard: N,
     equipamentos: E,
     os: E,
     laudos: N,
-    estoque: L,
+    estoque: N,
     contratos: N,
     pessoas: N,
     financeiro: N,
@@ -147,10 +133,26 @@ export const PERMISSOES_PADRAO: Record<PerfilAcesso, MapaPermissoes> = {
     portal: N,
     config: N,
   },
+  /** Mesmo recorte mínimo do técnico, para o app de campo. */
+  TECNICO_RESTRITO: {
+    dashboard: N,
+    equipamentos: E,
+    os: E,
+    laudos: N,
+    estoque: N,
+    contratos: N,
+    pessoas: N,
+    financeiro: N,
+    auditorias: N,
+    estrategico: N,
+    portal: N,
+    config: N,
+  },
+  /** Portal: só abre OS e consulta o que é do próprio setor. */
   SOLICITANTE: {
     dashboard: N,
-    equipamentos: L,
-    os: L,
+    equipamentos: N,
+    os: N,
     laudos: N,
     estoque: N,
     contratos: N,
@@ -234,9 +236,13 @@ export function podeEditarModulo(
   return temPermissao(mapa ?? permissoesDoPerfil(perfil), modulo, PERMISSAO_NIVEL.EDICAO);
 }
 
-/** Cadastros de parque / planos — módulo `equipamentos`. */
+/** Cadastro/arquivamento de parque — exige aprovação no módulo `equipamentos`. */
 export function podeEditarCadastros(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {
-  return podeEditarModulo(perfil, mapa, "equipamentos");
+  return temPermissao(
+    mapa ?? permissoesDoPerfil(perfil),
+    "equipamentos",
+    PERMISSAO_NIVEL.EDICAO_APROVACAO,
+  );
 }
 
 /** Aprovar/recusar solicitações, atribuir OS, cancelar/reabrir — nível de aprovação. */

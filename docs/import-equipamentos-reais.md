@@ -99,4 +99,19 @@ pnpm prisma migrate deploy
 pnpm exec tsx scripts/import-equipamentos-reais.ts scripts/dados/equipamentos-reais.json
 ```
 
+Em **produção (Railway)** o boot da API (`start-prod.mjs` + `releaseCommand`) aplica o wipe+import **uma vez**, quando a tabela `CargaInventario` ainda não tem a chave `inventario_oficial_hef_v1`. Deploys seguintes não apagam o banco. Para forçar de novo (não deixar ligado): `RESET_INVENTARIO_OPERACIONAL=1`.
+
+Para **começar do zero** à mão (apaga OS, solicitações, laudos, equipamentos e setores; depois importa o JSON):
+
+```bash
+cd apps/api
+DATABASE_URL='postgresql://…produção…' pnpm exec tsx scripts/reset-inventario-operacional.ts --confirm
+```
+
+A planilha HEF vira JSON com:
+
+```bash
+python3 scripts/xlsx-to-equipamentos-reais.py "/caminho/Inventario Bioequipamentos HEF.xlsx" -o scripts/dados/equipamentos-reais.json
+```
+
 PDFs: deixe os arquivos em `apps/api/scripts/dados/anexos/` com os nomes listados em `pdfArquivo`. O upload físico dos anexos pode ser feito num segundo passo.

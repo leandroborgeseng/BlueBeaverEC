@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { useSession } from "@/lib/session";
 import {
   Badge,
   DataTable,
@@ -13,22 +12,23 @@ import {
   th,
 } from "@/components/ui/aion-ui";
 
-interface CronogramaRow {
+interface OsAberta {
   id: string;
+  numero: number;
+  codigo: string;
   tipo: string;
-  validadeAte: string | null;
-  equipamento: { tag: string; nome: string; setor: string };
   status: string;
+  prioridade: string;
+  abertura: string;
+  equipamento: { tag: string; nome: string; setor: string };
 }
 
-export default function CronogramaPage() {
-  const me = useSession();
-  const [items, setItems] = useState<CronogramaRow[]>([]);
+export default function PortalOsAbertasPage() {
+  const [items, setItems] = useState<OsAberta[]>([]);
   const [erro, setErro] = useState<string | null>(null);
-  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ");
 
   useEffect(() => {
-    api<CronogramaRow[]>("/portal/cronograma-manutencao")
+    api<OsAberta[]>("/portal/os-abertas")
       .then(setItems)
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, []);
@@ -36,48 +36,52 @@ export default function CronogramaPage() {
   return (
     <div>
       <PageHeader
-        title="Cronograma de Manutenção"
-        subtitle={
-          setorLabel
-            ? `Preventiva, TSE, calibração e qualificação · ${setorLabel}`
-            : "Preventiva, TSE, calibração e qualificação do parque"
-        }
+        title="OS abertas"
+        subtitle="Ordens em andamento nos equipamentos do seu setor"
       />
 
       {erro && <Err>{erro}</Err>}
 
+      <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.5 0.02 250)", margin: "0 0 10px" }}>
+        {items.length} ordem(ns)
+      </div>
+
       <DataTable>
         <thead>
           <tr>
+            <th style={th}>OS</th>
             <th style={th}>TAG</th>
             <th style={th}>Equipamento</th>
             <th style={th}>Setor</th>
             <th style={th}>Tipo</th>
-            <th style={th}>Validade</th>
+            <th style={th}>Prioridade</th>
             <th style={th}>Status</th>
+            <th style={th}>Abertura</th>
           </tr>
         </thead>
         <tbody>
           {items.map((row) => (
             <tr key={row.id}>
               <td style={td}>
-                <strong>{row.equipamento.tag}</strong>
+                <strong>{row.codigo}</strong>
               </td>
+              <td style={td}>{row.equipamento.tag}</td>
               <td style={td}>{row.equipamento.nome}</td>
               <td style={td}>{row.equipamento.setor}</td>
               <td style={td}>{row.tipo.replace(/_/g, " ")}</td>
               <td style={td}>
-                {row.validadeAte ? new Date(row.validadeAte).toLocaleDateString("pt-BR") : "—"}
+                <Badge tone={row.prioridade}>{row.prioridade.replace(/_/g, " ")}</Badge>
               </td>
               <td style={td}>
                 <Badge tone={row.status}>{row.status.replace(/_/g, " ")}</Badge>
               </td>
+              <td style={td}>{new Date(row.abertura).toLocaleDateString("pt-BR")}</td>
             </tr>
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={6}>
-                <Empty text="Nenhum item no cronograma." />
+              <td colSpan={8}>
+                <Empty text="Nenhuma OS aberta no seu setor." />
               </td>
             </tr>
           )}

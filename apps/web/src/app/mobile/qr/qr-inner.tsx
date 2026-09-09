@@ -72,7 +72,11 @@ export default function MobileQrInner() {
     if (!code) return;
     setErro(null);
     try {
-      const data = await api<QrResult>(`/mobile/equipamento/qr/${encodeURIComponent(code)}`);
+      const data = await api<QrResult>(
+        isTecnico
+          ? `/mobile/equipamento/qr/${encodeURIComponent(code)}`
+          : `/portal/equipamento/${encodeURIComponent(code)}`,
+      );
       setResult(data);
     } catch (e) {
       setResult(null);

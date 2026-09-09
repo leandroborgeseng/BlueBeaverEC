@@ -60,14 +60,38 @@ export class SolicitacoesService {
       throw new BadRequestException("Setor obrigatório");
     }
 
+    const soPortal = !temPermissao(user.permissoesModulos, "os", PERMISSAO_NIVEL.LEITURA);
+    let setorIdsPermitidos: string[] | null = null;
+    if (soPortal) {
+      const vinculo = await this.prisma.usuarioEstabelecimento.findUnique({
+        where: {
+          usuarioId_estabelecimentoId: {
+            usuarioId: user.userId,
+            estabelecimentoId: user.estabelecimentoId,
+          },
+        },
+      });
+      setorIdsPermitidos = vinculo?.setorIds ?? [];
+      if (!setorIdsPermitidos.length) {
+        throw new ForbiddenException("Usuário sem setor vinculado");
+      }
+      const setores = await this.prisma.setor.findMany({
+        where: { estabelecimentoId: user.estabelecimentoId, id: { in: setorIdsPermitidos } },
+        select: { nome: true },
+      });
+      const okSetor = setores.some(
+        (s) => s.nome.trim().toLowerCase() === data.setorNome.trim().toLowerCase(),
+      );
+      if (!okSetor) throw new ForbiddenException("Setor não autorizado");
+    }
+
     let equipamentoId: string | undefined;
     if (data.equipamentoTag) {
-      const eq = await this.prisma.equipamento.findUnique({
+      const eq = await this.prisma.equipamento.findFirst({
         where: {
-          estabelecimentoId_tag: {
-            estabelecimentoId: user.estabelecimentoId,
-            tag: data.equipamentoTag.trim(),
-          },
+          estabelecimentoId: user.estabelecimentoId,
+          tag: { equals: data.equipamentoTag.trim(), mode: "insensitive" },
+          ...(setorIdsPermitidos ? { setorId: { in: setorIdsPermitidos } } : {}),
         },
       });
       if (!eq) throw new NotFoundException("Equipamento não encontrado");

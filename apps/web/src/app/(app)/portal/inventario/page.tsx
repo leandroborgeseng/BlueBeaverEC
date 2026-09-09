@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { useWindowStore } from "@/store/windows";
 import {
   Badge,
   DataTable,
@@ -27,7 +26,6 @@ interface InventarioRow {
 export default function InventarioPage() {
   const [items, setItems] = useState<InventarioRow[]>([]);
   const [erro, setErro] = useState<string | null>(null);
-  const open = useWindowStore((s) => s.open);
 
   useEffect(() => {
     api<InventarioRow[]>("/portal/inventario-setor")
@@ -62,23 +60,7 @@ export default function InventarioPage() {
         </thead>
         <tbody>
           {items.map((row) => (
-            <tr
-              key={row.tag}
-              onClick={() =>
-                open({
-                  kind: "equipamento",
-                  title: `${row.tag} — ${row.nome}`,
-                  payload: { tag: row.tag },
-                })
-              }
-              style={{ cursor: "pointer" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "oklch(0.975 0.01 250)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-              }}
-            >
+            <tr key={row.tag}>
               <td style={td}>
                 <strong>{row.tag}</strong>
               </td>

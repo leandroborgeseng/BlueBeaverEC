@@ -45,19 +45,12 @@ function MobileSolicitarInner() {
     if (me?.setores?.length) {
       setSetores(me.setores);
       setSetorNome((cur) => cur || me.setores![0].nome);
-    } else {
-      api<Array<{ id: string; nome: string }>>("/setores")
-        .then((s) => {
-          setSetores(s);
-          setSetorNome((cur) => cur || s[0]?.nome || "");
-        })
-        .catch(() => undefined);
     }
     const fromQr = sp.get("tag");
     if (fromQr) {
       setTag(fromQr);
       api<{ equipamento: { setor?: { nome: string } | null } }>(
-        `/mobile/equipamento/qr/${encodeURIComponent(fromQr)}`,
+        `/portal/equipamento/${encodeURIComponent(fromQr)}`,
       )
         .then((d) => {
           if (d.equipamento.setor?.nome) setSetorNome(d.equipamento.setor.nome);

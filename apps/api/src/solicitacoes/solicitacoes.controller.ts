@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import { StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
-import { PERMISSAO_NIVEL } from "@aion/shared";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
@@ -52,12 +52,16 @@ class VincularDto {
 
 @Controller("solicitacoes")
 @UseGuards(JwtAuthGuard)
-@RequirePermission("os", PERMISSAO_NIVEL.LEITURA)
 export class SolicitacoesController {
   constructor(private readonly solicitacoes: SolicitacoesService) {}
 
   @Get()
   list(@CurrentUser() user: AuthUser, @Query("status") status?: StatusSolicitacao) {
+    const podeOs = temPermissao(user.permissoesModulos, "os", PERMISSAO_NIVEL.LEITURA);
+    const podePortal = temPermissao(user.permissoesModulos, "portal", PERMISSAO_NIVEL.LEITURA);
+    if (!podeOs && !podePortal) {
+      throw new ForbiddenException("Sem permissão para consultar solicitações");
+    }
     return this.solicitacoes.list(user, status);
   }
 

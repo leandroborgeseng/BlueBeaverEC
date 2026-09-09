@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useCan } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 import {
   Badge,
@@ -38,6 +39,7 @@ interface OsListResponse {
 }
 
 export default function OsPage() {
+  const podeAbrirOs = useCan("os", 3);
   const [items, setItems] = useState<OsRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -95,14 +97,16 @@ export default function OsPage() {
           </span>
         }
         actions={
-          <>
-            <Btn href="/os/rapida" variant="secondary">
-              + OS Rápida
-            </Btn>
-            <Btn href="/os/nova" variant="primary">
-              + Abrir Ordem de Serviço
-            </Btn>
-          </>
+          podeAbrirOs ? (
+            <>
+              <Btn href="/os/rapida" variant="secondary">
+                + OS Rápida
+              </Btn>
+              <Btn href="/os/nova" variant="primary">
+                + Abrir Ordem de Serviço
+              </Btn>
+            </>
+          ) : undefined
         }
       />
 

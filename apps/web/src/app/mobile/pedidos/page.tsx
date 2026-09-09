@@ -68,7 +68,7 @@ export default function MobilePedidosPage() {
   }, [pedidos, filtro]);
 
   const pendentes = pedidos.filter((p) => p.status === "PENDENTE").length;
-  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "seu hospital";
+  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "setor não vinculado";
 
   return (
     <MobileFrame title="OS" online={online} pending={pending} onSync={() => void flush()}>

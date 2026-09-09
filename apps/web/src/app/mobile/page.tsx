@@ -93,19 +93,27 @@ export default function MobileHomePage() {
             />
             <HeroAction
               href="/mobile/cronograma"
-              title="Cronograma"
-              subtitle="Calibração, TSE e preventivas do seu setor"
+              title="Cronograma de manutenção"
+              subtitle="Preventiva, TSE, calibração e qualificação do seu setor"
               accent="oklch(0.45 0.14 255)"
               accentBg="oklch(0.95 0.03 255)"
               icon={<IconCalendar size={22} color="oklch(0.45 0.14 255)" stroke={2.1} />}
             />
             <HeroAction
               href="/mobile/pedidos"
-              title="Ordens em andamento"
-              subtitle="Acompanhe OS abertas e os chamados que você enviou"
+              title="OS abertas"
+              subtitle="Acompanhe as ordens em andamento no seu setor"
               accent="oklch(0.4 0.12 150)"
               accentBg="oklch(0.94 0.04 150)"
               icon={<IconList size={22} color="oklch(0.4 0.12 150)" stroke={2.1} />}
+            />
+            <HeroAction
+              href="/mobile/inventario-setor"
+              title="Inventário do setor"
+              subtitle="Consulte os equipamentos vinculados ao seu departamento"
+              accent="oklch(0.42 0.1 280)"
+              accentBg="oklch(0.95 0.03 280)"
+              icon={<IconBox size={22} color="oklch(0.42 0.1 280)" stroke={2.1} />}
             />
           </div>
         </>
@@ -126,12 +134,20 @@ export default function MobileHomePage() {
               icon={<IconWrench size={22} color="oklch(0.55 0.16 38)" stroke={2.1} />}
             />
             <HeroAction
+              href="/mobile/cronograma"
+              title="Cronograma de manutenção"
+              subtitle="Preventiva, TSE, calibração e qualificação do parque"
+              accent="oklch(0.45 0.14 255)"
+              accentBg="oklch(0.95 0.03 255)"
+              icon={<IconCalendar size={22} color="oklch(0.45 0.14 255)" stroke={2.1} />}
+            />
+            <HeroAction
               href="/mobile/qr"
               title="Identificar equipamento"
               subtitle="QR code ou TAG para ver ficha, OS abertas e inventário"
-              accent="oklch(0.45 0.14 255)"
-              accentBg="oklch(0.95 0.03 255)"
-              icon={<IconQr size={22} color="oklch(0.45 0.14 255)" stroke={2.1} />}
+              accent="oklch(0.42 0.1 280)"
+              accentBg="oklch(0.95 0.03 280)"
+              icon={<IconQr size={22} color="oklch(0.42 0.1 280)" stroke={2.1} />}
             />
             {canInventario ? (
               <HeroAction

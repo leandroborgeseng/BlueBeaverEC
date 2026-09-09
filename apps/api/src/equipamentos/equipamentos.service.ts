@@ -7,7 +7,7 @@ import {
 import { Prisma, SituacaoEquipamento } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
-import { podeEditarCadastros } from "@aion/shared";
+import { podeEditarCadastros, podeEditarModulo } from "@aion/shared";
 
 @Injectable()
 export class EquipamentosService {
@@ -240,7 +240,7 @@ export class EquipamentosService {
       tipoEquipamentoPlanoId?: string | null;
     },
   ) {
-    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "equipamentos")) {
       throw new ForbiddenException("Sem permissão para editar inventário");
     }
     const eq = await this.prisma.equipamento.findUnique({

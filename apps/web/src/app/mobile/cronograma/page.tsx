@@ -27,10 +27,10 @@ export default function MobileCronogramaPage() {
   const { pending, online, flush } = useOfflineQueue();
   const [items, setItems] = useState<CronogramaRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtro, setFiltro] = useState<"TODOS" | "CALIBRACAO" | "TSE" | "PREVENTIVA">("TODOS");
+  const [filtro, setFiltro] = useState<"TODOS" | "CALIBRACAO" | "TSE" | "PREVENTIVA" | "QUALIFICACAO">("TODOS");
 
   useEffect(() => {
-    api<CronogramaRow[]>("/portal/cronograma-calibracao")
+    api<CronogramaRow[]>("/portal/cronograma-manutencao")
       .then(setItems)
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
@@ -41,22 +41,23 @@ export default function MobileCronogramaPage() {
     [items, filtro],
   );
 
-  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "seu hospital";
+  const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "parque";
 
   return (
-    <MobileFrame title="Cronograma" online={online} pending={pending} onSync={() => void flush()}>
+    <MobileFrame title="Manutenção" online={online} pending={pending} onSync={() => void flush()}>
       <PageTitle
-        title="Cronograma"
-        subtitle={`Calibração, TSE e preventiva · ${setorLabel}`}
+        title="Cronograma de manutenção"
+        subtitle={`Preventiva, TSE, calibração e qualificação · ${setorLabel}`}
       />
       <FilterPills
         value={filtro}
         onChange={setFiltro}
         options={[
           { id: "TODOS", label: "Todos" },
+          { id: "PREVENTIVA", label: "Preventiva" },
           { id: "CALIBRACAO", label: "Calibração" },
           { id: "TSE", label: "TSE" },
-          { id: "PREVENTIVA", label: "Preventiva" },
+          { id: "QUALIFICACAO", label: "Qualif." },
         ]}
       />
       {loading ? (

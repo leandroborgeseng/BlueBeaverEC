@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useSession } from "@/lib/session";
 import {
   Badge,
   Btn,
@@ -27,14 +28,18 @@ interface Solicitacao {
 }
 
 export default function AbrirSolicitacaoPage() {
+  const me = useSession();
   const [setores, setSetores] = useState<Setor[]>([]);
   const [minhas, setMinhas] = useState<Solicitacao[]>([]);
   const [ok, setOk] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
   async function reload() {
+    const daSessao = me?.setores ?? [];
     const [s, list] = await Promise.all([
-      api<Setor[]>("/setores"),
+      daSessao.length
+        ? Promise.resolve(daSessao)
+        : api<Setor[]>("/setores").catch(() => [] as Setor[]),
       api<Solicitacao[]>("/solicitacoes"),
     ]);
     setSetores(s);
@@ -42,8 +47,9 @@ export default function AbrirSolicitacaoPage() {
   }
 
   useEffect(() => {
-    void reload().catch((e) => setErro(e.message));
-  }, []);
+    void reload().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,7 +77,7 @@ export default function AbrirSolicitacaoPage() {
 
   return (
     <div style={{ maxWidth: 640 }}>
-      <PageHeader title="Abrir Solicitação" subtitle="Portal do solicitante" />
+      <PageHeader title="Abrir OS" subtitle="Solicitação de serviço para a engenharia clínica" />
       <Surface>
         <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>
           <div>
@@ -86,6 +92,11 @@ export default function AbrirSolicitacaoPage() {
                 </option>
               ))}
             </select>
+            {setores.length === 0 && (
+              <div style={{ marginTop: 8, fontSize: 12, color: "oklch(0.5 0.14 25)" }}>
+                Seu usuário não está vinculado a um setor. Peça à engenharia clínica.
+              </div>
+            )}
           </div>
           <div>
             <FieldLabel>TAG do equipamento</FieldLabel>
