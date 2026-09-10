@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cargaInventarioExiste } from "./inventario-oficial-marker.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "package.json"));
@@ -21,6 +22,11 @@ const v2File = path.join(root, "scripts/dados/aion_extract_v2.json");
 const prisma = new PrismaClient();
 
 try {
+  if (await cargaInventarioExiste(prisma)) {
+    console.log("[aion] import planos: inventário oficial HEF — skip extract HRTC (aion_extract_v2)");
+    process.exit(0);
+  }
+
   if (!existsSync(refFile) || !existsSync(v2File)) {
     console.log("[aion] import planos: arquivos ausentes — skip");
     process.exit(0);

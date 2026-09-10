@@ -13,10 +13,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   INVENTARIO_OFICIAL_CHAVE,
+  INVENTARIO_OFICIAL_SEM_HRTC_CHAVE,
   cargaInventarioExiste,
   envFlagAtiva,
   hostDatabase,
   isLocalDatabase,
+  registrarCargaInventario,
 } from "./inventario-oficial-marker.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -102,6 +104,41 @@ try {
     runTs("scripts/reset-inventario-operacional.ts", resetArgs);
     console.log(`[aion] inventario oficial HEF aplicado (${expected} tags)`);
     process.exit(0);
+  }
+
+  const semHrtc = await cargaInventarioExiste(prisma, INVENTARIO_OFICIAL_SEM_HRTC_CHAVE);
+  if (!semHrtc && !local) {
+    const estab =
+      (await prisma.estabelecimento.findUnique({ where: { id: "estab_modelo" } })) ??
+      (await prisma.estabelecimento.findFirst({ orderBy: { createdAt: "asc" } }));
+    if (estab) {
+      const osAntes = await prisma.ordemServico.count({ where: { estabelecimentoId: estab.id } });
+      const laudosAntes = await prisma.laudo.count({ where: { estabelecimentoId: estab.id } });
+      if (osAntes > 0 || laudosAntes > 0) {
+        console.log(
+          `[aion] limpando OS/laudos HRTC recriados após a carga oficial (os=${osAntes} laudos=${laudosAntes})`,
+        );
+        await prisma.$transaction(async (tx) => {
+          await tx.naoConformidade.updateMany({
+            where: { estabelecimentoId: estab.id, ordemServicoId: { not: null } },
+            data: { ordemServicoId: null },
+          });
+          await tx.ordemServico.deleteMany({ where: { estabelecimentoId: estab.id } });
+          await tx.solicitacaoServico.deleteMany({ where: { estabelecimentoId: estab.id } });
+          await tx.laudo.deleteMany({ where: { estabelecimentoId: estab.id } });
+          await tx.contadorSequencia.updateMany({
+            where: { estabelecimentoId: estab.id, chave: { in: ["OS", "SOL"] } },
+            data: { valor: 0 },
+          });
+        });
+      }
+    }
+    await registrarCargaInventario(
+      prisma,
+      { motivo: "nao reaplicar laudos/planos HRTC sobre o inventario oficial HEF" },
+      INVENTARIO_OFICIAL_SEM_HRTC_CHAVE,
+    );
+    console.log(`[aion] marcador ${INVENTARIO_OFICIAL_SEM_HRTC_CHAVE} gravado`);
   }
 
   const presentes = await prisma.equipamento.count({

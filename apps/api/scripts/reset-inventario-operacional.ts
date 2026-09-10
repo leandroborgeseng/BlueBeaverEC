@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import {
   INVENTARIO_OFICIAL_CHAVE,
+  INVENTARIO_OFICIAL_SEM_HRTC_CHAVE,
   registrarCargaInventario,
 } from "./inventario-oficial-marker.mjs";
 
@@ -152,6 +153,11 @@ async function main() {
     before,
     after,
   });
+  await registrarCargaInventario(
+    prisma,
+    { motivo: "carga oficial sem reaplicar laudos/planos HRTC" },
+    INVENTARIO_OFICIAL_SEM_HRTC_CHAVE,
+  );
   console.log(`[aion] marcador ${INVENTARIO_OFICIAL_CHAVE} gravado — próximos deploys não repetem o wipe`);
 }
 

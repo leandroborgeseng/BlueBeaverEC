@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cargaInventarioExiste } from "./inventario-oficial-marker.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "package.json"));
@@ -57,6 +58,11 @@ async function countAnexosForDir(dirName) {
 }
 
 try {
+  if (await cargaInventarioExiste(prisma)) {
+    console.log("[aion] import laudos PDF: inventário oficial HEF — skip carga HRTC");
+    process.exit(0);
+  }
+
   const dirs = listLaudoDirs();
   if (dirs.length === 0) {
     console.log("[aion] import laudos PDF: nenhuma pasta laudos-* — skip");
