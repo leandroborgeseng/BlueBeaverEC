@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const senhaHash = await bcrypt.hash("aion1234", 10);
+  const adminSenhaHash = await bcrypt.hash("Lean777$", 10);
 
   // Migra credenciais demo do rebrand Nexo → Aion (idempotente)
   await prisma.$executeRawUnsafe(`
@@ -52,10 +53,22 @@ async function main() {
     },
   });
 
+  const admin = await prisma.usuario.upsert({
+    where: { email: "leandro.borges@aion.eng.br" },
+    update: { senhaHash: adminSenhaHash, nome: "Leandro Borges", ativo: true },
+    create: {
+      email: "leandro.borges@aion.eng.br",
+      nome: "Leandro Borges",
+      senhaHash: adminSenhaHash,
+      ativo: true,
+    },
+  });
+
   for (const [usuarioId, perfil] of [
     [engenheiro.id, PerfilAcesso.ENGENHEIRO],
     [tecnico.id, PerfilAcesso.TECNICO],
     [solicitante.id, PerfilAcesso.SOLICITANTE],
+    [admin.id, PerfilAcesso.ADMIN],
   ] as const) {
     await prisma.usuarioEstabelecimento.upsert({
       where: {

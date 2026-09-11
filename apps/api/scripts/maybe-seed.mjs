@@ -3,6 +3,7 @@
  * Boot automático (Railway):
  * 1. Seed demo completo se o banco não tiver usuários (ou SEED_ON_BOOT=true)
  * 2. Sempre sincroniza contas demo Aion (e-mail/senha) via ensure-demo-users
+ * 3. Sempre garante o super administrador de produção (ensure-admin-user)
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -62,6 +63,9 @@ try {
 
   // Sempre: migra @nexo.local e redefine senha demo aion1234
   run(process.execPath, [path.join(root, "scripts/ensure-demo-users.mjs")]);
+
+  // Sempre: super admin de produção (idempotente)
+  run(process.execPath, [path.join(root, "scripts/ensure-admin-user.mjs")]);
 
   process.exit(0);
 } catch (e) {

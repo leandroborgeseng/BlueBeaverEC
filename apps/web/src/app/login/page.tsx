@@ -7,8 +7,8 @@ import { destinoAposSessao, type SessionMe } from "@/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("engenheiro@aion.local");
-  const [senha, setSenha] = useState("aion1234");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -81,15 +81,19 @@ export default function LoginPage() {
         <div style={{ ...label, marginTop: 14 }}>USUÁRIO</div>
         <input
           style={input}
+          type="email"
+          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="username"
+          placeholder="E-mail"
         />
 
         <div style={{ ...label, marginTop: 14 }}>SENHA</div>
         <input
           style={input}
           type="password"
+          name="password"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
           autoComplete="current-password"
@@ -131,8 +135,6 @@ export default function LoginPage() {
           }}
         >
           © 2026 Bluebeaver · Aion Engenharia Clínica
-          <br />
-          demo: engenheiro@aion.local · campo@aion.local · solicitante@aion.local / aion1234
         </div>
       </form>
     </div>
