@@ -4,6 +4,7 @@
  * 1. Seed demo completo se o banco não tiver usuários (ou SEED_ON_BOOT=true)
  * 2. Sempre sincroniza contas demo Aion (e-mail/senha) via ensure-demo-users
  * 3. Sempre garante o super administrador de produção (ensure-admin-user)
+ * 4. Sempre garante colaborador para engenheiros/admin/gestor no HEF
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -66,6 +67,9 @@ try {
 
   // Sempre: super admin de produção (idempotente)
   run(process.execPath, [path.join(root, "scripts/ensure-admin-user.mjs")]);
+
+  // Sempre: engenheiros/admin/gestor com colaborador no HEF (atribuição de OS)
+  run(process.execPath, [path.join(root, "scripts/ensure-colaboradores-operacionais.mjs")]);
 
   process.exit(0);
 } catch (e) {

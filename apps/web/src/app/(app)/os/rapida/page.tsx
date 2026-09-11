@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { labelResponsavel } from "@/lib/session";
 import {
   Btn,
   Err,
@@ -16,6 +17,8 @@ import {
 interface Colaborador {
   id: string;
   nome: string;
+  funcao?: string | null;
+  cargo?: string | null;
 }
 
 interface EstoqueItem {
@@ -33,7 +36,7 @@ export default function OsRapidaPage() {
 
   useEffect(() => {
     void Promise.all([
-      api<Colaborador[]>("/colaboradores"),
+      api<Colaborador[]>("/os/responsaveis"),
       api<{ items: EstoqueItem[] }>("/estoque/itens?pageSize=100"),
     ]).then(([c, e]) => {
       setCols(c);
@@ -162,7 +165,7 @@ export default function OsRapidaPage() {
               <option value="">Responsável…</option>
               {cols.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nome}
+                  {labelResponsavel(c)}
                 </option>
               ))}
             </select>

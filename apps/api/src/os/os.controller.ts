@@ -204,6 +204,11 @@ export class OsController {
     return this.os.naoAtribuidas(user.estabelecimentoId);
   }
 
+  @Get("responsaveis")
+  responsaveis(@CurrentUser() user: AuthUser) {
+    return this.os.responsaveis(user);
+  }
+
   @Get("auditoria")
   auditoria(
     @CurrentUser() user: AuthUser,

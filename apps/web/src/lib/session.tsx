@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { MapaPermissoes, ModuloPermissao, NivelPermissao } from "@aion/shared";
-import { temPermissao as tem } from "@aion/shared";
+import { LABEL_PERFIL, temPermissao as tem } from "@aion/shared";
 
 export interface SessionMe {
   id: string;
@@ -80,16 +80,12 @@ export function preferMobileShell() {
 }
 
 export function labelPerfil(perfil?: string | null) {
-  const map: Record<string, string> = {
-    ADMIN: "Administrador",
-    GESTOR: "Gestor",
-    ENGENHEIRO: "Engenheiro",
-    TECNICO: "Técnico",
-    TECNICO_RESTRITO: "Técnico de campo",
-    SOLICITANTE: "Usuário final",
-    AUDITORIA: "Auditoria",
-  };
-  return map[perfil ?? ""] ?? perfil ?? "Perfil";
+  return (perfil && perfil in LABEL_PERFIL ? LABEL_PERFIL[perfil as keyof typeof LABEL_PERFIL] : null) ?? perfil ?? "Perfil";
+}
+
+export function labelResponsavel(c: { nome: string; funcao?: string | null; cargo?: string | null }) {
+  const fn = c.funcao?.trim() || c.cargo?.trim();
+  return fn ? `${c.nome} · ${fn}` : c.nome;
 }
 
 export function destinoDesktop(perfil?: string | null) {

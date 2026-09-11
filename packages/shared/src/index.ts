@@ -251,6 +251,28 @@ export function podeAlterarStatusOS(perfil: PerfilAcesso, mapa?: MapaPermissoes)
   return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
 }
 
+/** OS pode ir para qualquer perfil operacional — nunca para o usuário final (solicitante). */
+export function podeReceberAtribuicaoOS(perfil?: string | null): boolean {
+  return Boolean(perfil) && perfil !== "SOLICITANTE";
+}
+
+export const LABEL_PERFIL: Record<PerfilAcesso, string> = {
+  ADMIN: "Administrador",
+  GESTOR: "Gestor",
+  ENGENHEIRO: "Engenheiro",
+  TECNICO: "Técnico",
+  TECNICO_RESTRITO: "Técnico de campo",
+  SOLICITANTE: "Usuário final",
+  AUDITORIA: "Auditoria",
+};
+
+export function funcaoResponsavelOS(perfil?: string | null, cargo?: string | null): string {
+  const fromCargo = cargo?.trim();
+  if (fromCargo) return fromCargo;
+  if (perfil && perfil in LABEL_PERFIL) return LABEL_PERFIL[perfil as PerfilAcesso];
+  return "Colaborador";
+}
+
 export type AcaoStatusOS = "iniciar" | "pausar" | "fechar" | "cancelar" | "reabrir";
 
 /**

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { labelResponsavel } from "@/lib/session";
 import Link from "next/link";
 import {
   Btn,
@@ -16,6 +17,8 @@ import {
 interface Colaborador {
   id: string;
   nome: string;
+  funcao?: string | null;
+  cargo?: string | null;
 }
 
 interface EstoqueItem {
@@ -35,7 +38,7 @@ export default function NovaOsPage() {
 
   useEffect(() => {
     void Promise.all([
-      api<Colaborador[]>("/colaboradores"),
+      api<Colaborador[]>("/os/responsaveis"),
       api<{ items: EstoqueItem[] }>("/estoque/itens?pageSize=100"),
     ]).then(([c, e]) => {
       setCols(c);
@@ -150,7 +153,7 @@ export default function NovaOsPage() {
               <option value="">Sem responsável (Não Atribuída)</option>
               {cols.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nome}
+                  {labelResponsavel(c)}
                 </option>
               ))}
             </select>

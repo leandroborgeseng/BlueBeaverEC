@@ -35,6 +35,7 @@ export function MobileFrame({
   const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
   const { canInventario, isEnfermeiro, isTecnico } = useMobilePersona();
   const me = useSession();
+  const podeAtribuir = Boolean(me?.permissoes?.alterarStatusOS);
 
   useEffect(() => {
     void hydrate();
@@ -49,6 +50,13 @@ export function MobileFrame({
   const nav = useMemo(() => {
     const items: NavItem[] = [{ href: "/mobile", label: "Início", icon: (p) => <IconHome {...p} /> }];
     if (isTecnico) {
+      if (podeAtribuir) {
+        items.push({
+          href: "/mobile/atribuir",
+          label: "Atribuir",
+          icon: (p) => <IconPlus {...p} />,
+        });
+      }
       items.push({
         href: "/mobile/os",
         label: "OS",
@@ -90,7 +98,7 @@ export function MobileFrame({
       items.push({ href: "/mobile/qr", label: "QR", icon: (p) => <IconQr {...p} /> });
     }
     return items;
-  }, [canInventario, isEnfermeiro, isTecnico]);
+  }, [canInventario, isEnfermeiro, isTecnico, podeAtribuir]);
 
   return (
     <div

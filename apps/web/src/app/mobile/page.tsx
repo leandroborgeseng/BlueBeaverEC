@@ -122,8 +122,27 @@ export default function MobileHomePage() {
       {isTecnico && (
         <>
           <BrandHeader subtitle={hospital} />
-          <HomeGreeting name={nome} caption="Técnico · Engenharia Clínica" />
+          <HomeGreeting
+            name={nome}
+            caption={
+              me?.perfil === "ENGENHEIRO"
+                ? "Engenheiro · Engenharia Clínica"
+                : me?.perfil === "ADMIN"
+                  ? "Administrador · Engenharia Clínica"
+                  : "Técnico · Engenharia Clínica"
+            }
+          />
           <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
+            {me?.permissoes?.alterarStatusOS && (
+              <HeroAction
+                href="/mobile/atribuir"
+                title="Atribuir OS"
+                subtitle="Fila sem responsável — técnicos e engenheiros"
+                accent="oklch(0.45 0.14 255)"
+                accentBg="oklch(0.95 0.03 255)"
+                icon={<IconList size={22} color="oklch(0.45 0.14 255)" stroke={2.1} />}
+              />
+            )}
             <HeroAction
               href="/mobile/os"
               title="Minha fila de OS"

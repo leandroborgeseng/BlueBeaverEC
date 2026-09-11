@@ -29,6 +29,48 @@ const DEMOS = [
 
 const prisma = new PrismaClient();
 
+async function resolveHospitalHef() {
+  const comTagHef = await prisma.estabelecimento.findFirst({
+    where: { equipamentos: { some: { tag: { startsWith: "HEF-" } } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return comTagHef;
+}
+
+async function ensureColab(hospitalId, user, demo) {
+  if (!demo.matricula) return;
+  const cargo =
+    demo.perfil === PerfilAcesso.ENGENHEIRO
+      ? "Engenheiro clínico"
+      : demo.perfil === PerfilAcesso.TECNICO_RESTRITO
+        ? "Técnico de campo"
+        : "Técnico em equipamentos";
+  const existingColab = await prisma.colaborador.findFirst({
+    where: { estabelecimentoId: hospitalId, OR: [{ usuarioId: user.id }, { matricula: demo.matricula }] },
+  });
+  const byUser = await prisma.colaborador.findUnique({ where: { usuarioId: user.id } });
+  if (byUser && byUser.id !== existingColab?.id) {
+    await prisma.colaborador.update({ where: { id: byUser.id }, data: { usuarioId: null } });
+  }
+  if (existingColab) {
+    await prisma.colaborador.update({
+      where: { id: existingColab.id },
+      data: { usuarioId: user.id, nome: demo.nome, matricula: demo.matricula, cargo, ativo: true },
+    });
+    return;
+  }
+  await prisma.colaborador.create({
+    data: {
+      estabelecimentoId: hospitalId,
+      usuarioId: user.id,
+      nome: demo.nome,
+      matricula: demo.matricula,
+      cargo,
+      ativo: true,
+    },
+  });
+}
+
 try {
   const renamed = await prisma.$executeRawUnsafe(`
     UPDATE "Usuario"
@@ -69,26 +111,33 @@ try {
     });
 
     if (demo.matricula) {
-      const existingColab = await prisma.colaborador.findFirst({
-        where: { estabelecimentoId: hospital.id, OR: [{ usuarioId: user.id }, { matricula: demo.matricula }] },
-      });
-      if (existingColab) {
-        await prisma.colaborador.update({
-          where: { id: existingColab.id },
-          data: { usuarioId: user.id, nome: demo.nome, matricula: demo.matricula, ativo: true },
-        });
-      } else {
-        await prisma.colaborador.create({
-          data: {
-            estabelecimentoId: hospital.id,
-            usuarioId: user.id,
-            nome: demo.nome,
-            matricula: demo.matricula,
-            ativo: true,
-          },
-        });
-      }
+      await ensureColab(hospital.id, user, demo);
     }
+  }
+
+  const hef = await resolveHospitalHef();
+  if (hef && hef.id !== hospital.id) {
+    for (const demo of DEMOS) {
+      if (!demo.matricula) continue;
+      const user = await prisma.usuario.findUnique({ where: { email: demo.email } });
+      if (!user) continue;
+      await prisma.usuarioEstabelecimento.upsert({
+        where: {
+          usuarioId_estabelecimentoId: {
+            usuarioId: user.id,
+            estabelecimentoId: hef.id,
+          },
+        },
+        update: { perfil: demo.perfil },
+        create: {
+          usuarioId: user.id,
+          estabelecimentoId: hef.id,
+          perfil: demo.perfil,
+        },
+      });
+      await ensureColab(hef.id, user, demo);
+    }
+    console.log(`[aion] demo users também no HEF · estab=${hef.id} (${hef.nome})`);
   }
 
   const uti =

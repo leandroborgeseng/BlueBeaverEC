@@ -75,20 +75,22 @@ async function main() {
     [tecnico.id, PerfilAcesso.TECNICO],
     [solicitante.id, PerfilAcesso.SOLICITANTE],
   ] as const) {
-    await prisma.usuarioEstabelecimento.upsert({
-      where: {
-        usuarioId_estabelecimentoId: {
-          usuarioId,
-          estabelecimentoId: hospital.id,
+    for (const estabId of new Set([hospital.id, hospitalHef.id])) {
+      await prisma.usuarioEstabelecimento.upsert({
+        where: {
+          usuarioId_estabelecimentoId: {
+            usuarioId,
+            estabelecimentoId: estabId,
+          },
         },
-      },
-      update: { perfil },
-      create: {
-        usuarioId,
-        estabelecimentoId: hospital.id,
-        perfil,
-      },
-    });
+        update: { perfil },
+        create: {
+          usuarioId,
+          estabelecimentoId: estabId,
+          perfil,
+        },
+      });
+    }
   }
 
   await prisma.usuarioEstabelecimento.upsert({
@@ -175,13 +177,25 @@ async function main() {
     },
   });
 
+  const colabEngEstabId = hospitalHef.id;
+  if (hospitalHef.id !== hospital.id) {
+    const colabEngModelo = await prisma.colaborador.findUnique({
+      where: { usuarioId: engenheiro.id },
+    });
+    if (colabEngModelo && colabEngModelo.estabelecimentoId !== hospitalHef.id) {
+      await prisma.colaborador.update({
+        where: { id: colabEngModelo.id },
+        data: { usuarioId: null },
+      });
+    }
+  }
   const colabEng = await prisma.colaborador.upsert({
     where: {
-      estabelecimentoId_matricula: { estabelecimentoId: hospital.id, matricula: "ENG-001" },
+      estabelecimentoId_matricula: { estabelecimentoId: colabEngEstabId, matricula: "ENG-001" },
     },
-    update: { usuarioId: engenheiro.id },
+    update: { usuarioId: engenheiro.id, nome: "Ana Engenheira", cargo: "Engenheira Clínica", ativo: true },
     create: {
-      estabelecimentoId: hospital.id,
+      estabelecimentoId: colabEngEstabId,
       usuarioId: engenheiro.id,
       matricula: "ENG-001",
       nome: "Ana Engenheira",

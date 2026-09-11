@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { labelResponsavel } from "@/lib/session";
 import { OsFilasNav } from "@/components/os/OsFilasNav";
 import {
   Badge,
@@ -28,6 +29,8 @@ interface Colab {
   id: string;
   nome: string;
   matricula: string;
+  funcao?: string | null;
+  cargo?: string | null;
 }
 
 export default function NaoAtribuidasPage() {
@@ -40,10 +43,10 @@ export default function NaoAtribuidasPage() {
   async function load() {
     const [os, c] = await Promise.all([
       api<OsRow[]>("/os/nao-atribuidas"),
-      api<Colab[]>("/pessoas/colaboradores"),
+      api<Colab[]>("/os/responsaveis"),
     ]);
     setItems(os);
-    setColabs(c.filter((x) => x.matricula));
+    setColabs(c);
   }
 
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function NaoAtribuidasPage() {
               </div>
             </div>
             <div>
-              <FieldLabel>Técnico</FieldLabel>
+              <FieldLabel>Responsável</FieldLabel>
               <select
                 value={sel[String(os.numero)] ?? ""}
                 onChange={(e) => setSel((s) => ({ ...s, [String(os.numero)]: e.target.value }))}
@@ -120,7 +123,7 @@ export default function NaoAtribuidasPage() {
                 <option value="">Selecionar…</option>
                 {colabs.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nome} ({c.matricula})
+                    {labelResponsavel(c)}
                   </option>
                 ))}
               </select>

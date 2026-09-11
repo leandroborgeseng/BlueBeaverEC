@@ -7,6 +7,7 @@ import { Criticidade } from "@prisma/client";
 import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
 
 @Injectable()
 export class CadastrosService {
@@ -156,15 +157,17 @@ export class CadastrosService {
     });
   }
 
-  colaboradores(estabelecimentoId: string, q?: string) {
-    return this.prisma.colaborador.findMany({
-      where: {
-        estabelecimentoId,
-        ativo: true,
-        ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
-      },
-      orderBy: { nome: "asc" },
-      take: 100,
-    });
+  async colaboradores(estabelecimentoId: string, q?: string) {
+    const rows = await listarResponsaveisAtribuiveis(this.prisma, estabelecimentoId);
+    const term = q?.trim().toLowerCase();
+    const filtered = term
+      ? rows.filter(
+          (c) =>
+            c.nome.toLowerCase().includes(term) ||
+            c.matricula.toLowerCase().includes(term) ||
+            (c.funcao ?? "").toLowerCase().includes(term),
+        )
+      : rows;
+    return filtered.slice(0, 100);
   }
 }

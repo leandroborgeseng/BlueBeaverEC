@@ -16,6 +16,7 @@ import {
 } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { colaboradorPodeReceberOS, listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
 
 const TIPOS_OS_EXIGEM_LAUDO: TipoOS[] = [
   TipoOS.PREVENTIVA,
@@ -262,6 +263,10 @@ export class OsService {
         ? "Prioridade URGENTE em equipamento de criticidade ALTA"
         : null;
 
+    if (data.responsavelId) {
+      await this.assertResponsavelAtribuivel(user.estabelecimentoId, data.responsavelId);
+    }
+
     const numero = await this.nextNumero(user.estabelecimentoId);
     const status = data.responsavelId ? StatusOS.ABERTA : StatusOS.NAO_ATRIBUIDA;
 
@@ -397,10 +402,15 @@ export class OsService {
     return { ...created, fechada: false };
   }
 
+  async responsaveis(user: AuthUser) {
+    return listarResponsaveisAtribuiveis(this.prisma, user.estabelecimentoId);
+  }
+
   async atribuir(user: AuthUser, numero: number, responsavelId: string) {
     if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente o Engenheiro pode atribuir OS");
     }
+    await this.assertResponsavelAtribuivel(user.estabelecimentoId, responsavelId);
     const os = await this.findByNumero(user.estabelecimentoId, numero);
     return this.prisma.ordemServico.update({
       where: { id: os.id },
@@ -594,6 +604,13 @@ export class OsService {
       nome: setorNome ? `Chamado · ${setorNome}` : "Chamado do setor",
       setor: os.setor ?? null,
     };
+  }
+
+  private async assertResponsavelAtribuivel(estabelecimentoId: string, responsavelId: string) {
+    const ok = await colaboradorPodeReceberOS(this.prisma, estabelecimentoId, responsavelId);
+    if (!ok) {
+      throw new BadRequestException("Não é possível atribuir a OS ao usuário final (solicitante)");
+    }
   }
 
   private async findByNumero(estabelecimentoId: string, numero: number) {

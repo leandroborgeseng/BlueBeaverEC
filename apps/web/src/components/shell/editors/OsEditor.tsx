@@ -4,11 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api } from "@/lib/api";
+import { labelResponsavel } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 
 interface Colaborador {
   id: string;
   nome: string;
+  funcao?: string | null;
+  cargo?: string | null;
   sobrecarga?: boolean;
 }
 
@@ -93,7 +96,7 @@ export function OsEditor({
 
   useEffect(() => {
     void load().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
-    api<Colaborador[]>("/pessoas/colaboradores")
+    api<Colaborador[]>("/os/responsaveis")
       .then(setColaboradores)
       .catch(() => undefined);
   }, [load]);
@@ -343,7 +346,7 @@ export function OsEditor({
                 <option value="">Selecione…</option>
                 {colaboradores.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nome}
+                    {labelResponsavel(c)}
                     {c.sobrecarga ? " (sobrecarga)" : ""}
                   </option>
                 ))}
