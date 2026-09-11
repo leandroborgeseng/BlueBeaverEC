@@ -60,17 +60,25 @@ export default function AbrirSolicitacaoPage() {
     setOk(null);
     const fd = new FormData(e.currentTarget);
     try {
-      const res = await api<{ protocolo: string }>("/solicitacoes", {
-        method: "POST",
-        body: JSON.stringify({
-          descricao: String(fd.get("descricao")),
-          setorNome: String(fd.get("setorNome")),
-          urgencia: String(fd.get("urgencia")),
-          equipamentoTag: String(fd.get("equipamentoTag") || "") || undefined,
-          ramal: String(fd.get("ramal") || "") || undefined,
-        }),
-      });
-      setOk(`Solicitação ${res.protocolo} registrada`);
+      const res = await api<{ protocolo: string; ordemServico?: { codigo?: string | null } | null }>(
+        "/solicitacoes",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            descricao: String(fd.get("descricao")),
+            setorNome: String(fd.get("setorNome")),
+            urgencia: String(fd.get("urgencia")),
+            equipamentoTag: String(fd.get("equipamentoTag") || "") || undefined,
+            ramal: String(fd.get("ramal") || "") || undefined,
+          }),
+        },
+      );
+      const osCodigo = res.ordemServico?.codigo;
+      setOk(
+        osCodigo
+          ? `OS ${osCodigo} aberta · pedido ${res.protocolo}`
+          : `Pedido ${res.protocolo} registrado`,
+      );
       e.currentTarget.reset();
       await reload();
     } catch (err) {

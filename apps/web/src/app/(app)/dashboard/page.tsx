@@ -204,9 +204,9 @@ export default function DashboardPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>{os.equipamento.nome ?? os.equipamento.tag}</div>
+                    <div style={{ fontWeight: 600 }}>{os.equipamento?.nome ?? os.equipamento?.tag ?? "Chamado do setor"}</div>
                     <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                      {os.codigo} · {os.equipamento.tag}
+                      {os.codigo} · {os.equipamento?.tag ?? "—"}
                     </div>
                   </div>
                   <Badge tone={os.status}>{prettyStatus(os.status)}</Badge>

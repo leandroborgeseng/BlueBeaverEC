@@ -106,7 +106,7 @@ export class DashboardService {
         numero: os.numero,
         codigo: os.codigo,
         prioridade: os.prioridade,
-        tag: os.equipamento.tag,
+        tag: os.equipamento?.tag ?? "—",
         abertura: os.abertura,
       }));
   }

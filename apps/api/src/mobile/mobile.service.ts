@@ -158,11 +158,11 @@ export class MobileService {
     estabelecimentoId: string,
     os: {
       tipo: string;
-      equipamento: {
+      equipamento?: {
         tipoEquipamentoPlano?: {
           testes: Array<{ tipoTeste: string; procedimentoCodigo: string }>;
         } | null;
-      };
+      } | null;
     },
   ): Promise<Array<{ id: string; label: string; ok: boolean }> | null> {
     const mapTipo: Record<string, string> = {
@@ -176,7 +176,7 @@ export class MobileService {
     if (!tipoTeste) return null;
 
     let codigo: string | undefined;
-    const testes = os.equipamento.tipoEquipamentoPlano?.testes ?? [];
+    const testes = os.equipamento?.tipoEquipamentoPlano?.testes ?? [];
     const match = testes.find((t) => t.tipoTeste === tipoTeste);
     if (match) codigo = match.procedimentoCodigo;
 

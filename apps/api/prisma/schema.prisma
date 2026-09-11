@@ -157,6 +157,7 @@ model Setor {
 
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]
+  ordensServico   OrdemServico[]
 
   @@unique([estabelecimentoId, nome])
 }
@@ -355,7 +356,8 @@ model OrdemServico {
   estabelecimentoId  String
   numero             Int
   codigo             String?
-  equipamentoId      String
+  equipamentoId      String?
+  setorId            String?
   tipo               TipoOS       @default(CORRETIVA)
   oficina            String?
   prioridade         PrioridadeOS @default(MEDIA)
@@ -371,7 +373,8 @@ model OrdemServico {
   updatedAt          DateTime     @updatedAt
 
   estabelecimento Estabelecimento     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
-  equipamento     Equipamento         @relation(fields: [equipamentoId], references: [id])
+  equipamento     Equipamento?        @relation(fields: [equipamentoId], references: [id])
+  setor           Setor?              @relation(fields: [setorId], references: [id])
   responsavel     Colaborador?        @relation("OSResponsavel", fields: [responsavelId], references: [id])
   solicitacao     SolicitacaoServico? @relation(fields: [solicitacaoId], references: [id])
   logs            LogOrdemServico[]
@@ -385,6 +388,7 @@ model OrdemServico {
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
   @@index([equipamentoId])
+  @@index([setorId])
 }
 
 model LogOrdemServico {

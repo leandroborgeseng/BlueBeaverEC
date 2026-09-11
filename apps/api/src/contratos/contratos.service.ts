@@ -299,7 +299,7 @@ export class ContratosService {
             contratoNumero: c.numero,
             osCodigo: o.codigo,
             osNumero: o.numero,
-            tag: o.equipamento.tag,
+            tag: o.equipamento?.tag ?? "—",
             horasAberto: Number(horas.toFixed(1)),
             slaHoras,
           });

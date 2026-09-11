@@ -27,7 +27,7 @@ interface OsRow {
   prioridade: string;
   atrasada: boolean;
   tipo?: string;
-  equipamento: { tag: string; nome: string };
+  equipamento?: { tag: string; nome: string } | null;
   responsavel?: { nome: string } | null;
 }
 
@@ -184,7 +184,7 @@ export default function OsPage() {
               onClick={() =>
                 open({
                   kind: "os",
-                  title: `${os.codigo} — ${os.equipamento.nome} · ${os.equipamento.tag}`,
+                  title: `${os.codigo} — ${os.equipamento?.nome ?? "Chamado do setor"}${os.equipamento?.tag ? ` · ${os.equipamento.tag}` : ""}`,
                   payload: { numero: os.numero, codigo: os.codigo },
                 })
               }
@@ -201,8 +201,8 @@ export default function OsPage() {
                 <strong>{os.codigo}</strong>
               </td>
               <td style={td}>
-                <div style={{ fontWeight: 600 }}>{os.equipamento.nome}</div>
-                <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{os.equipamento.tag}</div>
+                <div style={{ fontWeight: 600 }}>{os.equipamento?.nome ?? "Chamado do setor"}</div>
+                <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{os.equipamento?.tag ?? "—"}</div>
               </td>
               <td style={td}>
                 <Badge tone={os.prioridade}>{os.prioridade}</Badge>

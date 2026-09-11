@@ -309,6 +309,7 @@ export class PlanosService {
             setor: { select: { nome: true } },
           },
         },
+        setor: { select: { nome: true } },
       },
       orderBy: [{ abertura: "asc" }, { numero: "asc" }],
     });
@@ -325,9 +326,9 @@ export class PlanosService {
         mes: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
         semana: isoWeek(d),
         diaSemana: d.getDay(),
-        tag: o.equipamento.tag,
-        equipamento: o.equipamento.nome,
-        setor: o.equipamento.setor.nome,
+        tag: o.equipamento?.tag ?? "—",
+        equipamento: o.equipamento?.nome ?? "Chamado do setor",
+        setor: o.equipamento?.setor?.nome ?? o.setor?.nome ?? "—",
         pendencia: o.pendencia,
       };
     });

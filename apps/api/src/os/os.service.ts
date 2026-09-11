@@ -62,9 +62,6 @@ export class OsService {
       ...(query.situacao ? { status: query.situacao } : {}),
       ...(query.prioridade ? { prioridade: query.prioridade } : {}),
       ...(query.oficina ? { oficina: { contains: query.oficina, mode: "insensitive" } } : {}),
-      ...(query.setor
-        ? { equipamento: { setor: { nome: { contains: query.setor, mode: "insensitive" } } } }
-        : {}),
       ...(query.q
         ? {
             OR: [
@@ -75,6 +72,18 @@ export class OsService {
           }
         : {}),
     };
+
+    if (query.setor) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { setor: { nome: { contains: query.setor, mode: "insensitive" } } },
+            { equipamento: { setor: { nome: { contains: query.setor, mode: "insensitive" } } } },
+          ],
+        },
+      ];
+    }
 
     if (query.atrasada === true) {
       const now = Date.now();
@@ -98,6 +107,7 @@ export class OsService {
         where,
         include: {
           equipamento: { include: { setor: true, descricao: true } },
+          setor: true,
           responsavel: true,
         },
         orderBy: [{ prioridade: "desc" }, { abertura: "desc" }],
@@ -108,6 +118,7 @@ export class OsService {
 
     const items = rows.map((os) => ({
       ...os,
+      equipamento: this.equipamentoExibicao(os),
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     }));
 
@@ -126,6 +137,7 @@ export class OsService {
         equipamento: {
           include: { setor: true, descricao: true, fabricante: true, modelo: true },
         },
+        setor: true,
         responsavel: true,
         itens: { include: { estoqueItem: true } },
         solicitacao: true,
@@ -139,6 +151,7 @@ export class OsService {
     if (!os) throw new NotFoundException(`OS ${numero} não encontrada`);
     return {
       ...os,
+      equipamento: this.equipamentoExibicao(os),
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     };
   }
@@ -157,11 +170,12 @@ export class OsService {
   async naoAtribuidas(estabelecimentoId: string) {
     const rows = await this.prisma.ordemServico.findMany({
       where: { estabelecimentoId, status: StatusOS.NAO_ATRIBUIDA },
-      include: { equipamento: true },
+      include: { equipamento: { include: { setor: true } }, setor: true },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
     });
     return rows.map((os) => ({
       ...os,
+      equipamento: this.equipamentoExibicao(os),
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     }));
   }
@@ -258,6 +272,7 @@ export class OsService {
           numero,
           codigo: `OS-${String(numero).padStart(5, "0")}`,
           equipamentoId: equipamento.id,
+          setorId: equipamento.setorId,
           tipo: data.tipo ?? TipoOS.CORRETIVA,
           prioridade: data.prioridade ?? PrioridadeOS.MEDIA,
           oficina: data.oficina,
@@ -405,10 +420,11 @@ export class OsService {
    */
   async assertLaudoAprovadoParaFechar(
     user: AuthUser,
-    os: { numero: number; tipo: TipoOS; equipamentoId: string },
+    os: { numero: number; tipo: TipoOS; equipamentoId: string | null },
     justificativa?: string,
   ) {
     if (!TIPOS_OS_EXIGEM_LAUDO.includes(os.tipo)) return;
+    if (!os.equipamentoId) return;
 
     const tipoLaudo = os.tipo as unknown as TipoLaudo;
     const laudo = await this.prisma.laudo.findFirst({
@@ -561,6 +577,23 @@ export class OsService {
       ...os,
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     }));
+  }
+
+  private equipamentoExibicao(os: {
+    equipamento?: {
+      tag: string;
+      nome: string;
+      setor?: { nome: string } | null;
+    } | null;
+    setor?: { nome: string } | null;
+  }) {
+    if (os.equipamento) return os.equipamento;
+    const setorNome = os.setor?.nome;
+    return {
+      tag: "—",
+      nome: setorNome ? `Chamado · ${setorNome}` : "Chamado do setor",
+      setor: os.setor ?? null,
+    };
   }
 
   private async findByNumero(estabelecimentoId: string, numero: number) {

@@ -8,6 +8,9 @@
  * completa tags do JSON atual — não recria a carga HRTC antiga.
  * Force: RESET_INVENTARIO_OPERACIONAL=1.
  *
+ * Pedidos PENDENTE → OS: maybe-converter-solicitacoes-abertas (marcador
+ * solicitacoes_abertas_viram_os_v1). Roda uma vez; não apaga inventário.
+ *
  * Evita `pnpm --filter` (quebra se o host ainda aponta @nexo/*).
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -106,6 +109,18 @@ if (existsSync(prismaJs)) {
 }
 
 run(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")]);
+
+const convSol = spawnSync(process.execPath, [path.join(root, "scripts/maybe-converter-solicitacoes-abertas.mjs")], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  shell: false,
+});
+if (convSol.status !== 0) {
+  console.error(
+    `[aion] conversão de solicitações abertas falhou (code=${convSol.status ?? "?"}) — API sobe mesmo assim`,
+  );
+}
 
 // Import em background DEPOIS da API: healthcheck do Railway não mata o boot.
 const api = spawn(process.execPath, ["dist/main.js"], {

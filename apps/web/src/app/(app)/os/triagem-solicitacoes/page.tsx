@@ -270,7 +270,7 @@ export default function TriagemPage() {
                     </Btn>
                   </>
                 )}
-                <Btn variant="primary" onClick={() => void aprovar(s.id)} disabled={!s.equipamento}>
+                <Btn variant="primary" onClick={() => void aprovar(s.id)}>
                   Aprovar → OS
                 </Btn>
                 <Btn variant="danger" onClick={() => setRecusarId(s.id)}>

@@ -141,7 +141,7 @@ export default function QuadroPage() {
                       onClick={() =>
                         open({
                           kind: "os",
-                          title: `${os.codigo} — ${os.equipamento.nome}`,
+                          title: `${os.codigo} — ${os.equipamento?.nome ?? "Chamado do setor"}`,
                           payload: { numero: os.numero, codigo: os.codigo },
                         })
                       }
@@ -151,7 +151,7 @@ export default function QuadroPage() {
                     </Btn>
                   </div>
                   <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4, paddingLeft: 12 }}>
-                    {os.equipamento.tag} · {os.prioridade}
+                    {os.equipamento?.tag ?? "—"} · {os.prioridade}
                   </div>
                   {os.atrasada && (
                     <div style={{ marginTop: 6, paddingLeft: 12 }}>

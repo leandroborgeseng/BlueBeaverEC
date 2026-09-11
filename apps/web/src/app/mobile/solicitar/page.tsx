@@ -40,6 +40,7 @@ function MobileSolicitarInner() {
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [protocolo, setProtocolo] = useState<string | null>(null);
+  const [osCodigo, setOsCodigo] = useState<string | null>(null);
 
   useEffect(() => {
     if (me?.setores?.length) {
@@ -81,20 +82,26 @@ function MobileSolicitarInner() {
     if (!online) {
       await enqueue({ type: "SOLICITACAO", payload });
       setProtocolo("FILA-OFFLINE");
+      setOsCodigo(null);
       setBusy(false);
       return;
     }
     try {
-      const res = await api<{ protocolo: string }>("/solicitacoes", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+      const res = await api<{ protocolo: string; ordemServico?: { codigo?: string | null } | null }>(
+        "/solicitacoes",
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        },
+      );
       setProtocolo(res.protocolo);
+      setOsCodigo(res.ordemServico?.codigo ?? null);
       setDescricao("");
     } catch (e) {
       await enqueue({ type: "SOLICITACAO", payload });
       setErro(e instanceof Error ? `${e.message} — ficou na fila local` : "Enfileirada");
       setProtocolo("FILA-OFFLINE");
+      setOsCodigo(null);
     } finally {
       setBusy(false);
     }
@@ -127,18 +134,21 @@ function MobileSolicitarInner() {
             <IconCheck size={24} color="oklch(0.4 0.13 150)" stroke={2.6} />
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
-            {protocolo === "FILA-OFFLINE" ? "Pedido na fila" : "Pedido enviado"}
+            {protocolo === "FILA-OFFLINE" ? "Pedido na fila" : "OS aberta"}
           </div>
           <div style={{ fontSize: 13, color: "oklch(0.45 0.02 250)", marginBottom: 16, lineHeight: 1.4 }}>
             {protocolo === "FILA-OFFLINE"
               ? "Sem conexão. O chamado será enviado ao reconectar."
-              : `Protocolo ${protocolo}. Acompanhe em Meus pedidos.`}
+              : osCodigo
+                ? `${osCodigo} · Pedido ${protocolo}. A engenharia clínica já recebeu o chamado.`
+                : `Pedido ${protocolo}. A engenharia clínica já recebeu o chamado.`}
           </div>
           <div style={{ display: "grid", gap: 8 }}>
-            <PrimaryButton href="/mobile/pedidos">Ver meus pedidos</PrimaryButton>
+            <PrimaryButton href="/mobile/pedidos">Ver OS do setor</PrimaryButton>
             <GhostButton
               onClick={() => {
                 setProtocolo(null);
+                setOsCodigo(null);
                 setErro(null);
               }}
             >

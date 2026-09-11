@@ -37,29 +37,40 @@ export class PortalController {
       where: {
         estabelecimentoId: user.estabelecimentoId,
         status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
-        ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+        ...(setorFilter
+          ? {
+              OR: [
+                { setorId: { in: setorFilter } },
+                { equipamento: { setorId: { in: setorFilter } } },
+              ],
+            }
+          : {}),
       },
       include: {
         equipamento: { include: { setor: true } },
+        setor: true,
       },
       orderBy: [{ prioridade: "desc" }, { abertura: "desc" }],
       take: 80,
     });
 
-    return rows.map((os) => ({
-      id: os.id,
-      numero: os.numero,
-      codigo: os.codigo,
-      tipo: os.tipo,
-      status: os.status,
-      prioridade: os.prioridade,
-      abertura: os.abertura,
-      equipamento: {
-        tag: os.equipamento.tag,
-        nome: os.equipamento.nome,
-        setor: os.equipamento.setor.nome,
-      },
-    }));
+    return rows.map((os) => {
+      const setorNome = os.equipamento?.setor.nome ?? os.setor?.nome ?? "—";
+      return {
+        id: os.id,
+        numero: os.numero,
+        codigo: os.codigo,
+        tipo: os.tipo,
+        status: os.status,
+        prioridade: os.prioridade,
+        abertura: os.abertura,
+        equipamento: {
+          tag: os.equipamento?.tag ?? "—",
+          nome: os.equipamento?.nome ?? (os.setor?.nome ? `Chamado · ${os.setor.nome}` : "Chamado do setor"),
+          setor: setorNome,
+        },
+      };
+    });
   }
 
   @Get("inventario-setor")

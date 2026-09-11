@@ -55,9 +55,9 @@ export class FinanceiroService {
           data: i.ordemServico.abertura,
           descricao: i.descricao,
           valor,
-          equipamentoTag: i.ordemServico.equipamento.tag,
-          setor: i.ordemServico.equipamento.setor?.nome,
-          centroCusto: i.ordemServico.equipamento.centroCusto?.nome,
+          equipamentoTag: i.ordemServico.equipamento?.tag ?? "—",
+          setor: i.ordemServico.equipamento?.setor?.nome,
+          centroCusto: i.ordemServico.equipamento?.centroCusto?.nome,
           origem: `OS-${i.ordemServico.numero}`,
         });
       }

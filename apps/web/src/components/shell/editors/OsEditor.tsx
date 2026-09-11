@@ -38,11 +38,12 @@ interface OsDetail {
   oficina?: string | null;
   observacaoRequisicao?: string | null;
   pendencia?: string | null;
-  equipamento: {
+  equipamento?: {
     tag: string;
     nome: string;
     setor?: { nome: string };
-  };
+  } | null;
+  setor?: { nome: string } | null;
   responsavel?: { id: string; nome: string } | null;
   itens?: OsItem[];
   logs?: OsLog[];
@@ -173,7 +174,7 @@ export function OsEditor({
   if (erro && !os) return <Err>{erro}</Err>;
   if (!os) return <div style={{ color: "oklch(0.5 0.02 250)" }}>Carregando OS…</div>;
 
-  const equipTag = os.equipamento.tag;
+  const equipTag = os.equipamento?.tag ?? "";
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -197,8 +198,15 @@ export function OsEditor({
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 13 }}>
-            <InfoField label="Equipamento" value={`${os.equipamento.nome} (${os.equipamento.tag})`} />
-            <InfoField label="Setor" value={os.equipamento.setor?.nome ?? "—"} />
+            <InfoField
+              label="Equipamento"
+              value={
+                os.equipamento
+                  ? `${os.equipamento.nome} (${os.equipamento.tag})`
+                  : "Chamado do setor (sem TAG)"
+              }
+            />
+            <InfoField label="Setor" value={os.equipamento?.setor?.nome ?? os.setor?.nome ?? "—"} />
             <InfoField label="Tipo" value={os.tipo?.replace(/_/g, " ") ?? "—"} />
             <InfoField label="Oficina" value={os.oficina ?? "—"} />
             <InfoField label="Responsável" value={os.responsavel?.nome ?? "Não atribuído"} />
@@ -249,9 +257,11 @@ export function OsEditor({
             <Btn variant="ghost" size="sm" href={`/mobile/os/${numero}`}>
               Abrir no campo
             </Btn>
-            <Btn variant="ghost" size="sm" href={`/equipamentos/${encodeURIComponent(equipTag)}/ficha-vida`}>
-              Ficha de vida
-            </Btn>
+            {equipTag && equipTag !== "—" && (
+              <Btn variant="ghost" size="sm" href={`/equipamentos/${encodeURIComponent(equipTag)}/ficha-vida`}>
+                Ficha de vida
+              </Btn>
+            )}
           </div>
         </div>
       )}

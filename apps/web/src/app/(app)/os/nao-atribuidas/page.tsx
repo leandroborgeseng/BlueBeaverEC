@@ -21,7 +21,7 @@ interface OsRow {
   codigo: string;
   prioridade: string;
   atrasada: boolean;
-  equipamento: { tag: string; nome: string };
+  equipamento?: { tag: string; nome: string } | null;
 }
 
 interface Colab {
@@ -106,7 +106,7 @@ export default function NaoAtribuidasPage() {
                   {os.atrasada && <Badge tone="ATRASADA">ATRASADA</Badge>}
                 </div>
                 <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
-                  {os.equipamento.tag} — {os.equipamento.nome}
+                  {os.equipamento?.tag ?? "—"} — {os.equipamento?.nome ?? "Chamado do setor"}
                 </div>
               </div>
             </div>

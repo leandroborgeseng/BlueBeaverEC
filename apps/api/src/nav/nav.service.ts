@@ -100,7 +100,7 @@ export class NavService {
           id: `os-atrasada-${os.numero}`,
           tipo: "OS_ATRASADA",
           titulo: `${os.codigo ?? `OS-${os.numero}`} atrasada`,
-          detalhe: `${os.equipamento.tag} · prioridade ${os.prioridade}`,
+          detalhe: `${os.equipamento?.tag ?? "setor"} · prioridade ${os.prioridade}`,
           href: "/os",
           severidade: "danger",
           createdAt: os.abertura.toISOString(),
@@ -253,7 +253,12 @@ export class NavService {
         where: { estabelecimentoId },
         orderBy: { abertura: "desc" },
         take: 5,
-        select: { numero: true, codigo: true, equipamento: { select: { tag: true } } },
+        select: {
+          numero: true,
+          codigo: true,
+          equipamento: { select: { tag: true } },
+          setor: { select: { nome: true } },
+        },
       }),
       this.prisma.equipamento.findMany({
         where: { estabelecimentoId },
@@ -266,7 +271,7 @@ export class NavService {
       ...os.map((o) => ({
         id: `os-${o.numero}`,
         label: o.codigo ?? `OS-${o.numero}`,
-        hint: o.equipamento.tag,
+        hint: o.equipamento?.tag ?? o.setor?.nome ?? "Chamado do setor",
         href: "/os",
         kind: "os" as const,
         payload: { numero: o.numero, codigo: o.codigo },

@@ -4,18 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { PrioridadeOS, StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
+import { StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
 import { PERMISSAO_NIVEL, podeAlterarStatusOS, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
-import { OsService } from "../os/os.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { converterSolicitacaoEmOs } from "./converter-solicitacao-em-os";
 
 @Injectable()
 export class SolicitacoesService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly os: OsService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async list(user: AuthUser, status?: StatusSolicitacao) {
     const podeTriagem = temPermissao(
@@ -101,7 +98,7 @@ export class SolicitacoesService {
     const protocolo = await this.nextProtocolo(user.estabelecimentoId);
     const me = await this.prisma.usuario.findUnique({ where: { id: user.userId } });
 
-    return this.prisma.solicitacaoServico.create({
+    const sol = await this.prisma.solicitacaoServico.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
         protocolo,
@@ -113,6 +110,13 @@ export class SolicitacoesService {
         ramal: data.ramal,
       },
     });
+
+    await converterSolicitacaoEmOs(this.prisma, sol, { usuarioId: user.userId });
+
+    return this.prisma.solicitacaoServico.findUniqueOrThrow({
+      where: { id: sol.id },
+      include: { equipamento: true, ordemServico: true },
+    });
   }
 
   async aprovar(user: AuthUser, id: string, responsavelId?: string) {
@@ -122,28 +126,16 @@ export class SolicitacoesService {
 
     const sol = await this.prisma.solicitacaoServico.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },
-      include: { equipamento: true },
+      include: { equipamento: true, ordemServico: true },
     });
     if (!sol) throw new NotFoundException();
-    if (sol.status !== StatusSolicitacao.PENDENTE) {
+    if (sol.status === StatusSolicitacao.RECUSADA) {
       throw new BadRequestException("Solicitação já tratada");
     }
-    if (!sol.equipamento) {
-      throw new BadRequestException("Vincule um equipamento antes de aprovar (informe a TAG)");
-    }
 
-    const prioridade = this.mapPrioridade(sol.urgencia);
-    const os = await this.os.create(user, {
-      equipamentoTag: sol.equipamento.tag,
-      prioridade,
-      observacaoRequisicao: sol.descricao,
+    const { os } = await converterSolicitacaoEmOs(this.prisma, sol, {
+      usuarioId: user.userId,
       responsavelId,
-      solicitacaoId: sol.id,
-    });
-
-    await this.prisma.solicitacaoServico.update({
-      where: { id: sol.id },
-      data: { status: StatusSolicitacao.CONVERTIDA },
     });
 
     return { solicitacaoId: sol.id, protocolo: sol.protocolo, os };
@@ -198,17 +190,6 @@ export class SolicitacoesService {
       data: { equipamentoId: eq.id, setorNome: sol.setorNome },
       include: { equipamento: true },
     });
-  }
-
-  private mapPrioridade(urgencia: UrgenciaSolicitacao): PrioridadeOS {
-    switch (urgencia) {
-      case UrgenciaSolicitacao.PARADA_CRITICA:
-        return PrioridadeOS.URGENTE;
-      case UrgenciaSolicitacao.ALTA:
-        return PrioridadeOS.ALTA;
-      default:
-        return PrioridadeOS.MEDIA;
-    }
   }
 
   private async nextProtocolo(estabelecimentoId: string) {
