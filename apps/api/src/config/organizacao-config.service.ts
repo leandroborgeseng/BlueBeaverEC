@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
@@ -32,18 +32,44 @@ export class OrganizacaoConfigService {
     });
   }
 
-  listUsuarios(estabelecimentoId: string) {
-    return this.prisma.usuarioEstabelecimento.findMany({
+  async listUsuarios(estabelecimentoId: string) {
+    const vinculos = await this.prisma.usuarioEstabelecimento.findMany({
       where: { estabelecimentoId },
       include: { usuario: { select: { id: true, email: true, nome: true, ativo: true } } },
     });
+    const ids = [...new Set(vinculos.flatMap((v) => v.setorIds))];
+    const setores = ids.length
+      ? await this.prisma.setor.findMany({
+          where: { estabelecimentoId, id: { in: ids } },
+          select: { id: true, nome: true },
+        })
+      : [];
+    const byId = new Map(setores.map((s) => [s.id, s]));
+    return vinculos.map((v) => ({
+      ...v,
+      setores: v.setorIds.map((id) => byId.get(id)).filter((s): s is { id: string; nome: string } => Boolean(s)),
+    }));
+  }
+
+  private async resolveSetorIds(estabelecimentoId: string, setorIds: string[]) {
+    const unique = [...new Set(setorIds.map((id) => id.trim()).filter(Boolean))];
+    if (!unique.length) return [];
+    const found = await this.prisma.setor.findMany({
+      where: { estabelecimentoId, id: { in: unique } },
+      select: { id: true },
+    });
+    if (found.length !== unique.length) {
+      throw new BadRequestException("Um ou mais setores não pertencem a este estabelecimento");
+    }
+    return unique;
   }
 
   async createUsuario(
     user: AuthUser,
-    body: { email: string; nome: string; senha: string; perfil: PerfilAcesso },
+    body: { email: string; nome: string; senha: string; perfil: PerfilAcesso; setorIds?: string[] },
   ) {
     this.assertAdmin(user);
+    const setorIds = body.setorIds != null ? await this.resolveSetorIds(user.estabelecimentoId, body.setorIds) : [];
     const existing = await this.prisma.usuario.findUnique({ where: { email: body.email } });
     const senhaHash = await bcrypt.hash(body.senha, 10);
     const usuario =
@@ -70,15 +96,16 @@ export class OrganizacaoConfigService {
         usuarioId: usuario.id,
         estabelecimentoId: user.estabelecimentoId,
         perfil: body.perfil,
+        setorIds,
       },
-      update: { perfil: body.perfil },
+      update: { perfil: body.perfil, setorIds },
     });
 
     await this.prisma.logAcesso.create({
       data: {
         usuarioId: user.userId,
         acao: "CRIACAO_USUARIO",
-        detalhe: `${body.email} · ${body.perfil}`,
+        detalhe: `${body.email} · ${body.perfil} · setores=${setorIds.length}`,
       },
     });
 
@@ -90,7 +117,14 @@ export class OrganizacaoConfigService {
   async patchUsuario(
     user: AuthUser,
     id: string,
-    body: Partial<{ nome: string; email: string; senha: string; ativo: boolean; perfil: PerfilAcesso }>,
+    body: Partial<{
+      nome: string;
+      email: string;
+      senha: string;
+      ativo: boolean;
+      perfil: PerfilAcesso;
+      setorIds: string[];
+    }>,
   ) {
     this.assertAdmin(user);
 
@@ -133,7 +167,13 @@ export class OrganizacaoConfigService {
       });
     }
 
-    if (body.perfil != null) {
+    const vinculoData: { perfil?: PerfilAcesso; setorIds?: string[] } = {};
+    if (body.perfil != null) vinculoData.perfil = body.perfil;
+    if (body.setorIds != null) {
+      vinculoData.setorIds = await this.resolveSetorIds(user.estabelecimentoId, body.setorIds);
+    }
+
+    if (Object.keys(vinculoData).length > 0) {
       await this.prisma.usuarioEstabelecimento.update({
         where: {
           usuarioId_estabelecimentoId: {
@@ -141,7 +181,7 @@ export class OrganizacaoConfigService {
             estabelecimentoId: user.estabelecimentoId,
           },
         },
-        data: { perfil: body.perfil },
+        data: vinculoData,
       });
     }
 
@@ -151,6 +191,7 @@ export class OrganizacaoConfigService {
     if (body.senha) detalhes.push("senha");
     if (body.ativo != null) detalhes.push(`ativo=${body.ativo}`);
     if (body.perfil != null) detalhes.push(`perfil=${body.perfil}`);
+    if (body.setorIds != null) detalhes.push(`setores=${vinculoData.setorIds?.length ?? 0}`);
 
     await this.prisma.logAcesso.create({
       data: {

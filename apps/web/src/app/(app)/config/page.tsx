@@ -29,10 +29,14 @@ const PERFIS = [
   "ADMIN",
 ] as const;
 
+type SetorOpt = { id: string; nome: string };
+
 type UsuarioRow = {
   id: string;
   usuarioId: string;
   perfil: string;
+  setorIds: string[];
+  setores: SetorOpt[];
   usuario: { id: string; nome: string; email: string; ativo: boolean };
 };
 
@@ -44,7 +48,62 @@ type EditDraft = {
   ativo: boolean;
   senha: string;
   confirmarSenha: string;
+  setorIds: string[];
 };
+
+function opcoesSetor(hospital: SetorOpt[], vinculados: SetorOpt[] = []) {
+  const extras = vinculados.filter((s) => !hospital.some((h) => h.id === s.id));
+  return [...hospital, ...extras];
+}
+
+function SetoresCheckboxes({
+  setores,
+  selected,
+  onToggle,
+  name,
+}: {
+  setores: SetorOpt[];
+  selected?: string[];
+  onToggle?: (id: string, checked: boolean) => void;
+  name?: string;
+}) {
+  if (setores.length === 0) {
+    return (
+      <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", margin: 0 }}>
+        Nenhum setor cadastrado. Cadastre em Cadastros → Setores.
+      </p>
+    );
+  }
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+        gap: 6,
+        maxHeight: 180,
+        overflow: "auto",
+        padding: "4px 0",
+      }}
+    >
+      {setores.map((s) => {
+        const controlled = selected != null;
+        return (
+          <label key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+            <input
+              type="checkbox"
+              name={name}
+              value={s.id}
+              {...(controlled
+                ? { checked: selected.includes(s.id), onChange: (e) => onToggle?.(s.id, e.target.checked) }
+                : {})}
+            />
+            {s.nome}
+          </label>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ConfigPage() {
   const [org, setOrg] = useState<{
@@ -67,18 +126,21 @@ export default function ConfigPage() {
   const [edit, setEdit] = useState<EditDraft | null>(null);
   const [dialogBusy, setDialogBusy] = useState(false);
   const [dialogErro, setDialogErro] = useState<string | null>(null);
+  const [setores, setSetores] = useState<SetorOpt[]>([]);
 
   async function load() {
-    const [o, u, p, l] = await Promise.all([
+    const [o, u, p, l, s] = await Promise.all([
       api<typeof org>("/config/organizacao"),
       api<UsuarioRow[]>("/config/usuarios"),
       api<typeof perfis>("/config/perfis"),
       api<typeof logs>("/config/logs-acesso"),
+      api<SetorOpt[]>("/setores").catch(() => [] as SetorOpt[]),
     ]);
     setOrg(o);
     setUsuarios(u);
     setPerfis(p);
     setLogs(l);
+    setSetores(s);
   }
 
   useEffect(() => {
@@ -117,6 +179,7 @@ export default function ConfigPage() {
           nome: String(fd.get("nome")),
           senha: String(fd.get("senha")),
           perfil: String(fd.get("perfil")),
+          setorIds: fd.getAll("setorIds").map(String),
         }),
       });
       e.currentTarget.reset();
@@ -139,6 +202,7 @@ export default function ConfigPage() {
       ativo: u.usuario.ativo,
       senha: "",
       confirmarSenha: "",
+      setorIds: u.setorIds ?? u.setores?.map((s) => s.id) ?? [],
     });
   }
 
@@ -160,6 +224,7 @@ export default function ConfigPage() {
         email: edit.email.trim(),
         perfil: edit.perfil,
         ativo: edit.ativo,
+        setorIds: edit.setorIds,
       };
       if (edit.senha.trim()) body.senha = edit.senha.trim();
 
@@ -262,35 +327,49 @@ export default function ConfigPage() {
               onSubmit={(e) => void createUser(e)}
               style={{
                 display: "grid",
-                gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto",
                 gap: 10,
-                alignItems: "end",
                 marginBottom: 14,
               }}
             >
-              <div>
-                <FieldLabel htmlFor="new-email">E-mail</FieldLabel>
-                <input id="new-email" name="email" type="email" required style={fieldStyle} />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.5fr 1fr 1fr 1fr auto",
+                  gap: 10,
+                  alignItems: "end",
+                }}
+              >
+                <div>
+                  <FieldLabel htmlFor="new-email">E-mail</FieldLabel>
+                  <input id="new-email" name="email" type="email" required style={fieldStyle} />
+                </div>
+                <div>
+                  <FieldLabel htmlFor="new-nome">Nome</FieldLabel>
+                  <input id="new-nome" name="nome" required style={fieldStyle} />
+                </div>
+                <div>
+                  <FieldLabel htmlFor="new-senha">Senha</FieldLabel>
+                  <input id="new-senha" name="senha" type="password" minLength={6} required style={fieldStyle} />
+                </div>
+                <div>
+                  <FieldLabel htmlFor="new-perfil">Perfil</FieldLabel>
+                  <select id="new-perfil" name="perfil" style={fieldStyle}>
+                    {PERFIS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Btn type="submit">Adicionar</Btn>
               </div>
               <div>
-                <FieldLabel htmlFor="new-nome">Nome</FieldLabel>
-                <input id="new-nome" name="nome" required style={fieldStyle} />
+                <FieldLabel>Setores do hospital</FieldLabel>
+                <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", margin: "0 0 6px" }}>
+                  Solicitantes só veem o portal dos setores vinculados. Vazio = sem setor.
+                </p>
+                <SetoresCheckboxes setores={setores} name="setorIds" />
               </div>
-              <div>
-                <FieldLabel htmlFor="new-senha">Senha</FieldLabel>
-                <input id="new-senha" name="senha" type="password" minLength={6} required style={fieldStyle} />
-              </div>
-              <div>
-                <FieldLabel htmlFor="new-perfil">Perfil</FieldLabel>
-                <select id="new-perfil" name="perfil" style={fieldStyle}>
-                  {PERFIS.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Btn type="submit">Adicionar</Btn>
             </form>
           )}
           <DataTable>
@@ -299,6 +378,7 @@ export default function ConfigPage() {
                 <th style={th}>Nome</th>
                 <th style={th}>E-mail</th>
                 <th style={th}>Perfil</th>
+                <th style={th}>Setores</th>
                 <th style={th}>Status</th>
                 <th style={th}>Ações</th>
               </tr>
@@ -306,7 +386,7 @@ export default function ConfigPage() {
             <tbody>
               {usuarios.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={td}>
+                  <td colSpan={6} style={td}>
                     <Empty />
                   </td>
                 </tr>
@@ -318,6 +398,11 @@ export default function ConfigPage() {
                     </td>
                     <td style={td}>{u.usuario.email}</td>
                     <td style={td}>{u.perfil}</td>
+                    <td style={td}>
+                      {(u.setores ?? []).length
+                        ? u.setores.map((s) => s.nome).join(", ")
+                        : "—"}
+                    </td>
                     <td style={td}>
                       <Badge tone={u.usuario.ativo ? "success" : "warning"}>
                         {u.usuario.ativo ? "ativo" : "inativo"}
@@ -470,6 +555,25 @@ export default function ConfigPage() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <FieldLabel>Setores do hospital</FieldLabel>
+              <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", margin: "0 0 6px" }}>
+                Solicitantes só veem o portal dos setores vinculados. Vazio = sem setor.
+              </p>
+              <SetoresCheckboxes
+                setores={opcoesSetor(
+                  setores,
+                  usuarios.find((x) => x.usuario.id === edit.usuarioId)?.setores,
+                )}
+                selected={edit.setorIds}
+                onToggle={(id, checked) =>
+                  setEdit({
+                    ...edit,
+                    setorIds: checked ? [...edit.setorIds, id] : edit.setorIds.filter((x) => x !== id),
+                  })
+                }
+              />
             </div>
             <div>
               <FieldLabel htmlFor="edit-ativo">Status</FieldLabel>

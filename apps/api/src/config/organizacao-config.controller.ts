@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
@@ -47,6 +48,11 @@ class UsuarioDto {
 
   @IsEnum(PerfilAcesso)
   perfil!: PerfilAcesso;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  setorIds?: string[];
 }
 
 class PatchUsuarioDto {
@@ -71,6 +77,11 @@ class PatchUsuarioDto {
   @IsOptional()
   @IsEnum(PerfilAcesso)
   perfil?: PerfilAcesso;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  setorIds?: string[];
 }
 
 class PerfilDto {
