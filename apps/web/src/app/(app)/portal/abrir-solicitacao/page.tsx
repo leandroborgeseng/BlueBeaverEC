@@ -36,10 +36,13 @@ export default function AbrirSolicitacaoPage() {
 
   async function reload() {
     const daSessao = me?.setores ?? [];
+    const soSolicitante = me?.perfil === "SOLICITANTE";
     const [s, list] = await Promise.all([
       daSessao.length
         ? Promise.resolve(daSessao)
-        : api<Setor[]>("/setores").catch(() => [] as Setor[]),
+        : soSolicitante
+          ? Promise.resolve([] as Setor[])
+          : api<Setor[]>("/setores").catch(() => [] as Setor[]),
       api<Solicitacao[]>("/solicitacoes"),
     ]);
     setSetores(s);

@@ -44,8 +44,14 @@ function MobileSolicitarInner() {
   useEffect(() => {
     if (me?.setores?.length) {
       setSetores(me.setores);
-      setSetorNome((cur) => cur || me.setores![0].nome);
+      setSetorNome((cur) => (me.setores!.some((s) => s.nome === cur) ? cur : me.setores![0].nome));
+    } else {
+      setSetores([]);
+      setSetorNome("");
     }
+  }, [me?.setores]);
+
+  useEffect(() => {
     const fromQr = sp.get("tag");
     if (fromQr) {
       setTag(fromQr);
@@ -53,7 +59,8 @@ function MobileSolicitarInner() {
         `/portal/equipamento/${encodeURIComponent(fromQr)}`,
       )
         .then((d) => {
-          if (d.equipamento.setor?.nome) setSetorNome(d.equipamento.setor.nome);
+          const nome = d.equipamento.setor?.nome;
+          if (nome && (me?.setores ?? []).some((s) => s.nome === nome)) setSetorNome(nome);
         })
         .catch(() => undefined);
     }
@@ -162,12 +169,9 @@ function MobileSolicitarInner() {
                 ))}
               </select>
             ) : (
-              <input
-                value={setorNome}
-                onChange={(e) => setSetorNome(e.target.value)}
-                placeholder="Nome do setor"
-                style={fieldStyle}
-              />
+              <div style={{ fontSize: 13, color: "oklch(0.5 0.14 25)", fontWeight: 650 }}>
+                Seu usuário não está vinculado a um setor. Peça à engenharia clínica.
+              </div>
             )}
           </div>
           <div>
