@@ -64,11 +64,16 @@ async function main() {
     },
   });
 
+  const hospitalHef =
+    (await prisma.estabelecimento.findFirst({
+      where: { equipamentos: { some: { tag: { startsWith: "HEF-" } } } },
+      orderBy: { createdAt: "asc" },
+    })) ?? hospital;
+
   for (const [usuarioId, perfil] of [
     [engenheiro.id, PerfilAcesso.ENGENHEIRO],
     [tecnico.id, PerfilAcesso.TECNICO],
     [solicitante.id, PerfilAcesso.SOLICITANTE],
-    [admin.id, PerfilAcesso.ADMIN],
   ] as const) {
     await prisma.usuarioEstabelecimento.upsert({
       where: {
@@ -85,6 +90,25 @@ async function main() {
       },
     });
   }
+
+  await prisma.usuarioEstabelecimento.upsert({
+    where: {
+      usuarioId_estabelecimentoId: {
+        usuarioId: admin.id,
+        estabelecimentoId: hospitalHef.id,
+      },
+    },
+    update: { perfil: PerfilAcesso.ADMIN },
+    create: {
+      usuarioId: admin.id,
+      estabelecimentoId: hospitalHef.id,
+      perfil: PerfilAcesso.ADMIN,
+    },
+  });
+  await prisma.usuarioEstabelecimento.updateMany({
+    where: { usuarioId: admin.id },
+    data: { perfil: PerfilAcesso.ADMIN },
+  });
 
   const uti = await prisma.setor.upsert({
     where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "UTI Adulto" } },

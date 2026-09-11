@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Garante o super administrador de produção a cada boot (idempotente).
- * Hospital: o mesmo do inventário HEF (parque com equipamentos), senão
- * estab_modelo, senão o primeiro estabelecimento do banco.
+ * Hospital: o do inventário oficial HEF (TAGs HEF-*), senão o de maior
+ * parque, senão estab_modelo, senão o primeiro estabelecimento.
  */
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -21,6 +21,12 @@ const ESTAB_FALLBACK_ID = "estab_modelo";
 const prisma = new PrismaClient();
 
 async function resolveHospital() {
+  const comTagHef = await prisma.estabelecimento.findFirst({
+    where: { equipamentos: { some: { tag: { startsWith: "HEF-" } } } },
+    orderBy: { createdAt: "asc" },
+  });
+  if (comTagHef) return comTagHef;
+
   const lista = await prisma.estabelecimento.findMany({
     include: { _count: { select: { equipamentos: true } } },
     orderBy: { createdAt: "asc" },
