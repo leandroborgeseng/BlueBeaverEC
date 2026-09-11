@@ -3,7 +3,8 @@
  * Boot Railway: aplica o inventário oficial HEF uma vez (wipe + JSON),
  * depois só completa tags faltantes desse JSON — nunca recria a carga HRTC antiga.
  *
- * One-shot: tabela CargaInventario / chave inventario_oficial_hef_v1
+ * One-shot: tabela CargaInventario / chave inventario_oficial_hef_v2
+ * (v2 = TAGs sequenciais HEF-0001… + nSerie da planilha)
  * Force: RESET_INVENTARIO_OPERACIONAL=1 (não deixar ligado — apaga OS de novo)
  */
 import { existsSync, readFileSync } from "node:fs";

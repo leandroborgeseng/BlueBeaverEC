@@ -11,5 +11,5 @@ dockerfilePath = "apps/api/Dockerfile"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
-# Wipe+import oficial HEF uma vez (marcador inventario_oficial_hef_v1). Caminho do image.
+# Wipe+import oficial HEF uma vez (marcador inventario_oficial_hef_v2). Caminho do image.
 releaseCommand = "node /app/apps/api/scripts/maybe-import-equipamentos.mjs"

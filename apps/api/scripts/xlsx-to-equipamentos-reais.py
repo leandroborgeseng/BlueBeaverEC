@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Converte a planilha HEF (Tipo / Marca / Numero Serie / Local) no JSON oficial."""
+"""Converte a planilha HEF (Tipo / Marca / Numero Serie / Local) no JSON oficial.
+
+TAG = HEF-0001, HEF-0002… na ordem da planilha (após dedup tipo+série).
+O número de série da coluna vai para nSerie — nunca para a TAG.
+"""
 from __future__ import annotations
 
 import argparse
@@ -143,26 +147,25 @@ def convert(xlsx: Path) -> dict:
                 f"descartada; mantida linha {winner['linha']} ({winner['setor']})."
             )
 
-    used_tags: set[str] = set()
-    eqs = []
-    seq = 0
+    serie_tipos: dict[str, list[str]] = {}
     for r in order:
-        tag = r["serie"]
-        if not tag:
-            seq += 1
-            tag = f"EQ-{seq:04d}"
-            avisos.append(f"Linha {r['linha']}: sem nº de série — tag gerada {tag} ({r['tipo']} / {r['setor']})")
-        base = tag
-        n = 2
-        while tag in used_tags:
-            tag = f"{base}-{n}"
-            n += 1
-            if n == 3:
-                avisos.append(f"Tag colidente {base} ({r['tipo']} vs outro tipo) — usando {tag}")
-        used_tags.add(tag)
-        obs = None
-        if r["serie"] and tag != r["serie"]:
-            obs = f"Nº de série compartilhado com outro tipo; tag ajustada para {tag}."
+        if r["serie"]:
+            serie_tipos.setdefault(r["serie"].lower(), []).append(r["tipo"])
+    for serie, tipos in serie_tipos.items():
+        if len(tipos) > 1:
+            avisos.append(
+                f"Série {serie} compartilhada por tipos distintos ({', '.join(tipos)}) — "
+                "nSerie repetido (schema permite); TAGs HEF-NNNN distintas."
+            )
+
+    eqs = []
+    for i, r in enumerate(order, start=1):
+        tag = f"HEF-{i:04d}"
+        if not r["serie"]:
+            avisos.append(
+                f"Linha {r['linha']}: sem nº de série — nSerie vazio; tag {tag} "
+                f"({r['tipo']} / {r['setor']})"
+            )
         eqs.append(
             {
                 "tag": tag,
@@ -179,16 +182,23 @@ def convert(xlsx: Path) -> dict:
                 "dataInstalacao": None,
                 "valorAquisicao": None,
                 "situacao": "ATIVO",
-                "observacao": obs,
+                "observacao": None,
                 "laudos": [],
             }
         )
 
     return {
         "meta": {
-            "fonte": f"{xlsx.name} — Levantamento de Equipamentos Biomédicos",
+            "fonte": f"{xlsx.name} — Levantamento de Equipamentos Biomédicos (aba Planilha1)",
             "totalLinhas": len(rows),
             "totalEquipamentos": len(eqs),
+            "formatoTag": "HEF-NNNN (4 dígitos, HEF-0001…)",
+            "ordemTags": (
+                "Sequência HEF-NNNN na ordem da planilha original (linhas 3+), "
+                "após deduplicar tipo+série: permanece o registro de menor score de "
+                "depósito/sala de equipamentos ou, empate, a maior linha. "
+                "O nº de série da coluna fica em nSerie; TAG não reutiliza a série."
+            ),
             "avisos": avisos,
         },
         "equipamentos": eqs,

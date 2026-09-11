@@ -99,7 +99,9 @@ pnpm prisma migrate deploy
 pnpm exec tsx scripts/import-equipamentos-reais.ts scripts/dados/equipamentos-reais.json
 ```
 
-Em **produção (Railway)** o boot da API (`start-prod.mjs` + `releaseCommand`) aplica o wipe+import **uma vez**, quando a tabela `CargaInventario` ainda não tem a chave `inventario_oficial_hef_v1`. Deploys seguintes não apagam o banco. Para forçar de novo (não deixar ligado): `RESET_INVENTARIO_OPERACIONAL=1`.
+Em **produção (Railway)** o boot da API (`start-prod.mjs` + `releaseCommand`) aplica o wipe+import **uma vez**, quando a tabela `CargaInventario` ainda não tem a chave `inventario_oficial_hef_v2`. Deploys seguintes não apagam o banco. Para forçar de novo (não deixar ligado): `RESET_INVENTARIO_OPERACIONAL=1`.
+
+TAGs oficiais HEF: `HEF-0001` … `HEF-NNNN` na ordem da planilha (após dedup tipo+série). O número de série da coluna vai para `nSerie`, não para a TAG.
 
 Para **começar do zero** à mão (apaga OS, solicitações, laudos, equipamentos e setores; depois importa o JSON):
 

@@ -3,6 +3,8 @@
     "fonte": "Inventario Bioequipamentos HEF.xlsx — Levantamento de Equipamentos Biomédicos (aba Planilha1)",
     "totalLinhas": 429,
     "totalEquipamentos": 404,
+    "formatoTag": "HEF-NNNN (4 dígitos, HEF-0001…)",
+    "ordemTags": "Sequência HEF-NNNN na ordem da planilha original (linhas 3+), após deduplicar tipo+série: permanece o registro de menor score de depósito/sala de equipamentos ou, empate, a maior linha. O nº de série da coluna fica em nSerie; TAG não reutiliza a série.",
     "avisos": [
       "Duplicata Monitor Multiparametrico série 262541-M25418600005: linha 22 (P.A. Adulto) descartada; mantida linha 39 (Emergencia Adulto).",
       "Duplicata Ventilador Pulmonar série AA7-63010892: linha 40 (Emergencia Adulto) descartada; mantida linha 47 (Emergencia Adulto).",
@@ -29,13 +31,13 @@
       "Duplicata Bomba Enteral série 91090120040274: linha 470 (Sala Equipamentos 4º Andar) descartada; mantida linha 315 (Nutrição).",
       "Duplicata Bomba Enteral série 91090120040476: linha 472 (Sala Equipamentos 4º Andar) descartada; mantida linha 313 (Nutrição).",
       "Duplicata Bomba Enteral série 91090120050651: linha 474 (Sala Equipamentos 4º Andar) descartada; mantida linha 317 (Nutrição).",
-      "Tag colidente 200118 (Injetora Contraste vs outro tipo) — usando 200118-2",
-      "Linha 192: sem nº de série — tag gerada EQ-0001 (Monitor Multiparametrico / Sala Equipamentos (Hosp. Dia))"
+      "Série 200118 compartilhada por tipos distintos (Monitor Contraste, Injetora Contraste) — nSerie repetido (schema permite); TAGs HEF-NNNN distintas.",
+      "Linha 192: sem nº de série — nSerie vazio; tag HEF-0139 (Monitor Multiparametrico / Sala Equipamentos (Hosp. Dia))"
     ]
   },
   "equipamentos": [
     {
-      "tag": "262541-M25418600011",
+      "tag": "HEF-0001",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -53,7 +55,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540011",
+      "tag": "HEF-0002",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -71,7 +73,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25415430005",
+      "tag": "HEF-0003",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -89,7 +91,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540016",
+      "tag": "HEF-0004",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -107,7 +109,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540007",
+      "tag": "HEF-0005",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -125,7 +127,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000748",
+      "tag": "HEF-0006",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -143,7 +145,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000739",
+      "tag": "HEF-0007",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -161,7 +163,7 @@
       "laudos": []
     },
     {
-      "tag": "7716",
+      "tag": "HEF-0008",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -179,7 +181,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010896",
+      "tag": "HEF-0009",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -197,7 +199,7 @@
       "laudos": []
     },
     {
-      "tag": "290955002",
+      "tag": "HEF-0010",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -215,7 +217,7 @@
       "laudos": []
     },
     {
-      "tag": "290955001",
+      "tag": "HEF-0011",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -233,7 +235,7 @@
       "laudos": []
     },
     {
-      "tag": "A006CC0318",
+      "tag": "HEF-0012",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -251,7 +253,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0192",
+      "tag": "HEF-0013",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -269,7 +271,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0187",
+      "tag": "HEF-0014",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -287,7 +289,7 @@
       "laudos": []
     },
     {
-      "tag": "6045",
+      "tag": "HEF-0015",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -305,7 +307,7 @@
       "laudos": []
     },
     {
-      "tag": "7708",
+      "tag": "HEF-0016",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -323,7 +325,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25415430001",
+      "tag": "HEF-0017",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -341,7 +343,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25418600005",
+      "tag": "HEF-0018",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -359,7 +361,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M2548600010",
+      "tag": "HEF-0019",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -377,7 +379,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0124",
+      "tag": "HEF-0020",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -395,7 +397,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25415430010",
+      "tag": "HEF-0021",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -413,7 +415,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25418600012",
+      "tag": "HEF-0022",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -431,7 +433,7 @@
       "laudos": []
     },
     {
-      "tag": "A339CC1849",
+      "tag": "HEF-0023",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -449,7 +451,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600007",
+      "tag": "HEF-0024",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -467,7 +469,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600058",
+      "tag": "HEF-0025",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -485,7 +487,7 @@
       "laudos": []
     },
     {
-      "tag": "7711",
+      "tag": "HEF-0026",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -503,7 +505,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540012",
+      "tag": "HEF-0027",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -521,7 +523,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540017",
+      "tag": "HEF-0028",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -539,7 +541,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010892",
+      "tag": "HEF-0029",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -557,7 +559,7 @@
       "laudos": []
     },
     {
-      "tag": "24453",
+      "tag": "HEF-0030",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -575,7 +577,7 @@
       "laudos": []
     },
     {
-      "tag": "28917",
+      "tag": "HEF-0031",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -593,7 +595,7 @@
       "laudos": []
     },
     {
-      "tag": "6040",
+      "tag": "HEF-0032",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -611,7 +613,7 @@
       "laudos": []
     },
     {
-      "tag": "6047",
+      "tag": "HEF-0033",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -629,7 +631,7 @@
       "laudos": []
     },
     {
-      "tag": "11214.0126.070L.001",
+      "tag": "HEF-0034",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -647,7 +649,7 @@
       "laudos": []
     },
     {
-      "tag": "R122603135",
+      "tag": "HEF-0035",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "Alfamed",
@@ -665,7 +667,7 @@
       "laudos": []
     },
     {
-      "tag": "6048",
+      "tag": "HEF-0036",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -683,7 +685,7 @@
       "laudos": []
     },
     {
-      "tag": "6046",
+      "tag": "HEF-0037",
       "nome": "Maca Transporte",
       "planoDescricao": "Maca Transporte",
       "fabricante": "Daquino",
@@ -701,7 +703,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000175",
+      "tag": "HEF-0038",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -719,7 +721,7 @@
       "laudos": []
     },
     {
-      "tag": "108931225120001",
+      "tag": "HEF-0039",
       "nome": "Poltrona Elétrica",
       "planoDescricao": "Poltrona Elétrica",
       "fabricante": "Daquino",
@@ -737,7 +739,7 @@
       "laudos": []
     },
     {
-      "tag": "200118",
+      "tag": "HEF-0040",
       "nome": "Monitor Contraste",
       "planoDescricao": "Monitor",
       "fabricante": "Medrad",
@@ -755,7 +757,7 @@
       "laudos": []
     },
     {
-      "tag": "200118-2",
+      "tag": "HEF-0041",
       "nome": "Injetora Contraste",
       "planoDescricao": "Injetora Contraste",
       "fabricante": "Medrad",
@@ -769,11 +771,11 @@
       "dataInstalacao": null,
       "valorAquisicao": null,
       "situacao": "ATIVO",
-      "observacao": "Nº de série compartilhado com outro tipo; tag ajustada para 200118-2.",
+      "observacao": null,
       "laudos": []
     },
     {
-      "tag": "26040004",
+      "tag": "HEF-0042",
       "nome": "Monitor Fisiológico ECG",
       "planoDescricao": "Monitor",
       "fabricante": "Ivy",
@@ -791,7 +793,7 @@
       "laudos": []
     },
     {
-      "tag": "858416HM1",
+      "tag": "HEF-0043",
       "nome": "Gantry",
       "planoDescricao": "Gantry",
       "fabricante": "GE2326492-81",
@@ -809,7 +811,7 @@
       "laudos": []
     },
     {
-      "tag": "7707",
+      "tag": "HEF-0044",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -827,7 +829,7 @@
       "laudos": []
     },
     {
-      "tag": "B030C0302",
+      "tag": "HEF-0045",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -845,7 +847,7 @@
       "laudos": []
     },
     {
-      "tag": "7324",
+      "tag": "HEF-0046",
       "nome": "Balança Adulto",
       "planoDescricao": "Balança Adulto",
       "fabricante": "Balmak",
@@ -863,7 +865,7 @@
       "laudos": []
     },
     {
-      "tag": "SWA1052D",
+      "tag": "HEF-0047",
       "nome": "Raio X",
       "planoDescricao": "Raio-X",
       "fabricante": "Konica Minolta",
@@ -881,7 +883,7 @@
       "laudos": []
     },
     {
-      "tag": "ADU4-02887",
+      "tag": "HEF-0048",
       "nome": "Painel Direct Digitizer",
       "planoDescricao": "Painel Direct Digitizer",
       "fabricante": "Konica Minolta",
@@ -899,7 +901,7 @@
       "laudos": []
     },
     {
-      "tag": "ADU4-02968",
+      "tag": "HEF-0049",
       "nome": "Painel Direct Digitizer",
       "planoDescricao": "Painel Direct Digitizer",
       "fabricante": "Konica Minolta",
@@ -917,7 +919,7 @@
       "laudos": []
     },
     {
-      "tag": "A5TJ-73764",
+      "tag": "HEF-0050",
       "nome": "Aero DR Battery Charger",
       "planoDescricao": "Aero DR Battery Charger",
       "fabricante": "Konica Minolta",
@@ -935,7 +937,7 @@
       "laudos": []
     },
     {
-      "tag": "SWA1053D",
+      "tag": "HEF-0051",
       "nome": "Raio X",
       "planoDescricao": "Raio-X",
       "fabricante": "Konica Minolta",
@@ -953,7 +955,7 @@
       "laudos": []
     },
     {
-      "tag": "ADU4-02896",
+      "tag": "HEF-0052",
       "nome": "Painel Direct Digitizer",
       "planoDescricao": "Painel Direct Digitizer",
       "fabricante": "Konica Minolta",
@@ -971,7 +973,7 @@
       "laudos": []
     },
     {
-      "tag": "ADU4-02952",
+      "tag": "HEF-0053",
       "nome": "Painel Direct Digitizer",
       "planoDescricao": "Painel Direct Digitizer",
       "fabricante": "Konica Minolta",
@@ -989,7 +991,7 @@
       "laudos": []
     },
     {
-      "tag": "A5TJ-73398",
+      "tag": "HEF-0054",
       "nome": "Aero DR Battery Charger",
       "planoDescricao": "Aero DR Battery Charger",
       "fabricante": "Konica Minolta",
@@ -1007,7 +1009,7 @@
       "laudos": []
     },
     {
-      "tag": "RM74B6DFA076",
+      "tag": "HEF-0055",
       "nome": "Raio X Portátil",
       "planoDescricao": "Raio-X",
       "fabricante": "Shimadzu",
@@ -1025,7 +1027,7 @@
       "laudos": []
     },
     {
-      "tag": "RM74B6DFA084",
+      "tag": "HEF-0056",
       "nome": "Raio X Portátil",
       "planoDescricao": "Raio-X",
       "fabricante": "Shimadzu",
@@ -1043,7 +1045,7 @@
       "laudos": []
     },
     {
-      "tag": "AU1DF25273426",
+      "tag": "HEF-0057",
       "nome": "Audiometro",
       "planoDescricao": "Audiometro",
       "fabricante": "HARP",
@@ -1061,7 +1063,7 @@
       "laudos": []
     },
     {
-      "tag": "IM1DB25276064",
+      "tag": "HEF-0058",
       "nome": "Imitanciometro",
       "planoDescricao": "Imitanciometro",
       "fabricante": "Flute",
@@ -1079,7 +1081,7 @@
       "laudos": []
     },
     {
-      "tag": "EVKC00858",
+      "tag": "HEF-0059",
       "nome": "Evocado Bera",
       "planoDescricao": "Evocado Bera",
       "fabricante": "Evokadus",
@@ -1097,7 +1099,7 @@
       "laudos": []
     },
     {
-      "tag": "VEA406684",
+      "tag": "HEF-0060",
       "nome": "Cabine Acustica",
       "planoDescricao": "Cabine Acustica",
       "fabricante": "Vibrasom",
@@ -1115,7 +1117,7 @@
       "laudos": []
     },
     {
-      "tag": "NQ3-53000362",
+      "tag": "HEF-0061",
       "nome": "Ultrassom",
       "planoDescricao": "Ultrassom",
       "fabricante": "Mindray",
@@ -1133,7 +1135,7 @@
       "laudos": []
     },
     {
-      "tag": "83222403502633",
+      "tag": "HEF-0062",
       "nome": "Nobreak",
       "planoDescricao": "Nobreak",
       "fabricante": "VMP",
@@ -1151,7 +1153,7 @@
       "laudos": []
     },
     {
-      "tag": "NR3-5B001143",
+      "tag": "HEF-0063",
       "nome": "Ultrassom",
       "planoDescricao": "Ultrassom",
       "fabricante": "Mindray",
@@ -1169,7 +1171,7 @@
       "laudos": []
     },
     {
-      "tag": "83222403502768",
+      "tag": "HEF-0064",
       "nome": "Nobreak",
       "planoDescricao": "Nobreak",
       "fabricante": "VMP",
@@ -1187,7 +1189,7 @@
       "laudos": []
     },
     {
-      "tag": "NR3-5B001142",
+      "tag": "HEF-0065",
       "nome": "Ultrassom",
       "planoDescricao": "Ultrassom",
       "fabricante": "Mindray",
@@ -1205,7 +1207,7 @@
       "laudos": []
     },
     {
-      "tag": "83222405500151",
+      "tag": "HEF-0066",
       "nome": "Nobreak",
       "planoDescricao": "Nobreak",
       "fabricante": "VMP",
@@ -1223,7 +1225,7 @@
       "laudos": []
     },
     {
-      "tag": "VGT52250149",
+      "tag": "HEF-0067",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "IBLUE",
@@ -1241,7 +1243,7 @@
       "laudos": []
     },
     {
-      "tag": "260101301",
+      "tag": "HEF-0068",
       "nome": "Esteira",
       "planoDescricao": "Esteira",
       "fabricante": "APEX",
@@ -1259,7 +1261,7 @@
       "laudos": []
     },
     {
-      "tag": "260500802",
+      "tag": "HEF-0069",
       "nome": "Teste Ergométrico",
       "planoDescricao": "Teste Ergométrico",
       "fabricante": "TEB",
@@ -1277,7 +1279,7 @@
       "laudos": []
     },
     {
-      "tag": "(21)R122603101",
+      "tag": "HEF-0070",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "Ritmus",
@@ -1295,7 +1297,7 @@
       "laudos": []
     },
     {
-      "tag": "7712",
+      "tag": "HEF-0071",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -1313,7 +1315,7 @@
       "laudos": []
     },
     {
-      "tag": "4116",
+      "tag": "HEF-0072",
       "nome": "Balança Infantil",
       "planoDescricao": "Balança Infantil",
       "fabricante": "Welmy",
@@ -1331,7 +1333,7 @@
       "laudos": []
     },
     {
-      "tag": "269702",
+      "tag": "HEF-0073",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -1349,7 +1351,7 @@
       "laudos": []
     },
     {
-      "tag": "51714",
+      "tag": "HEF-0074",
       "nome": "Balança Adulto",
       "planoDescricao": "Balança Adulto",
       "fabricante": "Welmy",
@@ -1367,7 +1369,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010908",
+      "tag": "HEF-0075",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -1385,7 +1387,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010879",
+      "tag": "HEF-0076",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -1403,7 +1405,7 @@
       "laudos": []
     },
     {
-      "tag": "R122603187",
+      "tag": "HEF-0077",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "Ritmus",
@@ -1421,7 +1423,7 @@
       "laudos": []
     },
     {
-      "tag": "26D000358",
+      "tag": "HEF-0078",
       "nome": "Lavadora Ultrassonica",
       "planoDescricao": "Lavadora Ultrassonica",
       "fabricante": "Ortosintese",
@@ -1439,7 +1441,7 @@
       "laudos": []
     },
     {
-      "tag": "26C005545",
+      "tag": "HEF-0079",
       "nome": "Lavadora Ultrassonica",
       "planoDescricao": "Lavadora Ultrassonica",
       "fabricante": "Ortosintese",
@@ -1457,7 +1459,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002980",
+      "tag": "HEF-0080",
       "nome": "Termodesinfectora",
       "planoDescricao": "Termodesinfectora",
       "fabricante": "Ortosintese",
@@ -1475,7 +1477,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002985",
+      "tag": "HEF-0081",
       "nome": "Termodesinfectora",
       "planoDescricao": "Termodesinfectora",
       "fabricante": "Ortosintese",
@@ -1493,7 +1495,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002990",
+      "tag": "HEF-0082",
       "nome": "Gabinete Secagem",
       "planoDescricao": "Gabinete Secagem",
       "fabricante": "Ortosintese",
@@ -1511,7 +1513,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002992",
+      "tag": "HEF-0083",
       "nome": "Gabinete Secagem",
       "planoDescricao": "Gabinete Secagem",
       "fabricante": "Ortosintese",
@@ -1529,7 +1531,7 @@
       "laudos": []
     },
     {
-      "tag": "2000-0626-502",
+      "tag": "HEF-0084",
       "nome": "Seladora",
       "planoDescricao": "Seladora",
       "fabricante": "Selapack",
@@ -1547,7 +1549,7 @@
       "laudos": []
     },
     {
-      "tag": "CV/S2405400076-23",
+      "tag": "HEF-0085",
       "nome": "Autoclave Baixa Temperatura",
       "planoDescricao": "Autoclave",
       "fabricante": "Carevision",
@@ -1565,7 +1567,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002888",
+      "tag": "HEF-0086",
       "nome": "Autoclave Universal",
       "planoDescricao": "Autoclave",
       "fabricante": "Ortosintese",
@@ -1583,7 +1585,7 @@
       "laudos": []
     },
     {
-      "tag": "25H002947",
+      "tag": "HEF-0087",
       "nome": "Autoclave Universal",
       "planoDescricao": "Autoclave",
       "fabricante": "Ortosintese",
@@ -1601,7 +1603,7 @@
       "laudos": []
     },
     {
-      "tag": "7704",
+      "tag": "HEF-0088",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -1619,7 +1621,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25415430003",
+      "tag": "HEF-0089",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -1637,7 +1639,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25418600014",
+      "tag": "HEF-0090",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -1655,7 +1657,7 @@
       "laudos": []
     },
     {
-      "tag": "0105/26-0010",
+      "tag": "HEF-0091",
       "nome": "Lavadora Desinfetadora",
       "planoDescricao": "Lavadora Desinfetadora",
       "fabricante": "ECOLAB",
@@ -1673,7 +1675,7 @@
       "laudos": []
     },
     {
-      "tag": "7689526",
+      "tag": "HEF-0092",
       "nome": "Leakage Test",
       "planoDescricao": "Leakage Test",
       "fabricante": "Olympus",
@@ -1691,7 +1693,7 @@
       "laudos": []
     },
     {
-      "tag": "3012509001583",
+      "tag": "HEF-0093",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -1709,7 +1711,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000536",
+      "tag": "HEF-0094",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -1727,7 +1729,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000603",
+      "tag": "HEF-0095",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -1745,7 +1747,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540014",
+      "tag": "HEF-0096",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -1763,7 +1765,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-4C002395",
+      "tag": "HEF-0097",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -1781,7 +1783,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010357",
+      "tag": "HEF-0098",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -1799,7 +1801,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0320",
+      "tag": "HEF-0099",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -1817,7 +1819,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0311",
+      "tag": "HEF-0100",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -1835,7 +1837,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0238",
+      "tag": "HEF-0101",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -1853,7 +1855,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540020",
+      "tag": "HEF-0102",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -1871,7 +1873,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-49002243",
+      "tag": "HEF-0103",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -1889,7 +1891,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001618",
+      "tag": "HEF-0104",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -1907,7 +1909,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010354",
+      "tag": "HEF-0105",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -1925,7 +1927,7 @@
       "laudos": []
     },
     {
-      "tag": "229",
+      "tag": "HEF-0106",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "Medtronic",
@@ -1943,7 +1945,7 @@
       "laudos": []
     },
     {
-      "tag": "?",
+      "tag": "HEF-0107",
       "nome": "Torre Video",
       "planoDescricao": "Torre Video",
       "fabricante": "?",
@@ -1961,7 +1963,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0308",
+      "tag": "HEF-0108",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -1979,7 +1981,7 @@
       "laudos": []
     },
     {
-      "tag": "2647871",
+      "tag": "HEF-0109",
       "nome": "Colonoscópio",
       "planoDescricao": "Colonoscópio",
       "fabricante": "Olympus",
@@ -1997,7 +1999,7 @@
       "laudos": []
     },
     {
-      "tag": "2647870",
+      "tag": "HEF-0110",
       "nome": "Colonoscópio",
       "planoDescricao": "Colonoscópio",
       "fabricante": "Olympus",
@@ -2015,7 +2017,7 @@
       "laudos": []
     },
     {
-      "tag": "2674257",
+      "tag": "HEF-0111",
       "nome": "Gastroscópio",
       "planoDescricao": "Gastroscópio",
       "fabricante": "GIF-H190",
@@ -2033,7 +2035,7 @@
       "laudos": []
     },
     {
-      "tag": "2674265",
+      "tag": "HEF-0112",
       "nome": "Gastroscópio",
       "planoDescricao": "Gastroscópio",
       "fabricante": "GIF-H190",
@@ -2051,7 +2053,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600033",
+      "tag": "HEF-0113",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2069,7 +2071,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600057",
+      "tag": "HEF-0114",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2087,7 +2089,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600016",
+      "tag": "HEF-0115",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2105,7 +2107,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M25418600006",
+      "tag": "HEF-0116",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2123,7 +2125,7 @@
       "laudos": []
     },
     {
-      "tag": "7714",
+      "tag": "HEF-0117",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -2141,7 +2143,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0293",
+      "tag": "HEF-0118",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2159,7 +2161,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0116",
+      "tag": "HEF-0119",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2177,7 +2179,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0213",
+      "tag": "HEF-0120",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2195,7 +2197,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0322",
+      "tag": "HEF-0121",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2213,7 +2215,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0242",
+      "tag": "HEF-0122",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2231,7 +2233,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0245",
+      "tag": "HEF-0123",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2249,7 +2251,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0323",
+      "tag": "HEF-0124",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2267,7 +2269,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0337",
+      "tag": "HEF-0125",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2285,7 +2287,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0133",
+      "tag": "HEF-0126",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2303,7 +2305,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0136",
+      "tag": "HEF-0127",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2321,7 +2323,7 @@
       "laudos": []
     },
     {
-      "tag": "A340CC1882",
+      "tag": "HEF-0128",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2339,7 +2341,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0319",
+      "tag": "HEF-0129",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2357,7 +2359,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0112",
+      "tag": "HEF-0130",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2375,7 +2377,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0189",
+      "tag": "HEF-0131",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2393,7 +2395,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0336",
+      "tag": "HEF-0132",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2411,7 +2413,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0278",
+      "tag": "HEF-0133",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2429,7 +2431,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0316",
+      "tag": "HEF-0134",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2447,7 +2449,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0135",
+      "tag": "HEF-0135",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2465,7 +2467,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0113",
+      "tag": "HEF-0136",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -2483,7 +2485,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-49002269",
+      "tag": "HEF-0137",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -2501,7 +2503,7 @@
       "laudos": []
     },
     {
-      "tag": "GEB49055012",
+      "tag": "HEF-0138",
       "nome": "Modulo Ag+O2",
       "planoDescricao": "Modulo Ag+O2",
       "fabricante": "Mindray",
@@ -2519,7 +2521,7 @@
       "laudos": []
     },
     {
-      "tag": "EQ-0001",
+      "tag": "HEF-0139",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2537,7 +2539,7 @@
       "laudos": []
     },
     {
-      "tag": "26-G-0237",
+      "tag": "HEF-0140",
       "nome": "Aspirador Cirurgico",
       "planoDescricao": "Aspirador Cirurgico",
       "fabricante": "Olidef",
@@ -2555,7 +2557,7 @@
       "laudos": []
     },
     {
-      "tag": "26-G-0238",
+      "tag": "HEF-0141",
       "nome": "Aspirador Cirurgico",
       "planoDescricao": "Aspirador Cirurgico",
       "fabricante": "Olidef",
@@ -2573,7 +2575,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010353",
+      "tag": "HEF-0142",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -2591,7 +2593,7 @@
       "laudos": []
     },
     {
-      "tag": "79",
+      "tag": "HEF-0143",
       "nome": "Pedal Simples",
       "planoDescricao": "Pedal Simples",
       "fabricante": "Medtronic",
@@ -2609,7 +2611,7 @@
       "laudos": []
     },
     {
-      "tag": "16",
+      "tag": "HEF-0144",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "Medtronic",
@@ -2627,7 +2629,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000314",
+      "tag": "HEF-0145",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -2645,7 +2647,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000595",
+      "tag": "HEF-0146",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -2663,7 +2665,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509002195",
+      "tag": "HEF-0147",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -2681,7 +2683,7 @@
       "laudos": []
     },
     {
-      "tag": "5SXA5T3J",
+      "tag": "HEF-0148",
       "nome": "Dialisadora",
       "planoDescricao": "Dialisadora",
       "fabricante": "Fresenius",
@@ -2699,7 +2701,7 @@
       "laudos": []
     },
     {
-      "tag": "6SXA6UZR",
+      "tag": "HEF-0149",
       "nome": "Dialisadora",
       "planoDescricao": "Dialisadora",
       "fabricante": "Fresenius",
@@ -2717,7 +2719,7 @@
       "laudos": []
     },
     {
-      "tag": "6SXA6UZW",
+      "tag": "HEF-0150",
       "nome": "Dialisadora",
       "planoDescricao": "Dialisadora",
       "fabricante": "Fresenius",
@@ -2735,7 +2737,7 @@
       "laudos": []
     },
     {
-      "tag": "03BO0053",
+      "tag": "HEF-0151",
       "nome": "Osmose Portátil",
       "planoDescricao": "Osmose Portátil",
       "fabricante": "Saubern",
@@ -2753,7 +2755,7 @@
       "laudos": []
     },
     {
-      "tag": "03BO0054",
+      "tag": "HEF-0152",
       "nome": "Osmose Portátil",
       "planoDescricao": "Osmose Portátil",
       "fabricante": "Saubern",
@@ -2771,7 +2773,7 @@
       "laudos": []
     },
     {
-      "tag": "03BO0055",
+      "tag": "HEF-0153",
       "nome": "Osmose Portátil",
       "planoDescricao": "Osmose Portátil",
       "fabricante": "Saubern",
@@ -2789,7 +2791,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010905",
+      "tag": "HEF-0154",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2807,7 +2809,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010907",
+      "tag": "HEF-0155",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2825,7 +2827,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010880",
+      "tag": "HEF-0156",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2843,7 +2845,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010902",
+      "tag": "HEF-0157",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2861,7 +2863,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010909",
+      "tag": "HEF-0158",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2879,7 +2881,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010897",
+      "tag": "HEF-0159",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -2897,7 +2899,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600019",
+      "tag": "HEF-0160",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2915,7 +2917,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600013",
+      "tag": "HEF-0161",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2933,7 +2935,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540015",
+      "tag": "HEF-0162",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2951,7 +2953,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540014",
+      "tag": "HEF-0163",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2969,7 +2971,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600052",
+      "tag": "HEF-0164",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -2987,7 +2989,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540007",
+      "tag": "HEF-0165",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3005,7 +3007,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540005",
+      "tag": "HEF-0166",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3023,7 +3025,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540010",
+      "tag": "HEF-0167",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3041,7 +3043,7 @@
       "laudos": []
     },
     {
-      "tag": "269702-M26516600031",
+      "tag": "HEF-0168",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3059,7 +3061,7 @@
       "laudos": []
     },
     {
-      "tag": "262542-M26311560003",
+      "tag": "HEF-0169",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3077,7 +3079,7 @@
       "laudos": []
     },
     {
-      "tag": "262542-M26311560007",
+      "tag": "HEF-0170",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -3095,7 +3097,7 @@
       "laudos": []
     },
     {
-      "tag": "1P110CL",
+      "tag": "HEF-0171",
       "nome": "CPAP",
       "planoDescricao": "Ventilador",
       "fabricante": "Breas",
@@ -3113,7 +3115,7 @@
       "laudos": []
     },
     {
-      "tag": "42552173/2025",
+      "tag": "HEF-0172",
       "nome": "Balança",
       "planoDescricao": "Balança",
       "fabricante": "Micheletti",
@@ -3131,7 +3133,7 @@
       "laudos": []
     },
     {
-      "tag": "7702",
+      "tag": "HEF-0173",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -3149,7 +3151,7 @@
       "laudos": []
     },
     {
-      "tag": "7710",
+      "tag": "HEF-0174",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -3167,7 +3169,7 @@
       "laudos": []
     },
     {
-      "tag": "R122603023",
+      "tag": "HEF-0175",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "Alfamed",
@@ -3185,7 +3187,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509002156",
+      "tag": "HEF-0176",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3203,7 +3205,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003799",
+      "tag": "HEF-0177",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3221,7 +3223,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001768",
+      "tag": "HEF-0178",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3239,7 +3241,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004693",
+      "tag": "HEF-0179",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3257,7 +3259,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001108",
+      "tag": "HEF-0180",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3275,7 +3277,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000547",
+      "tag": "HEF-0181",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3293,7 +3295,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001698",
+      "tag": "HEF-0182",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3311,7 +3313,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003790",
+      "tag": "HEF-0183",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3329,7 +3331,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004626",
+      "tag": "HEF-0184",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3347,7 +3349,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001745",
+      "tag": "HEF-0185",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3365,7 +3367,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004454",
+      "tag": "HEF-0186",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3383,7 +3385,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001201",
+      "tag": "HEF-0187",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3401,7 +3403,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001638",
+      "tag": "HEF-0188",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3419,7 +3421,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004441",
+      "tag": "HEF-0189",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3437,7 +3439,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001409",
+      "tag": "HEF-0190",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3455,7 +3457,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001655",
+      "tag": "HEF-0191",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3473,7 +3475,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000309",
+      "tag": "HEF-0192",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3491,7 +3493,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004345",
+      "tag": "HEF-0193",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3509,7 +3511,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004175",
+      "tag": "HEF-0194",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3527,7 +3529,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000136",
+      "tag": "HEF-0195",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3545,7 +3547,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003916",
+      "tag": "HEF-0196",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3563,7 +3565,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003940",
+      "tag": "HEF-0197",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3581,7 +3583,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001493",
+      "tag": "HEF-0198",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3599,7 +3601,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004429",
+      "tag": "HEF-0199",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3617,7 +3619,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001640",
+      "tag": "HEF-0200",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3635,7 +3637,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004317",
+      "tag": "HEF-0201",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Mindray",
@@ -3653,7 +3655,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040450",
+      "tag": "HEF-0202",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3671,7 +3673,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050642",
+      "tag": "HEF-0203",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3689,7 +3691,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050652",
+      "tag": "HEF-0204",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3707,7 +3709,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040471",
+      "tag": "HEF-0205",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3725,7 +3727,7 @@
       "laudos": []
     },
     {
-      "tag": "6152306000031",
+      "tag": "HEF-0206",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -3743,7 +3745,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0284",
+      "tag": "HEF-0207",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3761,7 +3763,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0209",
+      "tag": "HEF-0208",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3779,7 +3781,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0188",
+      "tag": "HEF-0209",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3797,7 +3799,7 @@
       "laudos": []
     },
     {
-      "tag": "A339CC1851",
+      "tag": "HEF-0210",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3815,7 +3817,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0194",
+      "tag": "HEF-0211",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3833,7 +3835,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0307",
+      "tag": "HEF-0212",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3851,7 +3853,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0283",
+      "tag": "HEF-0213",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3869,7 +3871,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0114",
+      "tag": "HEF-0214",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3887,7 +3889,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0252",
+      "tag": "HEF-0215",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3905,7 +3907,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0204",
+      "tag": "HEF-0216",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3923,7 +3925,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0309",
+      "tag": "HEF-0217",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3941,7 +3943,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0117",
+      "tag": "HEF-0218",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -3959,7 +3961,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010887",
+      "tag": "HEF-0219",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -3977,7 +3979,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010090",
+      "tag": "HEF-0220",
       "nome": "Ventilador Pulmonar",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -3995,7 +3997,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001492",
+      "tag": "HEF-0221",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4013,7 +4015,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003860",
+      "tag": "HEF-0222",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4031,7 +4033,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001755",
+      "tag": "HEF-0223",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4049,7 +4051,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001120",
+      "tag": "HEF-0224",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4067,7 +4069,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004197",
+      "tag": "HEF-0225",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4085,7 +4087,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004320",
+      "tag": "HEF-0226",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4103,7 +4105,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507003807",
+      "tag": "HEF-0227",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4121,7 +4123,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001104",
+      "tag": "HEF-0228",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4139,7 +4141,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000564",
+      "tag": "HEF-0229",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4157,7 +4159,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001215",
+      "tag": "HEF-0230",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4175,7 +4177,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004296",
+      "tag": "HEF-0231",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4193,7 +4195,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001614",
+      "tag": "HEF-0232",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4211,7 +4213,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000529",
+      "tag": "HEF-0233",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4229,7 +4231,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000743",
+      "tag": "HEF-0234",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4247,7 +4249,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000389",
+      "tag": "HEF-0235",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4265,7 +4267,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000914",
+      "tag": "HEF-0236",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4283,7 +4285,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000741",
+      "tag": "HEF-0237",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4301,7 +4303,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000692",
+      "tag": "HEF-0238",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4319,7 +4321,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000730",
+      "tag": "HEF-0239",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4337,7 +4339,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000283",
+      "tag": "HEF-0240",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4355,7 +4357,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050586",
+      "tag": "HEF-0241",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4373,7 +4375,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050631",
+      "tag": "HEF-0242",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4391,7 +4393,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050594",
+      "tag": "HEF-0243",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4409,7 +4411,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040499",
+      "tag": "HEF-0244",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4427,7 +4429,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050644",
+      "tag": "HEF-0245",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4445,7 +4447,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040301",
+      "tag": "HEF-0246",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4463,7 +4465,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050316",
+      "tag": "HEF-0247",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4481,7 +4483,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050630",
+      "tag": "HEF-0248",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4499,7 +4501,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040476",
+      "tag": "HEF-0249",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4517,7 +4519,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050303",
+      "tag": "HEF-0250",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4535,7 +4537,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040274",
+      "tag": "HEF-0251",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4553,7 +4555,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050703",
+      "tag": "HEF-0252",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4571,7 +4573,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050651",
+      "tag": "HEF-0253",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4589,7 +4591,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040285",
+      "tag": "HEF-0254",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4607,7 +4609,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040465",
+      "tag": "HEF-0255",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4625,7 +4627,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050708",
+      "tag": "HEF-0256",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4643,7 +4645,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050638",
+      "tag": "HEF-0257",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4661,7 +4663,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050664",
+      "tag": "HEF-0258",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4679,7 +4681,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050625",
+      "tag": "HEF-0259",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4697,7 +4699,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050302",
+      "tag": "HEF-0260",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4715,7 +4717,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050655",
+      "tag": "HEF-0261",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4733,7 +4735,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050597",
+      "tag": "HEF-0262",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4751,7 +4753,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040287",
+      "tag": "HEF-0263",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4769,7 +4771,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050319",
+      "tag": "HEF-0264",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4787,7 +4789,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050623",
+      "tag": "HEF-0265",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4805,7 +4807,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050636",
+      "tag": "HEF-0266",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4823,7 +4825,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040445",
+      "tag": "HEF-0267",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4841,7 +4843,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050635",
+      "tag": "HEF-0268",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4859,7 +4861,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050648",
+      "tag": "HEF-0269",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4877,7 +4879,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040305",
+      "tag": "HEF-0270",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4895,7 +4897,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050315",
+      "tag": "HEF-0271",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4913,7 +4915,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050306",
+      "tag": "HEF-0272",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4931,7 +4933,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050641",
+      "tag": "HEF-0273",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4949,7 +4951,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040473",
+      "tag": "HEF-0274",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4967,7 +4969,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050599",
+      "tag": "HEF-0275",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -4985,7 +4987,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050702",
+      "tag": "HEF-0276",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5003,7 +5005,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120030249",
+      "tag": "HEF-0277",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5021,7 +5023,7 @@
       "laudos": []
     },
     {
-      "tag": "9133012100256",
+      "tag": "HEF-0278",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5039,7 +5041,7 @@
       "laudos": []
     },
     {
-      "tag": "9133012100158",
+      "tag": "HEF-0279",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5057,7 +5059,7 @@
       "laudos": []
     },
     {
-      "tag": "9133012100152",
+      "tag": "HEF-0280",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5075,7 +5077,7 @@
       "laudos": []
     },
     {
-      "tag": "9133012100182",
+      "tag": "HEF-0281",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5093,7 +5095,7 @@
       "laudos": []
     },
     {
-      "tag": "NI26059993 (1)",
+      "tag": "HEF-0282",
       "nome": "Camara Conservadora",
       "planoDescricao": "Camara Conservadora",
       "fabricante": "Nova Instruments",
@@ -5111,7 +5113,7 @@
       "laudos": []
     },
     {
-      "tag": "NI26059992 (2)",
+      "tag": "HEF-0283",
       "nome": "Camara Conservadora",
       "planoDescricao": "Camara Conservadora",
       "fabricante": "Nova Instruments",
@@ -5129,7 +5131,7 @@
       "laudos": []
     },
     {
-      "tag": "NI26059994 (3)",
+      "tag": "HEF-0284",
       "nome": "Camara Conservadora",
       "planoDescricao": "Camara Conservadora",
       "fabricante": "Nova Instruments",
@@ -5147,7 +5149,7 @@
       "laudos": []
     },
     {
-      "tag": "25081359",
+      "tag": "HEF-0285",
       "nome": "Gasômetro",
       "planoDescricao": "Gasômetro",
       "fabricante": "Wefen",
@@ -5165,7 +5167,7 @@
       "laudos": []
     },
     {
-      "tag": "BK020036",
+      "tag": "HEF-0286",
       "nome": "Hemato",
       "planoDescricao": "Hemato",
       "fabricante": "Beckman",
@@ -5183,7 +5185,7 @@
       "laudos": []
     },
     {
-      "tag": "HCL4-0497826",
+      "tag": "HEF-0287",
       "nome": "Centrifuga",
       "planoDescricao": "Centrifuga",
       "fabricante": "Hoffman",
@@ -5201,7 +5203,7 @@
       "laudos": []
     },
     {
-      "tag": "HCL4-0497726",
+      "tag": "HEF-0288",
       "nome": "Centrifuga",
       "planoDescricao": "Centrifuga",
       "fabricante": "Hoffman",
@@ -5219,7 +5221,7 @@
       "laudos": []
     },
     {
-      "tag": "20251697",
+      "tag": "HEF-0289",
       "nome": "Banho Maria",
       "planoDescricao": "Banho Maria",
       "fabricante": "IonLab",
@@ -5237,7 +5239,7 @@
       "laudos": []
     },
     {
-      "tag": "IVD5218180",
+      "tag": "HEF-0290",
       "nome": "Troponina",
       "planoDescricao": "Troponina",
       "fabricante": "Biomérieux",
@@ -5255,7 +5257,7 @@
       "laudos": []
     },
     {
-      "tag": "202406191",
+      "tag": "HEF-0291",
       "nome": "Hemocitometro",
       "planoDescricao": "Hemocitometro",
       "fabricante": "ION",
@@ -5273,7 +5275,7 @@
       "laudos": []
     },
     {
-      "tag": "NI26059997",
+      "tag": "HEF-0292",
       "nome": "Camara Conservadora",
       "planoDescricao": "Camara Conservadora",
       "fabricante": "Nova Instruments",
@@ -5291,7 +5293,7 @@
       "laudos": []
     },
     {
-      "tag": "NI26059995",
+      "tag": "HEF-0293",
       "nome": "Camara Conservadora",
       "planoDescricao": "Camara Conservadora",
       "fabricante": "Nova Instruments",
@@ -5309,7 +5311,7 @@
       "laudos": []
     },
     {
-      "tag": "JD6110490",
+      "tag": "HEF-0294",
       "nome": "Freezer Vertical",
       "planoDescricao": "Freezer Vertical",
       "fabricante": "Brastemp",
@@ -5327,7 +5329,7 @@
       "laudos": []
     },
     {
-      "tag": "TP20806040",
+      "tag": "HEF-0295",
       "nome": "Agitador Manual Vortex",
       "planoDescricao": "Agitador Manual Vortex",
       "fabricante": "Craltech",
@@ -5345,7 +5347,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000181",
+      "tag": "HEF-0296",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5363,7 +5365,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000174",
+      "tag": "HEF-0297",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5381,7 +5383,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000184",
+      "tag": "HEF-0298",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5399,7 +5401,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000178",
+      "tag": "HEF-0299",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5417,7 +5419,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000180",
+      "tag": "HEF-0300",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5435,7 +5437,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000176",
+      "tag": "HEF-0301",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5453,7 +5455,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000183",
+      "tag": "HEF-0302",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5471,7 +5473,7 @@
       "laudos": []
     },
     {
-      "tag": "7717",
+      "tag": "HEF-0303",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -5489,7 +5491,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-49002270",
+      "tag": "HEF-0304",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -5507,7 +5509,7 @@
       "laudos": []
     },
     {
-      "tag": "GEB4C058085",
+      "tag": "HEF-0305",
       "nome": "Modulo Ag+O2",
       "planoDescricao": "Modulo Ag+O2",
       "fabricante": "Mindray",
@@ -5525,7 +5527,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001677",
+      "tag": "HEF-0306",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5543,7 +5545,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000761",
+      "tag": "HEF-0307",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5561,7 +5563,7 @@
       "laudos": []
     },
     {
-      "tag": "DKJ4C584489",
+      "tag": "HEF-0308",
       "nome": "Vaporizador",
       "planoDescricao": "Vaporizador",
       "fabricante": "Mindray",
@@ -5579,7 +5581,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000179",
+      "tag": "HEF-0309",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5597,7 +5599,7 @@
       "laudos": []
     },
     {
-      "tag": "186760426",
+      "tag": "HEF-0310",
       "nome": "Mesa Cirurgica",
       "planoDescricao": "Mesa Cirurgica",
       "fabricante": "Barrfab",
@@ -5615,7 +5617,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010355",
+      "tag": "HEF-0311",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -5633,7 +5635,7 @@
       "laudos": []
     },
     {
-      "tag": "164",
+      "tag": "HEF-0312",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "Medtronic",
@@ -5651,7 +5653,7 @@
       "laudos": []
     },
     {
-      "tag": "97",
+      "tag": "HEF-0313",
       "nome": "Pedal Simples",
       "planoDescricao": "Pedal Simples",
       "fabricante": "Medtronic",
@@ -5669,7 +5671,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-49002239",
+      "tag": "HEF-0314",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -5687,7 +5689,7 @@
       "laudos": []
     },
     {
-      "tag": "GEB4C058076",
+      "tag": "HEF-0315",
       "nome": "Modulo Ag+O2",
       "planoDescricao": "Modulo Ag+O2",
       "fabricante": "Mindray",
@@ -5705,7 +5707,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001487",
+      "tag": "HEF-0316",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5723,7 +5725,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000683",
+      "tag": "HEF-0317",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5741,7 +5743,7 @@
       "laudos": []
     },
     {
-      "tag": "DKJ4C585014",
+      "tag": "HEF-0318",
       "nome": "Vaporizador",
       "planoDescricao": "Vaporizador",
       "fabricante": "Mindray",
@@ -5759,7 +5761,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000177",
+      "tag": "HEF-0319",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5777,7 +5779,7 @@
       "laudos": []
     },
     {
-      "tag": "186750426",
+      "tag": "HEF-0320",
       "nome": "Mesa Cirurgica",
       "planoDescricao": "Mesa Cirurgica",
       "fabricante": "Barrfab",
@@ -5795,7 +5797,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010356",
+      "tag": "HEF-0321",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -5813,7 +5815,7 @@
       "laudos": []
     },
     {
-      "tag": "210",
+      "tag": "HEF-0322",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "Medtronic",
@@ -5831,7 +5833,7 @@
       "laudos": []
     },
     {
-      "tag": "50",
+      "tag": "HEF-0323",
       "nome": "Pedal Simples",
       "planoDescricao": "Pedal Simples",
       "fabricante": "Medtronic",
@@ -5849,7 +5851,7 @@
       "laudos": []
     },
     {
-      "tag": "263157-M26617540001",
+      "tag": "HEF-0324",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -5867,7 +5869,7 @@
       "laudos": []
     },
     {
-      "tag": "AT6-49002275",
+      "tag": "HEF-0325",
       "nome": "Carro Anestesia",
       "planoDescricao": "Carro Anestesia",
       "fabricante": "Mindray",
@@ -5885,7 +5887,7 @@
       "laudos": []
     },
     {
-      "tag": "GEB49055031",
+      "tag": "HEF-0326",
       "nome": "Modulo Ag+O2",
       "planoDescricao": "Modulo Ag+O2",
       "fabricante": "Mindray",
@@ -5903,7 +5905,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001684",
+      "tag": "HEF-0327",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5921,7 +5923,7 @@
       "laudos": []
     },
     {
-      "tag": "6002404000695",
+      "tag": "HEF-0328",
       "nome": "Bomba Seringa",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -5939,7 +5941,7 @@
       "laudos": []
     },
     {
-      "tag": "DKJ4C584441",
+      "tag": "HEF-0329",
       "nome": "Vaporizador",
       "planoDescricao": "Vaporizador",
       "fabricante": "Mindray",
@@ -5957,7 +5959,7 @@
       "laudos": []
     },
     {
-      "tag": "SL092025000182",
+      "tag": "HEF-0330",
       "nome": "Foco Cirurgico",
       "planoDescricao": "Foco Cirurgico",
       "fabricante": "OQTIS",
@@ -5975,7 +5977,7 @@
       "laudos": []
     },
     {
-      "tag": "186740426",
+      "tag": "HEF-0331",
       "nome": "Mesa Cirurgica",
       "planoDescricao": "Mesa Cirurgica",
       "fabricante": "Barrfab",
@@ -5993,7 +5995,7 @@
       "laudos": []
     },
     {
-      "tag": "CAF0010053",
+      "tag": "HEF-0332",
       "nome": "Bisturi Elétrico",
       "planoDescricao": "Bisturi Elétrico",
       "fabricante": "WEM",
@@ -6011,7 +6013,7 @@
       "laudos": []
     },
     {
-      "tag": "58",
+      "tag": "HEF-0333",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "Medtronic",
@@ -6029,7 +6031,7 @@
       "laudos": []
     },
     {
-      "tag": "82",
+      "tag": "HEF-0334",
       "nome": "Pedal Simples",
       "planoDescricao": "Pedal Simples",
       "fabricante": "Medtronic",
@@ -6047,7 +6049,7 @@
       "laudos": []
     },
     {
-      "tag": "262542-M26311560010",
+      "tag": "HEF-0335",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -6065,7 +6067,7 @@
       "laudos": []
     },
     {
-      "tag": "8101723",
+      "tag": "HEF-0336",
       "nome": "Monitor Torre Video",
       "planoDescricao": "Monitor",
       "fabricante": "Sony",
@@ -6083,7 +6085,7 @@
       "laudos": []
     },
     {
-      "tag": "2510CE0129",
+      "tag": "HEF-0337",
       "nome": "Insuflador",
       "planoDescricao": "Insuflador",
       "fabricante": "Mistra",
@@ -6101,7 +6103,7 @@
       "laudos": []
     },
     {
-      "tag": "7559471",
+      "tag": "HEF-0338",
       "nome": "Processador Imagem",
       "planoDescricao": "Processador Imagem",
       "fabricante": "Visera",
@@ -6119,7 +6121,7 @@
       "laudos": []
     },
     {
-      "tag": "25811046",
+      "tag": "HEF-0339",
       "nome": "Gravador Imagem",
       "planoDescricao": "Gravador Imagem",
       "fabricante": "TEAC",
@@ -6137,7 +6139,7 @@
       "laudos": []
     },
     {
-      "tag": "7524440",
+      "tag": "HEF-0340",
       "nome": "Cabo Otica Rigida",
       "planoDescricao": "Cabo Otica Rigida",
       "fabricante": "Olympus",
@@ -6155,7 +6157,7 @@
       "laudos": []
     },
     {
-      "tag": "75",
+      "tag": "HEF-0341",
       "nome": "Arco C",
       "planoDescricao": "Arco C",
       "fabricante": "Lotus",
@@ -6173,7 +6175,7 @@
       "laudos": []
     },
     {
-      "tag": "25061906",
+      "tag": "HEF-0342",
       "nome": "Pedal Duplo",
       "planoDescricao": "Pedal Duplo",
       "fabricante": "F22AT",
@@ -6191,7 +6193,7 @@
       "laudos": []
     },
     {
-      "tag": "7706",
+      "tag": "HEF-0343",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -6209,7 +6211,7 @@
       "laudos": []
     },
     {
-      "tag": "R122603109",
+      "tag": "HEF-0344",
       "nome": "Eletrocardiografo",
       "planoDescricao": "Eletrocardiógrafo",
       "fabricante": "Alfamed",
@@ -6227,7 +6229,7 @@
       "laudos": []
     },
     {
-      "tag": "51721",
+      "tag": "HEF-0345",
       "nome": "Balança Infantil",
       "planoDescricao": "Balança Infantil",
       "fabricante": "Welmy",
@@ -6245,7 +6247,7 @@
       "laudos": []
     },
     {
-      "tag": "51716",
+      "tag": "HEF-0346",
       "nome": "Balança Adulto",
       "planoDescricao": "Balança Adulto",
       "fabricante": "Welmy",
@@ -6263,7 +6265,7 @@
       "laudos": []
     },
     {
-      "tag": "4120",
+      "tag": "HEF-0347",
       "nome": "Balança Adulto",
       "planoDescricao": "Balança Adulto",
       "fabricante": "Welmy",
@@ -6281,7 +6283,7 @@
       "laudos": []
     },
     {
-      "tag": "291111005",
+      "tag": "HEF-0348",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -6299,7 +6301,7 @@
       "laudos": []
     },
     {
-      "tag": "291111002",
+      "tag": "HEF-0349",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -6317,7 +6319,7 @@
       "laudos": []
     },
     {
-      "tag": "291111004",
+      "tag": "HEF-0350",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -6335,7 +6337,7 @@
       "laudos": []
     },
     {
-      "tag": "291111001",
+      "tag": "HEF-0351",
       "nome": "Berço Infantil",
       "planoDescricao": "Berço Infantil",
       "fabricante": "Fanem",
@@ -6353,7 +6355,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004712",
+      "tag": "HEF-0352",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6371,7 +6373,7 @@
       "laudos": []
     },
     {
-      "tag": "6012507004414",
+      "tag": "HEF-0353",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6389,7 +6391,7 @@
       "laudos": []
     },
     {
-      "tag": "6010509001683",
+      "tag": "HEF-0354",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6407,7 +6409,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0313",
+      "tag": "HEF-0355",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6425,7 +6427,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0134",
+      "tag": "HEF-0356",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6443,7 +6445,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0142",
+      "tag": "HEF-0357",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6461,7 +6463,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0137",
+      "tag": "HEF-0358",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6479,7 +6481,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0274",
+      "tag": "HEF-0359",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6497,7 +6499,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0191",
+      "tag": "HEF-0360",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6515,7 +6517,7 @@
       "laudos": []
     },
     {
-      "tag": "H006CC0320",
+      "tag": "HEF-0361",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6533,7 +6535,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0193",
+      "tag": "HEF-0362",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6551,7 +6553,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0128",
+      "tag": "HEF-0363",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6569,7 +6571,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0246",
+      "tag": "HEF-0364",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6587,7 +6589,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0111",
+      "tag": "HEF-0365",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6605,7 +6607,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0181",
+      "tag": "HEF-0366",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6623,7 +6625,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0211",
+      "tag": "HEF-0367",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6641,7 +6643,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0132",
+      "tag": "HEF-0368",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6659,7 +6661,7 @@
       "laudos": []
     },
     {
-      "tag": "A339CC1859",
+      "tag": "HEF-0369",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6677,7 +6679,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0237",
+      "tag": "HEF-0370",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6695,7 +6697,7 @@
       "laudos": []
     },
     {
-      "tag": "262541-M24B16540018",
+      "tag": "HEF-0371",
       "nome": "Monitor Multiparametrico",
       "planoDescricao": "Monitor",
       "fabricante": "EDAN",
@@ -6713,7 +6715,7 @@
       "laudos": []
     },
     {
-      "tag": "51742",
+      "tag": "HEF-0372",
       "nome": "Balança Adulto",
       "planoDescricao": "Balança Adulto",
       "fabricante": "Welmy",
@@ -6731,7 +6733,7 @@
       "laudos": []
     },
     {
-      "tag": "AFT0E2000011",
+      "tag": "HEF-0373",
       "nome": "Guincho Paciente",
       "planoDescricao": "Guincho Paciente",
       "fabricante": "Freedom",
@@ -6749,7 +6751,7 @@
       "laudos": []
     },
     {
-      "tag": "?FTDIN000012",
+      "tag": "HEF-0374",
       "nome": "Dinamometro (Balança)",
       "planoDescricao": "Dinamometro (Balança)",
       "fabricante": "Freedom",
@@ -6767,7 +6769,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120040316",
+      "tag": "HEF-0375",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6785,7 +6787,7 @@
       "laudos": []
     },
     {
-      "tag": "91090120050320",
+      "tag": "HEF-0376",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6803,7 +6805,7 @@
       "laudos": []
     },
     {
-      "tag": "9133012100239",
+      "tag": "HEF-0377",
       "nome": "Bomba Enteral",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6821,7 +6823,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000292",
+      "tag": "HEF-0378",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6839,7 +6841,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000424",
+      "tag": "HEF-0379",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6857,7 +6859,7 @@
       "laudos": []
     },
     {
-      "tag": "6012508000461",
+      "tag": "HEF-0380",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6875,7 +6877,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509002184",
+      "tag": "HEF-0381",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6893,7 +6895,7 @@
       "laudos": []
     },
     {
-      "tag": "6012509001840",
+      "tag": "HEF-0382",
       "nome": "Bomba Infusão",
       "planoDescricao": "Bomba de Infusão",
       "fabricante": "Medcaptain",
@@ -6911,7 +6913,7 @@
       "laudos": []
     },
     {
-      "tag": "7713",
+      "tag": "HEF-0383",
       "nome": "Cardioversor",
       "planoDescricao": "Desfibrilador",
       "fabricante": "Nihon Kohden",
@@ -6929,7 +6931,7 @@
       "laudos": []
     },
     {
-      "tag": "AA7-63010884",
+      "tag": "HEF-0384",
       "nome": "Ventilador",
       "planoDescricao": "Ventilador",
       "fabricante": "Mindray",
@@ -6947,7 +6949,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0324",
+      "tag": "HEF-0385",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6965,7 +6967,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0190",
+      "tag": "HEF-0386",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -6983,7 +6985,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0296",
+      "tag": "HEF-0387",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7001,7 +7003,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0115",
+      "tag": "HEF-0388",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7019,7 +7021,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0256",
+      "tag": "HEF-0389",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7037,7 +7039,7 @@
       "laudos": []
     },
     {
-      "tag": "A340CC1884",
+      "tag": "HEF-0390",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7055,7 +7057,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0299",
+      "tag": "HEF-0391",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7073,7 +7075,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0139",
+      "tag": "HEF-0392",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7091,7 +7093,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0266",
+      "tag": "HEF-0393",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7109,7 +7111,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0183",
+      "tag": "HEF-0394",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7127,7 +7129,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0206",
+      "tag": "HEF-0395",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7145,7 +7147,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0228",
+      "tag": "HEF-0396",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7163,7 +7165,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0123",
+      "tag": "HEF-0397",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7181,7 +7183,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0214",
+      "tag": "HEF-0398",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7199,7 +7201,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0197",
+      "tag": "HEF-0399",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7217,7 +7219,7 @@
       "laudos": []
     },
     {
-      "tag": "B028CC0130",
+      "tag": "HEF-0400",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7235,7 +7237,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0210",
+      "tag": "HEF-0401",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7253,7 +7255,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0312",
+      "tag": "HEF-0402",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7271,7 +7273,7 @@
       "laudos": []
     },
     {
-      "tag": "B030CC0310",
+      "tag": "HEF-0403",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",
@@ -7289,7 +7291,7 @@
       "laudos": []
     },
     {
-      "tag": "B029CC0195",
+      "tag": "HEF-0404",
       "nome": "Cama Elétrica",
       "planoDescricao": "Cama Elétrica",
       "fabricante": "HillRom",

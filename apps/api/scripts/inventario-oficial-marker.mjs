@@ -2,9 +2,9 @@
  * Marcador idempotente da carga oficial HEF.
  * Tabela criada on-the-fly (sem migration) para o reset one-shot no Railway.
  */
-export const INVENTARIO_OFICIAL_CHAVE = "inventario_oficial_hef_v1";
+export const INVENTARIO_OFICIAL_CHAVE = "inventario_oficial_hef_v2";
 /** Segundo passo: impede laudos/planos HRTC de recriar OS depois do wipe oficial. */
-export const INVENTARIO_OFICIAL_SEM_HRTC_CHAVE = "inventario_oficial_hef_v1_sem_hrtc";
+export const INVENTARIO_OFICIAL_SEM_HRTC_CHAVE = "inventario_oficial_hef_v2_sem_hrtc";
 
 export function envFlagAtiva(nome) {
   const v = process.env[nome];

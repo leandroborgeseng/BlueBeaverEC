@@ -7,7 +7,7 @@ Use sempre os arquivos em `apps/api/scripts/dados/`:
 | `planos_manutencao_referencia.json` | Catálogo de tipos/planos |
 | `equipamento_plano_mapping.json` | Mapping equipamento → plano |
 | `aion_extract_v2.json` | Extract de equipamentos/planos |
-| `equipamentos-reais.json` | Import patrimonial oficial HEF (404 eq / 64 setores). Boot Railway faz wipe+carga **uma vez** (`inventario_oficial_hef_v1`). |
+| `equipamentos-reais.json` | Import patrimonial oficial HEF (404 eq / 64 setores, TAGs HEF-0001…). Boot Railway faz wipe+carga **uma vez** (`inventario_oficial_hef_v2`). |
 | `checklists-*` / `pops-biblioteca` | POPs e checklists |
 
 Cópias na raiz do monorepo são ignoradas pelo git e não devem ser usadas.
