@@ -503,6 +503,8 @@ export class OsService {
       maoDeObra?: { descricao: string; horas: number; valorHora?: number };
       deslocamentoKm?: number;
       servicoExecutado?: string;
+      resultadoAtendimento?: string;
+      condicaoFinal?: CondicaoUsoEquipamento;
       fechar?: boolean;
     },
   ) {
@@ -515,11 +517,20 @@ export class OsService {
       if (!data.responsavelId) {
         throw new BadRequestException("Informe responsável para fechar a OS Rápida");
       }
+      if (!data.servicoExecutado?.trim()) {
+        throw new BadRequestException("Informe o serviço realizado para fechar a OS Rápida");
+      }
+      if (!data.resultadoAtendimento?.trim()) {
+        throw new BadRequestException("Informe o resultado do atendimento para fechar a OS Rápida");
+      }
+      if (!data.condicaoFinal) {
+        throw new BadRequestException("Informe a condição final do equipamento — a OS não marca apto sozinha");
+      }
       const fechada = await this.changeStatus(user, created.numero, "fechar", {
         justificativa: data.servicoExecutado,
-        servicoRealizado: data.servicoExecutado || "OS rápida",
-        resultadoAtendimento: data.servicoExecutado || "Concluída em OS rápida",
-        condicaoFinal: CondicaoUsoEquipamento.APTO,
+        servicoRealizado: data.servicoExecutado,
+        resultadoAtendimento: data.resultadoAtendimento,
+        condicaoFinal: data.condicaoFinal,
         textoConclusaoPublico: data.servicoExecutado,
       });
       return { ...fechada, avisoDuplicidade: created.avisoDuplicidade, alertaCriticoUrgente: created.alertaCriticoUrgente, fechada: true };

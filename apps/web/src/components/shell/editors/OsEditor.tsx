@@ -635,24 +635,33 @@ export function OsEditor({
             />
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <Btn
-              onClick={() => {
-                if (!servico.trim() || !resultado.trim() || !condicaoFinal) {
-                  setErro("Para concluir, informe serviço realizado, resultado e a condição final do equipamento.");
-                  setTab("execucao");
-                  return;
-                }
-                setStatusModal("fechar");
-              }}
-            >
-              Concluir OS
-            </Btn>
-            <Btn variant="danger" onClick={() => setStatusModal("cancelar")}>
-              Cancelar OS
-            </Btn>
-            <Btn variant="ghost" onClick={() => setStatusModal("reabrir")}>
-              Efetivar reabertura
-            </Btn>
+            {os.status !== "CONCLUIDA" && os.status !== "CANCELADA" && (
+              <Btn
+                onClick={() => {
+                  if (!servico.trim() || !resultado.trim() || !condicaoFinal) {
+                    setErro("Para concluir, informe serviço realizado, resultado e a condição final do equipamento.");
+                    setTab("execucao");
+                    return;
+                  }
+                  setStatusModal("fechar");
+                }}
+              >
+                Concluir OS
+              </Btn>
+            )}
+            {(os.status === "NAO_ATRIBUIDA" ||
+              os.status === "ABERTA" ||
+              os.status === "EM_ANDAMENTO" ||
+              os.status === "AGUARDANDO") && (
+              <Btn variant="danger" onClick={() => setStatusModal("cancelar")}>
+                Cancelar OS
+              </Btn>
+            )}
+            {(os.status === "CONCLUIDA" || os.status === "CANCELADA") && (
+              <Btn variant="ghost" onClick={() => setStatusModal("reabrir")}>
+                Efetivar reabertura
+              </Btn>
+            )}
           </div>
         </div>
       )}

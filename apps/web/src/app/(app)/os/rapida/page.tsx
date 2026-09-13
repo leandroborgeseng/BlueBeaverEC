@@ -74,6 +74,8 @@ export default function OsRapidaPage() {
       observacaoRequisicao: String(fd.get("ocorrencia") || "") || undefined,
       responsavelId: String(fd.get("responsavelId") || "") || undefined,
       servicoExecutado: String(fd.get("servicoExecutado") || "") || undefined,
+      resultadoAtendimento: String(fd.get("resultadoAtendimento") || "") || undefined,
+      condicaoFinal: String(fd.get("condicaoFinal") || "") || undefined,
       deslocamentoKm: Number(fd.get("deslocamentoKm") || 0) || undefined,
       fechar,
     };
@@ -177,6 +179,22 @@ export default function OsRapidaPage() {
           <div>
             <FieldLabel>Serviço executado</FieldLabel>
             <textarea name="servicoExecutado" placeholder="Serviço executado (Interno/Externo)" rows={2} style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Resultado do atendimento</FieldLabel>
+            <textarea name="resultadoAtendimento" placeholder="O que ficou resolvido ou pendente" rows={2} style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Condição final do equipamento</FieldLabel>
+            <select name="condicaoFinal" defaultValue="" style={fieldStyle}>
+              <option value="">Selecione se for fechar a OS…</option>
+              <option value="APTO">Apto para uso</option>
+              <option value="RESTRITO">Uso restrito</option>
+              <option value="PARADO">Parado</option>
+            </select>
+            <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+              Fechar a OS não marca o equipamento como apto sozinho. Escolha a condição.
+            </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
             <div>

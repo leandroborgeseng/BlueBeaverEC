@@ -122,6 +122,14 @@ class RapidaDto {
   servicoExecutado?: string;
 
   @IsOptional()
+  @IsString()
+  resultadoAtendimento?: string;
+
+  @IsOptional()
+  @IsEnum(CondicaoUsoEquipamento)
+  condicaoFinal?: CondicaoUsoEquipamento;
+
+  @IsOptional()
   @IsBoolean()
   fechar?: boolean;
 }
