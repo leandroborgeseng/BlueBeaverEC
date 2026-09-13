@@ -20,8 +20,41 @@ export type StatusOS =
   | "NAO_ATRIBUIDA"
   | "ABERTA"
   | "EM_ANDAMENTO"
+  | "AGUARDANDO"
   | "CONCLUIDA"
   | "CANCELADA";
+
+export type VisibilidadeOs = "PUBLICO" | "INTERNO";
+
+export type CondicaoUsoEquipamento = "APTO" | "RESTRITO" | "PARADO";
+
+/** OS ainda em curso (não concluída/cancelada). */
+export const STATUS_OS_ATIVAS: StatusOS[] = [
+  "NAO_ATRIBUIDA",
+  "ABERTA",
+  "EM_ANDAMENTO",
+  "AGUARDANDO",
+];
+
+export const LABEL_STATUS_OS: Record<StatusOS, string> = {
+  NAO_ATRIBUIDA: "Aberta",
+  ABERTA: "Atribuída",
+  EM_ANDAMENTO: "Em atendimento",
+  AGUARDANDO: "Aguardando",
+  CONCLUIDA: "Concluída",
+  CANCELADA: "Cancelada",
+};
+
+export const LABEL_CONDICAO_USO: Record<CondicaoUsoEquipamento, string> = {
+  APTO: "Apto para uso",
+  RESTRITO: "Uso restrito",
+  PARADO: "Parado",
+};
+
+export function labelStatusOS(status?: string | null): string {
+  if (status && status in LABEL_STATUS_OS) return LABEL_STATUS_OS[status as StatusOS];
+  return status?.replace(/_/g, " ") ?? "—";
+}
 
 export type TipoOS = "CORRETIVA" | "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO";
 
@@ -245,10 +278,22 @@ export function podeEditarCadastros(perfil: PerfilAcesso, mapa?: MapaPermissoes)
   );
 }
 
-/** Aprovar/recusar solicitações, atribuir OS, cancelar/reabrir — nível de aprovação. */
+/** Aprovar/recusar solicitações, cancelar/reabrir — nível de aprovação. */
 export function podeAlterarStatusOS(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {
   if (mapa) return temPermissao(mapa, "os", PERMISSAO_NIVEL.EDICAO_APROVACAO);
   return perfil === "ENGENHEIRO" || perfil === "GESTOR" || perfil === "ADMIN";
+}
+
+/** Assumir, atribuir e transferir — qualquer colaborador com edição de OS. */
+export function podeAtribuirOS(perfil: PerfilAcesso, mapa?: MapaPermissoes): boolean {
+  if (mapa) return temPermissao(mapa, "os", PERMISSAO_NIVEL.EDICAO);
+  return (
+    perfil === "TECNICO" ||
+    perfil === "TECNICO_RESTRITO" ||
+    perfil === "ENGENHEIRO" ||
+    perfil === "GESTOR" ||
+    perfil === "ADMIN"
+  );
 }
 
 /** OS pode ir para qualquer perfil operacional — nunca para o usuário final (solicitante). */
@@ -273,11 +318,18 @@ export function funcaoResponsavelOS(perfil?: string | null, cargo?: string | nul
   return "Colaborador";
 }
 
-export type AcaoStatusOS = "iniciar" | "pausar" | "fechar" | "cancelar" | "reabrir";
+export type AcaoStatusOS =
+  | "iniciar"
+  | "pausar"
+  | "aguardar"
+  | "retomar"
+  | "fechar"
+  | "cancelar"
+  | "reabrir";
 
 /**
- * Técnico (EDICAO) inicia/pausa/fecha execução.
- * Cancelar/reabrir exige EDICAO_APROVACAO (engenheiro/gestor).
+ * Técnico (EDICAO) inicia/pausa/aguarda/fecha execução.
+ * Cancelar/reabrir (efetivar) exige EDICAO_APROVACAO (engenheiro/gestor).
  */
 export function podeExecutarAcaoStatusOS(
   perfil: PerfilAcesso,

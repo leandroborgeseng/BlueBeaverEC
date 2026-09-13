@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
+import { Prisma, StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
 import { PERMISSAO_NIVEL, podeAlterarStatusOS, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
@@ -21,17 +21,22 @@ export class SolicitacoesService {
       PERMISSAO_NIVEL.EDICAO,
     );
 
-    let solicitanteNome: string | undefined;
+    let filtroMinhas: Prisma.SolicitacaoServicoWhereInput | undefined;
     if (!podeTriagem) {
       const me = await this.prisma.usuario.findUnique({ where: { id: user.userId } });
-      solicitanteNome = me?.nome;
+      filtroMinhas = {
+        OR: [
+          { solicitanteUsuarioId: user.userId },
+          { solicitanteUsuarioId: null, solicitanteNome: me?.nome ?? "__none__" },
+        ],
+      };
     }
 
     return this.prisma.solicitacaoServico.findMany({
       where: {
         estabelecimentoId: user.estabelecimentoId,
         ...(status ? { status } : {}),
-        ...(solicitanteNome ? { solicitanteNome } : {}),
+        ...(filtroMinhas ?? {}),
       },
       include: { equipamento: true, ordemServico: true },
       orderBy: { createdAt: "desc" },
@@ -48,6 +53,9 @@ export class SolicitacoesService {
       equipamentoTag?: string;
       solicitanteNome?: string;
       ramal?: string;
+      equipamentoParado?: boolean;
+      impacto?: string;
+      anexos?: Array<{ dataUrl: string; nomeArquivo?: string }>;
     },
   ) {
     if (!data.descricao?.trim()) {
@@ -107,11 +115,35 @@ export class SolicitacoesService {
         urgencia: data.urgencia ?? UrgenciaSolicitacao.MEDIA,
         equipamentoId,
         solicitanteNome: data.solicitanteNome?.trim() || me?.nome || "Solicitante",
+        solicitanteUsuarioId: user.userId,
         ramal: data.ramal,
+        equipamentoParado: Boolean(data.equipamentoParado),
+        impacto: data.impacto?.trim() || null,
       },
     });
 
-    await converterSolicitacaoEmOs(this.prisma, sol, { usuarioId: user.userId });
+    const { os } = await converterSolicitacaoEmOs(this.prisma, sol, { usuarioId: user.userId });
+
+    if (data.anexos?.length && os) {
+      const { parseAnexoDataUrl } = await import("../os/os-anexos");
+      for (const anexo of data.anexos.slice(0, 5)) {
+        try {
+          const parsed = parseAnexoDataUrl(anexo.dataUrl, anexo.nomeArquivo);
+          await this.prisma.osAnexo.create({
+            data: {
+              ordemServicoId: os.id,
+              usuarioId: user.userId,
+              nomeArquivo: parsed.nomeArquivo,
+              mimeType: parsed.mimeType,
+              conteudo: parsed.buffer,
+              visibilidade: "PUBLICO",
+            },
+          });
+        } catch {
+          // ignora anexo inválido isolado para não perder o pedido
+        }
+      }
+    }
 
     return this.prisma.solicitacaoServico.findUniqueOrThrow({
       where: { id: sol.id },

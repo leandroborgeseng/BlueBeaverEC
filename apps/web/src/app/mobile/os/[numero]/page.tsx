@@ -54,6 +54,9 @@ export default function ExecucaoOsPage() {
   const [itemCodigo, setItemCodigo] = useState("");
   const [qtd, setQtd] = useState("1");
   const [obs, setObs] = useState("");
+  const [servico, setServico] = useState("");
+  const [resultado, setResultado] = useState("");
+  const [condicaoFinal, setCondicaoFinal] = useState<"" | "APTO" | "RESTRITO" | "PARADO">("");
   const [msg, setMsg] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -195,7 +198,18 @@ export default function ExecucaoOsPage() {
       setMsg("Assinatura digital obrigatória");
       return;
     }
-    const payload = { numero, observacoes: obs, assinaturaBase64 };
+    if (!servico.trim() || !resultado.trim() || !condicaoFinal) {
+      setMsg("Informe o serviço, o resultado e a condição do equipamento");
+      return;
+    }
+    const payload = {
+      numero,
+      observacoes: obs,
+      assinaturaBase64,
+      servicoRealizado: servico,
+      resultadoAtendimento: resultado,
+      condicaoFinal,
+    };
     if (!online) {
       await enqueue({ type: "FINALIZAR_OS", payload });
       setDone(true);
@@ -205,7 +219,13 @@ export default function ExecucaoOsPage() {
     try {
       await api(`/mobile/os/${numero}/finalizar`, {
         method: "POST",
-        body: JSON.stringify({ observacoes: obs, assinaturaBase64 }),
+        body: JSON.stringify({
+          observacoes: obs,
+          assinaturaBase64,
+          servicoRealizado: servico,
+          resultadoAtendimento: resultado,
+          condicaoFinal,
+        }),
       });
       setDone(true);
       setMsg("OS finalizada");
@@ -406,9 +426,33 @@ export default function ExecucaoOsPage() {
           {step === 3 && (
             <div style={{ display: "grid", gap: 12 }}>
               <textarea
+                value={servico}
+                onChange={(e) => setServico(e.target.value)}
+                placeholder="Serviço realizado"
+                rows={2}
+                style={{ ...fieldStyle, resize: "vertical" }}
+              />
+              <textarea
+                value={resultado}
+                onChange={(e) => setResultado(e.target.value)}
+                placeholder="Resultado do atendimento"
+                rows={2}
+                style={{ ...fieldStyle, resize: "vertical" }}
+              />
+              <select
+                value={condicaoFinal}
+                onChange={(e) => setCondicaoFinal(e.target.value as "" | "APTO" | "RESTRITO" | "PARADO")}
+                style={fieldStyle}
+              >
+                <option value="">Condição do equipamento…</option>
+                <option value="APTO">Equipamento apto para uso</option>
+                <option value="RESTRITO">Uso restrito</option>
+                <option value="PARADO">Equipamento parado</option>
+              </select>
+              <textarea
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
-                placeholder="Observações finais do atendimento"
+                placeholder="Texto claro para o solicitante"
                 rows={3}
                 style={{ ...fieldStyle, resize: "vertical" }}
               />

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/co
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -24,6 +25,18 @@ class FinalizarDto {
   @IsString()
   @MinLength(100)
   assinaturaBase64!: string;
+
+  @IsOptional()
+  @IsString()
+  servicoRealizado?: string;
+
+  @IsOptional()
+  @IsString()
+  resultadoAtendimento?: string;
+
+  @IsOptional()
+  @IsIn(["APTO", "RESTRITO", "PARADO"])
+  condicaoFinal?: "APTO" | "RESTRITO" | "PARADO";
 }
 
 class ChecklistItemDto {

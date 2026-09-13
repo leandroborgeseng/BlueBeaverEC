@@ -32,25 +32,28 @@ type Quadro = Record<string, OsCard[]> & {
     totals: Record<string, number>;
   };
 };
-type ColKey = "ABERTA" | "EM_ANDAMENTO" | "CONCLUIDA" | "CANCELADA";
+type ColKey = "NAO_ATRIBUIDA" | "ABERTA" | "EM_ANDAMENTO" | "AGUARDANDO" | "CONCLUIDA" | "CANCELADA";
 
-const COLS: ColKey[] = ["ABERTA", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"];
+const COLS: ColKey[] = ["NAO_ATRIBUIDA", "ABERTA", "EM_ANDAMENTO", "AGUARDANDO", "CONCLUIDA", "CANCELADA"];
 
 const COL_LABELS: Record<ColKey, string> = {
-  ABERTA: "Aberta",
-  EM_ANDAMENTO: "Em andamento",
+  NAO_ATRIBUIDA: "Aberta",
+  ABERTA: "Atribuída",
+  EM_ANDAMENTO: "Em atendimento",
+  AGUARDANDO: "Aguardando",
   CONCLUIDA: "Concluída",
   CANCELADA: "Cancelada",
 };
 
 function acaoParaDestino(from: ColKey, to: ColKey): { acao: string; precisaJustificativa?: boolean } | null {
   if (from === to) return null;
-  if (to === "EM_ANDAMENTO") return { acao: "iniciar" };
+  if (to === "EM_ANDAMENTO" && (from === "ABERTA" || from === "NAO_ATRIBUIDA")) return { acao: "iniciar" };
+  if (to === "EM_ANDAMENTO" && from === "AGUARDANDO") return { acao: "retomar" };
   if (to === "ABERTA" && from === "EM_ANDAMENTO") return { acao: "pausar" };
+  if (to === "AGUARDANDO") return { acao: "aguardar", precisaJustificativa: true };
   if (to === "ABERTA" && (from === "CONCLUIDA" || from === "CANCELADA")) {
     return { acao: "reabrir", precisaJustificativa: true };
   }
-  if (to === "CONCLUIDA") return { acao: "fechar" };
   if (to === "CANCELADA") return { acao: "cancelar", precisaJustificativa: true };
   return null;
 }

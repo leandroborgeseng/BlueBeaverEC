@@ -152,7 +152,7 @@ export async function listarResponsaveisAtribuiveis(prisma: PrismaService, estab
         },
       },
       osResponsavel: {
-        where: { status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] } },
+        where: { status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] } },
         select: { id: true },
       },
     },

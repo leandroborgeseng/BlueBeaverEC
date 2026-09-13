@@ -5,18 +5,39 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { PrioridadeOS, Prisma, ResultadoLaudo, StatusOS, TipoLaudo, TipoOS } from "@prisma/client";
+import {
+  CondicaoUsoEquipamento,
+  PrioridadeOS,
+  Prisma,
+  ResultadoLaudo,
+  StatusOS,
+  TipoLaudo,
+  TipoOS,
+  VisibilidadeOs,
+} from "@prisma/client";
 import {
   PERMISSAO_NIVEL,
   SLA_HORAS,
   podeAlterarStatusOS,
+  podeAtribuirOS,
   podeExecutarAcaoStatusOS,
   temPermissao,
+  type AcaoStatusOS,
   type PrioridadeOS as PrioridadeShared,
 } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { colaboradorPodeReceberOS, listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
+import { parseAnexoDataUrl } from "./os-anexos";
+import { atribuicaoConflitou, transicaoStatusOS } from "./os-transicoes";
+import { ehSolicitante, filtrarTimeline, visibilidadeLog } from "./os-visibilidade";
+
+const STATUS_ATIVAS: StatusOS[] = [
+  StatusOS.NAO_ATRIBUIDA,
+  StatusOS.ABERTA,
+  StatusOS.EM_ANDAMENTO,
+  StatusOS.AGUARDANDO,
+];
 
 const TIPOS_OS_EXIGEM_LAUDO: TipoOS[] = [
   TipoOS.PREVENTIVA,
@@ -52,23 +73,34 @@ export class OsService {
       setor?: string;
       oficina?: string;
       atrasada?: boolean;
+      responsavelId?: string;
+      equipamento?: string;
+      de?: string;
+      ate?: string;
+      fila?: "nao-atribuidas" | "minhas" | "do-outro" | "em-atendimento" | "aguardando";
+      colaboradorId?: string;
       page?: number;
       pageSize?: number;
     },
   ) {
     const page = Math.max(1, query.page ?? 1);
     const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
+    const q = query.q?.trim();
     const where: Prisma.OrdemServicoWhereInput = {
       estabelecimentoId,
       ...(query.situacao ? { status: query.situacao } : {}),
       ...(query.prioridade ? { prioridade: query.prioridade } : {}),
       ...(query.oficina ? { oficina: { contains: query.oficina, mode: "insensitive" } } : {}),
-      ...(query.q
+      ...(query.responsavelId ? { responsavelId: query.responsavelId } : {}),
+      ...(q
         ? {
             OR: [
-              { codigo: { contains: query.q, mode: "insensitive" } },
-              { equipamento: { tag: { contains: query.q, mode: "insensitive" } } },
-              { equipamento: { nome: { contains: query.q, mode: "insensitive" } } },
+              { codigo: { contains: q, mode: "insensitive" } },
+              { solicitacao: { protocolo: { contains: q, mode: "insensitive" } } },
+              { equipamento: { tag: { contains: q, mode: "insensitive" } } },
+              { equipamento: { nome: { contains: q, mode: "insensitive" } } },
+              { equipamento: { patrimonio: { contains: q, mode: "insensitive" } } },
+              { equipamento: { nSerie: { contains: q, mode: "insensitive" } } },
             ],
           }
         : {}),
@@ -84,6 +116,43 @@ export class OsService {
           ],
         },
       ];
+    }
+
+    if (query.equipamento?.trim()) {
+      const eq = query.equipamento.trim();
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { equipamento: { tag: { contains: eq, mode: "insensitive" } } },
+            { equipamento: { nome: { contains: eq, mode: "insensitive" } } },
+            { equipamento: { patrimonio: { contains: eq, mode: "insensitive" } } },
+            { equipamento: { nSerie: { contains: eq, mode: "insensitive" } } },
+          ],
+        },
+      ];
+    }
+
+    if (query.de || query.ate) {
+      where.abertura = {
+        ...(query.de ? { gte: new Date(query.de) } : {}),
+        ...(query.ate ? { lte: new Date(`${query.ate}T23:59:59.999`) } : {}),
+      };
+    }
+
+    if (query.fila === "nao-atribuidas") {
+      where.status = StatusOS.NAO_ATRIBUIDA;
+      where.responsavelId = null;
+    } else if (query.fila === "em-atendimento") {
+      where.status = StatusOS.EM_ANDAMENTO;
+    } else if (query.fila === "aguardando") {
+      where.status = StatusOS.AGUARDANDO;
+    } else if (query.fila === "minhas" && query.colaboradorId) {
+      where.responsavelId = query.colaboradorId;
+      where.status = { in: STATUS_ATIVAS };
+    } else if (query.fila === "do-outro" && query.colaboradorId) {
+      where.responsavelId = { not: query.colaboradorId };
+      where.status = { in: STATUS_ATIVAS };
     }
 
     if (query.atrasada === true) {
@@ -110,6 +179,7 @@ export class OsService {
           equipamento: { include: { setor: true, descricao: true } },
           setor: true,
           responsavel: true,
+          solicitacao: { select: { protocolo: true, solicitanteNome: true } },
         },
         orderBy: [{ prioridade: "desc" }, { abertura: "desc" }],
         skip: (page - 1) * pageSize,
@@ -117,11 +187,7 @@ export class OsService {
       }),
     ]);
 
-    const items = rows.map((os) => ({
-      ...os,
-      equipamento: this.equipamentoExibicao(os),
-      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
-    }));
+    const items = rows.map((os) => this.decorateListItem(os));
 
     return {
       items,
@@ -131,7 +197,7 @@ export class OsService {
     };
   }
 
-  async getByNumero(estabelecimentoId: string, numero: number) {
+  async getByNumero(estabelecimentoId: string, numero: number, perfil?: string) {
     const os = await this.prisma.ordemServico.findUnique({
       where: { estabelecimentoId_numero: { estabelecimentoId, numero } },
       include: {
@@ -145,15 +211,72 @@ export class OsService {
         logs: {
           include: { usuario: { select: { nome: true, email: true } } },
           orderBy: { createdAt: "desc" },
-          take: 30,
+          take: 80,
+        },
+        comentarios: {
+          include: { usuario: { select: { nome: true } } },
+          orderBy: { createdAt: "desc" },
+          take: 80,
+        },
+        anexos: {
+          select: {
+            id: true,
+            nomeArquivo: true,
+            mimeType: true,
+            visibilidade: true,
+            createdAt: true,
+            usuario: { select: { nome: true } },
+          },
+          orderBy: { createdAt: "desc" },
         },
       },
     });
     if (!os) throw new NotFoundException(`OS ${numero} não encontrada`);
+    const logs = filtrarTimeline(os.logs, perfil);
+    const comentarios = filtrarTimeline(os.comentarios, perfil);
+    const anexos = filtrarTimeline(os.anexos, perfil);
+    const timeline = filtrarTimeline(
+      [
+        ...logs.map((l) => ({
+          id: `log-${l.id}`,
+          tipo: "LOG" as const,
+          acao: l.acao,
+          texto: l.justificativa,
+          visibilidade: l.visibilidade,
+          createdAt: l.createdAt,
+          autor: l.usuario?.nome ?? null,
+        })),
+        ...comentarios.map((c) => ({
+          id: `com-${c.id}`,
+          tipo: "COMENTARIO" as const,
+          acao: "COMENTARIO",
+          texto: c.texto,
+          visibilidade: c.visibilidade,
+          createdAt: c.createdAt,
+          autor: c.usuario?.nome ?? null,
+        })),
+        ...anexos.map((a) => ({
+          id: `anx-${a.id}`,
+          tipo: "ANEXO" as const,
+          acao: "ANEXO",
+          texto: a.nomeArquivo,
+          visibilidade: a.visibilidade,
+          createdAt: a.createdAt,
+          autor: a.usuario?.nome ?? null,
+        })),
+      ],
+      perfil,
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     return {
       ...os,
+      logs,
+      comentarios,
+      anexos,
+      timeline,
       equipamento: this.equipamentoExibicao(os),
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+      condicaoUsoAtual: os.equipamento && "condicaoUso" in os.equipamento ? os.equipamento.condicaoUso : null,
     };
   }
 
@@ -174,11 +297,7 @@ export class OsService {
       include: { equipamento: { include: { setor: true } }, setor: true },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
     });
-    return rows.map((os) => ({
-      ...os,
-      equipamento: this.equipamentoExibicao(os),
-      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
-    }));
+    return rows.map((os) => this.decorateListItem(os));
   }
 
   async ativasDoEquipamento(estabelecimentoId: string, tag: string) {
@@ -186,19 +305,20 @@ export class OsService {
       where: {
         estabelecimentoId,
         equipamento: { tag },
-        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        status: { in: STATUS_ATIVAS },
       },
       select: { numero: true, status: true, prioridade: true },
     });
   }
 
-  async log(estabelecimentoId: string, numero: number) {
+  async log(estabelecimentoId: string, numero: number, perfil?: string) {
     const os = await this.findByNumero(estabelecimentoId, numero);
-    return this.prisma.logOrdemServico.findMany({
+    const rows = await this.prisma.logOrdemServico.findMany({
       where: { ordemServicoId: os.id },
       include: { usuario: { select: { nome: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
+    return filtrarTimeline(rows, perfil);
   }
 
   async auditoria(
@@ -395,7 +515,13 @@ export class OsService {
       if (!data.responsavelId) {
         throw new BadRequestException("Informe responsável para fechar a OS Rápida");
       }
-      const fechada = await this.changeStatus(user, created.numero, "fechar", data.servicoExecutado);
+      const fechada = await this.changeStatus(user, created.numero, "fechar", {
+        justificativa: data.servicoExecutado,
+        servicoRealizado: data.servicoExecutado || "OS rápida",
+        resultadoAtendimento: data.servicoExecutado || "Concluída em OS rápida",
+        condicaoFinal: CondicaoUsoEquipamento.APTO,
+        textoConclusaoPublico: data.servicoExecutado,
+      });
       return { ...fechada, avisoDuplicidade: created.avisoDuplicidade, alertaCriticoUrgente: created.alertaCriticoUrgente, fechada: true };
     }
 
@@ -406,21 +532,74 @@ export class OsService {
     return listarResponsaveisAtribuiveis(this.prisma, user.estabelecimentoId);
   }
 
-  async atribuir(user: AuthUser, numero: number, responsavelId: string) {
-    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
-      throw new ForbiddenException("Somente o Engenheiro pode atribuir OS");
+  async atribuir(
+    user: AuthUser,
+    numero: number,
+    opts: {
+      responsavelId: string;
+      expectedResponsavelId?: string | null;
+      expectedVersao?: number;
+    },
+  ) {
+    if (!podeAtribuirOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para atribuir OS");
     }
-    await this.assertResponsavelAtribuivel(user.estabelecimentoId, responsavelId);
+    await this.assertResponsavelAtribuivel(user.estabelecimentoId, opts.responsavelId);
     const os = await this.findByNumero(user.estabelecimentoId, numero);
-    return this.prisma.ordemServico.update({
-      where: { id: os.id },
+    if (
+      atribuicaoConflitou({
+        atualResponsavelId: os.responsavelId,
+        expectedResponsavelId: opts.expectedResponsavelId,
+        atualVersao: os.atribuicaoVersao,
+        expectedVersao: opts.expectedVersao,
+      })
+    ) {
+      throw new ConflictException(
+        "Esta OS já foi atribuída por outra pessoa. Atualize a tela e tente de novo.",
+      );
+    }
+
+    const where: Prisma.OrdemServicoWhereInput = {
+      id: os.id,
+      ...(opts.expectedVersao != null ? { atribuicaoVersao: opts.expectedVersao } : {}),
+      ...(opts.expectedResponsavelId !== undefined
+        ? { responsavelId: opts.expectedResponsavelId }
+        : {}),
+    };
+
+    const updated = await this.prisma.ordemServico.updateMany({
+      where,
       data: {
-        responsavelId,
-        status: StatusOS.ABERTA,
-        logs: {
-          create: { usuarioId: user.userId, acao: "ATRIBUICAO" },
-        },
+        responsavelId: opts.responsavelId,
+        status: os.status === StatusOS.NAO_ATRIBUIDA ? StatusOS.ABERTA : os.status,
+        atribuicaoVersao: { increment: 1 },
       },
+    });
+    if (updated.count === 0) {
+      throw new ConflictException(
+        "Esta OS já foi atribuída por outra pessoa. Atualize a tela e tente de novo.",
+      );
+    }
+
+    await this.prisma.logOrdemServico.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        acao: os.responsavelId && os.responsavelId !== opts.responsavelId ? "TRANSFERENCIA" : "ATRIBUICAO",
+        visibilidade: VisibilidadeOs.PUBLICO,
+      },
+    });
+
+    return this.findByNumero(user.estabelecimentoId, numero);
+  }
+
+  async assumir(user: AuthUser, numero: number, expected?: { expectedResponsavelId?: string | null; expectedVersao?: number }) {
+    const colab = await this.colaboradorDoUsuario(user);
+    if (!colab) throw new ForbiddenException("Seu usuário não está vinculado como colaborador");
+    return this.atribuir(user, numero, {
+      responsavelId: colab.id,
+      expectedResponsavelId: expected?.expectedResponsavelId ?? null,
+      expectedVersao: expected?.expectedVersao,
     });
   }
 
@@ -463,46 +642,51 @@ export class OsService {
   async changeStatus(
     user: AuthUser,
     numero: number,
-    acao: "fechar" | "cancelar" | "reabrir" | "iniciar" | "pausar",
-    justificativa?: string,
+    acao: AcaoStatusOS,
+    opts: {
+      justificativa?: string;
+      servicoRealizado?: string;
+      resultadoAtendimento?: string;
+      condicaoFinal?: CondicaoUsoEquipamento;
+      textoConclusaoPublico?: string;
+      diagnostico?: string;
+    } = {},
   ) {
     if (!podeExecutarAcaoStatusOS(user.perfil, acao, user.permissoesModulos)) {
       throw new ForbiddenException("Sem permissão para alterar o status desta OS");
     }
 
     const os = await this.findByNumero(user.estabelecimentoId, numero);
-
-    if (acao === "iniciar") {
-      if (os.status !== StatusOS.ABERTA && os.status !== StatusOS.NAO_ATRIBUIDA) {
-        throw new ConflictException("Só é possível iniciar OS aberta ou não atribuída");
+    let responsavelId = os.responsavelId;
+    if ((acao === "iniciar" || acao === "fechar") && !responsavelId) {
+      const colab = await this.colaboradorDoUsuario(user);
+      if (!colab) {
+        throw new ForbiddenException("Seu usuário não está vinculado como colaborador para assumir a OS");
       }
-      return this.prisma.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: StatusOS.EM_ANDAMENTO,
-          logs: { create: { usuarioId: user.userId, acao: "INICIO_EXECUCAO", justificativa } },
-        },
-      });
+      responsavelId = colab.id;
     }
+    const trans = transicaoStatusOS(os.status, acao, Boolean(responsavelId));
+    if (!trans.ok) throw new ConflictException(trans.erro);
 
-    if (acao === "pausar") {
-      if (os.status !== StatusOS.EM_ANDAMENTO) {
-        throw new ConflictException("Só é possível pausar OS em andamento");
-      }
-      return this.prisma.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: os.responsavelId ? StatusOS.ABERTA : StatusOS.NAO_ATRIBUIDA,
-          logs: { create: { usuarioId: user.userId, acao: "PAUSA", justificativa } },
-        },
-      });
+    if (acao === "aguardar" && !opts.justificativa?.trim()) {
+      throw new BadRequestException("Informe o motivo do aguardo");
     }
 
     if (acao === "fechar") {
       if (os.pendencia?.trim()) {
         throw new ConflictException("Não é possível fechar OS com pendência aberta");
       }
-      await this.assertLaudoAprovadoParaFechar(user, os, justificativa);
+      const servico = opts.servicoRealizado?.trim() || os.servicoRealizado?.trim();
+      const resultado = opts.resultadoAtendimento?.trim() || os.resultadoAtendimento?.trim();
+      const condicao = opts.condicaoFinal ?? os.condicaoFinal;
+      if (!servico) throw new BadRequestException("Informe o serviço realizado");
+      if (!resultado) throw new BadRequestException("Informe o resultado do atendimento");
+      if (!condicao) throw new BadRequestException("Informe a condição final do equipamento");
+      await this.assertLaudoAprovadoParaFechar(user, os, opts.justificativa);
+      const textoPublico =
+        opts.textoConclusaoPublico?.trim() ||
+        `Serviço realizado: ${servico}\nResultado: ${resultado}`;
+
       return this.prisma.$transaction(async (tx) => {
         const reservas = await tx.estoqueReserva.findMany({
           where: { ordemServicoId: os.id, ativa: true },
@@ -517,19 +701,44 @@ export class OsService {
           where: { ordemServicoId: os.id, ativa: true },
           data: { ativa: false },
         });
+        if (os.equipamentoId) {
+          await tx.equipamento.update({
+            where: { id: os.equipamentoId },
+            data: { condicaoUso: condicao },
+          });
+        }
         return tx.ordemServico.update({
           where: { id: os.id },
           data: {
             status: StatusOS.CONCLUIDA,
             fechamento: new Date(),
-            logs: { create: { usuarioId: user.userId, acao: "FECHAMENTO", justificativa } },
+            motivoAguardo: null,
+            servicoRealizado: servico,
+            resultadoAtendimento: resultado,
+            condicaoFinal: condicao,
+            diagnostico: opts.diagnostico?.trim() || os.diagnostico,
+            textoConclusaoPublico: textoPublico,
+            ...(responsavelId && !os.responsavelId
+              ? { responsavelId, atribuicaoVersao: { increment: 1 } }
+              : {}),
+            pedidoReaberturaJustificativa: null,
+            pedidoReaberturaEm: null,
+            pedidoReaberturaPorId: null,
+            logs: {
+              create: {
+                usuarioId: user.userId,
+                acao: "FECHAMENTO",
+                justificativa: textoPublico,
+                visibilidade: VisibilidadeOs.PUBLICO,
+              },
+            },
           },
         });
       });
     }
 
     if (acao === "cancelar") {
-      if (!justificativa?.trim()) {
+      if (!opts.justificativa?.trim()) {
         throw new BadRequestException("Justificativa obrigatória para cancelar");
       }
       return this.prisma.$transaction(async (tx) => {
@@ -546,7 +755,8 @@ export class OsService {
               create: {
                 usuarioId: user.userId,
                 acao: "CANCELAMENTO",
-                justificativa: justificativa.trim(),
+                justificativa: opts.justificativa!.trim(),
+                visibilidade: VisibilidadeOs.PUBLICO,
               },
             },
           },
@@ -554,19 +764,66 @@ export class OsService {
       });
     }
 
-    if (!justificativa?.trim()) {
-      throw new BadRequestException("Justificativa obrigatória para reabrir");
+    if (acao === "reabrir") {
+      if (!opts.justificativa?.trim()) {
+        throw new BadRequestException("Justificativa obrigatória para reabrir");
+      }
+      const snapshot = JSON.stringify({
+        status: os.status,
+        fechamento: os.fechamento,
+        servicoRealizado: os.servicoRealizado,
+        resultadoAtendimento: os.resultadoAtendimento,
+        condicaoFinal: os.condicaoFinal,
+        textoConclusaoPublico: os.textoConclusaoPublico,
+        em: new Date().toISOString(),
+      });
+      return this.prisma.ordemServico.update({
+        where: { id: os.id },
+        data: {
+          status: trans.proximo as StatusOS,
+          fechamento: null,
+          conclusaoSnapshot: snapshot,
+          pedidoReaberturaJustificativa: null,
+          pedidoReaberturaEm: null,
+          pedidoReaberturaPorId: null,
+          logs: {
+            create: {
+              usuarioId: user.userId,
+              acao: "REABERTURA",
+              justificativa: opts.justificativa.trim(),
+              visibilidade: VisibilidadeOs.PUBLICO,
+            },
+          },
+        },
+      });
     }
+
+    const acaoLog =
+      acao === "iniciar"
+        ? "INICIO_EXECUCAO"
+        : acao === "pausar"
+          ? "PAUSA"
+          : acao === "aguardar"
+            ? "AGUARDO"
+            : "RETOMADA";
+
     return this.prisma.ordemServico.update({
       where: { id: os.id },
       data: {
-        status: os.responsavelId ? StatusOS.ABERTA : StatusOS.NAO_ATRIBUIDA,
-        fechamento: null,
+        status: trans.proximo as StatusOS,
+        motivoAguardo: acao === "aguardar" ? opts.justificativa!.trim() : acao === "retomar" ? null : os.motivoAguardo,
+        ...(responsavelId && !os.responsavelId
+          ? { responsavelId, atribuicaoVersao: { increment: 1 } }
+          : {}),
         logs: {
           create: {
             usuarioId: user.userId,
-            acao: "REABERTURA",
-            justificativa: justificativa.trim(),
+            acao: acaoLog,
+            justificativa:
+              acao === "iniciar" && !os.responsavelId
+                ? "Atendimento iniciado e OS assumida"
+                : opts.justificativa,
+            visibilidade: VisibilidadeOs.PUBLICO,
           },
         },
       },
@@ -578,7 +835,7 @@ export class OsService {
       where: {
         estabelecimentoId,
         responsavelId: tecnicoColaboradorId,
-        status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        status: { in: STATUS_ATIVAS },
       },
       include: { equipamento: { include: { setor: true } } },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
@@ -587,6 +844,262 @@ export class OsService {
       ...os,
       atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
     }));
+  }
+
+  async comentar(
+    user: AuthUser,
+    numero: number,
+    texto: string,
+    visibilidade: VisibilidadeOs = VisibilidadeOs.PUBLICO,
+  ) {
+    if (!texto?.trim()) throw new BadRequestException("Escreva uma mensagem");
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    const vis = ehSolicitante(user.perfil) ? VisibilidadeOs.PUBLICO : visibilidade;
+    return this.prisma.osComentario.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        texto: texto.trim(),
+        visibilidade: vis,
+      },
+      include: { usuario: { select: { nome: true } } },
+    });
+  }
+
+  async anexar(
+    user: AuthUser,
+    numero: number,
+    data: { dataUrl: string; nomeArquivo?: string; visibilidade?: VisibilidadeOs },
+  ) {
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    const parsed = parseAnexoDataUrl(data.dataUrl, data.nomeArquivo);
+    const vis = ehSolicitante(user.perfil)
+      ? VisibilidadeOs.PUBLICO
+      : (data.visibilidade ?? VisibilidadeOs.PUBLICO);
+    const row = await this.prisma.osAnexo.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        nomeArquivo: parsed.nomeArquivo,
+        mimeType: parsed.mimeType,
+        conteudo: parsed.buffer,
+        visibilidade: vis,
+      },
+    });
+    await this.prisma.logOrdemServico.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        acao: "ANEXO",
+        justificativa: parsed.nomeArquivo,
+        visibilidade: vis,
+      },
+    });
+    return {
+      id: row.id,
+      nomeArquivo: row.nomeArquivo,
+      mimeType: row.mimeType,
+      visibilidade: row.visibilidade,
+      createdAt: row.createdAt,
+    };
+  }
+
+  async baixarAnexo(user: AuthUser, numero: number, anexoId: string) {
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    const anexo = await this.prisma.osAnexo.findFirst({
+      where: { id: anexoId, ordemServicoId: os.id },
+    });
+    if (!anexo) throw new NotFoundException("Anexo não encontrado");
+    if (ehSolicitante(user.perfil) && anexo.visibilidade === VisibilidadeOs.INTERNO) {
+      throw new ForbiddenException("Anexo interno");
+    }
+    return anexo;
+  }
+
+  async pedirReabertura(user: AuthUser, numero: number, justificativa: string) {
+    if (!justificativa?.trim()) {
+      throw new BadRequestException("Informe o motivo do pedido de reabertura");
+    }
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    if (os.status !== StatusOS.CONCLUIDA) {
+      throw new ConflictException("Só é possível pedir reabertura de OS concluída");
+    }
+    await this.assertPodeVerComoSolicitante(user, os);
+    const updated = await this.prisma.ordemServico.update({
+      where: { id: os.id },
+      data: {
+        pedidoReaberturaJustificativa: justificativa.trim(),
+        pedidoReaberturaEm: new Date(),
+        pedidoReaberturaPorId: user.userId,
+        logs: {
+          create: {
+            usuarioId: user.userId,
+            acao: "PEDIDO_REABERTURA",
+            justificativa: justificativa.trim(),
+            visibilidade: VisibilidadeOs.PUBLICO,
+          },
+        },
+      },
+    });
+    return updated;
+  }
+
+  async vincularEquipamento(user: AuthUser, numero: number, equipamentoTag: string) {
+    if (!podeAtribuirOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para identificar o equipamento");
+    }
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    const eq = await this.prisma.equipamento.findFirst({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        tag: { equals: equipamentoTag.trim(), mode: "insensitive" },
+      },
+    });
+    if (!eq) throw new NotFoundException("Equipamento não encontrado");
+    return this.prisma.ordemServico.update({
+      where: { id: os.id },
+      data: {
+        equipamentoId: eq.id,
+        setorId: eq.setorId,
+        identificacaoPendente: false,
+        logs: {
+          create: {
+            usuarioId: user.userId,
+            acao: "IDENTIFICACAO_EQUIPAMENTO",
+            justificativa: eq.tag,
+            visibilidade: VisibilidadeOs.PUBLICO,
+          },
+        },
+      },
+    });
+  }
+
+  async atualizarExecucao(
+    user: AuthUser,
+    numero: number,
+    data: {
+      diagnostico?: string;
+      servicoRealizado?: string;
+      resultadoAtendimento?: string;
+      pendencia?: string | null;
+      itens?: Array<{ tipo?: "MATERIAL" | "MAO_DE_OBRA"; descricao: string; quantidade?: number }>;
+    },
+  ) {
+    if (!podeAtribuirOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para registrar a execução");
+    }
+    const os = await this.findByNumero(user.estabelecimentoId, numero);
+    if (data.itens?.length) {
+      for (const item of data.itens) {
+        if (!item.descricao?.trim()) continue;
+        await this.prisma.ordemServicoItem.create({
+          data: {
+            ordemServicoId: os.id,
+            tipo: item.tipo === "MAO_DE_OBRA" ? "MAO_DE_OBRA" : "MATERIAL",
+            descricao: item.descricao.trim(),
+            quantidade: item.quantidade ?? 1,
+          },
+        });
+      }
+    }
+    return this.prisma.ordemServico.update({
+      where: { id: os.id },
+      data: {
+        diagnostico: data.diagnostico?.trim() ?? os.diagnostico,
+        servicoRealizado: data.servicoRealizado?.trim() ?? os.servicoRealizado,
+        resultadoAtendimento: data.resultadoAtendimento?.trim() ?? os.resultadoAtendimento,
+        pendencia: data.pendencia !== undefined ? data.pendencia?.trim() || null : os.pendencia,
+        logs: data.diagnostico?.trim()
+          ? {
+              create: {
+                usuarioId: user.userId,
+                acao: "DIAGNOSTICO",
+                justificativa: data.diagnostico.trim(),
+                visibilidade: visibilidadeLog("DIAGNOSTICO"),
+              },
+            }
+          : undefined,
+      },
+    });
+  }
+
+  async areaContagens(estabelecimentoId: string, colaboradorId?: string) {
+    const base = { estabelecimentoId, status: { in: STATUS_ATIVAS } };
+    const [naoAtribuidas, minhas, doOutro, emAtendimento, aguardando] = await Promise.all([
+      this.prisma.ordemServico.count({
+        where: { estabelecimentoId, status: StatusOS.NAO_ATRIBUIDA },
+      }),
+      colaboradorId
+        ? this.prisma.ordemServico.count({ where: { ...base, responsavelId: colaboradorId } })
+        : Promise.resolve(0),
+      colaboradorId
+        ? this.prisma.ordemServico.count({
+            where: { ...base, responsavelId: { not: colaboradorId } },
+          })
+        : this.prisma.ordemServico.count({
+            where: { ...base, responsavelId: { not: null } },
+          }),
+      this.prisma.ordemServico.count({
+        where: { estabelecimentoId, status: StatusOS.EM_ANDAMENTO },
+      }),
+      this.prisma.ordemServico.count({
+        where: { estabelecimentoId, status: StatusOS.AGUARDANDO },
+      }),
+    ]);
+    return { naoAtribuidas, minhas, doOutro, emAtendimento, aguardando };
+  }
+
+  async colaboradorDoUsuario(user: AuthUser) {
+    return this.prisma.colaborador.findFirst({
+      where: { usuarioId: user.userId, estabelecimentoId: user.estabelecimentoId, ativo: true },
+    });
+  }
+
+  private decorateListItem(os: {
+    prioridade: PrioridadeOS;
+    abertura: Date;
+    fechamento: Date | null;
+    status: StatusOS;
+    equipamentoParado?: boolean;
+    identificacaoPendente?: boolean;
+    pedidoReaberturaEm?: Date | null;
+    equipamento?: {
+      tag: string;
+      nome: string;
+      condicaoUso?: string;
+      setor?: { nome: string } | null;
+    } | null;
+    setor?: { nome: string } | null;
+  }) {
+    return {
+      ...os,
+      equipamento: this.equipamentoExibicao(os),
+      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+      destaqueParado: Boolean(os.equipamentoParado || os.equipamento?.condicaoUso === "PARADO"),
+      identificacaoPendente: Boolean(os.identificacaoPendente || !os.equipamento),
+      pedidoReabertura: Boolean(os.pedidoReaberturaEm),
+    };
+  }
+
+  async assertPodeVerComoSolicitante(
+    user: AuthUser,
+    os: { solicitacaoId?: string | null },
+  ) {
+    if (!ehSolicitante(user.perfil)) return;
+    if (!os.solicitacaoId) throw new ForbiddenException("Sem acesso a esta OS");
+    const sol = await this.prisma.solicitacaoServico.findUnique({
+      where: { id: os.solicitacaoId },
+    });
+    if (!sol) throw new ForbiddenException("Sem acesso a esta OS");
+    if (sol.solicitanteUsuarioId && sol.solicitanteUsuarioId !== user.userId) {
+      throw new ForbiddenException("Você só acompanha as suas solicitações");
+    }
+    if (!sol.solicitanteUsuarioId) {
+      const me = await this.prisma.usuario.findUnique({ where: { id: user.userId } });
+      if (!me || sol.solicitanteNome !== me.nome) {
+        throw new ForbiddenException("Você só acompanha as suas solicitações");
+      }
+    }
   }
 
   private equipamentoExibicao(os: {

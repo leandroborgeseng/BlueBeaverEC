@@ -62,7 +62,7 @@ export default function NaoAtribuidasPage() {
     try {
       await api(`/os/${numero}/atribuir`, {
         method: "PATCH",
-        body: JSON.stringify({ responsavelId }),
+        body: JSON.stringify({ responsavelId, expectedResponsavelId: null }),
       });
       setMsg(`OS-${numero} atribuída`);
       setErro(null);

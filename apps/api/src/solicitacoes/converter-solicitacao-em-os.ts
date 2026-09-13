@@ -32,14 +32,19 @@ export function observacaoDaSolicitacao(sol: {
   solicitanteNome: string;
   ramal?: string | null;
   setorNome: string;
+  equipamentoParado?: boolean;
+  impacto?: string | null;
 }): string {
   const ramal = sol.ramal?.trim() ? `Ramal: ${sol.ramal.trim()}` : "Ramal: não informado";
-  return [
+  const linhas = [
     `Pedido ${sol.protocolo} — ${sol.descricao.trim()}`,
     `Solicitante: ${sol.solicitanteNome}`,
     ramal,
     `Setor: ${sol.setorNome}`,
-  ].join("\n");
+  ];
+  if (sol.equipamentoParado) linhas.push("Equipamento informado como parado");
+  if (sol.impacto?.trim()) linhas.push(`Impacto: ${sol.impacto.trim()}`);
+  return linhas.join("\n");
 }
 
 export async function findSetorByNome(prisma: Db, estabelecimentoId: string, nome: string) {
@@ -79,6 +84,8 @@ export async function converterSolicitacaoEmOs(
     urgencia: UrgenciaSolicitacao;
     equipamentoId?: string | null;
     status: StatusSolicitacao;
+    equipamentoParado?: boolean;
+    impacto?: string | null;
   },
   opts: { usuarioId?: string; responsavelId?: string } = {},
 ) {
@@ -123,6 +130,9 @@ export async function converterSolicitacaoEmOs(
         responsavelId: opts.responsavelId,
         solicitacaoId: sol.id,
         status,
+        equipamentoParado: Boolean(sol.equipamentoParado),
+        impactoInformado: sol.impacto?.trim() || null,
+        identificacaoPendente: !sol.equipamentoId,
         logs: {
           create: {
             usuarioId: opts.usuarioId,

@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 
 const TABS: Array<{ href: string; label: string; hint: string }> = [
   {
+    href: "/os/area",
+    label: "Área de trabalho",
+    hint: "Fila do dia: assumir, atribuir e filtrar",
+  },
+  {
     href: "/os/filas",
     label: "Visão geral",
     hint: "Quando usar cada fila",

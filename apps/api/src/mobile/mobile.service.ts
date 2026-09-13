@@ -36,7 +36,7 @@ export class MobileService {
       where: {
         estabelecimentoId: user.estabelecimentoId,
         responsavelId: colaborador.id,
-        status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] },
       },
       include: { equipamento: { include: { setor: true } } },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
@@ -58,14 +58,14 @@ export class MobileService {
         where: {
           estabelecimentoId: user.estabelecimentoId,
           responsavelId: colaborador.id,
-          status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+          status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] },
         },
       }),
       this.prisma.ordemServico.count({
         where: {
           estabelecimentoId: user.estabelecimentoId,
           responsavelId: colaborador.id,
-          status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+          status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] },
           prioridade: "URGENTE",
         },
       }),
@@ -288,53 +288,43 @@ export class MobileService {
   async finalizar(
     user: AuthUser,
     numero: number,
-    body: { observacoes?: string; assinaturaBase64: string },
+    body: {
+      observacoes?: string;
+      assinaturaBase64: string;
+      servicoRealizado?: string;
+      resultadoAtendimento?: string;
+      condicaoFinal?: "APTO" | "RESTRITO" | "PARADO";
+    },
   ) {
     this.assertAssinaturaValida(body.assinaturaBase64);
 
     const os = await this.findOs(user.estabelecimentoId, numero);
     await this.assertPodeExecutar(user, os);
 
-    if (os.pendencia?.trim()) {
-      throw new ConflictException("Não é possível finalizar OS com pendência aberta");
-    }
+    const servico = body.servicoRealizado?.trim() || body.observacoes?.trim();
+    const resultado = body.resultadoAtendimento?.trim() || body.observacoes?.trim();
+    if (!servico) throw new BadRequestException("Informe o serviço realizado");
+    if (!resultado) throw new BadRequestException("Informe o resultado do atendimento");
+    if (!body.condicaoFinal) throw new BadRequestException("Informe a condição final do equipamento");
 
-    await this.os.assertLaudoAprovadoParaFechar(user, os);
-
-    return this.prisma.$transaction(async (tx) => {
-      const reservas = await tx.estoqueReserva.findMany({
-        where: { ordemServicoId: os.id, ativa: true },
-      });
-      for (const r of reservas) {
-        await tx.estoqueItem.update({
-          where: { id: r.estoqueItemId },
-          data: { qtdAtual: { decrement: r.quantidade } },
-        });
-      }
-      await tx.estoqueReserva.updateMany({
-        where: { ordemServicoId: os.id, ativa: true },
-        data: { ativa: false },
-      });
-      return tx.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: StatusOS.CONCLUIDA,
-          fechamento: new Date(),
-          logs: {
-            create: {
-              usuarioId: user.userId,
-              acao: "FECHAMENTO_MOBILE",
-              justificativa: [
-                body.observacoes,
-                `assinatura:${body.assinaturaBase64.slice(0, 80)}`,
-              ]
-                .filter(Boolean)
-                .join(" | "),
-            },
-          },
-        },
-      });
+    const fechada = await this.os.changeStatus(user, numero, "fechar", {
+      servicoRealizado: servico,
+      resultadoAtendimento: resultado,
+      condicaoFinal: body.condicaoFinal,
+      textoConclusaoPublico: body.observacoes?.trim() || `Serviço: ${servico}. Resultado: ${resultado}.`,
     });
+
+    await this.prisma.logOrdemServico.create({
+      data: {
+        ordemServicoId: os.id,
+        usuarioId: user.userId,
+        acao: "ASSINATURA_MOBILE",
+        justificativa: `assinatura:${body.assinaturaBase64.slice(0, 80)}`,
+        visibilidade: "INTERNO",
+      },
+    });
+
+    return fechada;
   }
 
   async syncQueue(
@@ -415,6 +405,11 @@ export class MobileService {
         await this.finalizar(user, Number(payload.numero), {
           observacoes: String(payload.observacoes ?? ""),
           assinaturaBase64: String(payload.assinaturaBase64 ?? ""),
+          servicoRealizado: payload.servicoRealizado ? String(payload.servicoRealizado) : undefined,
+          resultadoAtendimento: payload.resultadoAtendimento
+            ? String(payload.resultadoAtendimento)
+            : undefined,
+          condicaoFinal: payload.condicaoFinal as "APTO" | "RESTRITO" | "PARADO" | undefined,
         });
         break;
       case "CHECKLIST":

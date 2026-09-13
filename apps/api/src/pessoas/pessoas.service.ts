@@ -15,7 +15,7 @@ export class PessoasService {
         competencias: true,
         equipes: { include: { equipe: true } },
         osResponsavel: {
-          where: { status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] } },
+          where: { status: { in: [StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] } },
           select: { id: true },
         },
       },

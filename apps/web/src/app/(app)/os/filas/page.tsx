@@ -6,6 +6,11 @@ import { PageHeader, Surface } from "@/components/ui/aion-ui";
 
 const CARDS = [
   {
+    href: "/os/area",
+    title: "Área de trabalho",
+    body: "Fila do dia: não atribuídas, minhas, do outro, em atendimento e aguardando.",
+  },
+  {
     href: "/os/quadro-processos",
     title: "Quadro de processos",
     body: "Visão kanban por status. Use para acompanhar o fluxo e mover OS entre etapas.",

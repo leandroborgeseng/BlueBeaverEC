@@ -1,11 +1,21 @@
 import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
 import { StatusSolicitacao, UrgenciaSolicitacao } from "@prisma/client";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { SolicitacoesService } from "./solicitacoes.service";
+
+class AnexoPedidoDto {
+  @IsString()
+  dataUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  nomeArquivo?: string;
+}
 
 class CreateSolicitacaoDto {
   @IsString()
@@ -31,6 +41,20 @@ class CreateSolicitacaoDto {
   @IsOptional()
   @IsString()
   ramal?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  equipamentoParado?: boolean;
+
+  @IsOptional()
+  @IsString()
+  impacto?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AnexoPedidoDto)
+  anexos?: AnexoPedidoDto[];
 }
 
 class RecusarDto {

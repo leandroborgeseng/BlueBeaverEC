@@ -90,7 +90,7 @@ export function labelResponsavel(c: { nome: string; funcao?: string | null; carg
 
 export function destinoDesktop(perfil?: string | null) {
   if (perfil === "SOLICITANTE") return "/portal/abrir-solicitacao";
-  if (perfil === "TECNICO" || perfil === "TECNICO_RESTRITO") return "/os";
+  if (perfil === "TECNICO" || perfil === "TECNICO_RESTRITO") return "/os/area";
   return "/dashboard";
 }
 

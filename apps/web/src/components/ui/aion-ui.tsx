@@ -193,8 +193,13 @@ export function KpiCard({
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   ABERTA: { bg: "oklch(0.93 0.04 250)", color: "oklch(0.4 0.14 255)" },
+  NAO_ATRIBUIDA: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
   EM_ANDAMENTO: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
+  AGUARDANDO: { bg: "oklch(0.94 0.05 300)", color: "oklch(0.42 0.12 300)" },
   AGUARDANDO_PECA: { bg: "oklch(0.94 0.05 300)", color: "oklch(0.42 0.12 300)" },
+  PARADO: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  RESTRITO: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
+  APTO: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
   ATRASADA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
   CONCLUIDA: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
   CANCELADA: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },

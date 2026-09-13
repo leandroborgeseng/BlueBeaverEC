@@ -86,7 +86,7 @@ export class NavService {
     const osAbertas = await this.prisma.ordemServico.findMany({
       where: {
         estabelecimentoId: estabId,
-        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] },
       },
       include: { equipamento: { select: { tag: true } } },
       take: 100,

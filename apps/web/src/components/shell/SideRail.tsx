@@ -69,16 +69,16 @@ const RAIL: RailItem[] = [
     modulo: "os",
     items: [
       { label: "Ordens de Serviço", href: "/os", icon: "os", modulo: "os" },
-      { label: "Cronograma de Manutenção", href: "/portal/cronograma", icon: "calendar", modulo: "os" },
       {
-        label: "Filas",
-        href: "/os/filas",
+        label: "Área de trabalho",
+        href: "/os/area",
         icon: "columns",
         modulo: "os",
-        minNivel: PERMISSAO_NIVEL.EDICAO_APROVACAO,
-        match: ["/os/filas", "/os/quadro-processos", "/os/triagem-solicitacoes", "/os/nao-atribuidas"],
+        minNivel: PERMISSAO_NIVEL.EDICAO,
+        match: ["/os/area", "/os/filas", "/os/quadro-processos", "/os/triagem-solicitacoes", "/os/nao-atribuidas"],
       },
-      { label: "Nova OS", href: "/os/nova", icon: "plus", modulo: "os", minNivel: PERMISSAO_NIVEL.EDICAO_APROVACAO },
+      { label: "Cronograma de Manutenção", href: "/portal/cronograma", icon: "calendar", modulo: "os" },
+      { label: "Nova OS", href: "/os/nova", icon: "plus", modulo: "os", minNivel: PERMISSAO_NIVEL.EDICAO },
       {
         label: "Auditoria de OS",
         href: "/os/auditoria",
@@ -133,7 +133,7 @@ const RAIL: RailItem[] = [
     modulo: "portal",
     items: [
       { label: "Abrir OS", href: "/portal/abrir-solicitacao", icon: "plus", modulo: "portal" },
-      { label: "OS abertas", href: "/portal/os-abertas", icon: "os", modulo: "portal" },
+      { label: "Minhas solicitações", href: "/portal/os-abertas", icon: "os", modulo: "portal" },
       { label: "Inventário do Setor", href: "/portal/inventario", icon: "equip", modulo: "portal" },
       { label: "Cronograma de Manutenção", href: "/portal/cronograma", icon: "calendar", modulo: "portal" },
     ],

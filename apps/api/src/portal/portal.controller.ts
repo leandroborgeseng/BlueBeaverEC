@@ -1,11 +1,35 @@
-import { Controller, ForbiddenException, Get, NotFoundException, Param, Query, UseGuards } from "@nestjs/common";
-import { StatusOS, TipoLaudo } from "@prisma/client";
+import { Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { IsOptional, IsString, MinLength } from "class-validator";
+import type { Response } from "express";
+import { StatusOS, TipoLaudo, VisibilidadeOs } from "@prisma/client";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { PrismaService } from "../prisma/prisma.service";
 import { SessionService } from "../session/session.service";
+import { OsService } from "../os/os.service";
+
+class PortalComentarioDto {
+  @IsString()
+  @MinLength(2)
+  texto!: string;
+}
+
+class PortalAnexoDto {
+  @IsString()
+  dataUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  nomeArquivo?: string;
+}
+
+class PedidoReaberturaDto {
+  @IsString()
+  @MinLength(3)
+  justificativa!: string;
+}
 
 @Controller("portal")
 @UseGuards(JwtAuthGuard)
@@ -13,6 +37,7 @@ export class PortalController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly session: SessionService,
+    private readonly os: OsService,
   ) {}
 
   @Get("cronograma-manutencao")
@@ -29,28 +54,31 @@ export class PortalController {
 
   @Get("os-abertas")
   @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
-  async osAbertas(@CurrentUser() user: AuthUser, @Query("setor") setor?: string) {
-    const me = await this.session.me(user);
-    const setorFilter = await this.resolveSetorFilter(user, me.setorIds, setor);
+  async osAbertas(@CurrentUser() user: AuthUser) {
+    return this.minhasOs(user);
+  }
 
+  @Get("minhas-os")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async minhasOs(@CurrentUser() user: AuthUser) {
+    const me = await this.session.me(user);
     const rows = await this.prisma.ordemServico.findMany({
       where: {
         estabelecimentoId: user.estabelecimentoId,
-        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
-        ...(setorFilter
-          ? {
-              OR: [
-                { setorId: { in: setorFilter } },
-                { equipamento: { setorId: { in: setorFilter } } },
-              ],
-            }
-          : {}),
+        solicitacao: {
+          OR: [
+            { solicitanteUsuarioId: user.userId },
+            { solicitanteUsuarioId: null, solicitanteNome: me.nome },
+          ],
+        },
       },
       include: {
         equipamento: { include: { setor: true } },
         setor: true,
+        responsavel: { select: { nome: true } },
+        solicitacao: { select: { protocolo: true } },
       },
-      orderBy: [{ prioridade: "desc" }, { abertura: "desc" }],
+      orderBy: [{ abertura: "desc" }],
       take: 80,
     });
 
@@ -64,6 +92,11 @@ export class PortalController {
         status: os.status,
         prioridade: os.prioridade,
         abertura: os.abertura,
+        fechamento: os.fechamento,
+        protocolo: os.solicitacao?.protocolo,
+        responsavelNome: os.responsavel?.nome ?? null,
+        textoConclusaoPublico: os.textoConclusaoPublico,
+        pedidoReaberturaEm: os.pedidoReaberturaEm,
         equipamento: {
           tag: os.equipamento?.tag ?? "—",
           nome: os.equipamento?.nome ?? (os.setor?.nome ? `Chamado · ${os.setor.nome}` : "Chamado do setor"),
@@ -71,6 +104,122 @@ export class PortalController {
         },
       };
     });
+  }
+
+  @Get("equipamentos")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async buscarEquipamentos(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
+    const me = await this.session.me(user);
+    const setorFilter = await this.resolveSetorFilter(user, me.setorIds);
+    const termo = q?.trim();
+    if (!termo || termo.length < 2) return [];
+    return this.prisma.equipamento.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        ...(setorFilter ? { setorId: { in: setorFilter } } : {}),
+        OR: [
+          { tag: { contains: termo, mode: "insensitive" } },
+          { nome: { contains: termo, mode: "insensitive" } },
+          { patrimonio: { contains: termo, mode: "insensitive" } },
+          { nSerie: { contains: termo, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        tag: true,
+        nome: true,
+        patrimonio: true,
+        nSerie: true,
+        setor: { select: { nome: true } },
+      },
+      take: 20,
+      orderBy: { tag: "asc" },
+    });
+  }
+
+  @Get("os/:numero")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async detalheOs(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    const os = await this.os.getByNumero(user.estabelecimentoId, Number(numero), user.perfil);
+    await this.os.assertPodeVerComoSolicitante(user, os);
+    return {
+      numero: os.numero,
+      codigo: os.codigo,
+      status: os.status,
+      prioridade: os.prioridade,
+      abertura: os.abertura,
+      fechamento: os.fechamento,
+      protocolo: os.solicitacao?.protocolo,
+      descricao: os.solicitacao?.descricao ?? os.observacaoRequisicao,
+      responsavelNome: os.responsavel?.nome ?? null,
+      setorNome: os.equipamento?.setor?.nome ?? os.setor?.nome ?? null,
+      equipamento: os.equipamento
+        ? { tag: os.equipamento.tag, nome: os.equipamento.nome }
+        : null,
+      identificacaoPendente: os.identificacaoPendente,
+      equipamentoParado: os.equipamentoParado,
+      textoConclusaoPublico: os.textoConclusaoPublico,
+      pedidoReaberturaEm: os.pedidoReaberturaEm,
+      pedidoReaberturaJustificativa: os.pedidoReaberturaJustificativa,
+      timeline: os.timeline,
+      anexos: os.anexos,
+    };
+  }
+
+  @Post("os/:numero/comentarios")
+  @RequirePermission("portal", PERMISSAO_NIVEL.EDICAO)
+  async comentar(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: PortalComentarioDto,
+  ) {
+    const os = await this.os.getByNumero(user.estabelecimentoId, Number(numero), user.perfil);
+    await this.os.assertPodeVerComoSolicitante(user, os);
+    return this.os.comentar(user, Number(numero), body.texto, VisibilidadeOs.PUBLICO);
+  }
+
+  @Post("os/:numero/anexos")
+  @RequirePermission("portal", PERMISSAO_NIVEL.EDICAO)
+  async anexar(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: PortalAnexoDto,
+  ) {
+    const os = await this.os.getByNumero(user.estabelecimentoId, Number(numero), user.perfil);
+    await this.os.assertPodeVerComoSolicitante(user, os);
+    return this.os.anexar(user, Number(numero), {
+      dataUrl: body.dataUrl,
+      nomeArquivo: body.nomeArquivo,
+      visibilidade: VisibilidadeOs.PUBLICO,
+    });
+  }
+
+  @Get("os/:numero/anexos/:anexoId")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async baixarAnexo(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Param("anexoId") anexoId: string,
+    @Res() res: Response,
+  ) {
+    const os = await this.os.getByNumero(user.estabelecimentoId, Number(numero), user.perfil);
+    await this.os.assertPodeVerComoSolicitante(user, os);
+    const anexo = await this.os.baixarAnexo(user, Number(numero), anexoId);
+    res.setHeader("Content-Type", anexo.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${anexo.nomeArquivo.replace(/"/g, "")}"`,
+    );
+    res.send(Buffer.from(anexo.conteudo));
+  }
+
+  @Post("os/:numero/pedir-reabertura")
+  @RequirePermission("portal", PERMISSAO_NIVEL.EDICAO)
+  async pedirReabertura(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: PedidoReaberturaDto,
+  ) {
+    return this.os.pedirReabertura(user, Number(numero), body.justificativa);
   }
 
   @Get("inventario-setor")
@@ -130,7 +279,7 @@ export class PortalController {
       where: {
         estabelecimentoId: user.estabelecimentoId,
         equipamentoId: eq.id,
-        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO] },
+        status: { in: [StatusOS.NAO_ATRIBUIDA, StatusOS.ABERTA, StatusOS.EM_ANDAMENTO, StatusOS.AGUARDANDO] },
       },
       orderBy: { abertura: "desc" },
       take: 20,

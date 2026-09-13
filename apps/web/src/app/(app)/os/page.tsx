@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { labelStatusOS } from "@/lib/os-ui";
 import { useCan } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 import {
@@ -137,9 +138,10 @@ export default function OsPage() {
           <FieldLabel>Situação</FieldLabel>
           <select value={qStatus} onChange={(e) => setQStatus(e.target.value)} style={fieldStyle}>
             <option>Todas</option>
-            <option value="ABERTA">ABERTA</option>
-            <option value="EM_ANDAMENTO">EM ANDAMENTO</option>
-            <option value="AGUARDANDO_PECA">AGUARDANDO PEÇA</option>
+            <option value="NAO_ATRIBUIDA">ABERTA (sem responsável)</option>
+            <option value="ABERTA">ATRIBUÍDA</option>
+            <option value="EM_ANDAMENTO">EM ATENDIMENTO</option>
+            <option value="AGUARDANDO">AGUARDANDO</option>
             <option value="ATRASADA">ATRASADA</option>
             <option value="CONCLUIDA">CONCLUÍDA</option>
           </select>
@@ -209,7 +211,7 @@ export default function OsPage() {
               </td>
               <td style={td}>
                 <Badge tone={os.atrasada ? "ATRASADA" : os.status}>
-                  {os.atrasada ? "Atrasada" : os.status.replace(/_/g, " ")}
+                    {os.atrasada ? "Atrasada" : labelStatusOS(os.status)}
                 </Badge>
               </td>
               <td style={td}>{os.responsavel?.nome ?? "—"}</td>

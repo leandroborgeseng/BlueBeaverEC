@@ -391,7 +391,7 @@ export class LaudosService {
           tipo: "OS",
           ref: o.codigo,
           data: o.abertura,
-          detalhe: o.status,
+          detalhe: [o.status, o.servicoRealizado, o.condicaoFinal].filter(Boolean).join(" · "),
         })),
         ...eq.laudos.map((l) => ({
           tipo: "LAUDO",

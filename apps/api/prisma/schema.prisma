@@ -42,8 +42,20 @@ enum StatusOS {
   NAO_ATRIBUIDA
   ABERTA
   EM_ANDAMENTO
+  AGUARDANDO
   CONCLUIDA
   CANCELADA
+}
+
+enum VisibilidadeOs {
+  PUBLICO
+  INTERNO
+}
+
+enum CondicaoUsoEquipamento {
+  APTO
+  RESTRITO
+  PARADO
 }
 
 enum TipoOS {
@@ -123,6 +135,8 @@ model Usuario {
   logsAcesso       LogAcesso[]
   historicoTags    HistoricoTag[]
   logsOS           LogOrdemServico[]
+  comentariosOS    OsComentario[]
+  anexosOS         OsAnexo[]
 }
 
 model UsuarioEstabelecimento {
@@ -310,6 +324,7 @@ model Equipamento {
   dataEndOfService   DateTime?
   dataEndOfLife      DateTime?
   observacao         String?
+  condicaoUso        CondicaoUsoEquipamento @default(APTO)
   tipoEquipamentoPlanoId String?
   planoMatchTipo     String?   // exato | aproximado | sem_correspondencia
   planoMatchObs      String?
@@ -369,6 +384,20 @@ model OrdemServico {
   observacaoRequisicao String?
   solicitacaoId      String?      @unique
   contratoId         String?
+  motivoAguardo      String?
+  diagnostico        String?
+  servicoRealizado   String?
+  resultadoAtendimento String?
+  condicaoFinal      CondicaoUsoEquipamento?
+  equipamentoParado  Boolean      @default(false)
+  impactoInformado   String?
+  identificacaoPendente Boolean   @default(false)
+  pedidoReaberturaJustificativa String?
+  pedidoReaberturaEm DateTime?
+  pedidoReaberturaPorId String?
+  textoConclusaoPublico String?
+  conclusaoSnapshot  String?
+  atribuicaoVersao   Int          @default(0)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -378,6 +407,8 @@ model OrdemServico {
   responsavel     Colaborador?        @relation("OSResponsavel", fields: [responsavelId], references: [id])
   solicitacao     SolicitacaoServico? @relation(fields: [solicitacaoId], references: [id])
   logs            LogOrdemServico[]
+  comentarios     OsComentario[]
+  anexos          OsAnexo[]
   itens           OrdemServicoItem[]
   reservas        EstoqueReserva[]
   contrato        Contrato?           @relation(fields: [contratoId], references: [id])
@@ -392,15 +423,46 @@ model OrdemServico {
 }
 
 model LogOrdemServico {
-  id             String   @id @default(cuid())
+  id             String         @id @default(cuid())
   ordemServicoId String
   usuarioId      String?
   acao           String
   justificativa  String?
-  createdAt      DateTime @default(now())
+  visibilidade   VisibilidadeOs @default(PUBLICO)
+  createdAt      DateTime       @default(now())
 
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
   usuario      Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+}
+
+model OsComentario {
+  id             String         @id @default(cuid())
+  ordemServicoId String
+  usuarioId      String
+  texto          String
+  visibilidade   VisibilidadeOs @default(PUBLICO)
+  createdAt      DateTime       @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id])
+
+  @@index([ordemServicoId, createdAt])
+}
+
+model OsAnexo {
+  id             String         @id @default(cuid())
+  ordemServicoId String
+  usuarioId      String?
+  nomeArquivo    String
+  mimeType       String
+  conteudo       Bytes
+  visibilidade   VisibilidadeOs @default(PUBLICO)
+  createdAt      DateTime       @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  usuario      Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([ordemServicoId])
 }
 
 model SolicitacaoServico {
@@ -412,7 +474,10 @@ model SolicitacaoServico {
   descricao          String
   urgencia           UrgenciaSolicitacao @default(MEDIA)
   solicitanteNome    String
+  solicitanteUsuarioId String?
   ramal              String?
+  equipamentoParado  Boolean             @default(false)
+  impacto            String?
   status             StatusSolicitacao   @default(PENDENTE)
   justificativaRecusa String?
   createdAt          DateTime            @default(now())
