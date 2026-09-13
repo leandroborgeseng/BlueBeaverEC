@@ -66,13 +66,80 @@ export type ResultadoLaudo =
   | "APROVADO_COM_RESSALVAS"
   | "PENDENTE_ASSINATURA";
 
-/** SLA em horas a partir da abertura, por prioridade. */
+/** SLA em horas a partir da abertura, por prioridade (fallback se o tipo não tiver prazo). */
 export const SLA_HORAS: Record<PrioridadeOS, number> = {
   URGENTE: 2,
   ALTA: 8,
   MEDIA: 24,
   BAIXA: 72,
 };
+
+export type SlaOsInput = {
+  abertura: Date | string;
+  fechamento?: Date | string | null;
+  status: StatusOS | string;
+  prioridade: PrioridadeOS | string;
+  slaConclusaoHoras?: number | null;
+  slaAtendimentoHoras?: number | null;
+  agora?: Date | number | string;
+};
+
+export type SlaOsCampos = {
+  slaLimite: Date;
+  slaEstourado: boolean;
+  slaMinutosRestantes: number;
+  slaHoras: number;
+  slaFonte: "tipo" | "prioridade";
+};
+
+/** Horas de SLA: tipo do equipamento prevalece; senão prioridade. Sem multiplicador. */
+export function horasSlaOs(input: {
+  prioridade: PrioridadeOS | string;
+  status?: StatusOS | string;
+  slaConclusaoHoras?: number | null;
+  slaAtendimentoHoras?: number | null;
+}): { horas: number; fonte: "tipo" | "prioridade" } {
+  const conclusao = Number(input.slaConclusaoHoras);
+  const atendimento = Number(input.slaAtendimentoHoras);
+  const temConclusao = Number.isFinite(conclusao) && conclusao > 0;
+  const temAtendimento = Number.isFinite(atendimento) && atendimento > 0;
+  const naoIniciada = !input.status || input.status === "NAO_ATRIBUIDA" || input.status === "ABERTA";
+  if (naoIniciada && temAtendimento && !temConclusao) {
+    return { horas: atendimento, fonte: "tipo" };
+  }
+  if (temConclusao) return { horas: conclusao, fonte: "tipo" };
+  if (temAtendimento) return { horas: atendimento, fonte: "tipo" };
+  const prio = (input.prioridade in SLA_HORAS ? input.prioridade : "MEDIA") as PrioridadeOS;
+  return { horas: SLA_HORAS[prio], fonte: "prioridade" };
+}
+
+export function calcularSlaOs(input: SlaOsInput): SlaOsCampos {
+  const { horas, fonte } = horasSlaOs(input);
+  const abertura = new Date(input.abertura).getTime();
+  const slaLimite = new Date(abertura + horas * 60 * 60 * 1000);
+  const encerrada =
+    Boolean(input.fechamento) || input.status === "CONCLUIDA" || input.status === "CANCELADA";
+  const ref = encerrada && input.fechamento ? new Date(input.fechamento).getTime() : input.agora != null
+    ? new Date(input.agora).getTime()
+    : Date.now();
+  const slaMinutosRestantes = Math.round((slaLimite.getTime() - ref) / 60_000);
+  return {
+    slaLimite,
+    slaEstourado: !encerrada && slaMinutosRestantes < 0,
+    slaMinutosRestantes,
+    slaHoras: horas,
+    slaFonte: fonte,
+  };
+}
+
+export function formatarSlaMinutos(minutos: number): string {
+  const abs = Math.abs(minutos);
+  const h = Math.floor(abs / 60);
+  const m = abs % 60;
+  if (h <= 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
 
 export const PERMISSAO_NIVEL = {
   NENHUM: 0,

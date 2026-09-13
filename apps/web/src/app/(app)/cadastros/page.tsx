@@ -30,6 +30,8 @@ interface Modelo extends Named {
 interface Plano extends Named {
   criticidade: string;
   vidaUtilAnos: number;
+  slaAtendimentoHoras?: number | null;
+  slaConclusaoHoras?: number | null;
 }
 
 type CadastroTab = "fabricantes" | "modelos" | "setores" | "planos" | "fornecedores";
@@ -80,8 +82,10 @@ export default function CadastrosPage() {
     const fd = new FormData(form);
     const payload: Record<string, unknown> = { ...body };
     fd.forEach((v, k) => {
-      if (k === "vidaUtilAnos") payload[k] = Number(v);
-      else payload[k] = String(v);
+      if (k === "vidaUtilAnos" || k === "slaAtendimentoHoras" || k === "slaConclusaoHoras") {
+        const n = Number(v);
+        payload[k] = v === "" || Number.isNaN(n) || n <= 0 ? undefined : n;
+      } else payload[k] = String(v);
     });
     try {
       await api(path, { method: "POST", body: JSON.stringify(payload) });
@@ -180,6 +184,13 @@ export default function CadastrosPage() {
               </select>
               <FieldLabel>Vida útil (anos)</FieldLabel>
               <input name="vidaUtilAnos" type="number" min={1} defaultValue={10} style={{ ...fieldStyle, marginBottom: 10 }} />
+              <FieldLabel>SLA 1º atendimento (horas)</FieldLabel>
+              <input name="slaAtendimentoHoras" type="number" min={1} placeholder="ex.: 4" style={{ ...fieldStyle, marginBottom: 10 }} />
+              <FieldLabel>SLA conclusão (horas)</FieldLabel>
+              <input name="slaConclusaoHoras" type="number" min={1} placeholder="ex.: 24" style={{ ...fieldStyle, marginBottom: 10 }} />
+              <p style={{ margin: "0 0 10px", fontSize: 12, color: "oklch(0.5 0.02 250)", lineHeight: 1.4 }}>
+                O timer da OS usa o prazo do tipo a partir da abertura. Sem SLA no tipo, vale a prioridade da OS.
+              </p>
               <Btn type="submit">Adicionar plano</Btn>
             </form>
           )}
@@ -207,19 +218,131 @@ export default function CadastrosPage() {
           <NamedTable items={setores.map((x) => ({ title: x.nome }))} cols={["Setor"]} />
         )}
         {tab === "planos" && (
-          <NamedTable
-            items={planos.map((p) => ({
-              title: p.nome,
-              meta: `${p.vidaUtilAnos} anos`,
-              badge: p.criticidade,
-            }))}
-            cols={["Tipo", "Vida útil", "Criticidade"]}
-          />
+          <PlanosSlaTable planos={planos} onSaved={() => void reload().catch((e) => setMsg(e.message))} />
         )}
         {tab === "fornecedores" && (
           <NamedTable items={fornecedores.map((x) => ({ title: x.nome }))} cols={["Fornecedor"]} />
         )}
       </div>
+    </div>
+  );
+}
+
+function PlanosSlaTable({
+  planos,
+  onSaved,
+}: {
+  planos: Plano[];
+  onSaved: () => void;
+}) {
+  const [draft, setDraft] = useState<Record<string, { slaAtendimentoHoras: string; slaConclusaoHoras: string }>>({});
+  const [saving, setSaving] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    const next: Record<string, { slaAtendimentoHoras: string; slaConclusaoHoras: string }> = {};
+    for (const p of planos) {
+      next[p.id] = {
+        slaAtendimentoHoras: p.slaAtendimentoHoras != null ? String(p.slaAtendimentoHoras) : "",
+        slaConclusaoHoras: p.slaConclusaoHoras != null ? String(p.slaConclusaoHoras) : "",
+      };
+    }
+    setDraft(next);
+  }, [planos]);
+
+  async function salvar(id: string) {
+    const row = draft[id];
+    if (!row) return;
+    setSaving(id);
+    setErro(null);
+    try {
+      const atend = Number(row.slaAtendimentoHoras);
+      const concl = Number(row.slaConclusaoHoras);
+      await api(`/planos-descricao/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          slaAtendimentoHoras: row.slaAtendimentoHoras.trim() && atend > 0 ? atend : null,
+          slaConclusaoHoras: row.slaConclusaoHoras.trim() && concl > 0 ? concl : null,
+        }),
+      });
+      onSaved();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao salvar SLA");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  if (planos.length === 0) return <Empty text="Nenhum tipo cadastrado." />;
+
+  return (
+    <div>
+      {erro && <Err>{erro}</Err>}
+      <p style={{ margin: "0 0 10px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
+        Defina o SLA por tipo de equipamento. O timer da OS usa a conclusão (ou o 1º atendimento, se só ele existir).
+      </p>
+      <DataTable>
+        <thead>
+          <tr>
+            <th style={th}>Tipo</th>
+            <th style={th}>Criticidade</th>
+            <th style={th}>1º atend. (h)</th>
+            <th style={th}>Conclusão (h)</th>
+            <th style={th} />
+          </tr>
+        </thead>
+        <tbody>
+          {planos.map((p) => {
+            const row = draft[p.id] ?? { slaAtendimentoHoras: "", slaConclusaoHoras: "" };
+            return (
+              <tr key={p.id}>
+                <td style={td}>
+                  <strong>{p.nome}</strong>
+                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{p.vidaUtilAnos} anos</div>
+                </td>
+                <td style={td}>
+                  <Badge tone={p.criticidade}>{p.criticidade}</Badge>
+                </td>
+                <td style={td}>
+                  <input
+                    type="number"
+                    min={1}
+                    value={row.slaAtendimentoHoras}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        [p.id]: { ...row, slaAtendimentoHoras: e.target.value },
+                      }))
+                    }
+                    style={{ ...fieldStyle, width: 88 }}
+                    placeholder="—"
+                  />
+                </td>
+                <td style={td}>
+                  <input
+                    type="number"
+                    min={1}
+                    value={row.slaConclusaoHoras}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        [p.id]: { ...row, slaConclusaoHoras: e.target.value },
+                      }))
+                    }
+                    style={{ ...fieldStyle, width: 88 }}
+                    placeholder="—"
+                  />
+                </td>
+                <td style={td}>
+                  <Btn size="sm" disabled={saving === p.id} onClick={() => void salvar(p.id)}>
+                    {saving === p.id ? "Salvando…" : "Salvar SLA"}
+                  </Btn>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </DataTable>
     </div>
   );
 }

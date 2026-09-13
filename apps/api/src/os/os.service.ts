@@ -17,13 +17,12 @@ import {
 } from "@prisma/client";
 import {
   PERMISSAO_NIVEL,
-  SLA_HORAS,
+  calcularSlaOs,
   podeAlterarStatusOS,
   podeAtribuirOS,
   podeExecutarAcaoStatusOS,
   temPermissao,
   type AcaoStatusOS,
-  type PrioridadeOS as PrioridadeShared,
 } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
@@ -55,13 +54,26 @@ const RESULTADOS_LAUDO_OK: ResultadoLaudo[] = [
 export class OsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private isAtrasada(prioridade: PrioridadeOS, abertura: Date, fechamento: Date | null, status: StatusOS) {
-    if (fechamento || status === StatusOS.CANCELADA || status === StatusOS.CONCLUIDA) {
-      return false;
-    }
-    const horas = SLA_HORAS[prioridade as PrioridadeShared];
-    const limite = new Date(abertura.getTime() + horas * 60 * 60 * 1000);
-    return Date.now() > limite.getTime();
+  private slaDe(os: {
+    prioridade: PrioridadeOS;
+    abertura: Date;
+    fechamento: Date | null;
+    status: StatusOS;
+    equipamento?: {
+      descricao?: {
+        slaConclusaoHoras?: number | null;
+        slaAtendimentoHoras?: number | null;
+      } | null;
+    } | null;
+  }) {
+    return calcularSlaOs({
+      abertura: os.abertura,
+      fechamento: os.fechamento,
+      status: os.status,
+      prioridade: os.prioridade,
+      slaConclusaoHoras: os.equipamento?.descricao?.slaConclusaoHoras,
+      slaAtendimentoHoras: os.equipamento?.descricao?.slaAtendimentoHoras,
+    });
   }
 
   async list(
@@ -156,19 +168,27 @@ export class OsService {
     }
 
     if (query.atrasada === true) {
-      const now = Date.now();
-      const slaOr = (Object.entries(SLA_HORAS) as Array<[PrioridadeShared, number]>).map(
-        ([prioridade, horas]) => ({
-          prioridade: prioridade as PrioridadeOS,
-          abertura: { lt: new Date(now - horas * 60 * 60 * 1000) },
-        }),
-      );
-      where.AND = [
-        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
-        { fechamento: null },
-        { status: { notIn: [StatusOS.CANCELADA, StatusOS.CONCLUIDA] } },
-        { OR: slaOr },
-      ];
+      const candidatas = await this.prisma.ordemServico.findMany({
+        where: {
+          estabelecimentoId,
+          fechamento: null,
+          status: { in: STATUS_ATIVAS },
+        },
+        select: {
+          id: true,
+          prioridade: true,
+          abertura: true,
+          fechamento: true,
+          status: true,
+          equipamento: {
+            select: {
+              descricao: { select: { slaConclusaoHoras: true, slaAtendimentoHoras: true } },
+            },
+          },
+        },
+      });
+      const ids = candidatas.filter((os) => this.slaDe(os).slaEstourado).map((os) => os.id);
+      where.id = { in: ids.length ? ids : ["__none__"] };
     }
 
     const [total, rows] = await Promise.all([
@@ -268,6 +288,7 @@ export class OsService {
       perfil,
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+    const sla = this.slaDe(os);
     return {
       ...os,
       logs,
@@ -275,7 +296,8 @@ export class OsService {
       anexos,
       timeline,
       equipamento: this.equipamentoExibicao(os),
-      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+      ...sla,
+      atrasada: sla.slaEstourado,
       condicaoUsoAtual: os.equipamento && "condicaoUso" in os.equipamento ? os.equipamento.condicaoUso : null,
     };
   }
@@ -294,7 +316,7 @@ export class OsService {
   async naoAtribuidas(estabelecimentoId: string) {
     const rows = await this.prisma.ordemServico.findMany({
       where: { estabelecimentoId, status: StatusOS.NAO_ATRIBUIDA },
-      include: { equipamento: { include: { setor: true } }, setor: true },
+      include: { equipamento: { include: { setor: true, descricao: true } }, setor: true },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
     });
     return rows.map((os) => this.decorateListItem(os));
@@ -848,13 +870,10 @@ export class OsService {
         responsavelId: tecnicoColaboradorId,
         status: { in: STATUS_ATIVAS },
       },
-      include: { equipamento: { include: { setor: true } } },
+      include: { equipamento: { include: { setor: true, descricao: true } } },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
     });
-    return rows.map((os) => ({
-      ...os,
-      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
-    }));
+    return rows.map((os) => this.decorateListItem(os));
   }
 
   async comentar(
@@ -1079,13 +1098,19 @@ export class OsService {
       nome: string;
       condicaoUso?: string;
       setor?: { nome: string } | null;
+      descricao?: {
+        slaConclusaoHoras?: number | null;
+        slaAtendimentoHoras?: number | null;
+      } | null;
     } | null;
     setor?: { nome: string } | null;
   }) {
+    const sla = this.slaDe(os);
     return {
       ...os,
       equipamento: this.equipamentoExibicao(os),
-      atrasada: this.isAtrasada(os.prioridade, os.abertura, os.fechamento, os.status),
+      ...sla,
+      atrasada: sla.slaEstourado,
       destaqueParado: Boolean(os.equipamentoParado || os.equipamento?.condicaoUso === "PARADO"),
       identificacaoPendente: Boolean(os.identificacaoPendente || !os.equipamento),
       pedidoReabertura: Boolean(os.pedidoReaberturaEm),

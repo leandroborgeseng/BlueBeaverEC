@@ -217,12 +217,16 @@ model Fornecedor {
 }
 
 model PlanoDescricao {
-  id                 String      @id @default(cuid())
-  estabelecimentoId  String
-  nome               String
-  criticidade        Criticidade @default(MEDIA)
-  vidaUtilAnos       Int         @default(10)
-  ativo              Boolean     @default(true)
+  id                   String      @id @default(cuid())
+  estabelecimentoId    String
+  nome                 String
+  criticidade          Criticidade @default(MEDIA)
+  vidaUtilAnos         Int         @default(10)
+  /// Prazo em horas, a partir da abertura da OS, para o 1º atendimento.
+  slaAtendimentoHoras  Int?
+  /// Prazo em horas, a partir da abertura da OS, para conclusão.
+  slaConclusaoHoras    Int?
+  ativo                Boolean     @default(true)
 
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]

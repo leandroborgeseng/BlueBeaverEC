@@ -3,13 +3,26 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { SlaChip } from "@/components/os/SlaChip";
 import { Badge, Empty, Err, KpiCard, PageHeader, Panel } from "@/components/ui/aion-ui";
 
 interface Kpis {
   equipamentosAtivos: number;
   osAbertas: number;
+  osSlaEstourado?: number;
   mttrMedioHoras: number | null;
   disponibilidadePct: number | null;
+}
+
+interface OsSlaRow {
+  numero: number;
+  codigo: string;
+  status: string;
+  prioridade: string;
+  tag: string;
+  nome?: string;
+  slaLimite?: string;
+  slaEstourado?: boolean;
 }
 
 export default function DashboardPage() {
@@ -17,14 +30,18 @@ export default function DashboardPage() {
   const [osSituacao, setOsSituacao] = useState<Array<{ situacao: string; total: number }>>([]);
   const [equipStatus, setEquipStatus] = useState<Array<{ situacao: string; total: number }>>([]);
   const [recentes, setRecentes] = useState<
-    Array<{ codigo: string; status: string; equipamento: { tag: string; nome?: string } }>
+    Array<{
+      codigo: string;
+      status: string;
+      slaLimite?: string;
+      equipamento: { tag: string; nome?: string };
+    }>
   >([]);
   const [contratos, setContratos] = useState<
     Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>
   >([]);
-  const [atrasadas, setAtrasadas] = useState<Array<{ codigo: string | null; prioridade: string; tag: string }>>(
-    [],
-  );
+  const [atrasadas, setAtrasadas] = useState<OsSlaRow[]>([]);
+  const [slaAbertas, setSlaAbertas] = useState<OsSlaRow[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,21 +49,28 @@ export default function DashboardPage() {
       api<Kpis>("/dashboard/kpis"),
       api<Array<{ situacao: string; total: number }>>("/dashboard/os-por-situacao"),
       api<Array<{ situacao: string; total: number }>>("/dashboard/equipamentos-status"),
-      api<Array<{ codigo: string; status: string; equipamento: { tag: string; nome?: string } }>>(
-        "/dashboard/os-recentes?limit=5",
-      ),
+      api<
+        Array<{
+          codigo: string;
+          status: string;
+          slaLimite?: string;
+          equipamento: { tag: string; nome?: string };
+        }>
+      >("/dashboard/os-recentes?limit=5"),
       api<
         Array<{ numero: string; alertaSeveridade: string | null; vigenciaFim: string; fornecedor: { nome: string } }>
       >("/dashboard/contratos-vencendo?dias=30"),
-      api<Array<{ codigo: string | null; prioridade: string; tag: string }>>("/dashboard/os-atrasadas"),
+      api<OsSlaRow[]>("/dashboard/os-atrasadas"),
+      api<OsSlaRow[]>("/dashboard/os-sla"),
     ])
-      .then(([k, s, es, r, c, a]) => {
+      .then(([k, s, es, r, c, a, sla]) => {
         setKpis(k);
         setOsSituacao(s);
         setEquipStatus(es);
         setRecentes(r);
         setContratos(c);
         setAtrasadas(a);
+        setSlaAbertas(sla);
       })
       .catch((e) => setErro(e.message));
   }, []);
@@ -71,9 +95,13 @@ export default function DashboardPage() {
         <KpiCard
           label="OS abertas"
           value={kpis?.osAbertas ?? "—"}
-          hint={atrasadas.length > 0 ? `${atrasadas.length} atrasadas` : "sem atraso"}
-          tone={atrasadas.length > 0 ? "danger" : "neutral"}
-          ringPct={atrasadas.length > 0 ? 55 : 40}
+          hint={
+            (kpis?.osSlaEstourado ?? atrasadas.length) > 0
+              ? `${kpis?.osSlaEstourado ?? atrasadas.length} com SLA estourado`
+              : "sem atraso de SLA"
+          }
+          tone={(kpis?.osSlaEstourado ?? atrasadas.length) > 0 ? "danger" : "neutral"}
+          ringPct={(kpis?.osSlaEstourado ?? atrasadas.length) > 0 ? 55 : 40}
         />
         <KpiCard
           label="MTTR médio"
@@ -150,17 +178,18 @@ export default function DashboardPage() {
             </div>
           )}
         </Panel>
-        <Panel title="OS atrasadas (SLA)">
-          {atrasadas.length === 0 ? (
-            <Empty text="Nenhuma OS atrasada." />
+        <Panel title="SLA das OS abertas">
+          {slaAbertas.length === 0 ? (
+            <Empty text="Nenhuma OS aberta." />
           ) : (
             <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-              {atrasadas.slice(0, 8).map((os) => (
+              {slaAbertas.slice(0, 8).map((os) => (
                 <li
                   key={`${os.codigo}-${os.tag}`}
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
+                    alignItems: "center",
                     gap: 10,
                     padding: "11px 0",
                     borderBottom: "1px solid oklch(0.945 0.004 255)",
@@ -168,9 +197,10 @@ export default function DashboardPage() {
                   }}
                 >
                   <span>
-                    {os.codigo} · {os.tag}
+                    <div style={{ fontWeight: 600 }}>{os.codigo} · {os.tag}</div>
+                    <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{os.nome ?? ""}</div>
                   </span>
-                  <Badge tone={os.prioridade}>{os.prioridade}</Badge>
+                  <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
                 </li>
               ))}
             </ul>
@@ -209,7 +239,10 @@ export default function DashboardPage() {
                       {os.codigo} · {os.equipamento?.tag ?? "—"}
                     </div>
                   </div>
-                  <Badge tone={os.status}>{prettyStatus(os.status)}</Badge>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                    <Badge tone={os.status}>{prettyStatus(os.status)}</Badge>
+                    <SlaChip slaLimite={os.slaLimite} status={os.status} />
+                  </div>
                 </li>
               ))}
             </ul>

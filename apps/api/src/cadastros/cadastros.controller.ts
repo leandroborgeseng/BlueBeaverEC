@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, Min, MinLength } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, Min, MinLength, ValidateIf } from "class-validator";
 import { Criticidade } from "@prisma/client";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -47,6 +47,51 @@ class PlanoDto {
   @IsInt()
   @Min(1)
   vidaUtilAnos?: number;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v != null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  slaAtendimentoHoras?: number | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v != null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  slaConclusaoHoras?: number | null;
+}
+
+class UpdatePlanoDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  nome?: string;
+
+  @IsOptional()
+  @IsEnum(Criticidade)
+  criticidade?: Criticidade;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  vidaUtilAnos?: number;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v != null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  slaAtendimentoHoras?: number | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v != null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  slaConclusaoHoras?: number | null;
 }
 
 @Controller()
@@ -116,7 +161,7 @@ export class CadastrosController {
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Patch("planos-descricao/:id")
-  updatePlano(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PlanoDto) {
+  updatePlano(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: UpdatePlanoDto) {
     return this.cadastros.updatePlano(user, id, body);
   }
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { SlaChip } from "@/components/os/SlaChip";
 import { labelStatusOS } from "@/lib/os-ui";
 import { useCan } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
@@ -27,6 +28,9 @@ interface OsRow {
   status: string;
   prioridade: string;
   atrasada: boolean;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
+  slaMinutosRestantes?: number;
   tipo?: string;
   equipamento?: { tag: string; nome: string } | null;
   responsavel?: { nome: string } | null;
@@ -175,6 +179,7 @@ export default function OsPage() {
             <th style={th}>OS</th>
             <th style={th}>Equipamento</th>
             <th style={th}>Prioridade</th>
+            <th style={th}>SLA</th>
             <th style={th}>Situação</th>
             <th style={th}>Responsável</th>
           </tr>
@@ -210,6 +215,9 @@ export default function OsPage() {
                 <Badge tone={os.prioridade}>{os.prioridade}</Badge>
               </td>
               <td style={td}>
+                <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
+              </td>
+              <td style={td}>
                 <Badge tone={os.atrasada ? "ATRASADA" : os.status}>
                     {os.atrasada ? "Atrasada" : labelStatusOS(os.status)}
                 </Badge>
@@ -219,7 +227,7 @@ export default function OsPage() {
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={5}>
+              <td colSpan={6}>
                 <Empty />
               </td>
             </tr>

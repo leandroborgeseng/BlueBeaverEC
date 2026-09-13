@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { labelResponsavel } from "@/lib/session";
 import { OsFilasNav } from "@/components/os/OsFilasNav";
+import { SlaChip } from "@/components/os/SlaChip";
 import {
   Badge,
   Btn,
@@ -22,6 +23,9 @@ interface OsRow {
   codigo: string;
   prioridade: string;
   atrasada: boolean;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
+  status?: string;
   equipamento?: { tag: string; nome: string } | null;
 }
 
@@ -106,6 +110,7 @@ export default function NaoAtribuidasPage() {
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   <strong>{os.codigo}</strong>
                   <Badge tone={os.prioridade}>{os.prioridade}</Badge>
+                  <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
                   {os.atrasada && <Badge tone="ATRASADA">ATRASADA</Badge>}
                 </div>
                 <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>

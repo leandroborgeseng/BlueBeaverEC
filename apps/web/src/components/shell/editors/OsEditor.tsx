@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api, downloadApi } from "@/lib/api";
+import { SlaChip } from "@/components/os/SlaChip";
 import { filesToAnexos, labelCondicaoUso, labelStatusOS } from "@/lib/os-ui";
 import { labelResponsavel } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
@@ -40,6 +41,9 @@ interface OsDetail {
   status: string;
   prioridade: string;
   atrasada: boolean;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
+  slaMinutosRestantes?: number;
   tipo?: string;
   oficina?: string | null;
   observacaoRequisicao?: string | null;
@@ -219,6 +223,7 @@ export function OsEditor({
               {os.atrasada ? "Atrasada" : labelStatusOS(os.status)}
             </Badge>
             <Badge tone={os.prioridade}>{os.prioridade}</Badge>
+            <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
             {os.equipamentoParado && <Badge tone="PARADO">Parado</Badge>}
             {os.identificacaoPendente && <Badge>Identificação pendente</Badge>}
           </div>

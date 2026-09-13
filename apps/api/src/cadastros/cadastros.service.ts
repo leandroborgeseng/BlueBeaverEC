@@ -117,7 +117,13 @@ export class CadastrosService {
 
   async createPlano(
     user: AuthUser,
-    data: { nome: string; criticidade?: Criticidade; vidaUtilAnos?: number },
+    data: {
+      nome: string;
+      criticidade?: Criticidade;
+      vidaUtilAnos?: number;
+      slaAtendimentoHoras?: number | null;
+      slaConclusaoHoras?: number | null;
+    },
   ) {
     this.assertEdit(user);
     return this.prisma.planoDescricao.create({
@@ -126,6 +132,8 @@ export class CadastrosService {
         nome: data.nome.trim(),
         criticidade: data.criticidade ?? Criticidade.MEDIA,
         vidaUtilAnos: data.vidaUtilAnos ?? 10,
+        slaAtendimentoHoras: data.slaAtendimentoHoras || null,
+        slaConclusaoHoras: data.slaConclusaoHoras || null,
       },
     });
   }
@@ -133,7 +141,13 @@ export class CadastrosService {
   async updatePlano(
     user: AuthUser,
     id: string,
-    data: { nome?: string; criticidade?: Criticidade; vidaUtilAnos?: number },
+    data: {
+      nome?: string;
+      criticidade?: Criticidade;
+      vidaUtilAnos?: number;
+      slaAtendimentoHoras?: number | null;
+      slaConclusaoHoras?: number | null;
+    },
   ) {
     this.assertEdit(user);
     const plano = await this.prisma.planoDescricao.findFirst({
@@ -146,6 +160,12 @@ export class CadastrosService {
         ...(data.nome ? { nome: data.nome.trim() } : {}),
         ...(data.criticidade ? { criticidade: data.criticidade } : {}),
         ...(data.vidaUtilAnos != null ? { vidaUtilAnos: data.vidaUtilAnos } : {}),
+        ...(data.slaAtendimentoHoras !== undefined
+          ? { slaAtendimentoHoras: data.slaAtendimentoHoras || null }
+          : {}),
+        ...(data.slaConclusaoHoras !== undefined
+          ? { slaConclusaoHoras: data.slaConclusaoHoras || null }
+          : {}),
       },
     });
   }

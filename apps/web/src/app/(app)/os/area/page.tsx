@@ -6,6 +6,7 @@ import { labelResponsavel } from "@/lib/session";
 import { labelStatusOS } from "@/lib/os-ui";
 import { useWindowStore } from "@/store/windows";
 import { OsFilasNav } from "@/components/os/OsFilasNav";
+import { SlaChip } from "@/components/os/SlaChip";
 import {
   Badge,
   Btn,
@@ -28,6 +29,9 @@ interface OsRow {
   status: string;
   prioridade: string;
   atrasada: boolean;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
+  slaMinutosRestantes?: number;
   destaqueParado?: boolean;
   identificacaoPendente?: boolean;
   pedidoReabertura?: boolean;
@@ -274,6 +278,7 @@ export default function OsAreaPage() {
                     )}
                     <Badge tone={os.status}>{labelStatusOS(os.status)}</Badge>
                     <Badge tone={os.prioridade}>{os.prioridade}</Badge>
+                    <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
                     {os.atrasada && <Badge tone="ATRASADA">Atrasada</Badge>}
                     {os.destaqueParado && <Badge tone="PARADO">Parado</Badge>}
                     {os.identificacaoPendente && <Badge>Identificar equipamento</Badge>}
