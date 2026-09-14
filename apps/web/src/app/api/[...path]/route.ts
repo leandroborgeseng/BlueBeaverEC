@@ -41,15 +41,34 @@ function parseConfiguredUrl() {
   }
 }
 
-function hostsFromWebServiceName() {
-  const name = process.env.RAILWAY_SERVICE_NAME?.trim() || "";
-  if (!name) return [];
-  const slug = name
+function slugServiceName(name: string) {
+  return name
     .toLowerCase()
     .replace(/^@/, "")
     .replace(/[/_]/g, "-");
+}
+
+function hostsFromWebServiceName() {
+  const name = process.env.RAILWAY_SERVICE_NAME?.trim() || "";
+  if (!name) return [];
+  const slug = slugServiceName(name);
   const asApi = slug.replace(/-web$/, "-api").replace(/^web$/, "api");
   return unique([`${asApi}.railway.internal`, `${slug.replace(/-web$/, "-api")}.railway.internal`]);
+}
+
+function hostsFromPrivateDomain() {
+  const own = process.env.RAILWAY_PRIVATE_DOMAIN?.trim();
+  const api =
+    process.env.API_RAILWAY_PRIVATE_DOMAIN?.trim() ||
+    process.env.API_PRIVATE_DOMAIN?.trim() ||
+    process.env.API_INTERNAL_HOST?.trim();
+  const out: string[] = [];
+  if (api) out.push(stripHost(api));
+  if (own) {
+    const host = stripHost(own);
+    out.push(host.replace(/-web(?=\.|$)/g, "-api").replace(/(^|\.)web(?=\.|$)/g, "$1api"));
+  }
+  return out;
 }
 
 function hostnameCandidates(): string[] {
@@ -60,9 +79,16 @@ function hostnameCandidates(): string[] {
   if (configured && !isSelfWebHost(configured.hostname)) {
     hosts.unshift(configured.hostname);
   }
+  hosts.push(...hostsFromPrivateDomain());
   hosts.push(...hostsFromWebServiceName());
   if (onRailway) {
-    hosts.push("nexoapi.railway.internal", "nexo-api.railway.internal", "aionapi.railway.internal");
+    hosts.push(
+      "nexo-api.railway.internal",
+      "nexoapi.railway.internal",
+      "aion-api.railway.internal",
+      "aionapi.railway.internal",
+      "api.railway.internal",
+    );
   } else {
     hosts.push("127.0.0.1");
   }
@@ -116,9 +142,9 @@ async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
 
   for (const hostname of hostnameCandidates()) {
     const ips = await resolveIps(hostname);
-    const targets = ips.length ? ips : [hostname];
+    if (!ips.length) continue;
     for (const port of portCandidates()) {
-      for (const ip of targets) {
+      for (const ip of ips) {
         attempts.push({
           label: `${hostname}:${port}`,
           url: `http://${ip}:${port}${pathSuffix}`,
@@ -128,6 +154,21 @@ async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
     }
   }
   return attempts.slice(0, 16);
+}
+
+async function dns6Report() {
+  const configured = parseConfiguredUrl()?.hostname;
+  const own = process.env.RAILWAY_PRIVATE_DOMAIN?.trim();
+  const report: Record<string, string> = {};
+  for (const host of unique([configured, own, ...hostnameCandidates().slice(0, 4)].filter(Boolean) as string[])) {
+    try {
+      const aaaa = await resolve6(host);
+      report[host] = aaaa.length ? `AAAA ${aaaa.slice(0, 2).join(",")}` : "empty";
+    } catch (err) {
+      report[host] = err instanceof Error ? err.message : "fail";
+    }
+  }
+  return report;
 }
 
 function errorDetail(err: unknown): string {
@@ -153,6 +194,7 @@ async function proxy(req: NextRequest, path: string[]) {
     method !== "GET" && method !== "HEAD" ? Buffer.from(await req.arrayBuffer()) : undefined;
 
   const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
+  const dns6 = await dns6Report();
   const attempts = await buildAttempts(suffix);
   const ordered =
     lastGoodUrl && lastGoodHost
@@ -162,7 +204,7 @@ async function proxy(req: NextRequest, path: string[]) {
         ]
       : attempts;
 
-  let lastErr = "sem destino";
+  let lastErr = attempts.length ? "sem destino" : "nenhum host interno com A/AAAA";
   let lastLabel = ordered[0]?.label ?? "";
   for (const attempt of ordered) {
     lastLabel = attempt.label;
@@ -201,6 +243,8 @@ async function proxy(req: NextRequest, path: string[]) {
       reason: lastErr,
       tried: ordered.map((a) => a.label),
       configuredHost: parseConfiguredUrl()?.hostname ?? null,
+      webPrivateDomain: process.env.RAILWAY_PRIVATE_DOMAIN ?? null,
+      dns6,
       webService: process.env.RAILWAY_SERVICE_NAME ?? null,
     },
     { status: 503 },
