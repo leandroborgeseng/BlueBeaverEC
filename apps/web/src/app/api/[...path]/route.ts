@@ -81,7 +81,8 @@ function hostsFromPrivateDomain() {
   if (api) out.push(stripHost(api));
   if (own) {
     const host = stripHost(own);
-    out.push(host.replace(/-web(?=\.|$)/g, "-api").replace(/(^|\.)web(?=\.|$)/g, "$1api"));
+    const asApi = host.replace(/-web(?=\.|$)/g, "-api").replace(/web(?=\.|$)/gi, "api");
+    if (asApi !== host) out.push(asApi);
   }
   return out;
 }
@@ -117,6 +118,7 @@ function portCandidates(): string[] {
     process.env.API_INTERNAL_PORT?.trim() ?? "",
     DEFAULT_API_PORT,
     "8080",
+    "3000",
   ]);
 }
 
