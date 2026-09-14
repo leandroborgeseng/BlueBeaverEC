@@ -105,8 +105,9 @@ async function upsertTeste(
 
 async function main() {
   const force = process.argv.includes("--force");
+  const catalogoOnly = process.argv.includes("--catalogo-only");
   const refFile = resolve(
-    process.argv.find((a) => a.endsWith(".json") && a.includes("planos")) ??
+    process.argv.find((a) => a.endsWith(".json") && a.includes("planos") && !a.includes("mapping")) ??
       "scripts/dados/planos_manutencao_referencia.json",
   );
   const v2File = resolve("scripts/dados/aion_extract_v2.json");
@@ -115,7 +116,7 @@ async function main() {
     console.error(`Catálogo não encontrado: ${refFile}`);
     process.exit(1);
   }
-  if (!existsSync(v2File)) {
+  if (!catalogoOnly && !existsSync(v2File)) {
     console.error(`aion_extract_v2.json não encontrado: ${v2File}`);
     process.exit(1);
   }
@@ -175,6 +176,17 @@ async function main() {
   const totalTestes = await prisma.planoTeste.count({
     where: { tipoEquipamentoPlano: { estabelecimentoId: estab.id } },
   });
+
+  if (catalogoOnly) {
+    console.log(
+      JSON.stringify(
+        { tiposCatalogo: tipos, planoTestes: totalTestes, modo: "catalogo-only", semVinculoHrtc: true },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
 
   const v2 = JSON.parse(readFileSync(v2File, "utf8")) as {
     meta?: { avisos?: string[] };

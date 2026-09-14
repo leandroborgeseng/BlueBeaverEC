@@ -33,6 +33,7 @@ import {
   type IndiceExistentes,
 } from "./equipamento-regras";
 import { qrSvg } from "./qr-svg";
+import { sincronizarInstanciasCatalogo } from "../planos/plano-ocorrencia";
 
 const INCLUDE_FICHA = {
   setor: true,
@@ -538,6 +539,13 @@ export class EquipamentosService {
         detalhe: `tag=${tag} · campos=${Object.keys(data).join(",")}`,
       },
     });
+
+    if (data.tipoEquipamentoPlanoId) {
+      await sincronizarInstanciasCatalogo(this.prisma, user.estabelecimentoId, {
+        equipamentoId: updated.id,
+        usuarioId: user.userId,
+      });
+    }
 
     return updated;
   }

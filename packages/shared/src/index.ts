@@ -88,6 +88,33 @@ export function labelStatusOS(status?: string | null): string {
 
 export type TipoOS = "CORRETIVA" | "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO";
 
+export type TipoAtividadePlano = "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO" | "OUTRO";
+
+export const LABEL_TIPO_ATIVIDADE_PLANO: Record<TipoAtividadePlano, string> = {
+  PREVENTIVA: "Preventiva",
+  CALIBRACAO: "Calibração",
+  TSE: "TSE",
+  QUALIFICACAO: "Qualificação",
+  OUTRO: "Outro",
+};
+
+export type StatusAgendaPlano =
+  | "PREVISTA"
+  | "A_VENCER"
+  | "VENCIDA"
+  | "OS_GERADA"
+  | "EXECUTADA"
+  | "CANCELADA";
+
+export const LABEL_STATUS_AGENDA_PLANO: Record<StatusAgendaPlano, string> = {
+  PREVISTA: "Prevista",
+  A_VENCER: "A vencer",
+  VENCIDA: "Vencida",
+  OS_GERADA: "OS gerada",
+  EXECUTADA: "Executada",
+  CANCELADA: "Cancelada",
+};
+
 export type TipoLaudo = "RECEBIMENTO" | "PREVENTIVA" | "CALIBRACAO" | "TSE" | "QUALIFICACAO";
 
 export type ResultadoLaudo =

@@ -148,6 +148,7 @@ export default function OsRapidaPage() {
                 <option value="PREVENTIVA">Preventiva</option>
                 <option value="CALIBRACAO">Calibração</option>
                 <option value="TSE">TSE</option>
+                <option value="QUALIFICACAO">Qualificação</option>
               </select>
             </div>
             <div>

@@ -21,7 +21,7 @@ async function main() {
   if (!apply) {
     const preview = await service.previewRampUp(estab.id, {
       horizonteDias: 90,
-      forcarAnual: true,
+      forcarAnual: false,
     });
     console.log(JSON.stringify(preview, null, 2));
     console.log("\n[dry-run] Passe --apply para criar as OS.");
@@ -34,7 +34,7 @@ async function main() {
     };
     const result = await service.gerarRampUp(fakeUser, {
       horizonteDias: 90,
-      forcarAnual: true,
+      forcarAnual: false,
     });
     console.log(JSON.stringify(result, null, 2));
   }

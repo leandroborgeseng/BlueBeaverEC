@@ -77,7 +77,7 @@ const RAIL: RailItem[] = [
         minNivel: PERMISSAO_NIVEL.EDICAO,
         match: ["/os/area", "/os/filas", "/os/quadro-processos", "/os/triagem-solicitacoes", "/os/nao-atribuidas"],
       },
-      { label: "Cronograma de Manutenção", href: "/portal/cronograma", icon: "calendar", modulo: "os" },
+      { label: "Cronograma de Manutenção", href: "/gestao/cronograma-manutencao", icon: "calendar", modulo: "os" },
       { label: "Nova OS", href: "/os/nova", icon: "plus", modulo: "os", minNivel: PERMISSAO_NIVEL.EDICAO },
       {
         label: "Auditoria de OS",

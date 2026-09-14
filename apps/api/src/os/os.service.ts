@@ -30,6 +30,8 @@ import { colaboradorPodeReceberOS, listarResponsaveisAtribuiveis } from "../pess
 import { parseAnexoDataUrl } from "./os-anexos";
 import { atribuicaoConflitou, transicaoStatusOS } from "./os-transicoes";
 import { ehSolicitante, filtrarTimeline, podeVerInterno, textoTransferencia, visibilidadeLog } from "./os-visibilidade";
+import { registrarExecucaoPlano } from "../planos/plano-ocorrencia";
+import { tipoOsCumprePlano } from "../planos/plano-regras";
 
 const STATUS_ATIVAS: StatusOS[] = [
   StatusOS.NAO_ATRIBUIDA,
@@ -736,7 +738,7 @@ export class OsService {
         opts.textoConclusaoPublico?.trim() ||
         `Serviço realizado: ${servico}\nResultado: ${resultado}`;
 
-      return this.prisma.$transaction(async (tx) => {
+      const fechada = await this.prisma.$transaction(async (tx) => {
         const reservas = await tx.estoqueReserva.findMany({
           where: { ordemServicoId: os.id, ativa: true },
         });
@@ -784,6 +786,33 @@ export class OsService {
           },
         });
       });
+
+      if (os.equipamentoId && tipoOsCumprePlano(os.tipo)) {
+        const laudo = await this.prisma.laudo.findFirst({
+          where: {
+            estabelecimentoId: user.estabelecimentoId,
+            equipamentoId: os.equipamentoId,
+            osNumero: os.numero,
+            tipo: os.tipo as unknown as TipoLaudo,
+          },
+          orderBy: { dataExecucao: "desc" },
+        });
+        await registrarExecucaoPlano({
+          prisma: this.prisma,
+          estabelecimentoId: user.estabelecimentoId,
+          equipamentoId: os.equipamentoId,
+          tipoOs: os.tipo,
+          resultado: laudo?.resultado,
+          dataExecucao: fechada.fechamento ?? new Date(),
+          osId: os.id,
+          osNumero: os.numero,
+          laudoId: laudo?.id,
+          checklist: laudo?.respostas,
+          executorId: fechada.responsavelId,
+          usuarioId: user.userId,
+        });
+      }
+      return fechada;
     }
 
     if (acao === "cancelar") {

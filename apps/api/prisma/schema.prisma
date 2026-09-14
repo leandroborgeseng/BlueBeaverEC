@@ -150,6 +150,10 @@ model Estabelecimento {
   perfisCustom           PerfilCustom[]
   mobileSyncIds          MobileSyncIdempotency[]
   tiposEquipamentoPlano  TipoEquipamentoPlano[]
+  planosTipoCustom       PlanoTipoCustom[]
+  planosGrupo            PlanoGrupo[]
+  planosInstancia        PlanoInstancia[]
+  planosOcorrencia       PlanoOcorrencia[]
 }
 
 model Usuario {
@@ -234,6 +238,7 @@ model Modelo {
   fabricante   Fabricante    @relation(fields: [fabricanteId], references: [id], onDelete: Cascade)
   equipamentos Equipamento[]
   procedimentos ProcedimentoModelo[]
+  planosAplicados PlanoInstancia[]
 
   @@unique([fabricanteId, nome])
 }
@@ -248,6 +253,8 @@ model Fornecedor {
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]
   contratos       Contrato[]
+  planosExecutor  PlanoInstancia[]
+  ocorrenciasExecutor PlanoOcorrencia[] @relation("OcorrenciaFornecedor")
 
   @@unique([estabelecimentoId, nome])
 }
@@ -303,6 +310,7 @@ model PlanoTeste {
 
   tipoEquipamentoPlano TipoEquipamentoPlano @relation(fields: [tipoEquipamentoPlanoId], references: [id], onDelete: Cascade)
   laudos               Laudo[]
+  instancias           PlanoInstancia[]
 
   @@unique([tipoEquipamentoPlanoId, tipoTeste])
   @@index([procedimentoCodigo])
@@ -338,6 +346,8 @@ model Colaborador {
   auditoriasResp   Auditoria[]    @relation("AuditoriaResponsavel")
   criticidadeEquipamentos Equipamento[] @relation("EquipCriticidadeResp")
   movimentacoesEquip EquipamentoMovimentacao[]
+  planosResponsavel PlanoInstancia[] @relation("PlanoResponsavel")
+  ocorrenciasExecutor PlanoOcorrencia[] @relation("OcorrenciaExecutor")
 
   @@unique([estabelecimentoId, matricula])
 }
@@ -407,6 +417,7 @@ model Equipamento {
   movimentacoes   EquipamentoMovimentacao[]
   documentos      EquipamentoDocumento[]
   eventosCiclo    EquipamentoEventoCiclo[]
+  planosManutencao PlanoInstancia[]
 
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
@@ -538,6 +549,7 @@ model OrdemServico {
   naoConformidades NaoConformidade[]
   checklistMobile OsChecklistMobile?
   fotosMobile     OsFotoMobile[]
+  ocorrenciaPlano PlanoOcorrencia?
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
@@ -720,6 +732,183 @@ enum TipoTestePlano {
   QUALIFICACAO
 }
 
+enum TipoAtividadePlano {
+  PREVENTIVA
+  CALIBRACAO
+  TSE
+  QUALIFICACAO
+  OUTRO
+}
+
+enum FontePeriodicidade {
+  FABRICANTE
+  PROCEDIMENTO
+  OUTRA
+}
+
+enum ModoAgendamentoPlano {
+  CALENDARIO_FIXO
+  INTERVALO_EXECUCAO
+}
+
+enum ExecutorPlano {
+  INTERNO
+  EXTERNO
+}
+
+enum StatusPlanoInstancia {
+  ATIVO
+  SUSPENSO
+  DESATIVADO
+}
+
+enum StatusOcorrenciaPlano {
+  PREVISTA
+  A_VENCER
+  VENCIDA
+  OS_GERADA
+  EXECUTADA
+  CANCELADA
+}
+
+enum StatusGeracaoOsPlano {
+  PENDENTE
+  OK
+  FALHA
+}
+
+/// Tipos de plano configuráveis além de preventiva / calibração / TSE / qualificação.
+model PlanoTipoCustom {
+  id                String   @id @default(cuid())
+  estabelecimentoId String
+  nome              String
+  ativo             Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  instancias      PlanoInstancia[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+/// Pacote de atividades que só cumpre o ciclo quando todas estão aprovadas.
+model PlanoGrupo {
+  id                String   @id @default(cuid())
+  estabelecimentoId String
+  nome              String
+  ativo             Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  instancias      PlanoInstancia[]
+
+  @@unique([estabelecimentoId, nome])
+}
+
+/// Plano por equipamento (ou aplicado a partir de um modelo). Periodicidade só existe se cadastrada — nunca inventada.
+model PlanoInstancia {
+  id                    String                 @id @default(cuid())
+  estabelecimentoId     String
+  equipamentoId         String
+  modeloOrigemId        String?
+  grupoId               String?
+  tipo                  TipoAtividadePlano
+  tipoCustomId          String?
+  chaveUnica            String
+  planoTesteId          String?
+  procedimentoCodigo    String?
+  periodicidadeMeses    Int?
+  fontePeriodicidade    FontePeriodicidade?
+  fontePeriodicidadeObs String?
+  modoAgendamento       ModoAgendamentoPlano   @default(INTERVALO_EXECUCAO)
+  diaFixo               Int?
+  mesFixo               Int?
+  antecedenciaDias      Int                    @default(15)
+  proximaData           DateTime?
+  dataPrevistaOriginal  DateTime?
+  responsavelId         String?
+  executorTipo          ExecutorPlano          @default(INTERNO)
+  fornecedorId          String?
+  status                StatusPlanoInstancia   @default(ATIVO)
+  motivoSuspensao       String?
+  suspensoEm            DateTime?
+  suspensoPorId         String?
+  origemCatalogo        Boolean                @default(false)
+  editadoManualmente    Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  estabelecimento Estabelecimento     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento     Equipamento         @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  modeloOrigem    Modelo?             @relation(fields: [modeloOrigemId], references: [id], onDelete: SetNull)
+  grupo           PlanoGrupo?         @relation(fields: [grupoId], references: [id], onDelete: SetNull)
+  tipoCustom      PlanoTipoCustom?    @relation(fields: [tipoCustomId], references: [id], onDelete: SetNull)
+  planoTeste      PlanoTeste?         @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
+  responsavel     Colaborador?        @relation("PlanoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  fornecedor      Fornecedor?         @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  ocorrencias     PlanoOcorrencia[]
+  historico       PlanoHistorico[]
+
+  @@unique([equipamentoId, chaveUnica])
+  @@index([estabelecimentoId, status])
+  @@index([estabelecimentoId, tipo])
+  @@index([modeloOrigemId])
+  @@index([proximaData])
+}
+
+model PlanoOcorrencia {
+  id                    String                 @id @default(cuid())
+  planoInstanciaId      String
+  estabelecimentoId     String
+  dataPrevista          DateTime
+  dataPrevistaOriginal  DateTime
+  atrasoDias            Int                    @default(0)
+  status                StatusOcorrenciaPlano  @default(PREVISTA)
+  cumpriuPlano          Boolean                @default(false)
+  osId                  String?                @unique
+  osGeracaoStatus       StatusGeracaoOsPlano   @default(PENDENTE)
+  osGeracaoErro         String?
+  osGeracaoTentativas   Int                    @default(0)
+  reprogramadaEm        DateTime?
+  reprogramadaPorId     String?
+  motivoReprogramacao   String?
+  executadaEm           DateTime?
+  executorNome          String?
+  executorId            String?
+  fornecedorExecId      String?
+  resultado             ResultadoLaudo?
+  laudoId               String?
+  checklist             Json                   @default("[]")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  plano           PlanoInstancia @relation(fields: [planoInstanciaId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  os              OrdemServico?  @relation(fields: [osId], references: [id], onDelete: SetNull)
+  executor        Colaborador?   @relation("OcorrenciaExecutor", fields: [executorId], references: [id], onDelete: SetNull)
+  fornecedorExec  Fornecedor?    @relation("OcorrenciaFornecedor", fields: [fornecedorExecId], references: [id], onDelete: SetNull)
+  laudo           Laudo?         @relation(fields: [laudoId], references: [id], onDelete: SetNull)
+
+  @@unique([planoInstanciaId, dataPrevistaOriginal])
+  @@index([estabelecimentoId, status, dataPrevista])
+  @@index([dataPrevista])
+}
+
+model PlanoHistorico {
+  id               String   @id @default(cuid())
+  planoInstanciaId String
+  usuarioId        String?
+  acao             String
+  detalhe          String?
+  createdAt        DateTime @default(now())
+
+  plano PlanoInstancia @relation(fields: [planoInstanciaId], references: [id], onDelete: Cascade)
+
+  @@index([planoInstanciaId, createdAt])
+}
+
 enum NormaTse {
   FABRICA
   EC
@@ -873,6 +1062,7 @@ model Laudo {
   responsavelTecnico Colaborador?      @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
   planoTeste         PlanoTeste?       @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
   anexos             LaudoAnexo[]
+  ocorrenciasPlano   PlanoOcorrencia[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, tipo])

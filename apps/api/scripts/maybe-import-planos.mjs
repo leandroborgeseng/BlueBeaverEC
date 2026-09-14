@@ -24,6 +24,24 @@ const prisma = new PrismaClient();
 try {
   if (await cargaInventarioExiste(prisma)) {
     console.log("[aion] import planos: inventário oficial HEF — skip extract HRTC (aion_extract_v2)");
+    const refOnly = existsSync(refFile);
+    if (refOnly) {
+      const tipos = await prisma.tipoEquipamentoPlano.count();
+      if (tipos < 131) {
+        console.log("[aion] import planos: catálogo de referência ausente/incompleto — seed só do JSON (sem vínculo HRTC, sem OS)");
+        const result = spawnSync("pnpm", ["exec", "tsx", "scripts/import-planos-manutencao.ts", "--catalogo-only"], {
+          cwd: root,
+          env: process.env,
+          stdio: "inherit",
+          shell: false,
+        });
+        if (result.error) {
+          console.error(result.error);
+          process.exit(1);
+        }
+        process.exit(result.status ?? 1);
+      }
+    }
     process.exit(0);
   }
 

@@ -229,6 +229,13 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   PARCIAL: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
   NAO_CONFORME: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
   SOBRECARGA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  PREVISTA: { bg: "oklch(0.93 0.04 250)", color: "oklch(0.4 0.14 255)" },
+  VENCIDA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  OS_GERADA: { bg: "oklch(0.93 0.04 250)", color: "oklch(0.4 0.14 255)" },
+  EXECUTADA: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
+  FALHA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  SUSPENSO: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
+  DESATIVADO: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
 };
 
 export function Badge({ children, tone }: { children: ReactNode; tone?: string }) {

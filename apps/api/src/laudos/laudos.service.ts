@@ -10,7 +10,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import { ContratosService } from "../contratos/contratos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
-import { agendarProximaOsPlano, resultadoFechaCiclo } from "../planos/proxima-os-plano";
+import { agendarProximaOsPlano } from "../planos/proxima-os-plano";
 
 type RespostaItem = {
   id?: string;
@@ -176,15 +176,28 @@ export class LaudosService {
       });
     }
 
-    if (resultadoFechaCiclo(resultado) && planoTeste) {
+    if (
+      data.tipo === TipoLaudo.PREVENTIVA ||
+      data.tipo === TipoLaudo.CALIBRACAO ||
+      data.tipo === TipoLaudo.TSE ||
+      data.tipo === TipoLaudo.QUALIFICACAO
+    ) {
       await agendarProximaOsPlano(this.prisma, {
         estabelecimentoId: user.estabelecimentoId,
         equipamentoId: equipamento.id,
         tipo: data.tipo,
         dataExecucao: laudo.dataExecucao,
-        periodicidadeMeses: planoTeste.periodicidadeMeses,
+        periodicidadeMeses: planoTeste?.periodicidadeMeses ?? 0,
         resultado,
-        observacao: `Próxima ${data.tipo} · ${planoTeste.procedimentoCodigo}`,
+        observacao: planoTeste
+          ? `Próxima ${data.tipo} · ${planoTeste.procedimentoCodigo}`
+          : undefined,
+        osNumero: data.osNumero,
+        laudoId: laudo.id,
+        checklist: respostas,
+        executorNome: data.tecnicoNome,
+        executorId: data.responsavelTecnicoId,
+        usuarioId: user.userId,
       });
     }
 
@@ -261,15 +274,26 @@ export class LaudosService {
       });
     }
 
-    if (resultadoFechaCiclo(data.resultado) && laudo.planoTeste) {
+    if (
+      laudo.tipo === TipoLaudo.PREVENTIVA ||
+      laudo.tipo === TipoLaudo.CALIBRACAO ||
+      laudo.tipo === TipoLaudo.TSE ||
+      laudo.tipo === TipoLaudo.QUALIFICACAO
+    ) {
       await agendarProximaOsPlano(this.prisma, {
         estabelecimentoId: user.estabelecimentoId,
         equipamentoId: laudo.equipamentoId,
         tipo: laudo.tipo,
         dataExecucao: laudo.dataExecucao,
-        periodicidadeMeses: laudo.planoTeste.periodicidadeMeses,
+        periodicidadeMeses: laudo.planoTeste?.periodicidadeMeses ?? 0,
         resultado: data.resultado,
-        observacao: `Próxima ${laudo.tipo} · ${laudo.planoTeste.procedimentoCodigo}`,
+        observacao: laudo.planoTeste
+          ? `Próxima ${laudo.tipo} · ${laudo.planoTeste.procedimentoCodigo}`
+          : undefined,
+        osNumero: laudo.osNumero,
+        laudoId: laudo.id,
+        executorId: laudo.responsavelTecnicoId,
+        usuarioId: user.userId,
       });
     }
 
