@@ -73,12 +73,7 @@ export default function LoginPage() {
           Aion Engenharia Clínica
         </div>
 
-        <div style={label}>UNIDADE</div>
-        <select style={{ ...input, marginBottom: 0 }} defaultValue="Hospital Estadual de Formosa" disabled>
-          <option>Hospital Estadual de Formosa</option>
-        </select>
-
-        <div style={{ ...label, marginTop: 14 }}>USUÁRIO</div>
+        <div style={label}>USUÁRIO</div>
         <input
           style={input}
           type="email"
