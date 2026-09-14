@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Start production: migrate + seed (rápido) + API + import em background.
+ * Start production: migrate + seed (não derruba o HTTP) + API.
+ * Import em background só com IMPORT_ON_BOOT=1 (evita OOM/crash loop → 502).
  * Prefers DATABASE_URL as provided by the host (Railway).
  *
  * Inventário: maybe-import-equipamentos aplica wipe+JSON oficial HEF uma vez
@@ -108,7 +109,17 @@ if (existsSync(prismaJs)) {
   else run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
 }
 
-run(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")]);
+const seed = spawnSync(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  shell: false,
+});
+if (seed.status !== 0) {
+  console.error(
+    `[aion] boot seed falhou (code=${seed.status ?? "?"}) — API sobe mesmo assim`,
+  );
+}
 
 const convSol = spawnSync(process.execPath, [path.join(root, "scripts/maybe-converter-solicitacoes-abertas.mjs")], {
   cwd: root,
@@ -130,7 +141,12 @@ const api = spawn(process.execPath, ["dist/main.js"], {
   shell: false,
 });
 
-setTimeout(() => {
+const importOnBoot =
+  process.env.IMPORT_ON_BOOT === "true" || process.env.IMPORT_ON_BOOT === "1";
+
+if (!importOnBoot) {
+  console.log("[aion] import em background desligado (defina IMPORT_ON_BOOT=1 para habilitar)");
+} else setTimeout(() => {
   console.log("[aion] iniciando import de equipamentos em background…");
   const imp = spawn(process.execPath, [path.join(root, "scripts/maybe-import-equipamentos.mjs")], {
     cwd: root,

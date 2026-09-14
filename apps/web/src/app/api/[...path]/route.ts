@@ -6,9 +6,12 @@ export const runtime = "nodejs";
 
 const DEFAULT_API_PORT = "3001";
 
-/** Dual-stack para *.railway.internal (IPv4/IPv6). */
+/**
+ * API escuta em 0.0.0.0 (IPv4). family:0 / Happy Eyeballs pode tentar AAAA
+ * de *.railway.internal, estourar o timeout e devolver 502 com a API no ar.
+ */
 const upstreamAgent = new Agent({
-  connect: { family: 0 },
+  connect: { family: 4 },
   connectTimeout: 10_000,
 });
 

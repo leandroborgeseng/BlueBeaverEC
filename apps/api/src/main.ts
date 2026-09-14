@@ -31,4 +31,7 @@ async function bootstrap() {
   console.log(`Aion API listening on ${host}:${port}`);
 }
 
-void bootstrap();
+void bootstrap().catch((err) => {
+  console.error("[aion] bootstrap falhou:", err);
+  process.exit(1);
+});
