@@ -15,12 +15,34 @@
  * Evita `pnpm --filter` (quebra se o host ainda aponta @nexo/*).
  */
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const monorepoRoot = path.resolve(root, "../..");
+function detectApiRoot() {
+  const fromEnv = process.env.AION_API_ROOT?.trim();
+  if (fromEnv && existsSync(path.join(fromEnv, "package.json"))) return fromEnv;
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const fromScript = path.resolve(here, "..");
+  if (existsSync(path.join(fromScript, "prisma"))) return fromScript;
+  if (existsSync("/app/apps/api/package.json")) return "/app/apps/api";
+  return fromScript;
+}
+
+const root = detectApiRoot();
+const monorepoRoot = process.env.AION_ROOT?.trim()
+  || (existsSync("/app/pnpm-workspace.yaml") ? "/app" : path.resolve(root, "../.."));
+
+if (!process.env.PORT?.trim()) {
+  process.env.PORT = process.env.API_PORT?.trim() || "3001";
+}
+if (!process.env.LISTEN_HOST?.trim()) {
+  process.env.LISTEN_HOST = "0.0.0.0";
+}
+
+console.log(
+  `[aion] boot apiRoot=${root} monorepo=${monorepoRoot} PORT=${process.env.PORT} LISTEN_HOST=${process.env.LISTEN_HOST}`,
+);
 
 function assembleFromPgVars() {
   const { PGHOST, PGPORT = "5432", PGUSER, PGPASSWORD, PGDATABASE } = process.env;
@@ -130,14 +152,55 @@ function runNestBuild() {
   run("pnpm", ["exec", "nest", "build"]);
 }
 
+function distHasMain(dir) {
+  return existsSync(path.join(dir, "main.js")) || existsSync(path.join(dir, "src", "main.js"));
+}
+
+function persistBuiltDist() {
+  const dist = path.join(root, "dist");
+  if (!distHasMain(dist)) return;
+  for (const dest of ["/opt/aion-dist", path.join(monorepoRoot, "aion-runtime", "dist")]) {
+    try {
+      mkdirSync(dest, { recursive: true });
+      cpSync(dist, dest, { recursive: true });
+      console.log(`[aion] dist persistido em ${dest}`);
+    } catch (err) {
+      console.warn(`[aion] persist ${dest}: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+}
+
+function hydrateDistFromImage() {
+  const dest = path.join(root, "dist");
+  if (distHasMain(dest)) return;
+  const sources = [
+    "/opt/aion-dist",
+    path.join(monorepoRoot, "aion-runtime", "dist"),
+    "/app/aion-runtime/dist",
+  ];
+  for (const src of sources) {
+    if (!distHasMain(src)) continue;
+    try {
+      mkdirSync(dest, { recursive: true });
+      cpSync(src, dest, { recursive: true });
+      console.log(`[aion] dist hidratado de ${src} → ${dest}`);
+      return;
+    } catch (err) {
+      console.warn(`[aion] hidratar ${src}: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+}
+
 function apiEntryCandidates() {
   return [
-    path.join(root, "dist", "main.js"),
-    path.join(root, "dist", "src", "main.js"),
     path.join("/opt/aion-dist", "main.js"),
     path.join("/opt/aion-dist", "src", "main.js"),
-    path.join("/tmp/aion-dist", "main.js"),
-    path.join("/tmp/aion-dist", "src", "main.js"),
+    path.join(monorepoRoot, "aion-runtime", "dist", "main.js"),
+    path.join(monorepoRoot, "aion-runtime", "dist", "src", "main.js"),
+    "/app/aion-runtime/dist/main.js",
+    "/app/aion-runtime/dist/src/main.js",
+    path.join(root, "dist", "main.js"),
+    path.join(root, "dist", "src", "main.js"),
   ];
 }
 
@@ -149,6 +212,7 @@ function resolveApiEntry() {
 }
 
 function ensureApiEntry() {
+  hydrateDistFromImage();
   let entry = resolveApiEntry();
   if (entry) {
     console.log(`[aion] API entry ${entry}`);
@@ -156,10 +220,11 @@ function ensureApiEntry() {
   }
 
   console.warn(
-    "[aion] dist/main.js e dist/src/main.js ausentes — volume pode ter tapado o bundle da imagem. Gerando prisma generate + nest build…",
+    "[aion] dist/main.js ausente — volume pode ter tapado o bundle da imagem. Gerando prisma generate + nest build…",
   );
   runPrisma(["generate"]);
   runNestBuild();
+  persistBuiltDist();
 
   entry = resolveApiEntry();
   if (entry) {

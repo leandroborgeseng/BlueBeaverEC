@@ -8,6 +8,8 @@ builder = "DOCKERFILE"
 dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
+# Fora de apps/api: volume no cwd esconde scripts/start-prod.mjs da imagem.
+startCommand = "node /app/start-api.mjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

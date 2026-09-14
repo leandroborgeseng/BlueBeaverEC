@@ -31,8 +31,15 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/apps/api ./apps/api
 COPY --from=build /app/apps/web/package.json ./apps/web/package.json
+COPY start-api.mjs /app/start-api.mjs
 WORKDIR /app/apps/api
 # Cópia fora de /app: bind-mount do volume no cwd esconde o dist da imagem.
-RUN mkdir -p /opt/aion-dist && cp -a dist/. /opt/aion-dist/
+ENV AION_API_ROOT=/app/apps/api
+ENV AION_ROOT=/app
+ENV LISTEN_HOST=0.0.0.0
+RUN mkdir -p /opt/aion-dist /opt/aion-boot \
+  && cp -a dist/. /opt/aion-dist/ \
+  && cp scripts/start-prod.mjs /opt/aion-boot/start-prod.mjs \
+  && cp /app/start-api.mjs /opt/aion-boot/start-api.mjs
 EXPOSE 3001
-CMD ["node", "scripts/start-prod.mjs"]
+CMD ["node", "/opt/aion-boot/start-prod.mjs"]

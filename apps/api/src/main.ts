@@ -4,22 +4,24 @@ import { json, urlencoded } from "express";
 import { createServer, type Server } from "node:http";
 import { AppModule } from "./app.module";
 
-function listenHost() {
-  if (process.env.LISTEN_IPV4_ONLY === "1") return "0.0.0.0";
-  const raw = process.env.LISTEN_HOST?.trim();
-  if (!raw || raw === "0.0.0.0" || raw === "127.0.0.1") return "::";
-  return raw;
+function listenPorts(): number[] {
+  return [
+    ...new Set(
+      [process.env.PORT, process.env.API_PORT, "3001"]
+        .map((v) => Number(String(v ?? "").trim() || 0))
+        .filter((p) => Number.isInteger(p) && p > 0 && p < 65536),
+    ),
+  ];
 }
 
-async function listenDualStack(server: Server, port: number, host: string) {
-  await new Promise<void>((resolve, reject) => {
+function listenOn(server: Server, port: number, host: string, ipv6Only?: boolean) {
+  return new Promise<void>((resolve, reject) => {
     const onError = (err: Error) => {
       server.off("error", onError);
       reject(err);
     };
     server.once("error", onError);
-    // ipv6Only:false = aceita AAAA da rede privada e IPv4 do healthcheck Railway.
-    server.listen({ port, host, ipv6Only: host === "::" ? false : undefined }, () => {
+    server.listen({ port, host, ipv6Only }, () => {
       server.off("error", onError);
       resolve();
     });
@@ -45,26 +47,49 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Railway healthcheck usa PORT; o web interno costuma usar API_PORT=3001.
-  // Escutar os dois evita 503 no login quando as portas divergem.
-  const ports = [
-    ...new Set(
-      [process.env.API_PORT, process.env.PORT, "3001"]
-        .map((v) => Number(v?.trim() || 0))
-        .filter((p) => Number.isInteger(p) && p > 0 && p < 65536),
-    ),
-  ];
-  const host = listenHost();
+  const ports = listenPorts();
+  const customHost = process.env.LISTEN_HOST?.trim();
+  const ipv4Only = process.env.LISTEN_IPV4_ONLY === "1";
+  const ipv6Only = process.env.LISTEN_IPV6_ONLY === "1";
   await app.init();
   const expressApp = app.getHttpAdapter().getInstance();
-  await listenDualStack(app.getHttpServer() as Server, ports[0], host);
-  // eslint-disable-next-line no-console
-  console.log(`Aion API listening on ${host}:${ports[0]}`);
-  for (const extra of ports.slice(1)) {
-    const server = createServer(expressApp);
-    await listenDualStack(server, extra, host);
+  const nestServer = app.getHttpServer() as Server;
+
+  for (let i = 0; i < ports.length; i++) {
+    const port = ports[i];
+    const server = i === 0 ? nestServer : createServer(expressApp);
+
+    if (customHost && customHost !== "0.0.0.0" && customHost !== "::" && customHost !== "127.0.0.1") {
+      await listenOn(server, port, customHost);
+      // eslint-disable-next-line no-console
+      console.log(`Aion API listening on ${customHost}:${port}`);
+      continue;
+    }
+
+    if (ipv6Only) {
+      await listenOn(server, port, "::", true);
+      // eslint-disable-next-line no-console
+      console.log(`Aion API listening on [::]:${port}`);
+      continue;
+    }
+
+    // IPv4 0.0.0.0: healthcheck Railway + proxy em A. IPv6 :: : rede privada AAAA.
+    await listenOn(server, port, "0.0.0.0");
     // eslint-disable-next-line no-console
-    console.log(`Aion API also listening on ${host}:${extra}`);
+    console.log(`Aion API listening on 0.0.0.0:${port}`);
+    if (!ipv4Only) {
+      try {
+        const v6 = createServer(expressApp);
+        await listenOn(v6, port, "::", true);
+        // eslint-disable-next-line no-console
+        console.log(`Aion API also listening on [::]:${port}`);
+      } catch (err) {
+        console.warn(
+          `[aion] IPv6 :${port} indisponível:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
   }
 }
 

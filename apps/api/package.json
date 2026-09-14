@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "pnpm --filter @aion/shared build && prisma generate && nest build",
+    "build": "pnpm --filter @aion/shared build && prisma generate && nest build && node scripts/persist-dist.mjs",
     "start": "node scripts/start-prod.mjs",
     "start:prod": "node scripts/start-prod.mjs",
     "lint": "tsc -p tsconfig.json --noEmit",
