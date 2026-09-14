@@ -151,7 +151,14 @@ export class MobileService {
     if (!detail) throw new NotFoundException("OS não encontrada");
 
     const checklistSugerido = await this.checklistSugeridoParaOs(user.estabelecimentoId, detail);
-    return { ...detail, checklistSugerido };
+    const sla = await this.os.getByNumero(user.estabelecimentoId, numero, user.perfil);
+    return {
+      ...detail,
+      checklistSugerido,
+      slaLimite: sla.slaLimite,
+      slaEstourado: sla.slaEstourado,
+      atrasada: sla.atrasada,
+    };
   }
 
   private async checklistSugeridoParaOs(
