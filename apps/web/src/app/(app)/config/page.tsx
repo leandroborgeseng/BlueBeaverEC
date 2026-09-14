@@ -111,6 +111,9 @@ export default function ConfigPage() {
     cnpj?: string | null;
     fusoHorario: string;
     slaUrgenteHoras: number;
+    diasAlertaCertificado?: number;
+    bloquearPadraoVencido?: boolean;
+    valorHoraMaoDeObra?: number | null;
   } | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioRow[]>([]);
   const [perfis, setPerfis] = useState<
@@ -158,6 +161,11 @@ export default function ConfigPage() {
           cnpj: String(fd.get("cnpj") || "") || undefined,
           fusoHorario: String(fd.get("fuso")),
           slaUrgenteHoras: Number(fd.get("sla")),
+          diasAlertaCertificado: Number(fd.get("diasAlerta") || 60),
+          bloquearPadraoVencido: fd.get("bloquearPadrao") === "on",
+          valorHoraMaoDeObra: String(fd.get("valorHora") || "").trim()
+            ? Number(fd.get("valorHora"))
+            : null,
         }),
       });
       setErro(null);
@@ -310,6 +318,36 @@ export default function ConfigPage() {
             <div>
               <FieldLabel htmlFor="org-sla">SLA urgente (horas)</FieldLabel>
               <input id="org-sla" name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel htmlFor="org-alerta">Alerta de vencimento do padrão (dias)</FieldLabel>
+              <input
+                id="org-alerta"
+                name="diasAlerta"
+                type="number"
+                defaultValue={org.diasAlertaCertificado ?? 60}
+                style={fieldStyle}
+              />
+            </div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+              <input name="bloquearPadrao" type="checkbox" defaultChecked={org.bloquearPadraoVencido !== false} />
+              Bloquear padrão vencido na data do serviço em laudo novo
+            </label>
+            <div>
+              <FieldLabel htmlFor="org-hora">Valor/hora da mão de obra (R$)</FieldLabel>
+              <input
+                id="org-hora"
+                name="valorHora"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={org.valorHoraMaoDeObra ?? ""}
+                placeholder="Vazio = horas sem custo"
+                style={fieldStyle}
+              />
+              <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                Sem valor configurado, o tempo de OS é registrado sem custo. Só quem tem financeiro vê o R$.
+              </div>
             </div>
             <Btn type="submit">Salvar</Btn>
           </form>

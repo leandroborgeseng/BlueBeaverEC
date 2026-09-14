@@ -115,8 +115,12 @@ model Estabelecimento {
   nome            String
   cnpj            String?
   fusoHorario     String   @default("America/Sao_Paulo")
-  slaUrgenteHoras Int      @default(4)
-  ativo           Boolean  @default(true)
+  slaUrgenteHoras         Int      @default(4)
+  diasAlertaCertificado   Int      @default(60)
+  bloquearPadraoVencido   Boolean  @default(true)
+  /// R$/h de mão de obra. Sem valor, horas registram sem custo.
+  valorHoraMaoDeObra      Decimal? @db.Decimal(14, 2)
+  ativo                   Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -133,6 +137,7 @@ model Estabelecimento {
   instrumentos           InstrumentoPadrao[]
   laudos                 Laudo[]
   contratos              Contrato[]
+  atendimentosExternos   AtendimentoExterno[]
   equipes                Equipe[]
   componentesRecuperados ComponenteRecuperado[]
   auditorias             Auditoria[]
@@ -154,6 +159,11 @@ model Estabelecimento {
   planosGrupo            PlanoGrupo[]
   planosInstancia        PlanoInstancia[]
   planosOcorrencia       PlanoOcorrencia[]
+  arquivosQualidade      ArquivoQualidade[]
+  documentosControlados  DocumentoControlado[]
+  treinamentos           Treinamento[]
+  ocorrenciasSeguranca   OcorrenciaSeguranca[]
+  alertasCampo           AlertaCampo[]
 }
 
 model Usuario {
@@ -175,6 +185,23 @@ model Usuario {
   movimentacoesEquip EquipamentoMovimentacao[]
   documentosEquip    EquipamentoDocumento[]
   eventosCicloEquip  EquipamentoEventoCiclo[]
+  fornecedorDocumentos FornecedorDocumento[]
+  fornecedorNotas      FornecedorNota[]
+  contratoDocumentos   ContratoDocumento[]
+  orcamentosDecididos  AtendimentoOrcamento[] @relation("OrcamentoDecisao")
+  atendimentoEventos   AtendimentoExternoEvento[]
+  atendimentoDocumentos AtendimentoExternoDocumento[]
+  atendimentosConferencia AtendimentoExterno[] @relation("AtendimentoConferencia")
+  arquivosQualidade       ArquivoQualidade[]
+  documentosVersaoAutor   DocumentoVersao[] @relation("DocumentoVersaoAutor")
+  documentosPublicados    DocumentoVersao[] @relation("DocumentoVersaoPublicador")
+  treinamentosCriados     Treinamento[]
+  ocorrenciasSegAutor     OcorrenciaSeguranca[] @relation("OcorrenciaSegurancaAutor")
+  ocorrenciasSegConclusao OcorrenciaSeguranca[] @relation("OcorrenciaSegurancaConclusao")
+  ocorrenciasInvestigacao OcorrenciaInvestigacao[]
+  ocorrenciasAcoes        OcorrenciaAcao[]
+  alertasCampoCriados     AlertaCampo[]
+  ocorrenciasCondicaoUso  OcorrenciaSeguranca[] @relation("OcorrenciaCondicaoUso")
 }
 
 model UsuarioEstabelecimento {
@@ -212,6 +239,8 @@ model Setor {
   ordensServico   OrdemServico[]
   movimentacoesOrigem  EquipamentoMovimentacao[] @relation("MovOrigemSetor")
   movimentacoesDestino EquipamentoMovimentacao[] @relation("MovDestinoSetor")
+  documentosVinculos   DocumentoVinculo[]
+  ocorrenciasSeguranca OcorrenciaSeguranca[]
 
   @@unique([estabelecimentoId, nome])
 }
@@ -225,6 +254,7 @@ model Fabricante {
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   modelos         Modelo[]
   equipamentos    Equipamento[]
+  fornecedores    FornecedorFabricante[]
 
   @@unique([estabelecimentoId, nome])
 }
@@ -239,24 +269,93 @@ model Modelo {
   equipamentos Equipamento[]
   procedimentos ProcedimentoModelo[]
   planosAplicados PlanoInstancia[]
+  compatibilidadesEstoque EstoqueCompatibilidade[]
+  documentosVinculos DocumentoVinculo[]
 
   @@unique([fabricanteId, nome])
 }
 
 model Fornecedor {
-  id                 String @id @default(cuid())
+  id                 String   @id @default(cuid())
   estabelecimentoId  String
   nome               String
   cnpj               String?
-  ativo              Boolean @default(true)
+  telefone           String?
+  email              String?
+  endereco           String?
+  especialidades     String[] @default([])
+  observacoes        String?
+  ativo              Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]
   contratos       Contrato[]
   planosExecutor  PlanoInstancia[]
   ocorrenciasExecutor PlanoOcorrencia[] @relation("OcorrenciaFornecedor")
+  contatos        FornecedorContato[]
+  documentos      FornecedorDocumento[]
+  notas           FornecedorNota[]
+  fabricantes     FornecedorFabricante[]
+  atendimentos    AtendimentoExterno[]
 
   @@unique([estabelecimentoId, nome])
+}
+
+model FornecedorContato {
+  id           String  @id @default(cuid())
+  fornecedorId String
+  nome         String
+  cargo        String?
+  telefone     String?
+  email        String?
+  principal    Boolean @default(false)
+
+  fornecedor Fornecedor @relation(fields: [fornecedorId], references: [id], onDelete: Cascade)
+
+  @@index([fornecedorId])
+}
+
+model FornecedorDocumento {
+  id            String   @id @default(cuid())
+  fornecedorId  String
+  tipo          String   @default("OUTRO")
+  nomeArquivo   String
+  mimeType      String
+  conteudo      Bytes
+  descricao     String?
+  usuarioId     String?
+  createdAt     DateTime @default(now())
+
+  fornecedor Fornecedor @relation(fields: [fornecedorId], references: [id], onDelete: Cascade)
+  usuario    Usuario?   @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([fornecedorId])
+}
+
+model FornecedorNota {
+  id           String   @id @default(cuid())
+  fornecedorId String
+  texto        String
+  usuarioId    String?
+  createdAt    DateTime @default(now())
+
+  fornecedor Fornecedor @relation(fields: [fornecedorId], references: [id], onDelete: Cascade)
+  usuario    Usuario?   @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([fornecedorId, createdAt])
+}
+
+model FornecedorFabricante {
+  id            String @id @default(cuid())
+  fornecedorId  String
+  fabricanteId  String
+
+  fornecedor Fornecedor @relation(fields: [fornecedorId], references: [id], onDelete: Cascade)
+  fabricante Fabricante @relation(fields: [fabricanteId], references: [id], onDelete: Cascade)
+
+  @@unique([fornecedorId, fabricanteId])
 }
 
 model PlanoDescricao {
@@ -348,6 +447,12 @@ model Colaborador {
   movimentacoesEquip EquipamentoMovimentacao[]
   planosResponsavel PlanoInstancia[] @relation("PlanoResponsavel")
   ocorrenciasExecutor PlanoOcorrencia[] @relation("OcorrenciaExecutor")
+  atendimentosConferencia AtendimentoExterno[] @relation("AtendimentoConferenciaColab")
+  documentosResponsavel DocumentoVersao[] @relation("DocumentoVersaoResponsavel")
+  treinamentosInstrutor Treinamento[]
+  treinamentosParticipante TreinamentoParticipante[]
+  ocorrenciasSegResp    OcorrenciaSeguranca[]
+  alertasCampoResp      AlertaCampo[]
 
   @@unique([estabelecimentoId, matricula])
 }
@@ -418,6 +523,12 @@ model Equipamento {
   documentos      EquipamentoDocumento[]
   eventosCiclo    EquipamentoEventoCiclo[]
   planosManutencao PlanoInstancia[]
+  atendimentosExternos AtendimentoExterno[]
+  compatibilidadesEstoque EstoqueCompatibilidade[]
+  documentosVinculos DocumentoVinculo[]
+  treinamentosVinculos TreinamentoEquipamento[]
+  ocorrenciasSeguranca OcorrenciaSeguranca[]
+  alertasCampoVinculos AlertaCampoEquipamento[]
 
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
@@ -550,6 +661,8 @@ model OrdemServico {
   checklistMobile OsChecklistMobile?
   fotosMobile     OsFotoMobile[]
   ocorrenciaPlano PlanoOcorrencia?
+  atendimentosExternos AtendimentoExterno[]
+  ocorrenciasSeguranca OcorrenciaSeguranca[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, status])
@@ -638,38 +751,84 @@ model ContadorSequencia {
 enum TipoItemOS {
   MATERIAL
   MAO_DE_OBRA
+  SERVICO_EXTERNO
+  OUTROS_DIRETOS
+}
+
+enum OrigemMaterialOS {
+  ESTOQUE
+  COMPRA_DIRETA
+}
+
+enum NaturezaCustoOS {
+  ESTIMADO
+  APROVADO
+  REALIZADO
+}
+
+enum DestinoFisicoMaterial {
+  ESTOQUE
+  PERDA
+  USO_CONFIRMADO
+  OUTRO
 }
 
 model OrdemServicoItem {
-  id             String     @id @default(cuid())
+  id             String            @id @default(cuid())
   ordemServicoId String
-  tipo           TipoItemOS @default(MATERIAL)
+  tipo           TipoItemOS        @default(MATERIAL)
   descricao      String
-  quantidade     Decimal    @db.Decimal(12, 2) @default(1)
-  valorUnitario  Decimal?   @db.Decimal(14, 2)
+  quantidade     Decimal           @db.Decimal(12, 2) @default(1)
+  valorUnitario  Decimal?          @db.Decimal(14, 2)
   estoqueItemId  String?
+  origemMaterial OrigemMaterialOS?
+  naturezaCusto  NaturezaCustoOS   @default(REALIZADO)
+  estornado      Boolean           @default(false)
 
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
   estoqueItem  EstoqueItem? @relation(fields: [estoqueItemId], references: [id])
 }
 
 model EstoqueItem {
-  id                 String  @id @default(cuid())
+  id                 String    @id @default(cuid())
   estabelecimentoId  String
   codigo             String
   descricao          String
-  almoxarifado       String  @default("Principal")
-  qtdAtual           Decimal @db.Decimal(12, 2) @default(0)
-  qtdMinima          Decimal @db.Decimal(12, 2) @default(0)
-  valorUnitario      Decimal @db.Decimal(14, 2) @default(0)
-  ativo              Boolean @default(true)
+  unidade            String    @default("UN")
+  almoxarifado       String    @default("Principal")
+  qtdAtual           Decimal   @db.Decimal(12, 2) @default(0)
+  qtdMinima          Decimal   @db.Decimal(12, 2) @default(0)
+  valorUnitario      Decimal   @db.Decimal(14, 2) @default(0)
+  controlaLote       Boolean   @default(false)
+  lote               String?
+  numeroSerie        String?
+  validade           DateTime?
+  ativo              Boolean   @default(true)
+  inativadoEm        DateTime?
+  inativadoMotivo    String?
 
-  estabelecimento Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento         @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   reservas        EstoqueReserva[]
   itensOS         OrdemServicoItem[]
   movimentos      EstoqueMovimento[]
+  compatibilidades EstoqueCompatibilidade[]
 
   @@unique([estabelecimentoId, codigo])
+}
+
+model EstoqueCompatibilidade {
+  id            String  @id @default(cuid())
+  estoqueItemId String
+  modeloId      String?
+  equipamentoId String?
+
+  estoqueItem EstoqueItem  @relation(fields: [estoqueItemId], references: [id], onDelete: Cascade)
+  modelo      Modelo?      @relation(fields: [modeloId], references: [id], onDelete: Cascade)
+  equipamento Equipamento? @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+
+  @@index([estoqueItemId])
+  @@index([modeloId])
+  @@index([equipamentoId])
 }
 
 enum TipoMovimentoEstoque {
@@ -679,23 +838,35 @@ enum TipoMovimentoEstoque {
   BAIXA
   LIBERACAO
   REPOSICAO_SOLICITADA
+  DEVOLUCAO
+  AJUSTE
+  ESTORNO
 }
 
 model EstoqueMovimento {
-  id                 String               @id @default(cuid())
-  estabelecimentoId  String
-  estoqueItemId      String
-  tipo               TipoMovimentoEstoque
-  quantidade         Decimal              @db.Decimal(12, 2)
-  motivo             String?
-  osNumero           Int?
-  usuarioId          String?
-  createdAt          DateTime             @default(now())
+  id                   String               @id @default(cuid())
+  estabelecimentoId    String
+  estoqueItemId        String
+  tipo                 TipoMovimentoEstoque
+  quantidade           Decimal              @db.Decimal(12, 2)
+  motivo               String?
+  osNumero             Int?
+  usuarioId            String?
+  custoUnitario        Decimal?             @db.Decimal(14, 4)
+  documento            String?
+  origem               String?
+  destino              String?
+  chaveIdempotencia    String?
+  estornaMovimentoId   String?
+  saldoApos            Decimal?             @db.Decimal(12, 2)
+  createdAt            DateTime             @default(now())
 
   estoqueItem EstoqueItem @relation(fields: [estoqueItemId], references: [id], onDelete: Cascade)
 
   @@index([estabelecimentoId, createdAt])
   @@index([estoqueItemId])
+  @@index([osNumero])
+  @@index([estabelecimentoId, chaveIdempotencia])
 }
 
 model EstoqueReserva {
@@ -723,6 +894,12 @@ enum ResultadoLaudo {
   REPROVADO
   APROVADO_COM_RESSALVAS
   PENDENTE_ASSINATURA
+  NAO_AVALIADO
+}
+
+enum StatusDocumentoLaudo {
+  RASCUNHO
+  FINAL
 }
 
 enum TipoTestePlano {
@@ -921,23 +1098,49 @@ enum StatusCertificado {
 }
 
 model ProcedimentoLaudo {
-  id                 String    @id @default(cuid())
-  estabelecimentoId  String
-  nome               String
-  tipo               TipoLaudo
-  validadeMeses      Int       @default(12)
-  /// Itens do procedimento: perguntas | pontos | testes (JSON conforme tipo)
-  itens              Json      @default("[]")
-  ativo              Boolean   @default(true)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  estabelecimentoId    String
+  nome                 String
+  tipo                 TipoLaudo
+  validadeMeses        Int       @default(12)
+  itens                Json      @default("[]")
+  versao               Int       @default(1)
+  criterioReferencia   String?
+  criterioVersao       String?
+  criterioAutorNome    String?
+  criterioAtualizadoEm DateTime?
+  ativo                Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  estabelecimento Estabelecimento      @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  estabelecimento Estabelecimento           @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   modelos         ProcedimentoModelo[]
   laudos          Laudo[]
   pop             Pop?
+  historico       ProcedimentoLaudoVersao[]
 
   @@index([estabelecimentoId, tipo])
+}
+
+model ProcedimentoLaudoVersao {
+  id                 String    @id @default(cuid())
+  estabelecimentoId  String
+  procedimentoId     String
+  versao             Int
+  nome               String
+  tipo               TipoLaudo
+  validadeMeses      Int
+  itens              Json
+  criterioReferencia String?
+  criterioVersao     String?
+  createdAt          DateTime  @default(now())
+  createdById        String?
+  createdByNome      String?
+
+  procedimento ProcedimentoLaudo @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+
+  @@unique([procedimentoId, versao])
+  @@index([estabelecimentoId])
 }
 
 model ProcedimentoModelo {
@@ -959,7 +1162,9 @@ model InstrumentoPadrao {
   nSerie              String
   fabricante          String?
   modelo              String?
-  codigoPatrimonio    String?
+  codigoPatrimonio     String?
+  tipoAnalisador       String?
+  identificacaoExterna String?
   /// Grandezas cobertas (ex.: temperatura, umidade, pressão)
   grandezas           String[]  @default([])
   faixaMedicao        String?
@@ -1051,22 +1256,51 @@ model Laudo {
   /// Checklist / pontos / testes preenchidos
   respostas            Json           @default("[]")
   /// Campos extras por tipo (NF, norma TSE, critério %, próxima preventiva...)
-  metadados            Json           @default("{}")
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  metadados             Json                 @default("{}")
+  statusDocumento       StatusDocumentoLaudo @default(RASCUNHO)
+  procedimentoVersao    Int?
+  procedimentoSnapshot  Json?
+  instrumentoSnapshot   Json?
+  visivelPortal         Boolean              @default(false)
+  finalizadoPorId       String?
+  finalizadoPorNome     String?
+  finalizadoEm          DateTime?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
 
-  estabelecimento    Estabelecimento   @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
-  equipamento        Equipamento       @relation(fields: [equipamentoId], references: [id])
+  estabelecimento    Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento        Equipamento        @relation(fields: [equipamentoId], references: [id])
   procedimento       ProcedimentoLaudo? @relation(fields: [procedimentoId], references: [id])
   instrumento        InstrumentoPadrao? @relation(fields: [instrumentoId], references: [id])
-  responsavelTecnico Colaborador?      @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
-  planoTeste         PlanoTeste?       @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
+  responsavelTecnico Colaborador?       @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
+  planoTeste         PlanoTeste?        @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
   anexos             LaudoAnexo[]
   ocorrenciasPlano   PlanoOcorrencia[]
+  revisoes           LaudoRevisao[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, tipo])
+  @@index([estabelecimentoId, statusDocumento])
   @@index([equipamentoId])
+}
+
+model LaudoRevisao {
+  id              String   @id @default(cuid())
+  laudoId         String
+  autorId         String
+  autorNome       String
+  justificativa   String
+  createdAt       DateTime @default(now())
+  respostasAntes  Json?
+  respostasDepois Json?
+  resultadoAntes  String?
+  resultadoDepois String?
+  statusAntes     String?
+  statusDepois    String?
+
+  laudo Laudo @relation(fields: [laudoId], references: [id], onDelete: Cascade)
+
+  @@index([laudoId, createdAt])
 }
 
 model LaudoAnexo {
@@ -1093,20 +1327,64 @@ enum IndiceReajuste {
   IGP_M
 }
 
+enum TipoContrato {
+  MANUTENCAO
+  OUTRO
+}
+
+enum PeriodicidadeContrato {
+  UNICA
+  MENSAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
+enum StatusAtendimentoExterno {
+  ORCAMENTO
+  ORCAMENTO_RECEBIDO
+  DECISAO
+  ENVIADO
+  AGUARDANDO_RETORNO
+  RETORNADO
+  CONFERENCIA
+  LIBERADO
+  CANCELADO
+}
+
+enum DecisaoOrcamento {
+  PENDENTE
+  APROVADO
+  REPROVADO
+}
+
+enum ModoDecisaoOrcamento {
+  APROVACAO_INTERNA
+  AUTORIZACAO_EXTERNA
+}
+
 model Contrato {
   id                    String           @id @default(cuid())
   estabelecimentoId     String
   numero                String
   fornecedorId          String
   descricao             String
+  tipo                  TipoContrato     @default(MANUTENCAO)
   situacao              SituacaoContrato @default(VIGENTE)
   vigenciaInicio        DateTime
   vigenciaFim           DateTime
-  valor                 Decimal          @db.Decimal(14, 2)
+  valor                 Decimal?         @db.Decimal(14, 2)
+  periodicidade         PeriodicidadeContrato?
   slaAtendimentoHoras   Int?
   slaSolucaoHoras       Int?
   indiceReajuste        IndiceReajuste?
   dataReajusteAniversario DateTime?
+  escopo                String?
+  exclusoes             String?
+  cobrePecas            Boolean          @default(false)
+  cobreServicos         Boolean          @default(true)
+  diasAlertaVencimento  Int              @default(30)
+  observacoes           String?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
@@ -1115,9 +1393,27 @@ model Contrato {
   equipamentos    ContratoEquipamento[]
   glosas          ContratoGlosa[]
   ordensServico   OrdemServico[]
+  documentos      ContratoDocumento[]
+  atendimentos    AtendimentoExterno[]
 
   @@unique([estabelecimentoId, numero])
   @@index([estabelecimentoId, situacao])
+}
+
+model ContratoDocumento {
+  id          String   @id @default(cuid())
+  contratoId  String
+  nomeArquivo String
+  mimeType    String
+  conteudo    Bytes
+  descricao   String?
+  usuarioId   String?
+  createdAt   DateTime @default(now())
+
+  contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([contratoId])
 }
 
 model ContratoEquipamento {
@@ -1139,6 +1435,112 @@ model ContratoGlosa {
   motivo     String
 
   contrato Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+}
+
+/// Encaminhamento à assistência externa vinculado a uma OS já existente.
+model AtendimentoExterno {
+  id                 String                     @id @default(cuid())
+  estabelecimentoId  String
+  ordemServicoId     String
+  equipamentoId      String
+  fornecedorId       String
+  contratoId         String?
+  status             StatusAtendimentoExterno   @default(ORCAMENTO)
+  transporte         String?
+  identificacaoEquipamento String?
+  acessorios         String?
+  origemSetorId      String?
+  origemLocalizacao  String?
+  enviadoEm          DateTime?
+  previsaoRetorno    DateTime?
+  retornadoEm        DateTime?
+  foraDoHospital     Boolean                    @default(false)
+  pendenciaRetorno   Boolean                    @default(false)
+  conferenciaEm      DateTime?
+  conferenciaPorId   String?
+  conferenciaColabId String?
+  conferenciaOk      Boolean?
+  conferenciaObs     String?
+  condicaoFinal      CondicaoUsoEquipamento?
+  custoInformado     Decimal?                   @db.Decimal(14, 2)
+  custoAprovado      Decimal?                   @db.Decimal(14, 2)
+  custoRealizado     Decimal?                   @db.Decimal(14, 2)
+  custoOsItemId      String?
+  observacoes        String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  ordemServico    OrdemServico    @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  equipamento     Equipamento     @relation(fields: [equipamentoId], references: [id])
+  fornecedor      Fornecedor      @relation(fields: [fornecedorId], references: [id])
+  contrato        Contrato?       @relation(fields: [contratoId], references: [id], onDelete: SetNull)
+  conferenciaPor  Usuario?        @relation("AtendimentoConferencia", fields: [conferenciaPorId], references: [id], onDelete: SetNull)
+  conferenciaColab Colaborador?   @relation("AtendimentoConferenciaColab", fields: [conferenciaColabId], references: [id], onDelete: SetNull)
+  orcamentos      AtendimentoOrcamento[]
+  documentos      AtendimentoExternoDocumento[]
+  eventos         AtendimentoExternoEvento[]
+
+  @@index([estabelecimentoId, status])
+  @@index([ordemServicoId])
+  @@index([equipamentoId])
+  @@index([fornecedorId])
+}
+
+model AtendimentoOrcamento {
+  id                     String                @id @default(cuid())
+  atendimentoId          String
+  versao                 Int
+  valor                  Decimal               @db.Decimal(14, 2)
+  descricao              String?
+  decisao                DecisaoOrcamento      @default(PENDENTE)
+  modoDecisao            ModoDecisaoOrcamento?
+  decisaoEm              DateTime?
+  decisaoPorId           String?
+  responsavelExterno     String?
+  dataAutorizacaoExterna DateTime?
+  autorizacaoExternaObs  String?
+  nomeArquivo            String?
+  mimeType               String?
+  conteudo               Bytes?
+  createdAt              DateTime              @default(now())
+
+  atendimento AtendimentoExterno @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+  decisaoPor  Usuario?           @relation("OrcamentoDecisao", fields: [decisaoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([atendimentoId, versao])
+  @@index([atendimentoId])
+}
+
+model AtendimentoExternoDocumento {
+  id            String   @id @default(cuid())
+  atendimentoId String
+  tipo          String   @default("COMPROVANTE")
+  nomeArquivo   String
+  mimeType      String
+  conteudo      Bytes
+  descricao     String?
+  usuarioId     String?
+  createdAt     DateTime @default(now())
+
+  atendimento AtendimentoExterno @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario?           @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([atendimentoId])
+}
+
+model AtendimentoExternoEvento {
+  id            String   @id @default(cuid())
+  atendimentoId String
+  acao          String
+  detalhe       String?
+  usuarioId     String?
+  createdAt     DateTime @default(now())
+
+  atendimento AtendimentoExterno @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario?           @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([atendimentoId, createdAt])
 }
 
 model Equipe {
@@ -1245,6 +1647,7 @@ model NaoConformidade {
   auditoria       Auditoria?      @relation(fields: [auditoriaId], references: [id])
   ordemServico    OrdemServico?   @relation(fields: [ordemServicoId], references: [id])
   planosAcao      PlanoAcao[]
+  ocorrenciasSeguranca OcorrenciaSeguranca[]
 
   @@unique([estabelecimentoId, codigo])
 }
@@ -1377,6 +1780,8 @@ model Pop {
 
   estabelecimento   Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   procedimentoLaudo ProcedimentoLaudo? @relation(fields: [procedimentoLaudoId], references: [id])
+  documentosControlados DocumentoControlado[]
+  treinamentos      Treinamento[]
 
   @@unique([estabelecimentoId, codigo])
   @@index([estabelecimentoId, categoria])
@@ -1545,4 +1950,358 @@ model MobileSyncIdempotency {
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
 
   @@unique([estabelecimentoId, clientId])
+}
+
+// ——— Qualidade: documentos controlados, treinamentos, ocorrências e alertas de campo ———
+
+enum CategoriaDocumentoControlado {
+  PROCEDIMENTO
+  INSTRUCAO
+  INSTITUCIONAL
+}
+
+enum StatusDocumentoControlado {
+  RASCUNHO
+  VIGENTE
+  OBSOLETO
+}
+
+enum OrigemDocumentoControlado {
+  INSTITUCIONAL
+  BIBLIOTECA_POP
+}
+
+enum TipoVinculoDocumento {
+  EQUIPAMENTO
+  MODELO
+  INTERVENCAO
+  SETOR
+}
+
+enum TipoTreinamentoQualidade {
+  INICIAL
+  RECICLAGEM
+  EDUCACAO_CONTINUADA
+}
+
+enum TipoOcorrenciaSeguranca {
+  FALHA
+  INCIDENTE
+  SUSPEITA_EVENTO_ADVERSO
+}
+
+enum StatusOcorrenciaSeguranca {
+  ABERTA
+  EM_INVESTIGACAO
+  ACOES_EM_ANDAMENTO
+  CONCLUIDA
+}
+
+enum TipoAlertaCampo {
+  ALERTA_FABRICANTE
+  RECOLHIMENTO
+  ACAO_DE_CAMPO
+}
+
+enum StatusAlertaCampo {
+  ABERTO
+  EM_ANDAMENTO
+  CONCLUIDO
+}
+
+/// Arquivo único reutilizado (documento, evidência de treino, ocorrência, alerta).
+model ArquivoQualidade {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  nomeArquivo        String
+  mimeType           String
+  conteudo           Bytes
+  tamanhoBytes       Int
+  createdById        String?
+  createdAt          DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  createdBy       Usuario?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  versoes         DocumentoVersao[]
+  treinamentos    Treinamento[]
+  evidenciasTreino TreinamentoEvidencia[]
+  acoesOcorrencia OcorrenciaAcao[]
+  evidenciasOcorrencia OcorrenciaArquivo[]
+  evidenciasAlerta     AlertaCampoArquivo[]
+
+  @@index([estabelecimentoId])
+}
+
+model DocumentoControlado {
+  id                 String                       @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  titulo             String
+  categoria          CategoriaDocumentoControlado
+  origem             OrigemDocumentoControlado    @default(INSTITUCIONAL)
+  popId              String?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  estabelecimento Estabelecimento   @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  pop             Pop?              @relation(fields: [popId], references: [id], onDelete: SetNull)
+  versoes         DocumentoVersao[]
+  vinculos        DocumentoVinculo[]
+  treinamentos    Treinamento[]
+  ocorrencias     OcorrenciaSeguranca[]
+
+  @@unique([estabelecimentoId, codigo])
+  @@index([estabelecimentoId, categoria])
+}
+
+model DocumentoVersao {
+  id              String                     @id @default(cuid())
+  documentoId     String
+  versao          String
+  status          StatusDocumentoControlado  @default(RASCUNHO)
+  responsavelId   String?
+  dataVigencia    DateTime?
+  dataRevisao     DateTime?
+  proximaRevisao  DateTime?
+  observacao      String?
+  arquivoId       String?
+  createdById     String?
+  publicadoPorId  String?
+  publicadoEm     DateTime?
+  createdAt       DateTime                   @default(now())
+
+  documento    DocumentoControlado @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  responsavel  Colaborador?        @relation("DocumentoVersaoResponsavel", fields: [responsavelId], references: [id])
+  arquivo      ArquivoQualidade?   @relation(fields: [arquivoId], references: [id], onDelete: SetNull)
+  createdBy    Usuario?            @relation("DocumentoVersaoAutor", fields: [createdById], references: [id], onDelete: SetNull)
+  publicadoPor Usuario?            @relation("DocumentoVersaoPublicador", fields: [publicadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([documentoId, status])
+}
+
+model DocumentoVinculo {
+  id               String               @id @default(cuid())
+  documentoId      String
+  tipo             TipoVinculoDocumento
+  equipamentoId    String?
+  modeloId         String?
+  setorId          String?
+  tipoIntervencao  String?
+
+  documento   DocumentoControlado @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  equipamento Equipamento?        @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  modelo      Modelo?             @relation(fields: [modeloId], references: [id], onDelete: Cascade)
+  setor       Setor?              @relation(fields: [setorId], references: [id], onDelete: Cascade)
+
+  @@index([documentoId])
+  @@index([equipamentoId])
+}
+
+model Treinamento {
+  id                 String                    @id @default(cuid())
+  estabelecimentoId  String
+  codigo             String
+  tema               String
+  tipo               TipoTreinamentoQualidade  @default(INICIAL)
+  instrutorNome      String
+  instrutorId        String?
+  data               DateTime
+  publico            String?
+  documentoId        String?
+  popId              String?
+  arquivoId          String?
+  observacao         String?
+  createdById        String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  estabelecimento Estabelecimento          @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  instrutor      Colaborador?             @relation(fields: [instrutorId], references: [id])
+  documento      DocumentoControlado?     @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+  pop            Pop?                     @relation(fields: [popId], references: [id], onDelete: SetNull)
+  arquivo        ArquivoQualidade?        @relation(fields: [arquivoId], references: [id], onDelete: SetNull)
+  createdBy      Usuario?                 @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  equipamentos   TreinamentoEquipamento[]
+  participantes  TreinamentoParticipante[]
+  evidencias     TreinamentoEvidencia[]
+
+  @@unique([estabelecimentoId, codigo])
+  @@index([estabelecimentoId, data])
+}
+
+model TreinamentoEquipamento {
+  id             String @id @default(cuid())
+  treinamentoId  String
+  equipamentoId  String
+
+  treinamento Treinamento @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+
+  @@unique([treinamentoId, equipamentoId])
+}
+
+model TreinamentoParticipante {
+  id             String  @id @default(cuid())
+  treinamentoId  String
+  colaboradorId  String
+  presente       Boolean @default(false)
+
+  treinamento Treinamento @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  colaborador Colaborador @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
+
+  @@unique([treinamentoId, colaboradorId])
+}
+
+model TreinamentoEvidencia {
+  id             String   @id @default(cuid())
+  treinamentoId  String
+  arquivoId      String
+  createdAt      DateTime @default(now())
+
+  treinamento Treinamento      @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  arquivo     ArquivoQualidade @relation(fields: [arquivoId], references: [id], onDelete: Restrict)
+
+  @@index([treinamentoId])
+}
+
+model OcorrenciaSeguranca {
+  id                     String                    @id @default(cuid())
+  estabelecimentoId      String
+  codigo                 String
+  tipo                   TipoOcorrenciaSeguranca
+  status                 StatusOcorrenciaSeguranca @default(ABERTA)
+  equipamentoId          String?
+  setorId                String?
+  dataOcorrido           DateTime
+  descricao              String
+  medidasImediatas       String?
+  responsavelId          String?
+  ordemServicoId         String?
+  documentoId            String?
+  naoConformidadeId      String?
+  acessoSensivel         Boolean                   @default(false)
+  condicaoUsoSugerida    String?
+  condicaoUsoAplicadaEm  DateTime?
+  condicaoUsoAplicadaPorId String?
+  createdById            String?
+  concludedAt            DateTime?
+  concludedById          String?
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+
+  estabelecimento     Estabelecimento         @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  equipamento         Equipamento?            @relation(fields: [equipamentoId], references: [id])
+  setor               Setor?                  @relation(fields: [setorId], references: [id])
+  responsavel         Colaborador?            @relation(fields: [responsavelId], references: [id])
+  ordemServico        OrdemServico?           @relation(fields: [ordemServicoId], references: [id])
+  documento           DocumentoControlado?    @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+  naoConformidade     NaoConformidade?        @relation(fields: [naoConformidadeId], references: [id], onDelete: SetNull)
+  createdBy           Usuario?                @relation("OcorrenciaSegurancaAutor", fields: [createdById], references: [id], onDelete: SetNull)
+  concludedBy         Usuario?                @relation("OcorrenciaSegurancaConclusao", fields: [concludedById], references: [id], onDelete: SetNull)
+  condicaoUsoAplicadaPor Usuario?             @relation("OcorrenciaCondicaoUso", fields: [condicaoUsoAplicadaPorId], references: [id], onDelete: SetNull)
+  investigacoes       OcorrenciaInvestigacao[]
+  acoes               OcorrenciaAcao[]
+  arquivos            OcorrenciaArquivo[]
+
+  @@unique([estabelecimentoId, codigo])
+  @@index([estabelecimentoId, status])
+  @@index([estabelecimentoId, tipo])
+  @@index([equipamentoId])
+  @@index([setorId])
+  @@index([dataOcorrido])
+}
+
+model OcorrenciaInvestigacao {
+  id           String   @id @default(cuid())
+  ocorrenciaId String
+  relato       String
+  hipotese     String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  ocorrencia OcorrenciaSeguranca @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  createdBy  Usuario?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([ocorrenciaId])
+}
+
+model OcorrenciaAcao {
+  id             String    @id @default(cuid())
+  ocorrenciaId   String
+  descricao      String
+  responsavelNome String?
+  prazo          DateTime?
+  concluidoEm    DateTime?
+  arquivoId      String?
+  createdById    String?
+  createdAt      DateTime  @default(now())
+
+  ocorrencia OcorrenciaSeguranca @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  arquivo    ArquivoQualidade?   @relation(fields: [arquivoId], references: [id], onDelete: SetNull)
+  createdBy  Usuario?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([ocorrenciaId])
+}
+
+model OcorrenciaArquivo {
+  id           String   @id @default(cuid())
+  ocorrenciaId String
+  arquivoId    String
+  createdAt    DateTime @default(now())
+
+  ocorrencia OcorrenciaSeguranca @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  arquivo    ArquivoQualidade    @relation(fields: [arquivoId], references: [id], onDelete: Restrict)
+
+  @@index([ocorrenciaId])
+}
+
+model AlertaCampo {
+  id                            String           @id @default(cuid())
+  estabelecimentoId             String
+  codigo                        String
+  tipo                          TipoAlertaCampo
+  titulo                        String
+  origem                        String
+  dataRegistro                  DateTime         @default(now())
+  prazo                         DateTime?
+  responsavelId                 String?
+  status                        StatusAlertaCampo @default(ABERTO)
+  protocoloComunicacaoExterna   String?
+  observacao                    String?
+  createdById                   String?
+  createdAt                     DateTime         @default(now())
+  updatedAt                     DateTime         @updatedAt
+
+  estabelecimento Estabelecimento         @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  responsavel     Colaborador?            @relation(fields: [responsavelId], references: [id])
+  createdBy       Usuario?                @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  equipamentos    AlertaCampoEquipamento[]
+  arquivos        AlertaCampoArquivo[]
+
+  @@unique([estabelecimentoId, codigo])
+  @@index([estabelecimentoId, tipo])
+  @@index([estabelecimentoId, status])
+}
+
+model AlertaCampoEquipamento {
+  id            String @id @default(cuid())
+  alertaId      String
+  equipamentoId String
+
+  alerta      AlertaCampo @relation(fields: [alertaId], references: [id], onDelete: Cascade)
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+
+  @@unique([alertaId, equipamentoId])
+}
+
+model AlertaCampoArquivo {
+  id        String   @id @default(cuid())
+  alertaId  String
+  arquivoId String
+  createdAt DateTime @default(now())
+
+  alerta  AlertaCampo      @relation(fields: [alertaId], references: [id], onDelete: Cascade)
+  arquivo ArquivoQualidade @relation(fields: [arquivoId], references: [id], onDelete: Restrict)
+
+  @@index([alertaId])
 }

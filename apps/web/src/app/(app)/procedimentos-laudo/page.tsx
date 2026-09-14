@@ -16,8 +16,12 @@ interface Proc {
   nome: string;
   tipo: string;
   validadeMeses: number;
+  versao?: number;
+  criterioReferencia?: string | null;
+  criterioVersao?: string | null;
   itens: unknown[];
   modelos: Array<{ modelo: { id: string; nome: string; fabricante: { nome: string } } }>;
+  historico?: Array<{ versao: number; createdAt: string; createdByNome?: string | null }>;
 }
 
 interface Modelo {
@@ -62,14 +66,14 @@ export default function ProcedimentosPage() {
           ]
         : tipo === "TSE"
           ? [
-              { id: "aterramento", pergunta: "Aterramento", limite: 0.1 },
-              { id: "isolamento", pergunta: "Isolamento", limite: 1 },
-              { id: "fuga", pergunta: "Fuga para terra", limite: 500 },
+              { id: "aterramento", pergunta: "Aterramento", tipo: "medicao", obrigatorio: true },
+              { id: "isolamento", pergunta: "Isolamento", tipo: "medicao", obrigatorio: true },
+              { id: "fuga", pergunta: "Fuga para terra", tipo: "medicao", obrigatorio: true },
             ]
           : [
-              { id: "1", pergunta: "Aspecto visual adequado" },
-              { id: "2", pergunta: "Funcionamento conforme especificação" },
-              { id: "3", pergunta: "Acessórios completos" },
+              { id: "1", pergunta: "Aspecto visual adequado", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
+              { id: "2", pergunta: "Funcionamento conforme especificação", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
+              { id: "3", pergunta: "Acessórios completos", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
             ];
 
     try {
@@ -136,7 +140,7 @@ export default function ProcedimentosPage() {
 
   return (
     <div>
-      <PageHeader title="Procedimentos de Laudo" subtitle="Base reutilizável · vínculo exclusivo por modelo/tipo" />
+      <PageHeader title="Procedimentos de Laudo" subtitle="Modelos versionados por tipo de intervenção · editar gera nova versão; atendimentos já executados não mudam" />
       {msg && <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
 
       <Surface style={{ marginBottom: 16 }}>
@@ -174,7 +178,8 @@ export default function ProcedimentosPage() {
                 <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
                   <Badge tone="ATIVO">{p.tipo}</Badge>
                   <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                    validade {p.validadeMeses} meses · {(p.itens as unknown[]).length} itens
+                    v{p.versao ?? 1} · validade {p.validadeMeses} meses · {(p.itens as unknown[]).length} itens
+                    {p.criterioReferencia ? ` · critério ${p.criterioReferencia}${p.criterioVersao ? ` (${p.criterioVersao})` : ""}` : ""}
                   </span>
                 </div>
               </div>
@@ -200,12 +205,12 @@ export default function ProcedimentosPage() {
             </div>
             <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
               <Btn variant="ghost" size="sm" onClick={() => abrirEdicaoItens(p)}>
-                Editar itens (JSON)
+                Editar itens (nova versão)
               </Btn>
             </div>
             {editId === p.id && (
               <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                <FieldLabel>Itens do checklist (JSON)</FieldLabel>
+                <FieldLabel>Itens do checklist (JSON) — salvar cria nova versão; laudos já executados permanecem com o snapshot</FieldLabel>
                 <textarea
                   value={editJson}
                   onChange={(e) => setEditJson(e.target.value)}

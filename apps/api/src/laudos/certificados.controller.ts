@@ -7,7 +7,6 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { LaudosService } from "./laudos.service";
-import { buildPdfBuffer } from "../relatorios/report-export";
 
 class ReabrirDto {
   @IsString()
@@ -43,16 +42,9 @@ export class CertificadosController {
       return;
     }
 
-    const doc = await this.laudos.certificadoDocumento(user.estabelecimentoId, id);
-    const pdf = await buildPdfBuffer({
-      template: "conformidade",
-      geradoEm: new Date().toISOString(),
-      certificado: doc.documento,
-      respostas: doc.documento.respostas,
-      status: doc.statusCertificado,
-    });
+    const { pdf, nome } = await this.laudos.relatorioPdf(user.estabelecimentoId, id);
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="certificado-${doc.numero ?? id}.pdf"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${nome.replace(/"/g, "")}"`);
     res.send(pdf);
   }
 

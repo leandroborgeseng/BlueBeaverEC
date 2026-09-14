@@ -66,6 +66,7 @@ export default function InstrumentosPage() {
           grandezas: grandezas.length ? grandezas : undefined,
           faixaMedicao: String(fd.get("faixaMedicao") || "") || undefined,
           resolucao: String(fd.get("resolucao") || "") || undefined,
+          tipoAnalisador: String(fd.get("tipoAnalisador") || "") || undefined,
         }),
       });
       e.currentTarget.reset();
@@ -126,6 +127,10 @@ export default function InstrumentosPage() {
           <div>
             <FieldLabel>Resolução</FieldLabel>
             <input name="resolucao" placeholder="0,1 °C" style={fieldStyle} />
+          </div>
+          <div>
+            <FieldLabel>Tipo de analisador (categoria, sem marca)</FieldLabel>
+            <input name="tipoAnalisador" placeholder="Ex.: segurança elétrica, infusão" style={fieldStyle} />
           </div>
           <div style={{ display: "flex", alignItems: "end" }}>
             <Btn type="submit">Cadastrar padrão</Btn>

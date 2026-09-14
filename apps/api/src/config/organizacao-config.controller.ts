@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
+import { Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -32,6 +33,19 @@ class OrgDto {
   @IsOptional()
   @IsNumber()
   slaUrgenteHoras?: number;
+
+  @IsOptional()
+  @IsNumber()
+  diasAlertaCertificado?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  bloquearPadraoVencido?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  valorHoraMaoDeObra?: number | null;
 }
 
 class UsuarioDto {

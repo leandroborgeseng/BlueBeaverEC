@@ -25,11 +25,33 @@ class CreateProcDto {
   @IsOptional()
   @IsArray()
   itens?: unknown[];
+
+  @IsOptional()
+  @IsString()
+  criterioReferencia?: string;
+
+  @IsOptional()
+  @IsString()
+  criterioVersao?: string;
 }
 
 class ItensDto {
   @IsArray()
   itens!: unknown[];
+}
+
+class CriterioDto {
+  @IsOptional()
+  @IsString()
+  criterioReferencia?: string;
+
+  @IsOptional()
+  @IsString()
+  criterioVersao?: string;
+
+  @IsOptional()
+  @IsArray()
+  itens?: unknown[];
 }
 
 class VincularDto {
@@ -48,6 +70,11 @@ export class ProcedimentosController {
     return this.procedimentos.list(user.estabelecimentoId, tipo);
   }
 
+  @Get(":id")
+  byId(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.procedimentos.byId(user.estabelecimentoId, id);
+  }
+
   @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateProcDto) {
@@ -58,6 +85,12 @@ export class ProcedimentosController {
   @Patch(":id/itens")
   itens(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: ItensDto) {
     return this.procedimentos.updateItens(user, id, body.itens);
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Patch(":id/criterio")
+  criterio(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: CriterioDto) {
+    return this.procedimentos.updateCriterio(user, id, body);
   }
 
   @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)

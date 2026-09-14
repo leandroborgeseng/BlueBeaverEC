@@ -1,7 +1,7 @@
 import { Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { IsOptional, IsString, MinLength } from "class-validator";
 import type { Response } from "express";
-import { StatusOS, TipoLaudo, VisibilidadeOs } from "@prisma/client";
+import { StatusOS, StatusDocumentoLaudo, TipoLaudo, VisibilidadeOs } from "@prisma/client";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
@@ -9,6 +9,7 @@ import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
 import { PrismaService } from "../prisma/prisma.service";
 import { SessionService } from "../session/session.service";
 import { OsService } from "../os/os.service";
+import { LaudosService } from "../laudos/laudos.service";
 
 class PortalComentarioDto {
   @IsString()
@@ -38,6 +39,7 @@ export class PortalController {
     private readonly prisma: PrismaService,
     private readonly session: SessionService,
     private readonly os: OsService,
+    private readonly laudos: LaudosService,
   ) {}
 
   @Get("cronograma-manutencao")
@@ -220,6 +222,64 @@ export class PortalController {
     @Body() body: PedidoReaberturaDto,
   ) {
     return this.os.pedirReabertura(user, Number(numero), body.justificativa);
+  }
+
+  @Get("relatorios-servico")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async relatoriosServico(@CurrentUser() user: AuthUser, @Query("setor") setor?: string) {
+    const me = await this.session.me(user);
+    const setorFilter = await this.resolveSetorFilter(user, me.setorIds, setor);
+    const rows = await this.prisma.laudo.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        statusDocumento: StatusDocumentoLaudo.FINAL,
+        visivelPortal: true,
+        ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+      },
+      include: {
+        equipamento: { include: { setor: true } },
+      },
+      orderBy: { dataExecucao: "desc" },
+      take: 80,
+    });
+    return rows.map((l) => ({
+      id: l.id,
+      numero: l.numero,
+      tipo: l.tipo,
+      dataExecucao: l.dataExecucao,
+      resultado: l.resultado,
+      equipamento: {
+        tag: l.equipamento.tag,
+        nome: l.equipamento.nome,
+        setor: l.equipamento.setor.nome,
+      },
+    }));
+  }
+
+  @Get("relatorios-servico/:id/pdf")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async relatorioPdf(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Res() res: Response,
+  ) {
+    const me = await this.session.me(user);
+    const setorFilter = await this.resolveSetorFilter(user, me.setorIds);
+    const l = await this.prisma.laudo.findFirst({
+      where: {
+        id,
+        estabelecimentoId: user.estabelecimentoId,
+        statusDocumento: StatusDocumentoLaudo.FINAL,
+        visivelPortal: true,
+        ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+      },
+      select: { id: true },
+    });
+    if (!l) throw new NotFoundException("Relatório não autorizado");
+    const { pdf, nome } = await this.laudos.relatorioPdf(user.estabelecimentoId, id);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${nome.replace(/"/g, "")}"`);
+    res.send(pdf);
   }
 
   @Get("inventario-setor")

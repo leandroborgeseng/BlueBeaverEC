@@ -89,6 +89,14 @@ class CreateInstrumentoDto {
   codigoPatrimonio?: string;
 
   @IsOptional()
+  @IsString()
+  tipoAnalisador?: string;
+
+  @IsOptional()
+  @IsString()
+  identificacaoExterna?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   grandezas?: string[];
@@ -144,6 +152,14 @@ class UpdateInstrumentoDto {
   @IsOptional()
   @IsString()
   codigoPatrimonio?: string;
+
+  @IsOptional()
+  @IsString()
+  tipoAnalisador?: string;
+
+  @IsOptional()
+  @IsString()
+  identificacaoExterna?: string;
 
   @IsOptional()
   @IsArray()

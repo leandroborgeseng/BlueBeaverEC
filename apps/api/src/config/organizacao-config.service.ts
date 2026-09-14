@@ -23,7 +23,15 @@ export class OrganizacaoConfigService {
 
   async patchOrganizacao(
     user: AuthUser,
-    body: Partial<{ nome: string; cnpj: string; fusoHorario: string; slaUrgenteHoras: number }>,
+    body: Partial<{
+      nome: string;
+      cnpj: string;
+      fusoHorario: string;
+      slaUrgenteHoras: number;
+      diasAlertaCertificado: number;
+      bloquearPadraoVencido: boolean;
+      valorHoraMaoDeObra: number | null;
+    }>,
   ) {
     this.assertAdmin(user);
     return this.prisma.estabelecimento.update({

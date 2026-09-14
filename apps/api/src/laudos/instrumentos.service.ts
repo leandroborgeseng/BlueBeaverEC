@@ -7,6 +7,7 @@ import {
 import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { statusCertificadoNaData } from "./laudo-regras";
 
 export type PontoInput = {
   ordem?: number;
@@ -27,6 +28,8 @@ export type CreateInstrumentoInput = {
   fabricante?: string;
   modelo?: string;
   codigoPatrimonio?: string;
+  tipoAnalisador?: string;
+  identificacaoExterna?: string;
   grandezas?: string[];
   faixaMedicao?: string;
   resolucao?: string;
@@ -58,12 +61,8 @@ function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } {
   return { mime: m[1], buffer: Buffer.from(m[2], "base64") };
 }
 
-function statusCert(validade: Date | null | undefined) {
-  if (!validade) return "SEM_CERTIFICADO" as const;
-  const dias = (validade.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-  if (dias < 0) return "VENCIDO" as const;
-  if (dias <= 60) return "A_VENCER" as const;
-  return "VALIDO" as const;
+function statusCert(validade: Date | null | undefined, diasAlerta = 60) {
+  return statusCertificadoNaData(validade, new Date(), diasAlerta);
 }
 
 @Injectable()
@@ -115,6 +114,8 @@ export class InstrumentosService {
         fabricante: r.fabricante,
         modelo: r.modelo,
         codigoPatrimonio: r.codigoPatrimonio,
+        tipoAnalisador: r.tipoAnalisador,
+        identificacaoExterna: r.identificacaoExterna,
         grandezas: r.grandezas,
         faixaMedicao: r.faixaMedicao,
         resolucao: r.resolucao,
@@ -182,6 +183,8 @@ export class InstrumentosService {
         fabricante: data.fabricante?.trim() || null,
         modelo: data.modelo?.trim() || null,
         codigoPatrimonio: data.codigoPatrimonio?.trim() || null,
+        tipoAnalisador: data.tipoAnalisador?.trim() || null,
+        identificacaoExterna: data.identificacaoExterna?.trim() || null,
         grandezas,
         faixaMedicao: data.faixaMedicao?.trim() || null,
         resolucao: data.resolucao?.trim() || null,
@@ -239,6 +242,12 @@ export class InstrumentosService {
         ...(data.modelo !== undefined ? { modelo: data.modelo?.trim() || null } : {}),
         ...(data.codigoPatrimonio !== undefined
           ? { codigoPatrimonio: data.codigoPatrimonio?.trim() || null }
+          : {}),
+        ...(data.tipoAnalisador !== undefined
+          ? { tipoAnalisador: data.tipoAnalisador?.trim() || null }
+          : {}),
+        ...(data.identificacaoExterna !== undefined
+          ? { identificacaoExterna: data.identificacaoExterna?.trim() || null }
           : {}),
         ...(data.grandezas !== undefined
           ? { grandezas: data.grandezas.map((g) => g.trim()).filter(Boolean) }

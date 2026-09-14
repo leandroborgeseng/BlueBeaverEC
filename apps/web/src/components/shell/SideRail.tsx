@@ -95,10 +95,19 @@ const RAIL: RailItem[] = [
     modulo: "contratos",
     items: [
       { label: "Contratos", href: "/contratos", icon: "contratos", modulo: "contratos" },
+      { label: "Fornecedores", href: "/fornecedores", icon: "users", modulo: "contratos" },
+      { label: "Assistência externa", href: "/atendimentos-externos", icon: "flag", modulo: "os" },
       { label: "Colaboradores", href: "/pessoas", icon: "users", modulo: "pessoas" },
       { label: "Instrumentos e Padrões", href: "/instrumentos", icon: "target", modulo: "laudos" },
       { label: "Certificados", href: "/certificados", icon: "shield", modulo: "laudos" },
       { label: "Biblioteca de POPs", href: "/biblioteca-pops", icon: "folder", modulo: "laudos" },
+      {
+        label: "Docs, treinamentos e segurança",
+        href: "/qualidade",
+        icon: "shield",
+        modulo: "auditorias",
+        match: ["/qualidade", "/qualidade/documentos", "/qualidade/treinamentos", "/qualidade/ocorrencias", "/qualidade/alertas"],
+      },
       {
         label: "Cronograma de Manutenção",
         href: "/gestao/cronograma-manutencao",
@@ -136,6 +145,7 @@ const RAIL: RailItem[] = [
       { label: "Minhas solicitações", href: "/portal/os-abertas", icon: "os", modulo: "portal" },
       { label: "Inventário do Setor", href: "/portal/inventario", icon: "equip", modulo: "portal" },
       { label: "Cronograma de Manutenção", href: "/portal/cronograma", icon: "calendar", modulo: "portal" },
+      { label: "Relatórios de serviço", href: "/portal/documentos", icon: "clipboard", modulo: "portal" },
     ],
   },
   {
@@ -198,10 +208,13 @@ export function SideRail() {
     if (pathname.startsWith("/os")) return "os";
     if (
       pathname.startsWith("/contratos") ||
+      pathname.startsWith("/fornecedores") ||
+      pathname.startsWith("/atendimentos-externos") ||
       pathname.startsWith("/pessoas") ||
       pathname.startsWith("/instrumentos") ||
       pathname.startsWith("/certificados") ||
       pathname.startsWith("/biblioteca-pops") ||
+      pathname.startsWith("/qualidade") ||
       pathname.startsWith("/gestao/cronograma-manutencao")
     ) {
       return "gestao";

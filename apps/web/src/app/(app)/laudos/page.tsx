@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, downloadApi } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
 import {
   Badge,
@@ -21,8 +21,10 @@ import {
 
 interface LaudoRow {
   id: string;
+  numero?: string;
   tipo: string;
   resultado: string;
+  statusDocumento?: string;
   dataExecucao: string;
   validade?: string | null;
   equipamento: { tag: string; nome: string };
@@ -37,6 +39,7 @@ const RESULTADOS = [
   "APROVADO",
   "APROVADO_COM_RESSALVAS",
   "REPROVADO",
+  "NAO_AVALIADO",
 ] as const;
 
 export default function LaudosPage() {
@@ -98,7 +101,7 @@ export default function LaudosPage() {
     <div>
       <PageHeader
         title="Laudos"
-        subtitle="Histórico de recebimento, preventiva, calibração, TSE e qualificação"
+        subtitle="Relatórios de serviço (rascunho/final). Calibração aqui não é certificado de calibração."
         actions={
           <>
             <Btn href="/laudos/novo" variant="secondary">
@@ -196,6 +199,9 @@ export default function LaudosPage() {
                 <td style={td}>{l.procedimento?.nome ?? "—"}</td>
                 <td style={td}>
                   <Badge tone={l.resultado === "APROVADO" ? "success" : "warning"}>{l.resultado}</Badge>
+                  {l.statusDocumento && (
+                    <div style={{ fontSize: 11, color: "oklch(0.5 0.02 250)" }}>{l.statusDocumento}</div>
+                  )}
                 </td>
                 <td style={td}>{l.responsavelTecnico?.nome ?? "—"}</td>
                 <td style={td}>
@@ -212,6 +218,19 @@ export default function LaudosPage() {
                       }
                     >
                       Abrir
+                    </Btn>
+                    <Btn
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        void downloadApi(
+                          `/laudos/${l.id}/relatorio.pdf`,
+                          undefined,
+                          `relatorio-servico-${l.numero ?? l.equipamento.tag}.pdf`,
+                        ).catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+                      }
+                    >
+                      PDF
                     </Btn>
                     {l.resultado === "PENDENTE_ASSINATURA" && (
                       <Btn

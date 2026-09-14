@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
   IsObject,
@@ -11,6 +12,7 @@ import {
   MinLength,
 } from "class-validator";
 import { ResultadoLaudo, TipoLaudo } from "@prisma/client";
+import type { Response } from "express";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
@@ -85,6 +87,60 @@ class PromoverAssinaturaDto {
   validadeMeses?: number;
 }
 
+class PatchLaudoDto {
+  @IsOptional()
+  @IsArray()
+  respostas?: unknown[];
+
+  @IsOptional()
+  @IsObject()
+  metadados?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  instrumentoId?: string;
+
+  @IsOptional()
+  @IsString()
+  tecnicoNome?: string;
+
+  @IsOptional()
+  @IsString()
+  responsavelTecnicoId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  osNumero?: number;
+
+  @IsOptional()
+  @IsString()
+  justificativaRessalva?: string;
+}
+
+class RetificarDto {
+  @IsString()
+  @MinLength(3)
+  justificativa!: string;
+
+  @IsOptional()
+  @IsArray()
+  respostas?: unknown[];
+
+  @IsOptional()
+  @IsEnum(ResultadoLaudo)
+  resultado?: ResultadoLaudo;
+
+  @IsOptional()
+  @IsString()
+  justificativaRessalva?: string;
+}
+
+class VisivelPortalDto {
+  @IsBoolean()
+  visivel!: boolean;
+}
+
 @Controller("laudos")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("laudos", PERMISSAO_NIVEL.LEITURA)
@@ -101,6 +157,19 @@ export class LaudosController {
     return this.laudos.list(user.estabelecimentoId, tipo, equipamentoTag, resultado);
   }
 
+  @Get(":id/previa")
+  previa(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.laudos.payloadRelatorio(user.estabelecimentoId, id);
+  }
+
+  @Get(":id/relatorio.pdf")
+  async relatorioPdf(@CurrentUser() user: AuthUser, @Param("id") id: string, @Res() res: Response) {
+    const { pdf, nome } = await this.laudos.relatorioPdf(user.estabelecimentoId, id);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${nome.replace(/"/g, "")}"`);
+    res.send(pdf);
+  }
+
   @Get(":id")
   byId(@CurrentUser() user: AuthUser, @Param("id") id: string) {
     return this.laudos.byId(user.estabelecimentoId, id);
@@ -113,6 +182,36 @@ export class LaudosController {
       ...body,
       respostas: body.respostas as never,
     });
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Patch(":id")
+  patch(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PatchLaudoDto) {
+    return this.laudos.atualizarRascunho(user, id, {
+      ...body,
+      respostas: body.respostas as never,
+    });
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post(":id/finalizar")
+  finalizar(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.laudos.finalizar(user, id);
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post(":id/retificar")
+  retificar(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: RetificarDto) {
+    return this.laudos.retificar(user, id, {
+      ...body,
+      respostas: body.respostas as never,
+    });
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post(":id/visivel-portal")
+  visivel(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: VisivelPortalDto) {
+    return this.laudos.setVisivelPortal(user, id, body.visivel);
   }
 
   @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)

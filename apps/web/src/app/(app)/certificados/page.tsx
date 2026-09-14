@@ -93,10 +93,11 @@ export default function CertificadosPage() {
   return (
     <div>
       <PageHeader
-        title="Certificados"
+        title="Validade de calibração e TSE"
         subtitle={
           <span>
-            Calibração + TSE · A Vencer ≤ 60 dias ·{" "}
+            Acompanha validade de laudos de calibração e TSE. O PDF gerado é relatório de serviço, não certificado de calibração.{" "}
+            A vencer segundo a política do hospital.{" "}
             <strong style={{ color: vencidos ? "oklch(0.5 0.17 25)" : undefined }}>{vencidos} vencidos</strong>
             {" · "}
             <strong style={{ color: aVencer ? "oklch(0.55 0.12 75)" : undefined }}>{aVencer} a vencer</strong>
@@ -238,7 +239,7 @@ export default function CertificadosPage() {
                 </div>
                 <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {preview.cert.equipamento.tag} — {preview.cert.equipamento.nome}
-                  {preview.cert.temAnexoOriginal ? " · PDF original" : ""}
+                      {preview.cert.temAnexoOriginal ? " · PDF original anexado" : " · Relatório de serviço"}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
@@ -267,7 +268,7 @@ export default function CertificadosPage() {
                 </div>
               ) : (
                 <iframe
-                  title={`Certificado ${preview.cert.numero}`}
+                  title={`Documento ${preview.cert.numero}`}
                   src={preview.url}
                   style={{ width: "100%", height: "100%", border: "none" }}
                 />
@@ -279,8 +280,8 @@ export default function CertificadosPage() {
 
       <ConfirmModal
         open={Boolean(reabrirId)}
-        title="Reabrir certificado"
-        message="Informe a justificativa de reabertura."
+        title="Reabrir documento"
+        message="Informe a justificativa. O documento volta a rascunho; o histórico fica registrado."
         requireJustification
         confirmLabel="Reabrir"
         onCancel={() => setReabrirId(null)}

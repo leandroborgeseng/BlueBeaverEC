@@ -3,8 +3,13 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
-import { api } from "@/lib/api";
+import { api, downloadApi } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
+import {
+  avaliarPontoCalibracao,
+  calcularResultadoLaudo,
+  tituloDocumentoTecnico,
+} from "@/lib/laudo-regras";
 
 interface Proc {
   id: string;
@@ -76,35 +81,30 @@ type PontoCert = {
   unidade?: string | null;
 };
 
-function pontoMaisProximo(padrao: number, pontos: PontoCert[]): PontoCert | null {
-  if (!pontos.length) return null;
-  let best: PontoCert | null = null;
-  let bestDist = Number.POSITIVE_INFINITY;
-  for (const p of pontos) {
-    const ref = p.valorNominal ?? p.valorConvencional;
-    if (ref == null || Number.isNaN(Number(ref))) continue;
-    const d = Math.abs(Number(ref) - padrao);
-    if (d < bestDist) {
-      bestDist = d;
-      best = p;
-    }
-  }
-  return best;
-}
-
 interface LaudoDetail {
   id: string;
   numero: string;
   tipo: string;
   resultado: string;
+  statusDocumento?: string;
+  procedimentoVersao?: number | null;
+  visivelPortal?: boolean;
+  finalizadoPorNome?: string | null;
+  finalizadoEm?: string | null;
   osNumero?: number | null;
   dataExecucao?: string;
   respostas?: RespostaItem[];
   metadados?: Record<string, unknown>;
   justificativaRessalva?: string | null;
   equipamento: { tag: string; nome: string };
-  procedimento?: { id: string; nome: string } | null;
+  procedimento?: { id: string; nome: string; versao?: number } | null;
   instrumento?: { nome: string; nSerie: string } | null;
+  instrumentoSnapshot?: {
+    nome?: string;
+    identificacao?: string;
+    certificado?: { numero?: string | null; statusNaData?: string | null; dataValidade?: string | null };
+  } | null;
+  revisoes?: Array<{ id: string; autorNome: string; createdAt: string; justificativa: string }>;
   responsavelTecnico?: { nome: string; registroProfissional?: string | null } | null;
   tecnicoNome?: string | null;
 }
@@ -154,13 +154,13 @@ export function LaudoEditor({
   const [instrumentoId, setInstrumentoId] = useState("");
   const [pontosCertificado, setPontosCertificado] = useState<PontoCert[]>([]);
   const [tecnicoNome, setTecnicoNome] = useState("");
-  const [criterioAceitacao, setCriterioAceitacao] = useState(2);
+  const [justificativaRessalva, setJustificativaRessalva] = useState("");
   const [norma, setNorma] = useState("EC");
   const [proximaPreventiva, setProximaPreventiva] = useState("");
-  const [justificativaRessalva, setJustificativaRessalva] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [confirmOs, setConfirmOs] = useState(false);
+  const [laudoIdAtual, setLaudoIdAtual] = useState<string | undefined>(laudoId);
 
   const proc = useMemo(() => procs.find((p) => p.id === procId), [procs, procId]);
 
@@ -232,16 +232,14 @@ export function LaudoEditor({
           status:
             isCheck || (tipo !== "CALIBRACAO" && tipo !== "TSE")
               ? "SIM"
-              : tipo === "CALIBRACAO" || tipo === "TSE"
-                ? "APROVADO"
-                : "SIM",
+              : undefined,
           valorMedido: item.tipo === "medicao" ? undefined : undefined,
           valorConfigurado: isCalPt ? item.valorPadrao : undefined,
           leituras: isCalPt ? [undefined, undefined, undefined] : undefined,
           limite: item.limite ?? item.tolerancia?.valor ?? undefined,
           unidade: item.unidade,
           toleranciaTexto: item.tolerancia?.texto ?? undefined,
-          erroPct: 0,
+          erroPct: undefined,
         };
       }),
     );
@@ -249,99 +247,38 @@ export function LaudoEditor({
 
   const computedRespostas = useMemo(() => {
     return respostas.map((r) => {
-      if (tipo === "CALIBRACAO" && r.tipo === "check") {
-        return r;
-      }
-
-      if (tipo === "CALIBRACAO" && r.tipo === "medicao") {
-        return r;
-      }
-
+      if (tipo === "CALIBRACAO" && r.tipo === "check") return r;
       if (tipo === "CALIBRACAO" && (r.tipo === "calibracao" || r.valorConfigurado != null || (r.leituras && r.leituras.length))) {
         const item = proc?.itens.find((i) => i.id === r.id);
-        const padrao = item?.valorPadrao ?? r.valorConfigurado ?? 0;
-        const leituras = (r.leituras ?? [])
-          .map((v) => (v == null || Number.isNaN(v) ? undefined : Number(v)))
-          .filter((v): v is number => v != null);
-        const media =
-          leituras.length > 0
-            ? Number((leituras.reduce((a, b) => a + b, 0) / leituras.length).toFixed(4))
-            : r.valorMedido;
-        if (media == null) return { ...r, valorConfigurado: padrao };
-
-        const ponto = pontoMaisProximo(padrao, pontosCertificado);
-        const correcao = ponto?.correcao != null ? Number(ponto.correcao) : 0;
-        const u = ponto?.incertezaExpandida != null ? Number(ponto.incertezaExpandida) : undefined;
-        const mediaCorrigida = Number((media + correcao).toFixed(4));
-        const erroAbs = Number((mediaCorrigida - padrao).toFixed(4));
-        const erroPct =
-          padrao === 0 ? 0 : Number((((mediaCorrigida - padrao) / padrao) * 100).toFixed(2));
-        const tol = item?.tolerancia;
-        const tolValor = tol?.valor ?? r.limite;
-        const modo = tol?.modo;
-        let aprovado: boolean;
-        if (tolValor != null && modo === "absoluto") {
-          aprovado = Math.abs(erroAbs) <= tolValor;
-        } else if (tolValor != null && modo === "percentual") {
-          aprovado = Math.abs(erroPct) <= tolValor;
-        } else if (tolValor != null && !modo) {
-          aprovado = Math.abs(erroPct) <= tolValor;
-        } else {
-          aprovado = Math.abs(erroPct) <= criterioAceitacao;
-        }
-
-        return {
-          ...r,
-          valorConfigurado: padrao,
-          valorMedido: media,
-          media,
-          mediaCorrigida,
-          correcaoPadrao: correcao || undefined,
-          incertezaExpandida: u,
-          fatorK: ponto?.fatorK != null ? Number(ponto.fatorK) : undefined,
-          pontoCertificadoRef:
-            ponto?.valorNominal != null
-              ? `nominal=${ponto.valorNominal}`
-              : ponto?.valorConvencional != null
-                ? `conv=${ponto.valorConvencional}`
-                : undefined,
-          erroAbs,
-          erroPct,
-          limite: tolValor ?? criterioAceitacao,
-          toleranciaTexto: tol?.texto ?? r.toleranciaTexto,
-          status: aprovado ? "APROVADO" : "REPROVADO",
-        };
+        return avaliarPontoCalibracao({
+          itemModelo: item,
+          resposta: { ...r, origemMedicao: "MANUAL" },
+          pontosCertificado,
+        });
       }
-
-      if (tipo === "TSE" && r.tipo !== "check" && r.valorMedido != null && r.limite != null) {
-        return {
-          ...r,
-          status: r.valorMedido <= r.limite ? "APROVADO" : "REPROVADO",
-        };
+      if (tipo === "TSE" && r.tipo !== "check") {
+        const item = proc?.itens.find((i) => i.id === r.id);
+        return avaliarPontoCalibracao({
+          itemModelo: item,
+          resposta: { ...r, origemMedicao: "MANUAL" },
+          pontosCertificado,
+        });
       }
       return r;
     });
-  }, [respostas, tipo, proc, criterioAceitacao, pontosCertificado]);
+  }, [respostas, tipo, proc, pontosCertificado]);
 
-  const resultadoPreview = useMemo(() => {
-    if (tipo === "CALIBRACAO" || tipo === "TSE") {
-      const reprovados = computedRespostas.filter(
-        (r) => r.status === "REPROVADO" || (r.tipo === "check" && r.status === "NAO"),
-      ).length;
-      if (reprovados > 0) return "REPROVADO";
-      return "APROVADO";
-    }
-    const nao = computedRespostas.filter((r) => r.status === "NAO").length;
-    if (nao > 0) return "REPROVADO";
-    return "APROVADO";
-  }, [computedRespostas, tipo]);
+  const resultadoPreview = useMemo(
+    () => calcularResultadoLaudo(tipo, computedRespostas),
+    [computedRespostas, tipo],
+  );
 
   async function salvar(e?: FormEvent) {
     e?.preventDefault();
     setMsg(null);
     setErro(null);
     try {
-      const laudoCriado = await api<{ id: string; numero: string; resultado: string }>("/laudos", {
+      const laudoCriado = await api<{ id: string; numero: string; resultado: string; statusDocumento?: string }>("/laudos", {
         method: "POST",
         body: JSON.stringify({
           tipo,
@@ -353,9 +290,9 @@ export function LaudoEditor({
           osNumero: osNumero.trim() ? Number(osNumero) : undefined,
           respostas: computedRespostas,
           metadados: {
-            criterioAceitacao,
             norma,
             proximaPreventiva: proximaPreventiva || undefined,
+            origemMedicao: "MANUAL",
             metrologia: {
               instrumentoId: instrumentoId || undefined,
               pontosCertificadoUsados: pontosCertificado.length,
@@ -364,7 +301,8 @@ export function LaudoEditor({
           justificativaRessalva: justificativaRessalva || undefined,
         }),
       });
-      setMsg(`${laudoCriado.numero} salvo · resultado ${laudoCriado.resultado}`);
+      setLaudoIdAtual(laudoCriado.id);
+      setMsg(`${laudoCriado.numero} salvo como rascunho · ${tituloDocumentoTecnico(tipo).titulo} · ${laudoCriado.resultado}`);
       setRespostas(computedRespostas);
       if (windowId) {
         updateWindow(windowId, {
@@ -562,15 +500,9 @@ export function LaudoEditor({
           )}
 
           {!viewMode && displayTipo === "CALIBRACAO" && (
-            <div>
-              <FieldLabel>Critério padrão (%) — fallback sem tolerância no item</FieldLabel>
-              <input
-                type="number"
-                step="0.1"
-                value={criterioAceitacao}
-                onChange={(e) => setCriterioAceitacao(Number(e.target.value))}
-                style={fieldStyle}
-              />
+            <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
+              Sem critério publicado no procedimento (referência e versão), o ponto fica <strong>não avaliado</strong>.
+              Não há aprovação automática nem tolerância padrão.
             </div>
           )}
 
@@ -612,12 +544,50 @@ export function LaudoEditor({
 
           {!viewMode && (
             <Btn type="button" onClick={() => void salvar()}>
-              Salvar laudo
+              Salvar rascunho
             </Btn>
           )}
 
           {viewMode && laudo && (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  void downloadApi(`/laudos/${laudo.id}/relatorio.pdf`, undefined, `relatorio-servico-${laudo.numero}.pdf`)
+                }
+              >
+                {tituloDocumentoTecnico(laudo.tipo).titulo} (PDF)
+              </Btn>
+              {laudo.statusDocumento !== "FINAL" && (
+                <Btn
+                  size="sm"
+                  onClick={() =>
+                    void api(`/laudos/${laudo.id}/finalizar`, { method: "POST" })
+                      .then(() => loadLaudo())
+                      .then(() => setMsg("Relatório finalizado"))
+                      .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+                  }
+                >
+                  Finalizar relatório
+                </Btn>
+              )}
+              {laudo.statusDocumento === "FINAL" && (
+                <Btn
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    void api(`/laudos/${laudo.id}/visivel-portal`, {
+                      method: "POST",
+                      body: JSON.stringify({ visivel: !laudo.visivelPortal }),
+                    })
+                      .then(() => loadLaudo())
+                      .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+                  }
+                >
+                  {laudo.visivelPortal ? "Ocultar do solicitante" : "Autorizar no portal"}
+                </Btn>
+              )}
               <Btn variant="secondary" size="sm" onClick={() => setConfirmOs(true)}>
                 Gerar OS Corretiva
               </Btn>
@@ -627,6 +597,29 @@ export function LaudoEditor({
                 href={`/equipamentos/${encodeURIComponent(laudo.equipamento.tag)}/ficha-vida`}
               >
                 Ficha de vida
+              </Btn>
+            </div>
+          )}
+          {!viewMode && laudoIdAtual && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                size="sm"
+                onClick={() =>
+                  void api(`/laudos/${laudoIdAtual}/finalizar`, { method: "POST" })
+                    .then(() => setMsg("Relatório finalizado"))
+                    .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+                }
+              >
+                Finalizar relatório
+              </Btn>
+              <Btn
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  void downloadApi(`/laudos/${laudoIdAtual}/relatorio.pdf`, undefined, "relatorio-servico.pdf")
+                }
+              >
+                Prévia PDF
               </Btn>
             </div>
           )}
@@ -729,7 +722,13 @@ export function LaudoEditor({
                                 : ""}
                               {r.erroPct != null ? ` · ${r.erroPct}%` : ""}
                               {r.incertezaExpandida != null ? ` · U=${r.incertezaExpandida}` : ""}
-                              {r.media != null ? (r.status === "REPROVADO" ? " · NC" : " · OK") : ""}
+                              {r.media != null
+                                ? r.status === "REPROVADO"
+                                  ? " · NC"
+                                  : r.status === "NAO_AVALIADO"
+                                    ? " · não avaliado"
+                                    : " · OK"
+                                : ""}
                             </span>
                           </>
                         )}
@@ -844,11 +843,19 @@ export function LaudoEditor({
           )}
           <div style={{ fontSize: 13 }}>
             <strong>{displayRespostas.filter((r) => r.status === "NAO" || r.status === "REPROVADO").length}</strong>{" "}
-            não-conformidade(s) detectada(s)
+            não-conformidade(s) ·{" "}
+            <strong>{displayRespostas.filter((r) => r.status === "NAO_AVALIADO").length}</strong> não avaliado(s)
           </div>
+          {viewMode && laudo?.finalizadoPorNome && (
+            <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
+              Finalizado por {laudo.finalizadoPorNome}
+              {laudo.finalizadoEm ? ` em ${new Date(laudo.finalizadoEm).toLocaleString("pt-BR")}` : ""}.
+              A identificação de quem finalizou não constitui assinatura digital certificada.
+            </div>
+          )}
           {!viewMode && (
             <Btn type="button" onClick={() => void salvar()}>
-              Salvar laudo
+              Salvar rascunho
             </Btn>
           )}
         </div>

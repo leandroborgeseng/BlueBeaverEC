@@ -4,25 +4,26 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { PrioridadeOS, ResultadoLaudo, TipoLaudo, TipoOS } from "@prisma/client";
+import { PrioridadeOS, ResultadoLaudo, StatusDocumentoLaudo, TipoLaudo, TipoOS } from "@prisma/client";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import { ContratosService } from "../contratos/contratos.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { agendarProximaOsPlano } from "../planos/proxima-os-plano";
+import {
+  avaliarPontoCalibracao,
+  calcularResultadoLaudo,
+  itensObrigatoriosPendentes,
+  snapshotInstrumentoNaData,
+  statusCertificadoNaData,
+  tituloDocumentoTecnico,
+  type ItemChecklistModelo,
+  type RespostaChecklist,
+} from "./laudo-regras";
+import { buildRelatorioServicoPdf, type RelatorioServicoPayload } from "./relatorio-servico-pdf";
 
-type RespostaItem = {
-  id?: string;
-  pergunta?: string;
-  valor?: string | number | boolean | null;
-  status?: "SIM" | "NAO" | "NA" | "APROVADO" | "REPROVADO" | string;
-  observacao?: string;
-  valorPadrao?: number;
-  valorMedido?: number;
-  erroPct?: number;
-  limite?: number;
-};
+type RespostaItem = RespostaChecklist;
 
 @Injectable()
 export class LaudosService {
@@ -60,10 +61,12 @@ export class LaudosService {
     const laudo = await this.prisma.laudo.findFirst({
       where: { id, estabelecimentoId },
       include: {
-        equipamento: { include: { modelo: true, fabricante: true, descricao: true } },
+        equipamento: { include: { modelo: true, fabricante: true, descricao: true, setor: true } },
         procedimento: true,
         instrumento: true,
         responsavelTecnico: true,
+        anexos: { select: { id: true, nomeArquivo: true, mimeType: true, createdAt: true } },
+        revisoes: { orderBy: { createdAt: "desc" } },
       },
     });
     if (!laudo) throw new NotFoundException();
@@ -101,24 +104,32 @@ export class LaudosService {
       if (!data.responsavelTecnicoId) {
         throw new BadRequestException("Responsável técnico obrigatório para Calibração/TSE");
       }
-      if (data.instrumentoId) {
-        await this.assertInstrumentoValido(user.estabelecimentoId, data.instrumentoId);
-      }
     }
 
     if (data.resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS && !data.justificativaRessalva?.trim()) {
       throw new BadRequestException("Justificativa de ressalva obrigatória");
     }
 
-    const respostas = data.respostas ?? [];
-    const resultado =
-      data.resultado ?? this.calcularResultado(data.tipo, respostas, data.metadados);
-
     const procedimento = data.procedimentoId
       ? await this.prisma.procedimentoLaudo.findFirst({
           where: { id: data.procedimentoId, estabelecimentoId: user.estabelecimentoId },
         })
       : null;
+
+    const dataExecucao = new Date();
+    const instrumentoSnap = data.instrumentoId
+      ? await this.montarInstrumentoSnapshot(user.estabelecimentoId, data.instrumentoId, dataExecucao, true)
+      : null;
+
+    const modeloItens = (procedimento?.itens as ItemChecklistModelo[] | undefined) ?? [];
+    const respostas = this.avaliarRespostas(data.tipo, data.respostas ?? [], modeloItens, instrumentoSnap);
+    const resultadoCalc = calcularResultadoLaudo(data.tipo, respostas) as ResultadoLaudo;
+    const resultado = data.resultado ?? resultadoCalc;
+    if (data.resultado === ResultadoLaudo.APROVADO && resultadoCalc === ResultadoLaudo.NAO_AVALIADO) {
+      throw new BadRequestException(
+        "Não é possível declarar conformidade sem critério de aceitação publicado (referência e versão)",
+      );
+    }
 
     const planoTeste =
       equipamento.tipoEquipamentoPlanoId &&
@@ -138,10 +149,20 @@ export class LaudosService {
 
     const validadeMeses =
       data.validadeMeses ?? planoTeste?.periodicidadeMeses ?? procedimento?.validadeMeses ?? 12;
-    const validadeAte = new Date();
-    validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
 
     const numero = await this.nextNumero(user.estabelecimentoId, data.tipo);
+    const procSnap = procedimento
+      ? {
+          id: procedimento.id,
+          nome: procedimento.nome,
+          tipo: procedimento.tipo,
+          versao: procedimento.versao,
+          validadeMeses: procedimento.validadeMeses,
+          itens: procedimento.itens,
+          criterioReferencia: procedimento.criterioReferencia,
+          criterioVersao: procedimento.criterioVersao,
+        }
+      : { itens: modeloItens };
 
     const laudo = await this.prisma.laudo.create({
       data: {
@@ -150,6 +171,7 @@ export class LaudosService {
         numero,
         equipamentoId: equipamento.id,
         osNumero: data.osNumero,
+        dataExecucao,
         tecnicoNome: data.tecnicoNome,
         responsavelTecnicoId: data.responsavelTecnicoId,
         procedimentoId: data.procedimentoId,
@@ -158,50 +180,237 @@ export class LaudosService {
         resultado,
         justificativaRessalva: data.justificativaRessalva,
         validadeMeses,
-        validadeAte: resultado === ResultadoLaudo.PENDENTE_ASSINATURA ? null : validadeAte,
+        validadeAte: null,
         respostas: respostas as object[],
         metadados: (data.metadados ?? {}) as object,
+        statusDocumento: StatusDocumentoLaudo.RASCUNHO,
+        procedimentoVersao: procedimento?.versao ?? null,
+        procedimentoSnapshot: procSnap as object,
+        instrumentoSnapshot: instrumentoSnap as object | undefined,
+      },
+      include: { equipamento: true, procedimento: true },
+    });
+
+    return laudo;
+  }
+
+  async atualizarRascunho(
+    user: AuthUser,
+    id: string,
+    data: {
+      respostas?: RespostaItem[];
+      metadados?: Record<string, unknown>;
+      instrumentoId?: string;
+      tecnicoNome?: string;
+      responsavelTecnicoId?: string;
+      osNumero?: number;
+      justificativaRessalva?: string;
+    },
+  ) {
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+      include: { procedimento: true },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (laudo.statusDocumento === StatusDocumentoLaudo.FINAL) {
+      throw new BadRequestException("Documento final não se altera em silêncio. Use retificação com justificativa.");
+    }
+
+    const modeloItens =
+      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
+        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
+        []) as ItemChecklistModelo[];
+
+    let instrumentoSnap = laudo.instrumentoSnapshot;
+    if (data.instrumentoId) {
+      instrumentoSnap = await this.montarInstrumentoSnapshot(
+        user.estabelecimentoId,
+        data.instrumentoId,
+        laudo.dataExecucao,
+        true,
+      );
+    }
+
+    const respostas = this.avaliarRespostas(
+      laudo.tipo,
+      data.respostas ?? ((laudo.respostas as RespostaItem[]) ?? []),
+      modeloItens,
+      instrumentoSnap,
+    );
+    const resultado = calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo;
+    const meta = { ...((laudo.metadados as Record<string, unknown>) ?? {}), ...(data.metadados ?? {}) };
+
+    return this.prisma.laudo.update({
+      where: { id },
+      data: {
+        respostas: respostas as object[],
+        resultado,
+        metadados: meta as object,
+        ...(data.instrumentoId != null ? { instrumentoId: data.instrumentoId, instrumentoSnapshot: instrumentoSnap as object } : {}),
+        ...(data.tecnicoNome != null ? { tecnicoNome: data.tecnicoNome } : {}),
+        ...(data.responsavelTecnicoId != null ? { responsavelTecnicoId: data.responsavelTecnicoId } : {}),
+        ...(data.osNumero != null ? { osNumero: data.osNumero } : {}),
+        ...(data.justificativaRessalva != null ? { justificativaRessalva: data.justificativaRessalva } : {}),
+      },
+      include: { equipamento: true, procedimento: true },
+    });
+  }
+
+  async finalizar(user: AuthUser, id: string) {
+    if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      throw new ForbiddenException("Só pessoa autorizada finaliza o relatório de serviço");
+    }
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+      include: { equipamento: true, planoTeste: true, procedimento: true },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (laudo.statusDocumento === StatusDocumentoLaudo.FINAL) {
+      throw new BadRequestException("Relatório já está final");
+    }
+
+    const modeloItens =
+      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
+        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
+        []) as ItemChecklistModelo[];
+    const respostas = (laudo.respostas as RespostaItem[]) ?? [];
+    const pendentes = itensObrigatoriosPendentes(respostas, modeloItens);
+    if (pendentes.length) {
+      throw new BadRequestException(`Itens obrigatórios sem resposta: ${pendentes.slice(0, 5).join("; ")}`);
+    }
+    if (laudo.resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS && !laudo.justificativaRessalva?.trim()) {
+      throw new BadRequestException("Justificativa de ressalva obrigatória");
+    }
+
+    const autor = await this.autorNome(user);
+    const validadeMeses = laudo.validadeMeses ?? laudo.planoTeste?.periodicidadeMeses ?? laudo.procedimento?.validadeMeses ?? 12;
+    const validadeAte = new Date();
+    validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
+    const resultado = laudo.resultado;
+    const comValidade =
+      resultado === ResultadoLaudo.APROVADO || resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS;
+
+    const updated = await this.prisma.laudo.update({
+      where: { id },
+      data: {
+        statusDocumento: StatusDocumentoLaudo.FINAL,
+        finalizadoPorId: user.userId,
+        finalizadoPorNome: autor,
+        finalizadoEm: new Date(),
+        validadeMeses,
+        validadeAte: comValidade ? validadeAte : null,
       },
       include: { equipamento: true, procedimento: true },
     });
 
     if (
-      data.tipo === TipoLaudo.RECEBIMENTO &&
-      (resultado === ResultadoLaudo.APROVADO ||
-        resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS)
+      laudo.tipo === TipoLaudo.RECEBIMENTO &&
+      (resultado === ResultadoLaudo.APROVADO || resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS)
     ) {
       await this.prisma.equipamento.update({
-        where: { id: equipamento.id },
+        where: { id: laudo.equipamentoId },
         data: { checklistRecebimentoPendente: false },
       });
     }
 
     if (
-      data.tipo === TipoLaudo.PREVENTIVA ||
-      data.tipo === TipoLaudo.CALIBRACAO ||
-      data.tipo === TipoLaudo.TSE ||
-      data.tipo === TipoLaudo.QUALIFICACAO
+      laudo.tipo === TipoLaudo.PREVENTIVA ||
+      laudo.tipo === TipoLaudo.CALIBRACAO ||
+      laudo.tipo === TipoLaudo.TSE ||
+      laudo.tipo === TipoLaudo.QUALIFICACAO
     ) {
       await agendarProximaOsPlano(this.prisma, {
         estabelecimentoId: user.estabelecimentoId,
-        equipamentoId: equipamento.id,
-        tipo: data.tipo,
+        equipamentoId: laudo.equipamentoId,
+        tipo: laudo.tipo,
         dataExecucao: laudo.dataExecucao,
-        periodicidadeMeses: planoTeste?.periodicidadeMeses ?? 0,
-        resultado,
-        observacao: planoTeste
-          ? `Próxima ${data.tipo} · ${planoTeste.procedimentoCodigo}`
+        periodicidadeMeses: laudo.planoTeste?.periodicidadeMeses ?? 0,
+        resultado: resultado ?? ResultadoLaudo.NAO_AVALIADO,
+        observacao: laudo.planoTeste
+          ? `Próxima ${laudo.tipo} · ${laudo.planoTeste.procedimentoCodigo}`
           : undefined,
-        osNumero: data.osNumero,
+        osNumero: laudo.osNumero,
         laudoId: laudo.id,
         checklist: respostas,
-        executorNome: data.tecnicoNome,
-        executorId: data.responsavelTecnicoId,
+        executorNome: laudo.tecnicoNome,
+        executorId: laudo.responsavelTecnicoId,
         usuarioId: user.userId,
       });
     }
 
-    return laudo;
+    return updated;
+  }
+
+  async retificar(
+    user: AuthUser,
+    id: string,
+    data: { justificativa: string; respostas?: RespostaItem[]; resultado?: ResultadoLaudo; justificativaRessalva?: string },
+  ) {
+    if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      throw new ForbiddenException("Só pessoa autorizada retifica relatório final");
+    }
+    if (!data.justificativa?.trim()) throw new BadRequestException("Justificativa de retificação obrigatória");
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+      include: { procedimento: true },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (laudo.statusDocumento !== StatusDocumentoLaudo.FINAL) {
+      throw new BadRequestException("Retificação aplica-se a documento final");
+    }
+
+    const modeloItens =
+      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
+        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
+        []) as ItemChecklistModelo[];
+    const respostas = data.respostas
+      ? this.avaliarRespostas(laudo.tipo, data.respostas, modeloItens, laudo.instrumentoSnapshot)
+      : ((laudo.respostas as RespostaItem[]) ?? []);
+    const resultado = data.resultado ?? (calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo);
+    const autor = await this.autorNome(user);
+
+    await this.prisma.laudoRevisao.create({
+      data: {
+        laudoId: laudo.id,
+        autorId: user.userId,
+        autorNome: autor,
+        justificativa: data.justificativa.trim(),
+        respostasAntes: laudo.respostas as object,
+        respostasDepois: respostas as object[],
+        resultadoAntes: laudo.resultado,
+        resultadoDepois: resultado,
+        statusAntes: laudo.statusDocumento,
+        statusDepois: StatusDocumentoLaudo.FINAL,
+      },
+    });
+
+    return this.prisma.laudo.update({
+      where: { id },
+      data: {
+        respostas: respostas as object[],
+        resultado,
+        justificativaRessalva: data.justificativaRessalva ?? laudo.justificativaRessalva,
+      },
+      include: { equipamento: true, procedimento: true, revisoes: { orderBy: { createdAt: "desc" } } },
+    });
+  }
+
+  async setVisivelPortal(user: AuthUser, id: string, visivel: boolean) {
+    if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      throw new ForbiddenException("Só pessoa autorizada libera o relatório ao solicitante");
+    }
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (visivel && laudo.statusDocumento !== StatusDocumentoLaudo.FINAL) {
+      throw new BadRequestException("Só relatório final pode ser autorizado no portal");
+    }
+    return this.prisma.laudo.update({
+      where: { id },
+      data: { visivelPortal: visivel },
+      select: { id: true, visivelPortal: true, statusDocumento: true, numero: true },
+    });
   }
 
   async promoverAssinatura(
@@ -245,6 +454,7 @@ export class LaudosService {
     validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
 
     const meta = (laudo.metadados as Record<string, unknown>) ?? {};
+    const autor = await this.autorNome(user);
     const updated = await this.prisma.laudo.update({
       where: { id },
       data: {
@@ -252,6 +462,10 @@ export class LaudosService {
         justificativaRessalva: data.justificativaRessalva?.trim() || null,
         validadeMeses,
         validadeAte,
+        statusDocumento: StatusDocumentoLaudo.FINAL,
+        finalizadoPorId: user.userId,
+        finalizadoPorNome: autor,
+        finalizadoEm: new Date(),
         metadados: {
           ...meta,
           assinaturaPromovida: {
@@ -469,12 +683,13 @@ export class LaudosService {
         anexos: { select: { id: true, nomeArquivo: true, mimeType: true } },
       },
     });
-    if (!l) throw new NotFoundException("Certificado não encontrado");
+    if (!l) throw new NotFoundException("Documento não encontrado");
+    const docTitle = tituloDocumentoTecnico(l.tipo);
     return {
       ...l,
       statusCertificado: this.statusCertificado(l.validadeAte),
       documento: {
-        titulo: `Certificado ${l.tipo} ${l.numero}`,
+        titulo: `${docTitle.titulo} · ${docTitle.subtipo} ${l.numero}`,
         emitidoEm: l.dataExecucao,
         validadeAte: l.validadeAte,
         equipamento: `${l.equipamento.tag} — ${l.equipamento.nome}`,
@@ -484,6 +699,7 @@ export class LaudosService {
         responsavel: l.responsavelTecnico?.nome,
         respostas: l.respostas,
         anexos: l.anexos,
+        naoECertificadoCalibracao: true,
       },
     };
   }
@@ -513,13 +729,28 @@ export class LaudosService {
     const l = await this.prisma.laudo.findFirst({
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });
-    if (!l) throw new NotFoundException("Certificado não encontrado");
+    if (!l) throw new NotFoundException("Documento não encontrado");
     const meta = (l.metadados as Record<string, unknown>) ?? {};
+    const autor = await this.autorNome(user);
+    await this.prisma.laudoRevisao.create({
+      data: {
+        laudoId: l.id,
+        autorId: user.userId,
+        autorNome: autor,
+        justificativa: justificativa.trim(),
+        resultadoAntes: l.resultado,
+        resultadoDepois: null,
+        statusAntes: l.statusDocumento,
+        statusDepois: StatusDocumentoLaudo.RASCUNHO,
+      },
+    });
     return this.prisma.laudo.update({
       where: { id },
       data: {
         resultado: null,
         validadeAte: null,
+        statusDocumento: StatusDocumentoLaudo.RASCUNHO,
+        visivelPortal: false,
         metadados: {
           ...meta,
           reabertura: {
@@ -532,61 +763,195 @@ export class LaudosService {
     });
   }
 
-  private statusCertificado(validadeAte: Date | null) {
-    if (!validadeAte) return "VALIDO";
-    const dias = (validadeAte.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-    if (dias < 0) return "VENCIDO";
-    if (dias <= 60) return "A_VENCER";
-    return "VALIDO";
+  async payloadRelatorio(estabelecimentoId: string, id: string): Promise<RelatorioServicoPayload> {
+    const l = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId },
+      include: {
+        equipamento: { include: { setor: true, fabricante: true, modelo: true } },
+        procedimento: true,
+        instrumento: true,
+        responsavelTecnico: true,
+        anexos: { select: { nomeArquivo: true } },
+        revisoes: { orderBy: { createdAt: "desc" } },
+        estabelecimento: { select: { nome: true, cnpj: true } },
+      },
+    });
+    if (!l) throw new NotFoundException("Relatório não encontrado");
+    const snap = (l.instrumentoSnapshot ?? {}) as {
+      nome?: string;
+      identificacao?: string;
+      nSerie?: string;
+      tipoAnalisador?: string | null;
+      certificado?: RelatorioServicoPayload["instrumento"] extends infer T
+        ? T extends { certificado?: infer C }
+          ? C
+          : never
+        : never;
+    };
+    const respostas = ((l.respostas as RespostaItem[]) ?? []).map((r) => ({
+      secao: r.secao,
+      pergunta: r.pergunta,
+      tipo: r.tipo,
+      status: r.status,
+      unidade: r.unidade,
+      grandeza: r.grandeza,
+      valorReferencia: r.valorReferencia ?? r.valorConfigurado,
+      valorMedido: r.valorMedido ?? r.media,
+      leituras: r.leituras,
+      erroAbs: r.erroAbs,
+      erroPct: r.erroPct,
+      limite: r.limite,
+      toleranciaTexto: r.toleranciaTexto,
+      observacao: r.observacao,
+    }));
+    const executores: RelatorioServicoPayload["executores"] = [];
+    if (l.responsavelTecnico?.nome) {
+      executores.push({
+        papel: "Responsável técnico",
+        nome: l.responsavelTecnico.nome,
+        registro: l.responsavelTecnico.registroProfissional,
+      });
+    }
+    if (l.tecnicoNome) executores.push({ papel: "Executor", nome: l.tecnicoNome });
+    if (l.finalizadoPorNome) executores.push({ papel: "Finalizado por", nome: l.finalizadoPorNome });
+
+    return {
+      instituicao: { nome: l.estabelecimento.nome, cnpj: l.estabelecimento.cnpj },
+      numero: l.numero,
+      tipo: l.tipo,
+      statusDocumento: l.statusDocumento,
+      dataExecucao: l.dataExecucao,
+      osNumero: l.osNumero,
+      equipamento: {
+        tag: l.equipamento.tag,
+        nome: l.equipamento.nome,
+        setor: l.equipamento.setor.nome,
+        fabricante: l.equipamento.fabricante?.nome,
+        modelo: l.equipamento.modelo?.nome,
+        nSerie: l.equipamento.nSerie,
+      },
+      executores,
+      procedimento: l.procedimento
+        ? { nome: l.procedimento.nome, versao: l.procedimentoVersao }
+        : null,
+      respostas,
+      instrumento: snap.nome
+        ? {
+            nome: snap.nome,
+            identificacao: snap.identificacao,
+            nSerie: snap.nSerie,
+            tipoAnalisador: snap.tipoAnalisador,
+            certificado: snap.certificado ?? null,
+          }
+        : l.instrumento
+          ? { nome: l.instrumento.nome, nSerie: l.instrumento.nSerie, identificacao: l.instrumento.nSerie }
+          : null,
+      resultado: l.resultado,
+      justificativaRessalva: l.justificativaRessalva,
+      anexos: l.anexos,
+      revisoes: l.revisoes.map((r) => ({
+        autorNome: r.autorNome,
+        createdAt: r.createdAt,
+        justificativa: r.justificativa,
+      })),
+      finalizadoPorNome: l.finalizadoPorNome,
+      finalizadoEm: l.finalizadoEm,
+      visivelPortal: l.visivelPortal,
+    };
   }
 
-  private calcularResultado(
+  async relatorioPdf(estabelecimentoId: string, id: string) {
+    const payload = await this.payloadRelatorio(estabelecimentoId, id);
+    const pdf = await buildRelatorioServicoPdf(payload);
+    const nome = `${tituloDocumentoTecnico(payload.tipo).filenamePrefix}-${payload.numero}.pdf`;
+    return { pdf, nome, payload };
+  }
+
+  private statusCertificado(validadeAte: Date | null, diasAlerta = 60) {
+    return statusCertificadoNaData(validadeAte, new Date(), diasAlerta);
+  }
+
+  private calcularResultado(tipo: TipoLaudo, respostas: RespostaItem[]): ResultadoLaudo {
+    return calcularResultadoLaudo(tipo, respostas) as ResultadoLaudo;
+  }
+
+  private avaliarRespostas(
     tipo: TipoLaudo,
     respostas: RespostaItem[],
-    _meta?: Record<string, unknown>,
-  ): ResultadoLaudo {
-    if (tipo === TipoLaudo.PREVENTIVA) {
-      const temNao = respostas.some((r) => r.status === "NAO");
-      const temObs = respostas.some((r) => !!r.observacao && r.status !== "NAO");
-      if (temNao) return ResultadoLaudo.REPROVADO;
-      if (temObs) return ResultadoLaudo.APROVADO_COM_RESSALVAS;
-      return ResultadoLaudo.APROVADO;
-    }
-
-    if (tipo === TipoLaudo.CALIBRACAO || tipo === TipoLaudo.TSE) {
-      const reprovado = respostas.some((r) => r.status === "REPROVADO");
-      return reprovado ? ResultadoLaudo.REPROVADO : ResultadoLaudo.APROVADO;
-    }
-
-    return ResultadoLaudo.APROVADO;
+    modelo: ItemChecklistModelo[],
+    instrumentoSnap: unknown,
+  ): RespostaItem[] {
+    const pontos =
+      (instrumentoSnap as { certificado?: { pontos?: ItemChecklistModelo[] } } | null)?.certificado?.pontos ?? [];
+    return respostas.map((r) => {
+      const item = modelo.find((m) => m.id && m.id === r.id);
+      const isCal =
+        r.tipo === "calibracao" ||
+        item?.tipo === "calibracao" ||
+        (tipo === TipoLaudo.CALIBRACAO && (r.valorConfigurado != null || (r.leituras?.length ?? 0) > 0) && r.tipo !== "check" && r.tipo !== "medicao");
+      if (isCal) {
+        return avaliarPontoCalibracao({
+          itemModelo: item,
+          resposta: { ...r, origemMedicao: r.origemMedicao ?? "MANUAL" },
+          pontosCertificado: pontos as never,
+        });
+      }
+      if ((r.tipo === "medicao" || tipo === TipoLaudo.TSE) && r.tipo !== "check") {
+        const avaliado = avaliarPontoCalibracao({
+          itemModelo: item,
+          resposta: { ...r, origemMedicao: "MANUAL" },
+          pontosCertificado: pontos as never,
+        });
+        return avaliado;
+      }
+      return { ...r, origemMedicao: r.origemMedicao ?? "MANUAL" };
+    });
   }
 
-  private async assertInstrumentoValido(estabelecimentoId: string, instrumentoId: string) {
+  private async montarInstrumentoSnapshot(
+    estabelecimentoId: string,
+    instrumentoId: string,
+    dataServico: Date,
+    bloquearSePolitica: boolean,
+  ) {
+    const org = await this.prisma.estabelecimento.findUnique({
+      where: { id: estabelecimentoId },
+      select: { diasAlertaCertificado: true, bloquearPadraoVencido: true },
+    });
+    const diasAlerta = org?.diasAlertaCertificado ?? 60;
     const inst = await this.prisma.instrumentoPadrao.findFirst({
       where: { id: instrumentoId, estabelecimentoId, ativo: true },
       include: {
-        certificados: {
-          where: { vigente: true },
-          take: 1,
-          include: { _count: { select: { pontos: true } } },
-          orderBy: { dataValidade: "desc" },
-        },
+        certificados: { include: { pontos: { orderBy: { ordem: "asc" } } }, orderBy: { dataEmissao: "desc" } },
       },
     });
     if (!inst) throw new NotFoundException("Instrumento padrão não encontrado");
-    const vigente = inst.certificados[0];
-    const validade = vigente?.dataValidade ?? inst.certificadoValidade;
-    if (validade && validade.getTime() < Date.now()) {
+    const snap = snapshotInstrumentoNaData({
+      instrumento: inst,
+      certificados: inst.certificados,
+      dataServico,
+      diasAlerta,
+    });
+    const st = snap.certificado?.statusNaData ?? "SEM_CERTIFICADO";
+    if (bloquearSePolitica && org?.bloquearPadraoVencido !== false && (st === "VENCIDO" || st === "SEM_CERTIFICADO")) {
       throw new ForbiddenException(
-        "Instrumento com certificado vencido não pode ser usado em novo laudo",
+        st === "VENCIDO"
+          ? "Instrumento com certificado vencido na data do serviço — política do hospital impede o uso"
+          : "Instrumento sem certificado na data do serviço",
       );
     }
-    const pontos = vigente?._count.pontos ?? 0;
+    const pontos = snap.certificado?.pontos?.length ?? 0;
     if (pontos <= 0) {
       throw new ForbiddenException(
-        "Instrumento sem pontos de calibração (U) no certificado vigente — cadastre o certificado RBC com pontos antes de usar no laudo",
+        "Instrumento sem pontos de calibração (U) no certificado da data do serviço — cadastre o certificado do padrão com pontos antes de usar",
       );
     }
+    return snap;
+  }
+
+  private async autorNome(user: AuthUser) {
+    const u = await this.prisma.usuario.findUnique({ where: { id: user.userId }, select: { nome: true } });
+    return u?.nome || user.email;
   }
 
   private async nextNumero(estabelecimentoId: string, tipo: TipoLaudo) {
