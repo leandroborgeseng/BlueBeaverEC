@@ -8,7 +8,7 @@ Este documento descreve o que está no ar, como operar, como recuperar e o que *
 
 ## 1. O que está no main / hef (set 2026)
 
-Fatura Railway **paga** em 14/09/2026. O go-live deixou de estar bloqueado por billing. No teste imediatamente após o pagamento, o Web respondia (`/login` 200) e a API estava **502** em `/api/health` — o `@nexo/api` tinha quebrado no `nest build` e o redeploy ficou preso à fatura. Correções de build já no main: `a6ff91e`, `3bb0e57`. Relatório final/PDF: `06da417`. Health esperado após o deploy deste pacote: `{ status: "ok", service: "aion-api", version: "<sha7>" }`.
+Fatura Railway **paga** em 14/09/2026. Main inclui `06da417` (laudo final/PDF), `3bb0e57`+`a6ff91e` (nest build) e `526428c` (`next build`: tipos do shell/laudo). **Web no ar** (`526428c`): `/login`, `/qualidade/*`, `/fornecedores`, `/atendimentos-externos` = 200. **API:** Railway marcou `@nexo/api` Success em `1a8004c`, mas o `/api/health` público ainda responde **502** Cloudflare — login e indicadores não andam até o proxy Web (`API_INTERNAL_URL`) alcançar a API. Health esperado: `{ status: "ok", service: "aion-api", version: "<sha7>" }`.
 
 | Módulo | Código no main | Produção HEF | Situação |
 |--------|----------------|--------------|----------|
@@ -22,7 +22,7 @@ Fatura Railway **paga** em 14/09/2026. O go-live deixou de estar bloqueado por b
 | Envio ao fornecedor e retorno (Prompt 4) | sim (`1f63fa4`) | telas no ar com cadastro vazio | Parcial — jornada não exercitada |
 | Consumo de material, saldo e custo (Prompt 5) | sim (`043a31e` + `e9a44f8`) | telas no ar; 2 itens demo de seed | Parcial — estoque real não carregado |
 | Indicadores (Prompt 6) | sim (`6bf1562`) | cumprimento **0/0 = dados insuficientes**, nunca 100% | Validar no hef após o deploy |
-| Documentação / qualidade (Prompt 7) | sim (`eed6cb9`) | `/qualidade`, `/qualidade/documentos`, `/treinamentos`, `/ocorrencias`, `/alertas` | Validar no hef após o deploy (404 anterior era Web antigo) |
+| Documentação / qualidade (Prompt 7) | sim (`eed6cb9` + `526428c`) | `/qualidade` e subrotas **200** no hef | Telas no ar; cadastro vazio até haver documento |
 
 Estabelecimento no banco: id `estab_modelo` (legado do seed). CNPJ e fuso já estão de HEF; o **nome** era regravado para “Hospital e Maternidade Modelo” a cada boot — corrigido neste pacote.
 
