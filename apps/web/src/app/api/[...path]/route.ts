@@ -6,12 +6,18 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const DEFAULT_API_PORT = "3001";
-const CONNECT_MS = 1_500;
+const PRIVATE_CONNECT_MS = 1_500;
+const PUBLIC_CONNECT_MS = 8_000;
 const DNS_MS = 800;
 
-const upstreamAgent = new Agent({
-  connect: { timeout: CONNECT_MS, autoSelectFamily: true },
-  connectTimeout: CONNECT_MS,
+const privateAgent = new Agent({
+  connect: { timeout: PRIVATE_CONNECT_MS, autoSelectFamily: true },
+  connectTimeout: PRIVATE_CONNECT_MS,
+});
+
+const publicAgent = new Agent({
+  connect: { timeout: PUBLIC_CONNECT_MS, autoSelectFamily: true },
+  connectTimeout: PUBLIC_CONNECT_MS,
 });
 
 const onRailway = Boolean(
@@ -45,15 +51,69 @@ function stripHost(raw: string) {
   return raw.replace(/^https?:\/\//, "").replace(/\/$/, "").split("/")[0].split(":")[0];
 }
 
-function parseConfiguredUrl() {
-  let raw = process.env.API_INTERNAL_URL?.trim() || "";
-  if (!raw) return null;
-  if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
+function parseMaybeUrl(raw?: string | null): URL | null {
+  let s = raw?.trim() || "";
+  if (!s) return null;
+  if (!/^https?:\/\//i.test(s)) s = `http://${s}`;
+  s = s.replace(/\/+$/, "").replace(/\/api$/i, "");
   try {
-    return new URL(raw.replace(/\/$/, ""));
+    return new URL(s);
   } catch {
     return null;
   }
+}
+
+function isPrivateRailwayHost(hostname: string) {
+  return hostname.toLowerCase().endsWith(".railway.internal");
+}
+
+function isPublicApiUrl(url: URL) {
+  const h = url.hostname.toLowerCase();
+  if (isSelfWebHost(h) || isPrivateRailwayHost(h)) return false;
+  if (url.protocol === "https:") return true;
+  return h.endsWith(".up.railway.app") || h.endsWith(".railway.app");
+}
+
+function originOf(url: URL) {
+  const port = url.port ? `:${url.port}` : "";
+  return `${url.protocol}//${url.hostname}${port}`;
+}
+
+function envUrls(): { key: string; url: URL }[] {
+  const pairs: { key: string; raw: string }[] = [];
+  const push = (key: string, raw?: string) => {
+    const v = raw?.trim();
+    if (v) pairs.push({ key, raw: v });
+  };
+  push("API_PUBLIC_URL", process.env.API_PUBLIC_URL);
+  push("API_INTERNAL_URL", process.env.API_INTERNAL_URL);
+  push("API_RAILWAY_URL", process.env.API_RAILWAY_URL);
+  for (const [key, value] of Object.entries(process.env)) {
+    if (/^RAILWAY_SERVICE_.+URL$/i.test(key)) push(key, value);
+  }
+  const out: { key: string; url: URL }[] = [];
+  const seen = new Set<string>();
+  for (const { key, raw } of pairs) {
+    const url = parseMaybeUrl(raw);
+    if (!url || isSelfWebHost(url.hostname)) continue;
+    const href = originOf(url);
+    if (seen.has(href)) continue;
+    seen.add(href);
+    out.push({ key, url });
+  }
+  return out;
+}
+
+function publicOrigins() {
+  return envUrls().filter((e) => isPublicApiUrl(e.url));
+}
+
+function privateConfiguredUrl() {
+  return envUrls().find((e) => !isPublicApiUrl(e.url))?.url ?? null;
+}
+
+function parseConfiguredUrl() {
+  return parseMaybeUrl(process.env.API_INTERNAL_URL);
 }
 
 function slugServiceName(name: string) {
@@ -91,8 +151,8 @@ function hostnameCandidates(): string[] {
   const hosts: string[] = [];
   const fromHost = process.env.API_INTERNAL_HOST?.trim();
   if (fromHost) hosts.push(stripHost(fromHost));
-  const configured = parseConfiguredUrl();
-  if (configured && !isSelfWebHost(configured.hostname)) {
+  const configured = privateConfiguredUrl() ?? parseConfiguredUrl();
+  if (configured && isPrivateRailwayHost(configured.hostname) && !isSelfWebHost(configured.hostname)) {
     hosts.unshift(configured.hostname);
   }
   hosts.push(...hostsFromPrivateDomain());
@@ -108,13 +168,14 @@ function hostnameCandidates(): string[] {
   } else {
     hosts.push("127.0.0.1");
   }
-  return unique(hosts).filter((h) => !isSelfWebHost(h));
+  return unique(hosts).filter((h) => !isSelfWebHost(h) && !h.endsWith(".up.railway.app"));
 }
 
 function portCandidates(): string[] {
-  const configured = parseConfiguredUrl();
+  const configured = privateConfiguredUrl() ?? parseConfiguredUrl();
+  const configuredPort = configured && isPrivateRailwayHost(configured.hostname) ? configured.port : "";
   return unique([
-    configured?.port ?? "",
+    configuredPort,
     process.env.API_INTERNAL_PORT?.trim() ?? "",
     DEFAULT_API_PORT,
     "8080",
@@ -122,7 +183,6 @@ function portCandidates(): string[] {
   ]);
 }
 
-/** Alpine/musl getaddrinfo costuma devolver ENOTFOUND para AAAA-only (rede privada Railway). */
 const dnsCache = new Map<string, Promise<string[]>>();
 
 async function resolveIps(hostname: string): Promise<string[]> {
@@ -142,19 +202,39 @@ async function resolveIps(hostname: string): Promise<string[]> {
   return pending;
 }
 
-type Attempt = { label: string; url: string; hostHeader: string };
+type Attempt = {
+  label: string;
+  url: string;
+  hostHeader?: string;
+  publicHttps: boolean;
+  timeoutMs: number;
+};
 
-async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
+function publicAttempts(pathSuffix: string): Attempt[] {
+  return publicOrigins().map(({ url }) => {
+    const origin = originOf(url);
+    const https = url.protocol === "https:" || url.hostname.endsWith(".up.railway.app");
+    const originHttp = https ? origin.replace(/^http:/, "https:") : origin;
+    return {
+      label: `${url.hostname}${url.port ? `:${url.port}` : ""}`,
+      url: `${originHttp}${pathSuffix}`,
+      publicHttps: https,
+      timeoutMs: PUBLIC_CONNECT_MS,
+    };
+  });
+}
+
+async function privateAttempts(pathSuffix: string): Promise<Attempt[]> {
   const attempts: Attempt[] = [];
-  const configured = parseConfiguredUrl();
-  if (configured && !isSelfWebHost(configured.hostname) && configured.protocol === "https:") {
-    const origin = configured.port
-      ? `https://${configured.hostname}:${configured.port}`
-      : `https://${configured.hostname}`;
+  const configured = privateConfiguredUrl() ?? parseConfiguredUrl();
+  if (configured && isPrivateRailwayHost(configured.hostname)) {
+    const port = configured.port || process.env.API_INTERNAL_PORT?.trim() || DEFAULT_API_PORT;
     attempts.push({
-      label: configured.hostname,
-      url: `${origin}${pathSuffix}`,
+      label: `${configured.hostname}:${port}`,
+      url: `http://${configured.hostname}:${port}${pathSuffix}`,
       hostHeader: configured.hostname,
+      publicHttps: false,
+      timeoutMs: PRIVATE_CONNECT_MS,
     });
   }
 
@@ -162,16 +242,37 @@ async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
     const ips = await resolveIps(hostname);
     if (!ips.length) continue;
     for (const port of portCandidates()) {
+      attempts.push({
+        label: `${hostname}:${port}`,
+        url: `http://${hostname}:${port}${pathSuffix}`,
+        hostHeader: hostname,
+        publicHttps: false,
+        timeoutMs: PRIVATE_CONNECT_MS,
+      });
       for (const ip of ips) {
         attempts.push({
           label: `${hostname}:${port}`,
           url: `http://${ip}:${port}${pathSuffix}`,
           hostHeader: hostname,
+          publicHttps: false,
+          timeoutMs: PRIVATE_CONNECT_MS,
         });
       }
     }
   }
-  return attempts.slice(0, 8);
+  const seen = new Set<string>();
+  return attempts.filter((a) => {
+    if (seen.has(a.url)) return false;
+    seen.add(a.url);
+    return true;
+  });
+}
+
+async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
+  const pub = publicAttempts(pathSuffix);
+  if (pub.length) return pub;
+  const priv = await privateAttempts(pathSuffix);
+  return priv.slice(0, 8);
 }
 
 async function dns6Report() {
@@ -187,10 +288,23 @@ async function dns6Report() {
 
 function errorDetail(err: unknown): string {
   if (!(err instanceof Error)) return String(err);
-  const cause = (err as Error & { cause?: { code?: string; message?: string } }).cause;
-  const code = cause?.code ? ` [${cause.code}]` : "";
+  const cause = (err as Error & { code?: string; cause?: { code?: string; message?: string } }).cause;
+  const code = (err as Error & { code?: string }).code || cause?.code;
+  const codePart = code ? ` [${code}]` : "";
   const extra = cause?.message && cause.message !== err.message ? ` (${cause.message})` : "";
-  return `${err.message}${code}${extra}`;
+  return `${err.message}${codePart}${extra}`;
+}
+
+function apiInternalUrlHost() {
+  const u = parseConfiguredUrl();
+  if (!u) return null;
+  return `${u.hostname}${u.port ? `:${u.port}` : ""}`;
+}
+
+function apiPublicUrlHost() {
+  const u = parseMaybeUrl(process.env.API_PUBLIC_URL);
+  if (!u) return publicOrigins()[0] ? `${publicOrigins()[0].url.hostname}` : null;
+  return `${u.hostname}${u.port ? `:${u.port}` : ""}`;
 }
 
 let lastGoodUrl: string | null = null;
@@ -213,27 +327,38 @@ async function proxy(req: NextRequest, path: string[]) {
   const ordered =
     lastGoodUrl && lastGoodHost
       ? [
-          { label: lastGoodHost, url: lastGoodUrl, hostHeader: lastGoodHost },
+          {
+            label: lastGoodHost,
+            url: lastGoodUrl,
+            hostHeader: lastGoodHost,
+            publicHttps: lastGoodUrl.startsWith("https:"),
+            timeoutMs: lastGoodUrl.startsWith("https:") ? PUBLIC_CONNECT_MS : PRIVATE_CONNECT_MS,
+          },
           ...attempts.filter((a) => a.url !== lastGoodUrl),
         ]
       : attempts;
 
-  let lastErr = attempts.length ? "sem destino" : "nenhum host interno com A/AAAA";
+  let lastErr = attempts.length ? "sem destino" : "nenhum host interno com A/AAAA nem URL pública";
   let lastLabel = ordered[0]?.label ?? "";
   const failures: { target: string; error: string }[] = [];
+  let triedPublicHttps = false;
+
   for (const attempt of ordered) {
     lastLabel = attempt.label;
+    if (attempt.publicHttps) triedPublicHttps = true;
     try {
+      const reqHeaders = { ...headers };
+      if (attempt.hostHeader && !attempt.publicHttps) reqHeaders.host = attempt.hostHeader;
       const upstream = await undiciFetch(attempt.url, {
         method,
-        headers: { ...headers, host: attempt.hostHeader },
+        headers: reqHeaders,
         body,
-        dispatcher: upstreamAgent,
+        dispatcher: attempt.publicHttps ? publicAgent : privateAgent,
         redirect: "manual",
-        signal: AbortSignal.timeout(CONNECT_MS + 500),
+        signal: AbortSignal.timeout(attempt.timeoutMs + 500),
       });
       lastGoodUrl = attempt.url;
-      lastGoodHost = attempt.hostHeader;
+      lastGoodHost = attempt.hostHeader ?? new URL(attempt.url).hostname;
       const buf = Buffer.from(await upstream.arrayBuffer());
       const out = new NextResponse(buf, { status: upstream.status });
       const upstreamType = upstream.headers.get("content-type");
@@ -252,6 +377,7 @@ async function proxy(req: NextRequest, path: string[]) {
     }
   }
 
+  const parsed = parseConfiguredUrl();
   return NextResponse.json(
     {
       message:
@@ -260,10 +386,17 @@ async function proxy(req: NextRequest, path: string[]) {
       reason: lastErr,
       tried: ordered.map((a) => a.label),
       failures: failures.slice(0, 8),
-      configuredHost: parseConfiguredUrl()?.hostname ?? null,
+      apiInternalUrlHost: apiInternalUrlHost(),
+      apiPublicUrlHost: apiPublicUrlHost(),
+      triedPublicHttps,
+      parsedProtocol: parsed?.protocol ?? null,
+      parsedPort: parsed?.port || null,
+      configuredHost: parsed?.hostname ?? null,
       webPrivateDomain: process.env.RAILWAY_PRIVATE_DOMAIN ?? null,
       dns6,
       webService: process.env.RAILWAY_SERVICE_NAME ?? null,
+      nextStep:
+        "TCP privado Railway está morto. @nexo/api → Networking → Generate Domain; @nexo/web → API_INTERNAL_URL ou API_PUBLIC_URL = https://….up.railway.app; Redeploy @nexo/web.",
     },
     { status: 503 },
   );

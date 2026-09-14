@@ -51,7 +51,8 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 
 | Variável | Obrigatória | Notas |
 |----------|-------------|--------|
-| `API_INTERNAL_URL` | sim | HTTP interno Railway, ex. `http://<api>.railway.internal:PORT` |
+| `API_INTERNAL_URL` | sim | Se o TCP privado cair: `https://<api>.up.railway.app` (Generate Domain na API). Privado só se o mesh responder: `http://${{@nexo/api.RAILWAY_PRIVATE_DOMAIN}}:${{@nexo/api.PORT}}`. Sem `/api` no fim. |
+| `API_PUBLIC_URL` | se privado morto | Mesma URL HTTPS pública da API. O proxy usa HTTPS público **antes** de `*.railway.internal`. |
 | `NEXT_PUBLIC_API_URL` | não | Vazio = same-origin `/api` (recomendado). |
 
 Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aion.local`, `campo@aion.local`, `solicitante@aion.local` / `aion1234`.  
