@@ -1,7 +1,6 @@
-import { lookup as dnsLookup } from "node:dns/promises";
+import dns from "node:dns";
 import { NextRequest, NextResponse } from "next/server";
 import { Agent, fetch as undiciFetch } from "undici";
-import type { LookupAddress } from "node:dns";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -10,45 +9,13 @@ const DEFAULT_API_PORT = "3001";
 const CONNECT_MS = 2_000;
 
 /**
- * API escuta em `::`. Rede privada Railway (legado) é AAAA-only.
- * ipv4first / family:4 faz o DNS de A pendurar ~10s e o Cloudflare troca
- * o JSON do Next pela página "error code: 502".
+ * API escuta em `::`. Rede privada Railway legado é AAAA-only.
+ * Não customizar `lookup`: o Node 22 usa Happy Eyeballs com `all: true`.
  */
-function lookupPrefer6(
-  hostname: string,
-  _opts: unknown,
-  callback: (err: Error | null, address: string, family: number) => void,
-) {
-  void (async () => {
-    const answers: LookupAddress[] = [];
-    try {
-      answers.push(await dnsLookup(hostname, { family: 6, all: false }));
-    } catch {
-      /* sem AAAA */
-    }
-    if (answers.length === 0) {
-      try {
-        answers.push(await dnsLookup(hostname, { family: 4, all: false }));
-      } catch {
-        /* sem A */
-      }
-    }
-    const picked = answers[0];
-    if (!picked) {
-      callback(new Error(`ENOTFOUND ${hostname}`), "", 0);
-      return;
-    }
-    callback(null, picked.address, picked.family);
-  })().catch((err: unknown) => {
-    callback(err instanceof Error ? err : new Error(String(err)), "", 0);
-  });
-}
+dns.setDefaultResultOrder("ipv6first");
 
 const upstreamAgent = new Agent({
-  connect: {
-    lookup: lookupPrefer6,
-    timeout: CONNECT_MS,
-  },
+  connect: { autoSelectFamily: true, timeout: CONNECT_MS },
   connectTimeout: CONNECT_MS,
 });
 
@@ -64,10 +31,10 @@ function isLoopHost(hostname: string) {
   const h = hostname.toLowerCase();
   return (
     h === "hef.aion.eng.br" ||
+    h.endsWith(".aion.eng.br") ||
     h === "localhost" ||
     h === "127.0.0.1" ||
-    h === "::1" ||
-    h.endsWith(".aion.eng.br")
+    h === "::1"
   );
 }
 
@@ -80,7 +47,6 @@ function formatBase(host: string, port: string) {
   return `http://${wrapped}:${port}`;
 }
 
-/** Poucos destinos: o cartesian host×porta estourava o timeout do edge. */
 function candidateBases(): string[] {
   const hosts: string[] = [];
   let urlPort: string | undefined;
@@ -107,6 +73,8 @@ function candidateBases(): string[] {
     hosts.push(
       "aionapi.railway.internal",
       "nexo-api.railway.internal",
+      "nexoapi.railway.internal",
+      "aion-api.railway.internal",
       "api.railway.internal",
     );
   } else {
@@ -119,14 +87,14 @@ function candidateBases(): string[] {
     process.env.API_PORT?.trim() ||
     DEFAULT_API_PORT;
 
-  const ports = unique([primaryPort, primaryPort === DEFAULT_API_PORT ? "" : DEFAULT_API_PORT]);
+  const ports = unique([primaryPort, DEFAULT_API_PORT, "8080"]);
   const bases: string[] = [];
-  for (const host of unique(hosts).filter((h) => !(onRailway && isLoopHost(h)))) {
-    for (const port of ports) {
+  for (const port of ports) {
+    for (const host of unique(hosts).filter((h) => !(onRailway && isLoopHost(h)))) {
       bases.push(formatBase(host, port));
     }
   }
-  return unique(bases).slice(0, 8);
+  return unique(bases).slice(0, 12);
 }
 
 function errorDetail(err: unknown): string {
