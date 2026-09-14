@@ -1,4 +1,5 @@
 import dns from "node:dns";
+import { promises as dnsPromises } from "node:dns";
 import { NextRequest, NextResponse } from "next/server";
 import { Agent, fetch as undiciFetch } from "undici";
 
@@ -10,8 +11,43 @@ const CONNECT_MS = 2_000;
 
 dns.setDefaultResultOrder("ipv6first");
 
+/**
+ * Rede privada Railway legado (antes de 16/10/2025) só tem AAAA.
+ * getaddrinfo IPv4-only no Alpine devolve ENOTFOUND mesmo com o nome certo.
+ * Sempre devolve lista (Happy Eyeballs do Node 22) e family 0 = A+AAAA.
+ */
+function dualStackLookup(
+  hostname: string,
+  options: dns.LookupOneOptions & { all?: boolean },
+  callback: (...args: unknown[]) => void,
+) {
+  dns.lookup(hostname, { all: true, family: 0, verbatim: true }, (err, addresses) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    if (options.all) {
+      callback(null, addresses);
+      return;
+    }
+    const first = addresses[0];
+    if (!first) {
+      const nf = new Error(`getaddrinfo ENOTFOUND ${hostname}`) as Error & { code: string };
+      nf.code = "ENOTFOUND";
+      callback(nf);
+      return;
+    }
+    callback(null, first.address, first.family);
+  });
+}
+
 const upstreamAgent = new Agent({
-  connect: { autoSelectFamily: true, timeout: CONNECT_MS },
+  connect: {
+    autoSelectFamily: true,
+    timeout: CONNECT_MS,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    lookup: dualStackLookup as any,
+  },
   connectTimeout: CONNECT_MS,
 });
 
@@ -113,6 +149,28 @@ function candidateBases(): string[] {
   return unique(bases).slice(0, 12);
 }
 
+/** resolve6/4 evita getaddrinfo IPv4-only (ENOTFOUND em AAAA-only). */
+async function expandBaseWithIps(base: string): Promise<string[]> {
+  try {
+    const u = new URL(base);
+    const host = u.hostname.replace(/^\[|\]$/g, "");
+    if (host.includes(":") || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return [base];
+    const port = u.port || (u.protocol === "https:" ? "443" : "80");
+    const proto = u.protocol.replace(":", "");
+    const [v6, v4] = await Promise.all([
+      dnsPromises.resolve6(host).catch(() => [] as string[]),
+      dnsPromises.resolve4(host).catch(() => [] as string[]),
+    ]);
+    return unique([
+      ...v6.map((ip) => formatBase(ip, port, proto)),
+      ...v4.map((ip) => formatBase(ip, port, proto)),
+      base,
+    ]);
+  } catch {
+    return [base];
+  }
+}
+
 function errorDetail(err: unknown): string {
   if (!(err instanceof Error)) return String(err);
   const cause = (err as Error & { cause?: { code?: string; message?: string } }).cause;
@@ -149,7 +207,21 @@ async function proxy(req: NextRequest, path: string[]) {
 
   const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
   const bases = candidateBases();
-  const ordered = lastGoodBase ? [lastGoodBase, ...bases.filter((b) => b !== lastGoodBase)] : bases;
+  const expanded = unique((await Promise.all(bases.map(expandBaseWithIps))).flat()).slice(0, 20);
+  const ordered = lastGoodBase
+    ? [lastGoodBase, ...expanded.filter((b) => b !== lastGoodBase)]
+    : expanded;
+
+  const configuredHost = configuredInternalHost();
+  let dns6 = "skip";
+  if (configuredHost) {
+    try {
+      const aaaa = await dnsPromises.resolve6(configuredHost);
+      dns6 = aaaa.length ? `AAAA ${aaaa.slice(0, 2).join(",")}` : "empty";
+    } catch (err) {
+      dns6 = err instanceof Error ? err.message : String(err);
+    }
+  }
 
   let lastErr = "sem destino";
   let lastBase = ordered[0] ?? "";
@@ -186,7 +258,8 @@ async function proxy(req: NextRequest, path: string[]) {
       target: publicTarget(lastBase),
       reason: lastErr,
       tried: ordered.map(publicTarget),
-      configuredHost: configuredInternalHost(),
+      configuredHost,
+      dns6,
       webService: process.env.RAILWAY_SERVICE_NAME ?? null,
     },
     { status: 503 },
