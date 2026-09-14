@@ -29,30 +29,25 @@ function unique(items: string[]) {
 
 function isLoopHost(hostname: string) {
   const h = hostname.toLowerCase();
-  return (
-    h === "hef.aion.eng.br" ||
-    h.endsWith(".aion.eng.br") ||
-    h === "localhost" ||
-    h === "127.0.0.1" ||
-    h === "::1"
-  );
+  // Só o próprio web — não bloquear api.hef.aion.eng.br nem outros hosts Aion.
+  return h === "hef.aion.eng.br" || h === "localhost" || h === "127.0.0.1" || h === "::1";
 }
 
 function stripHost(raw: string) {
   return raw.replace(/^https?:\/\//, "").replace(/\/$/, "").split("/")[0].split(":")[0];
 }
 
-function formatBase(host: string, port: string) {
+function formatBase(host: string, port: string, protocol = "http") {
   const wrapped = host.includes(":") && !host.startsWith("[") ? `[${host}]` : host;
-  return `http://${wrapped}:${port}`;
+  return `${protocol}://${wrapped}:${port}`;
 }
 
 function candidateBases(): string[] {
-  const hosts: string[] = [];
-  let urlPort: string | undefined;
+  const bases: string[] = [];
+  const extraHosts: string[] = [];
 
   const fromHost = process.env.API_INTERNAL_HOST?.trim();
-  if (fromHost) hosts.push(stripHost(fromHost));
+  if (fromHost) extraHosts.push(stripHost(fromHost));
 
   let raw = process.env.API_INTERNAL_URL?.trim() || "";
   if (raw) {
@@ -61,8 +56,16 @@ function candidateBases(): string[] {
     try {
       const u = new URL(raw);
       if (!isLoopHost(u.hostname)) {
-        hosts.push(u.hostname);
-        if (u.port) urlPort = u.port;
+        if (u.hostname.endsWith(".railway.internal")) u.protocol = "http:";
+        extraHosts.unshift(u.hostname);
+        const proto = u.protocol.replace(":", "");
+        if (u.port) {
+          bases.push(formatBase(u.hostname, u.port, proto));
+        } else if (u.protocol === "https:") {
+          bases.push(`${u.protocol}//${u.hostname}`);
+        } else {
+          bases.push(formatBase(u.hostname, DEFAULT_API_PORT, proto));
+        }
       }
     } catch {
       /* ignore */
@@ -70,7 +73,7 @@ function candidateBases(): string[] {
   }
 
   if (onRailway) {
-    hosts.push(
+    extraHosts.push(
       "aionapi.railway.internal",
       "nexo-api.railway.internal",
       "nexoapi.railway.internal",
@@ -78,20 +81,18 @@ function candidateBases(): string[] {
       "api.railway.internal",
     );
   } else {
-    hosts.push("127.0.0.1");
+    extraHosts.push("127.0.0.1");
   }
 
-  const primaryPort =
-    urlPort ||
-    process.env.API_INTERNAL_PORT?.trim() ||
-    process.env.API_PORT?.trim() ||
-    DEFAULT_API_PORT;
-
-  const ports = unique([primaryPort, DEFAULT_API_PORT, "8080"]);
-  const bases: string[] = [];
-  for (const port of ports) {
-    for (const host of unique(hosts).filter((h) => !(onRailway && isLoopHost(h)))) {
-      bases.push(formatBase(host, port));
+  // Não usar API_PORT/PORT do web (Railway do Next costuma ser 8080).
+  const ports = unique([
+    process.env.API_INTERNAL_PORT?.trim() ?? "",
+    DEFAULT_API_PORT,
+    "8080",
+  ]);
+  for (const host of unique(extraHosts).filter((h) => !isLoopHost(h))) {
+    for (const port of ports) {
+      bases.push(formatBase(host, port, "http"));
     }
   }
   return unique(bases).slice(0, 12);
@@ -105,7 +106,16 @@ function errorDetail(err: unknown): string {
   return `${err.message}${code}${extra}`;
 }
 
-function publicTarget(base: string) {
+function configuredInternalHost() {
+  let raw = process.env.API_INTERNAL_URL?.trim() || "";
+  if (!raw) return null;
+  if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
+  try {
+    return new URL(raw.replace(/\/$/, "")).hostname;
+  } catch {
+    return "(inválida)";
+  }
+}
   try {
     const u = new URL(base);
     return `${u.hostname}:${u.port || "80"}`;
@@ -168,6 +178,7 @@ async function proxy(req: NextRequest, path: string[]) {
       tried: ordered.map(publicTarget),
       hasInternalUrl: Boolean(process.env.API_INTERNAL_URL?.trim()),
       hasInternalHost: Boolean(process.env.API_INTERNAL_HOST?.trim()),
+      configuredHost: configuredInternalHost(),
     },
     // 503: Cloudflare substitui 502 de origem pela página genérica "error code: 502".
     { status: 503 },
