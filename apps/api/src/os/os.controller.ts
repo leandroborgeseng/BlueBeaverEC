@@ -161,6 +161,10 @@ class StatusDto {
   @IsOptional()
   @IsString()
   diagnostico?: string;
+
+  @IsOptional()
+  @IsIn(["ESTOQUE", "PERDA", "USO_CONFIRMADO", "OUTRO"])
+  destinoFisico?: "ESTOQUE" | "PERDA" | "USO_CONFIRMADO" | "OUTRO";
 }
 
 class AtribuirDto {
@@ -229,7 +233,15 @@ class ExecucaoDto {
 
   @IsOptional()
   @IsArray()
-  itens?: Array<{ tipo?: "MATERIAL" | "MAO_DE_OBRA"; descricao: string; quantidade?: number }>;
+  itens?: Array<{
+    tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";
+    descricao: string;
+    quantidade?: number;
+    valorUnitario?: number;
+    origemMaterial?: "ESTOQUE" | "COMPRA_DIRETA";
+    naturezaCusto?: "ESTIMADO" | "APROVADO" | "REALIZADO";
+    itemCodigo?: string;
+  }>;
 }
 
 class VincularEquipamentoOsDto {

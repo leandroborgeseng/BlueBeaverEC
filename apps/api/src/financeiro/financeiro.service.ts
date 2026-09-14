@@ -2,7 +2,13 @@ import { Injectable } from "@nestjs/common";
 import { TipoItemOS } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
-export type LancamentoTipo = "MATERIAL" | "MAO_DE_OBRA" | "RATEIO" | "GLOSA";
+export type LancamentoTipo =
+  | "MATERIAL"
+  | "MAO_DE_OBRA"
+  | "SERVICO_EXTERNO"
+  | "OUTROS_DIRETOS"
+  | "RATEIO"
+  | "GLOSA";
 
 @Injectable()
 export class FinanceiroService {
@@ -25,9 +31,14 @@ export class FinanceiroService {
             ? { equipamento: { tag: filtros.equipamentoTag } }
             : {}),
         },
-        ...(filtros.tipo === "MATERIAL" || filtros.tipo === "MAO_DE_OBRA"
+        ...(filtros.tipo === "MATERIAL" ||
+        filtros.tipo === "MAO_DE_OBRA" ||
+        filtros.tipo === "SERVICO_EXTERNO" ||
+        filtros.tipo === "OUTROS_DIRETOS"
           ? { tipo: filtros.tipo as TipoItemOS }
           : {}),
+        estornado: false,
+        naturezaCusto: "REALIZADO",
       },
       include: {
         ordemServico: { include: { equipamento: { include: { setor: true, centroCusto: true } } } },
@@ -46,7 +57,13 @@ export class FinanceiroService {
       origem: string;
     }> = [];
 
-    if (!filtros.tipo || filtros.tipo === "MATERIAL" || filtros.tipo === "MAO_DE_OBRA") {
+    if (
+      !filtros.tipo ||
+      filtros.tipo === "MATERIAL" ||
+      filtros.tipo === "MAO_DE_OBRA" ||
+      filtros.tipo === "SERVICO_EXTERNO" ||
+      filtros.tipo === "OUTROS_DIRETOS"
+    ) {
       for (const i of itens) {
         if (filtros.tipo && i.tipo !== filtros.tipo) continue;
         const valor = Number(i.quantidade) * Number(i.valorUnitario ?? 0);
@@ -130,7 +147,14 @@ export class FinanceiroService {
       .map(([chave, total]) => ({ chave, total: Number(total.toFixed(2)) }))
       .sort((a, b) => b.total - a.total);
     const totalGeral = breakdown.reduce((s, b) => s + b.total, 0);
-    const porTipo = { MATERIAL: 0, MAO_DE_OBRA: 0, RATEIO: 0, GLOSA: 0 };
+    const porTipo: Record<LancamentoTipo, number> = {
+      MATERIAL: 0,
+      MAO_DE_OBRA: 0,
+      SERVICO_EXTERNO: 0,
+      OUTROS_DIRETOS: 0,
+      RATEIO: 0,
+      GLOSA: 0,
+    };
     for (const l of extrato) porTipo[l.tipo] += l.valor;
     return {
       totalGeral: Number(totalGeral.toFixed(2)),

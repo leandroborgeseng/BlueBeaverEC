@@ -7,7 +7,8 @@ import { api, downloadApi } from "@/lib/api";
 import { SlaChip } from "@/components/os/SlaChip";
 import { filesToAnexos, labelAcaoOS, labelCondicaoUso, labelStatusOS } from "@/lib/os-ui";
 import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
-import { labelResponsavel } from "@/lib/session";
+import { labelResponsavel, useSession } from "@/lib/session";
+import { LABEL_DESTINO_FISICO } from "@aion/shared";
 import { useWindowStore } from "@/store/windows";
 
 interface Colaborador {
@@ -24,6 +25,9 @@ interface OsItem {
   descricao: string;
   quantidade: number;
   valorUnitario?: number | null;
+  origemMaterial?: string | null;
+  naturezaCusto?: string | null;
+  estornado?: boolean;
 }
 
 interface TimelineItem {
@@ -101,6 +105,7 @@ export function OsEditor({
   onDone: () => void;
 }) {
   const open = useWindowStore((s) => s.open);
+  const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
   const [tab, setTab] = useState<Tab>("geral");
   const [os, setOs] = useState<OsDetail | null>(null);
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
@@ -112,6 +117,12 @@ export function OsEditor({
   const [condicaoFinal, setCondicaoFinal] = useState("");
   const [textoPublico, setTextoPublico] = useState("");
   const [itemDesc, setItemDesc] = useState("");
+  const [pecasEstoque, setPecasEstoque] = useState<Array<{ codigo: string; descricao: string; disponivel: number }>>([]);
+  const [pecaCodigo, setPecaCodigo] = useState("");
+  const [pecaQtd, setPecaQtd] = useState("1");
+  const [servicoExt, setServicoExt] = useState("");
+  const [servicoExtValor, setServicoExtValor] = useState("");
+  const [destinoFisico, setDestinoFisico] = useState("");
   const [comentario, setComentario] = useState("");
   const [visComentario, setVisComentario] = useState<"PUBLICO" | "INTERNO">("PUBLICO");
   const [equipTag, setEquipTag] = useState("");
@@ -143,6 +154,9 @@ export function OsEditor({
     void load().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
     api<Colaborador[]>("/os/responsaveis")
       .then(setColaboradores)
+      .catch(() => undefined);
+    api<{ items: Array<{ codigo: string; descricao: string; disponivel: number }> }>("/estoque/itens?pageSize=100")
+      .then((r) => setPecasEstoque(r.items ?? []))
       .catch(() => undefined);
     api<Array<{ id: string; nome: string }>>("/setores")
       .then(setSetores)
@@ -203,7 +217,11 @@ export function OsEditor({
                 diagnostico,
                 justificativa,
               }
-            : { acao, justificativa },
+            : {
+                acao,
+                justificativa,
+                destinoFisico: acao === "cancelar" || acao === "reabrir" ? destinoFisico || undefined : undefined,
+              },
         ),
       });
       setStatusModal(null);
@@ -378,7 +396,54 @@ export function OsEditor({
             <textarea value={pendencia} onChange={(e) => setPendencia(e.target.value)} rows={2} style={fieldStyle} />
           </div>
           <div>
-            <FieldLabel>Peça ou material (sem estoque)</FieldLabel>
+            <FieldLabel>Peça do estoque</FieldLabel>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <select value={pecaCodigo} onChange={(e) => setPecaCodigo(e.target.value)} style={{ ...fieldStyle, flex: 2 }}>
+                <option value="">Selecionar peça…</option>
+                {pecasEstoque.map((p) => (
+                  <option key={p.codigo} value={p.codigo}>
+                    {p.codigo} — {p.descricao} (disp. {p.disponivel})
+                  </option>
+                ))}
+              </select>
+              <input
+                value={pecaQtd}
+                onChange={(e) => setPecaQtd(e.target.value)}
+                type="number"
+                min="0.01"
+                step="0.01"
+                style={{ ...fieldStyle, width: 90 }}
+              />
+              <Btn
+                size="sm"
+                disabled={busy || !pecaCodigo}
+                onClick={() =>
+                  void run(async () => {
+                    await api(`/os/${numero}/execucao`, {
+                      method: "PATCH",
+                      body: JSON.stringify({
+                        itens: [
+                          {
+                            tipo: "MATERIAL",
+                            descricao: pecaCodigo,
+                            itemCodigo: pecaCodigo,
+                            quantidade: Number(pecaQtd || 1),
+                            origemMaterial: "ESTOQUE",
+                          },
+                        ],
+                      }),
+                    });
+                    setPecaCodigo("");
+                    setMsg("Baixa de estoque vinculada à OS");
+                  })
+                }
+              >
+                Baixar
+              </Btn>
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Peça ou material comprado direto (sem estoque)</FieldLabel>
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 value={itemDesc}
@@ -393,7 +458,9 @@ export function OsEditor({
                   void run(async () => {
                     await api(`/os/${numero}/execucao`, {
                       method: "PATCH",
-                      body: JSON.stringify({ itens: [{ descricao: itemDesc, tipo: "MATERIAL" }] }),
+                      body: JSON.stringify({
+                        itens: [{ descricao: itemDesc, tipo: "MATERIAL", origemMaterial: "COMPRA_DIRETA" }],
+                      }),
                     });
                     setItemDesc("");
                     setMsg("Item registrado");
@@ -401,6 +468,54 @@ export function OsEditor({
                 }
               >
                 Incluir
+              </Btn>
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Serviço externo / outro custo direto</FieldLabel>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                value={servicoExt}
+                onChange={(e) => setServicoExt(e.target.value)}
+                placeholder="Descrição do serviço"
+                style={{ ...fieldStyle, flex: 1 }}
+              />
+              {verValores && (
+                <input
+                  value={servicoExtValor}
+                  onChange={(e) => setServicoExtValor(e.target.value)}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="R$"
+                  style={{ ...fieldStyle, width: 110 }}
+                />
+              )}
+              <Btn
+                size="sm"
+                disabled={busy || !servicoExt.trim()}
+                onClick={() =>
+                  void run(async () => {
+                    await api(`/os/${numero}/execucao`, {
+                      method: "PATCH",
+                      body: JSON.stringify({
+                        itens: [
+                          {
+                            tipo: "SERVICO_EXTERNO",
+                            descricao: servicoExt,
+                            quantidade: 1,
+                            valorUnitario: verValores ? Number(servicoExtValor || 0) || undefined : undefined,
+                          },
+                        ],
+                      }),
+                    });
+                    setServicoExt("");
+                    setServicoExtValor("");
+                    setMsg("Serviço externo lançado (realizado ≠ orçamento)");
+                  })
+                }
+              >
+                Lançar
               </Btn>
             </div>
           </div>
@@ -441,6 +556,10 @@ export function OsEditor({
               {(os.itens ?? []).map((item) => (
                 <li key={item.id}>
                   {item.descricao} · {item.quantidade}
+                  {item.origemMaterial === "ESTOQUE" ? " · estoque" : item.origemMaterial === "COMPRA_DIRETA" ? " · compra direta" : ""}
+                  {item.naturezaCusto ? ` · ${item.naturezaCusto.toLowerCase()}` : ""}
+                  {item.estornado ? " · estornado" : ""}
+                  {verValores && item.valorUnitario != null ? ` · R$ ${item.valorUnitario}` : ""}
                 </li>
               ))}
             </ul>
@@ -845,22 +964,46 @@ export function OsEditor({
       <ConfirmModal
         open={statusModal === "cancelar"}
         title="Cancelar ordem de serviço"
-        message={`A OS ${os.codigo} será cancelada. Informe a justificativa.`}
+        message={`A OS ${os.codigo} será cancelada. Material baixado NÃO volta sozinho — confirme o destino físico.`}
         confirmLabel="Cancelar OS"
         danger
         requireJustification
         onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
-      />
+      >
+        <div style={{ marginBottom: 14 }}>
+          <FieldLabel>Destino físico do material</FieldLabel>
+          <select value={destinoFisico} onChange={(e) => setDestinoFisico(e.target.value)} style={fieldStyle}>
+            <option value="">Selecione se houve baixa</option>
+            {(Object.keys(LABEL_DESTINO_FISICO) as Array<keyof typeof LABEL_DESTINO_FISICO>).map((k) => (
+              <option key={k} value={k}>
+                {LABEL_DESTINO_FISICO[k]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </ConfirmModal>
       <ConfirmModal
         open={statusModal === "reabrir"}
         title="Efetivar reabertura"
-        message="O pedido do usuário não reabre sozinho. A conclusão anterior fica no histórico."
+        message="Reabrir não devolve material automaticamente. Confirme o destino físico se houve baixa."
         confirmLabel="Reabrir"
         requireJustification
         onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
-      />
+      >
+        <div style={{ marginBottom: 14 }}>
+          <FieldLabel>Destino físico do material</FieldLabel>
+          <select value={destinoFisico} onChange={(e) => setDestinoFisico(e.target.value)} style={fieldStyle}>
+            <option value="">Selecione se houve baixa</option>
+            {(Object.keys(LABEL_DESTINO_FISICO) as Array<keyof typeof LABEL_DESTINO_FISICO>).map((k) => (
+              <option key={k} value={k}>
+                {LABEL_DESTINO_FISICO[k]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </ConfirmModal>
     </div>
   );
 }

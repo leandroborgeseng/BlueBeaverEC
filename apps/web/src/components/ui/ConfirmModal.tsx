@@ -12,6 +12,7 @@ export function ConfirmModal({
   danger,
   requireJustification,
   justificationMin = 3,
+  children,
   onConfirm,
   onCancel,
 }: {
@@ -23,6 +24,7 @@ export function ConfirmModal({
   danger?: boolean;
   requireJustification?: boolean;
   justificationMin?: number;
+  children?: React.ReactNode;
   onConfirm: (justificativa?: string) => void | Promise<void>;
   onCancel: () => void;
 }) {
@@ -104,6 +106,7 @@ export function ConfirmModal({
             />
           </div>
         )}
+        {children}
         {erro && (
           <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.15 25)" }}>{erro}</div>
         )}

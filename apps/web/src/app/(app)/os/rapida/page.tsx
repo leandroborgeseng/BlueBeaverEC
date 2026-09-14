@@ -86,7 +86,6 @@ export default function OsRapidaPage() {
       body.maoDeObra = {
         descricao: String(fd.get("maoDeObraDesc") || "Mão de obra"),
         horas,
-        valorHora: Number(fd.get("valorHora") || 0) || undefined,
       };
     }
     if (pecaCodigo) {
@@ -209,10 +208,9 @@ export default function OsRapidaPage() {
               <FieldLabel>Horas</FieldLabel>
               <input name="horas" type="number" step="0.25" min="0" placeholder="Horas" style={fieldStyle} />
             </div>
-            <div>
-              <FieldLabel>R$/h</FieldLabel>
-              <input name="valorHora" type="number" step="0.01" min="0" placeholder="R$/h" style={fieldStyle} />
-            </div>
+          </div>
+          <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: -4 }}>
+            O R$/h só entra se estiver configurado na organização e você tiver acesso financeiro.
           </div>
           <div>
             <FieldLabel>Deslocamento (km)</FieldLabel>

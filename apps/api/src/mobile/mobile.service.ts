@@ -273,13 +273,15 @@ export class MobileService {
     return created;
   }
 
-  async pecas(user: AuthUser, numero: number, body: { itemCodigo: string; qtd: number }) {
+  async pecas(user: AuthUser, numero: number, body: { itemCodigo: string; qtd: number; chaveIdempotencia?: string }) {
     const os = await this.findOs(user.estabelecimentoId, numero);
     await this.assertPodeExecutar(user, os);
     if (!body.itemCodigo || !(body.qtd > 0)) {
       throw new BadRequestException("itemCodigo e qtd > 0 obrigatórios");
     }
-    return this.estoque.baixar(user, body.itemCodigo, body.qtd, numero);
+    return this.estoque.baixar(user, body.itemCodigo, body.qtd, numero, {
+      chaveIdempotencia: body.chaveIdempotencia,
+    });
   }
 
   private assertAssinaturaValida(assinaturaBase64: string) {

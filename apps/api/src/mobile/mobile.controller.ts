@@ -81,6 +81,10 @@ class PecasDto {
   @IsNumber()
   @Min(0.01)
   qtd!: number;
+
+  @IsOptional()
+  @IsString()
+  chaveIdempotencia?: string;
 }
 
 class SyncItemDto {

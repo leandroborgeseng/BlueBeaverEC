@@ -7,10 +7,12 @@ import {
 } from "@nestjs/common";
 import {
   CondicaoUsoEquipamento,
+  NaturezaCustoOS,
   PrioridadeOS,
   Prisma,
   ResultadoLaudo,
   StatusOS,
+  TipoItemOS,
   TipoLaudo,
   TipoOS,
   VisibilidadeOs,
@@ -21,11 +23,14 @@ import {
   podeAlterarStatusOS,
   podeAtribuirOS,
   podeExecutarAcaoStatusOS,
+  podeVerFinanceiro,
+  resolverValorHoraMaoDeObra,
   temPermissao,
   type AcaoStatusOS,
 } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
+import { EstoqueService } from "../estoque/estoque.service";
 import { colaboradorPodeReceberOS, listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
 import { parseAnexoDataUrl } from "./os-anexos";
 import { atribuicaoConflitou, transicaoStatusOS } from "./os-transicoes";
@@ -54,7 +59,10 @@ const RESULTADOS_LAUDO_OK: ResultadoLaudo[] = [
 
 @Injectable()
 export class OsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly estoque: EstoqueService,
+  ) {}
 
   private slaDe(os: {
     prioridade: PrioridadeOS;
@@ -441,46 +449,25 @@ export class OsService {
         include: { equipamento: true, responsavel: true },
       });
 
-      for (const peca of data.pecas ?? []) {
-        const item = await tx.estoqueItem.findUnique({
-          where: {
-            estabelecimentoId_codigo: {
-              estabelecimentoId: user.estabelecimentoId,
-              codigo: peca.itemCodigo,
-            },
-          },
-        });
-        if (!item) {
-          throw new NotFoundException(`Peça ${peca.itemCodigo} não encontrada no estoque`);
-        }
-        await tx.ordemServicoItem.create({
-          data: {
-            ordemServicoId: created.id,
-            tipo: "MATERIAL",
-            descricao: item.descricao,
-            quantidade: peca.qtd,
-            valorUnitario: item.valorUnitario,
-            estoqueItemId: item.id,
-          },
-        });
-        await tx.estoqueReserva.create({
-          data: {
-            estoqueItemId: item.id,
-            ordemServicoId: created.id,
-            quantidade: peca.qtd,
-            ativa: true,
-          },
-        });
-      }
+      await this.estoque.reservarPecasTx(tx, user, created, data.pecas ?? []);
 
       if (data.maoDeObra?.descricao) {
+        const org = await tx.estabelecimento.findUnique({
+          where: { id: user.estabelecimentoId },
+          select: { valorHoraMaoDeObra: true },
+        });
+        const valorHora = resolverValorHoraMaoDeObra({
+          valorHoraConfigurado: org?.valorHoraMaoDeObra != null ? Number(org.valorHoraMaoDeObra) : null,
+          podeVerFinanceiro: podeVerFinanceiro(user.perfil, user.permissoesModulos),
+        });
         await tx.ordemServicoItem.create({
           data: {
             ordemServicoId: created.id,
-            tipo: "MAO_DE_OBRA",
+            tipo: TipoItemOS.MAO_DE_OBRA,
             descricao: data.maoDeObra.descricao,
             quantidade: data.maoDeObra.horas || 1,
-            valorUnitario: data.maoDeObra.valorHora ?? 0,
+            valorUnitario: valorHora,
+            naturezaCusto: NaturezaCustoOS.REALIZADO,
           },
         });
       }
@@ -701,6 +688,7 @@ export class OsService {
       condicaoFinal?: CondicaoUsoEquipamento;
       textoConclusaoPublico?: string;
       diagnostico?: string;
+      destinoFisico?: "ESTOQUE" | "PERDA" | "USO_CONFIRMADO" | "OUTRO" | null;
     } = {},
   ) {
     if (!podeExecutarAcaoStatusOS(user.perfil, acao, user.permissoesModulos)) {
@@ -750,19 +738,7 @@ export class OsService {
         `Serviço realizado: ${servico}\nResultado: ${resultado}`;
 
       const fechada = await this.prisma.$transaction(async (tx) => {
-        const reservas = await tx.estoqueReserva.findMany({
-          where: { ordemServicoId: os.id, ativa: true },
-        });
-        for (const r of reservas) {
-          await tx.estoqueItem.update({
-            where: { id: r.estoqueItemId },
-            data: { qtdAtual: { decrement: r.quantidade } },
-          });
-        }
-        await tx.estoqueReserva.updateMany({
-          where: { ordemServicoId: os.id, ativa: true },
-          data: { ativa: false },
-        });
+        await this.estoque.consumirReservasTx(tx, user, os);
         if (os.equipamentoId) {
           await tx.equipamento.update({
             where: { id: os.equipamentoId },
@@ -831,10 +807,7 @@ export class OsService {
         throw new BadRequestException("Justificativa obrigatória para cancelar");
       }
       return this.prisma.$transaction(async (tx) => {
-        await tx.estoqueReserva.updateMany({
-          where: { ordemServicoId: os.id, ativa: true },
-          data: { ativa: false },
-        });
+        await this.estoque.aoCancelarOuReabrirTx(tx, user, os, "cancelar", opts.destinoFisico);
         return tx.ordemServico.update({
           where: { id: os.id },
           data: {
@@ -866,24 +839,27 @@ export class OsService {
         textoConclusaoPublico: os.textoConclusaoPublico,
         em: new Date().toISOString(),
       });
-      return this.prisma.ordemServico.update({
-        where: { id: os.id },
-        data: {
-          status: trans.proximo as StatusOS,
-          fechamento: null,
-          conclusaoSnapshot: snapshot,
-          pedidoReaberturaJustificativa: null,
-          pedidoReaberturaEm: null,
-          pedidoReaberturaPorId: null,
-          logs: {
-            create: {
-              usuarioId: user.userId,
-              acao: "REABERTURA",
-              justificativa: opts.justificativa.trim(),
-              visibilidade: VisibilidadeOs.PUBLICO,
+      return this.prisma.$transaction(async (tx) => {
+        await this.estoque.aoCancelarOuReabrirTx(tx, user, os, "reabrir", opts.destinoFisico);
+        return tx.ordemServico.update({
+          where: { id: os.id },
+          data: {
+            status: trans.proximo as StatusOS,
+            fechamento: null,
+            conclusaoSnapshot: snapshot,
+            pedidoReaberturaJustificativa: null,
+            pedidoReaberturaEm: null,
+            pedidoReaberturaPorId: null,
+            logs: {
+              create: {
+                usuarioId: user.userId,
+                acao: "REABERTURA",
+                justificativa: opts.justificativa.trim(),
+                visibilidade: VisibilidadeOs.PUBLICO,
+              },
             },
           },
-        },
+        });
       });
     }
 
@@ -1126,7 +1102,15 @@ export class OsService {
       servicoRealizado?: string;
       resultadoAtendimento?: string;
       pendencia?: string | null;
-      itens?: Array<{ tipo?: "MATERIAL" | "MAO_DE_OBRA"; descricao: string; quantidade?: number }>;
+      itens?: Array<{
+        tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";
+        descricao: string;
+        quantidade?: number;
+        valorUnitario?: number;
+        origemMaterial?: "ESTOQUE" | "COMPRA_DIRETA";
+        naturezaCusto?: "ESTIMADO" | "APROVADO" | "REALIZADO";
+        itemCodigo?: string;
+      }>;
     },
   ) {
     if (!podeAtribuirOS(user.perfil, user.permissoesModulos)) {
@@ -1135,14 +1119,16 @@ export class OsService {
     const os = await this.findByNumero(user.estabelecimentoId, numero);
     if (data.itens?.length) {
       for (const item of data.itens) {
-        if (!item.descricao?.trim()) continue;
-        await this.prisma.ordemServicoItem.create({
-          data: {
-            ordemServicoId: os.id,
-            tipo: item.tipo === "MAO_DE_OBRA" ? "MAO_DE_OBRA" : "MATERIAL",
-            descricao: item.descricao.trim(),
-            quantidade: item.quantidade ?? 1,
-          },
+        if (!item.descricao?.trim() && !item.itemCodigo) continue;
+        await this.estoque.lancarCustoOs(user, numero, {
+          tipo: (item.tipo as TipoItemOS) || TipoItemOS.MATERIAL,
+          descricao: item.descricao?.trim() || item.itemCodigo || "Item",
+          quantidade: item.quantidade,
+          valorUnitario: item.valorUnitario,
+          origemMaterial: item.origemMaterial as never,
+          naturezaCusto: item.naturezaCusto as never,
+          itemCodigo: item.itemCodigo,
+          qtd: item.quantidade,
         });
       }
     }

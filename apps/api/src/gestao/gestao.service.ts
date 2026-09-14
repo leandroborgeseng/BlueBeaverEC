@@ -60,7 +60,9 @@ export class GestaoService {
       const custoAcumulado = e.ordensServico.reduce(
         (s, os) =>
           s +
-          os.itens.reduce((si, i) => si + Number(i.quantidade) * Number(i.valorUnitario ?? 0), 0),
+          os.itens
+            .filter((i) => !i.estornado && i.naturezaCusto === "REALIZADO")
+            .reduce((si, i) => si + Number(i.quantidade) * Number(i.valorUnitario ?? 0), 0),
         0,
       );
       const anvisaVencida = !!(e.validadeAnvisa && e.validadeAnvisa.getTime() < now);
