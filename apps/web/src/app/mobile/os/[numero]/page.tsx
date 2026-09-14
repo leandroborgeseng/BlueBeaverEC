@@ -8,6 +8,7 @@ import { MobileFrame } from "@/components/mobile/MobileFrame";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
 import { IconCheck } from "@/components/mobile/icons";
+import { SlaChip } from "@/components/os/SlaChip";
 import {
   Banner,
   EmptyState,
@@ -35,6 +36,9 @@ interface OsDetalhe {
   tipo?: string;
   status?: string;
   prioridade?: string;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
+  atrasada?: boolean;
   equipamento?: { tag: string; nome: string; setor?: { nome: string } };
   checklistMobile?: { itens: CheckItem[] };
   checklistSugerido?: CheckItem[];
@@ -59,6 +63,7 @@ export default function ExecucaoOsPage() {
   const [condicaoFinal, setCondicaoFinal] = useState<"" | "APTO" | "RESTRITO" | "PARADO">("");
   const [msg, setMsg] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
 
@@ -193,6 +198,7 @@ export default function ExecucaoOsPage() {
   }
 
   async function finalizar() {
+    if (busy || done) return;
     const assinaturaBase64 = canvasRef.current?.toDataURL("image/png") ?? "";
     if (!assinaturaBase64 || assinaturaBase64.length < 100) {
       setMsg("Assinatura digital obrigatória");
@@ -202,6 +208,7 @@ export default function ExecucaoOsPage() {
       setMsg("Informe o serviço, o resultado e a condição do equipamento");
       return;
     }
+    setBusy(true);
     const payload = {
       numero,
       observacoes: obs,
@@ -213,6 +220,7 @@ export default function ExecucaoOsPage() {
     if (!online) {
       await enqueue({ type: "FINALIZAR_OS", payload });
       setDone(true);
+      setBusy(false);
       setMsg("Finalizada — será sincronizada");
       return;
     }
@@ -230,9 +238,17 @@ export default function ExecucaoOsPage() {
       setDone(true);
       setMsg("OS finalizada");
     } catch (e) {
-      await enqueue({ type: "FINALIZAR_OS", payload });
-      setDone(true);
-      setMsg(e instanceof Error ? `${e.message} — enfileirado` : "Enfileirado");
+      const texto = e instanceof Error ? e.message : "Não foi possível concluir";
+      if (/já está concluída|já foi cancelada/i.test(texto)) {
+        setMsg(texto);
+        setDone(true);
+      } else {
+        await enqueue({ type: "FINALIZAR_OS", payload });
+        setDone(true);
+        setMsg(`${texto} — enfileirado`);
+      }
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -270,8 +286,9 @@ export default function ExecucaoOsPage() {
           {os?.tipo ? ` · ${os.tipo}` : ""}
         </div>
         {os?.status && (
-          <div style={{ marginTop: 8 }}>
-            <StatusChip value={os.status} />
+          <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            <StatusChip value={os.status} atrasada={os.atrasada} />
+            <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
           </div>
         )}
       </div>
@@ -479,7 +496,9 @@ export default function ExecucaoOsPage() {
                   <GhostButton onClick={clearSign}>Limpar assinatura</GhostButton>
                 </div>
               </div>
-              <PrimaryButton onClick={() => void finalizar()}>Finalizar atendimento</PrimaryButton>
+              <PrimaryButton disabled={busy} onClick={() => void finalizar()}>
+                {busy ? "Aguarde — gravando…" : "Finalizar atendimento"}
+              </PrimaryButton>
             </div>
           )}
 

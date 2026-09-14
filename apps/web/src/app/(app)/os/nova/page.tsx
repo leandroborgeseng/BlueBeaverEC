@@ -35,6 +35,7 @@ export default function NovaOsPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [pecaCodigo, setPecaCodigo] = useState("");
   const [pecaQtd, setPecaQtd] = useState(1);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     void Promise.all([
@@ -64,7 +65,9 @@ export default function NovaOsPage() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (busy) return;
     setErro(null);
+    setBusy(true);
     const fd = new FormData(e.currentTarget);
     const body: Record<string, unknown> = {
       equipamentoTag: String(fd.get("equipamentoTag")),
@@ -88,7 +91,8 @@ export default function NovaOsPage() {
       window.alert(`${res.codigo} criada${notes ? `\n${notes}` : ""}`);
       router.push("/os");
     } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro");
+      setErro(err instanceof Error ? err.message : "Não foi possível abrir a OS. Tente de novo.");
+      setBusy(false);
     }
   }
 
@@ -193,7 +197,9 @@ export default function NovaOsPage() {
           </div>
 
           {erro && <Err>{erro}</Err>}
-          <Btn type="submit">Abrir OS</Btn>
+          <Btn type="submit" disabled={busy}>
+            {busy ? "Aguarde — já estamos abrindo…" : "Abrir OS"}
+          </Btn>
         </form>
       </Surface>
     </div>

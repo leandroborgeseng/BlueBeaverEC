@@ -9,7 +9,9 @@ import {
   DataTable,
   Empty,
   Err,
+  FieldLabel,
   PageHeader,
+  fieldStyle,
   td,
   th,
 } from "@/components/ui/aion-ui";
@@ -32,6 +34,7 @@ export default function PortalOsAbertasPage() {
   const [items, setItems] = useState<OsAberta[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
     api<OsAberta[]>("/portal/minhas-os")
@@ -39,6 +42,15 @@ export default function PortalOsAbertasPage() {
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
       .finally(() => setLoading(false));
   }, []);
+
+  const termo = busca.trim().toLowerCase();
+  const filtrados = termo
+    ? items.filter((row) =>
+        [row.codigo, row.protocolo, row.responsavelNome, row.equipamento?.nome, row.equipamento?.tag]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(termo)),
+      )
+    : items;
 
   return (
     <div>
@@ -49,8 +61,18 @@ export default function PortalOsAbertasPage() {
 
       {erro && <Err>{erro}</Err>}
 
+      <div style={{ maxWidth: 360, marginBottom: 14 }}>
+        <FieldLabel>Buscar acompanhamento</FieldLabel>
+        <input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Protocolo, OS, aparelho ou responsável"
+          style={fieldStyle}
+        />
+      </div>
+
       <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.5 0.02 250)", margin: "0 0 10px" }}>
-        {loading ? "Carregando…" : `${items.length} pedido(s)`}
+        {loading ? "Carregando…" : `${filtrados.length} pedido(s)`}
       </div>
 
       <DataTable>
@@ -65,7 +87,7 @@ export default function PortalOsAbertasPage() {
           </tr>
         </thead>
         <tbody>
-          {items.map((row) => (
+          {filtrados.map((row) => (
             <tr key={row.id}>
               <td style={td}>
                 <Link href={`/portal/os/${row.numero}`} style={{ fontWeight: 700 }}>
@@ -92,7 +114,7 @@ export default function PortalOsAbertasPage() {
               <td style={td}>{new Date(row.abertura).toLocaleDateString("pt-BR")}</td>
             </tr>
           ))}
-          {!loading && items.length === 0 && (
+          {!loading && filtrados.length === 0 && (
             <tr>
               <td colSpan={6}>
                 <Empty text="Você ainda não abriu nenhum chamado." />

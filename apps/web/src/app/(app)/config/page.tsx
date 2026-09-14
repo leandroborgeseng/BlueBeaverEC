@@ -269,7 +269,10 @@ export default function ConfigPage() {
 
   return (
     <div>
-      <PageHeader title="Configurações" subtitle="Organização · usuários · RBAC por módulo · logs de acesso" />
+      <PageHeader
+        title="Configurações"
+        subtitle="Organização · usuários · RBAC por módulo · logs de acesso. Trocar o perfil de uma conta de teste não apaga histórico de OS."
+      />
       {erro && <Err>{erro}</Err>}
       {msg && !erro && (
         <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.13 150)" }}>{msg}</div>
@@ -542,6 +545,10 @@ export default function ConfigPage() {
               />
             </div>
             <div>
+              <p style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", margin: "0 0 10px" }}>
+                Trocar o perfil mantém o mesmo colaborador e o histórico das OS. Não use isso nas contas reais de
+                engenheiro clínico.
+              </p>
               <FieldLabel htmlFor="edit-perfil">Perfil neste estabelecimento</FieldLabel>
               <select
                 id="edit-perfil"

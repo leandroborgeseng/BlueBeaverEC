@@ -33,6 +33,7 @@ export default function OsRapidaPage() {
   const [pecas, setPecas] = useState<EstoqueItem[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     void Promise.all([
@@ -62,8 +63,9 @@ export default function OsRapidaPage() {
 
   async function submit(fechar: boolean) {
     const form = formRef.current;
-    if (!form) return;
+    if (!form || busy) return;
     setErro(null);
+    setBusy(true);
     const fd = new FormData(form);
     const pecaCodigo = String(fd.get("pecaCodigo") || "");
     const body: Record<string, unknown> = {
@@ -98,7 +100,8 @@ export default function OsRapidaPage() {
       window.alert(`${res.codigo} ${res.fechada ? "criada e fechada" : "criada (aberta)"}`);
       router.push("/os");
     } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro");
+      setErro(err instanceof Error ? err.message : "Não foi possível gravar. Tente de novo — o duplo clique não abre duas OS.");
+      setBusy(false);
     }
   }
 
@@ -232,11 +235,11 @@ export default function OsRapidaPage() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Btn type="submit" variant="ghost">
-              Deixar OS aberta
+            <Btn type="submit" variant="ghost" disabled={busy}>
+              {busy ? "Aguarde…" : "Deixar OS aberta"}
             </Btn>
-            <Btn type="button" onClick={() => void submit(true)}>
-              Fechar OS
+            <Btn type="button" disabled={busy} onClick={() => void submit(true)}>
+              {busy ? "Aguarde — gravando…" : "Fechar OS"}
             </Btn>
           </div>
         </form>

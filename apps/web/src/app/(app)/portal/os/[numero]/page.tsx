@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
-import { filesToAnexos, labelStatusOS } from "@/lib/os-ui";
+import { filesToAnexos, labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, PageHeader, Surface, fieldStyle } from "@/components/ui/aion-ui";
 
@@ -139,7 +139,7 @@ export default function PortalOsDetalhePage() {
         <div style={{ display: "grid", gap: 8 }}>
           {os.timeline.map((t) => (
             <div key={t.id} style={{ fontSize: 13, borderBottom: "1px solid oklch(0.94 0.004 255)", paddingBottom: 8 }}>
-              <strong>{t.acao.replace(/_/g, " ")}</strong>
+              <strong>{labelAcaoOS(t.acao)}</strong>
               {t.texto && <div style={{ marginTop: 4 }}>{t.texto}</div>}
               <div style={{ color: "oklch(0.5 0.02 250)", fontSize: 12, marginTop: 4 }}>
                 {t.autor ? `${t.autor} · ` : ""}

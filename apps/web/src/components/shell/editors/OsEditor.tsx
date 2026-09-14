@@ -5,7 +5,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api, downloadApi } from "@/lib/api";
 import { SlaChip } from "@/components/os/SlaChip";
-import { filesToAnexos, labelCondicaoUso, labelStatusOS } from "@/lib/os-ui";
+import { filesToAnexos, labelAcaoOS, labelCondicaoUso, labelStatusOS } from "@/lib/os-ui";
 import { labelResponsavel } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 
@@ -56,6 +56,7 @@ interface OsDetail {
   identificacaoPendente?: boolean;
   equipamentoParado?: boolean;
   impactoInformado?: string | null;
+  urgenciaPercebida?: string | null;
   textoConclusaoPublico?: string | null;
   conclusaoSnapshot?: string | null;
   pedidoReaberturaJustificativa?: string | null;
@@ -113,6 +114,11 @@ export function OsEditor({
   const [comentario, setComentario] = useState("");
   const [visComentario, setVisComentario] = useState<"PUBLICO" | "INTERNO">("PUBLICO");
   const [equipTag, setEquipTag] = useState("");
+  const [buscaEquip, setBuscaEquip] = useState("");
+  const [hints, setHints] = useState<Array<{ tag: string; nome: string; patrimonio?: string | null; nSerie?: string | null }>>([]);
+  const [setores, setSetores] = useState<Array<{ id: string; nome: string }>>([]);
+  const [setorId, setSetorId] = useState("");
+  const [prioridadeTecnica, setPrioridadeTecnica] = useState("");
   const [responsavelId, setResponsavelId] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -129,6 +135,7 @@ export function OsEditor({
     setCondicaoFinal(data.condicaoFinal ?? "");
     setTextoPublico(data.textoConclusaoPublico ?? "");
     setResponsavelId(data.responsavel?.id ?? "");
+    setPrioridadeTecnica(data.prioridade ?? "");
   }, [numero]);
 
   useEffect(() => {
@@ -136,7 +143,25 @@ export function OsEditor({
     api<Colaborador[]>("/os/responsaveis")
       .then(setColaboradores)
       .catch(() => undefined);
+    api<Array<{ id: string; nome: string }>>("/setores")
+      .then(setSetores)
+      .catch(() => undefined);
   }, [load]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (buscaEquip.trim().length < 2) {
+        setHints([]);
+        return;
+      }
+      void api<{ items: Array<{ tag: string; nome: string; patrimonio?: string | null; nSerie?: string | null }> }>(
+        `/equipamentos?q=${encodeURIComponent(buscaEquip.trim())}&pageSize=12`,
+      )
+        .then((r) => setHints(r.items ?? []))
+        .catch(() => setHints([]));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [buscaEquip]);
 
   async function run(fn: () => Promise<void>) {
     if (busy) return;
@@ -153,7 +178,7 @@ export function OsEditor({
   }
 
   async function confirmarStatus(justificativa?: string) {
-    if (!statusModal) return;
+    if (!statusModal || busy) return;
     const acao = statusModal;
     if (acao === "fechar") {
       if (!servico.trim() || !resultado.trim() || !condicaoFinal) {
@@ -162,6 +187,7 @@ export function OsEditor({
         return;
       }
     }
+    setBusy(true);
     try {
       await api(`/os/${numero}/status`, {
         method: "PATCH",
@@ -189,6 +215,8 @@ export function OsEditor({
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro");
       setStatusModal(null);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -245,7 +273,34 @@ export function OsEditor({
               value={labelCondicaoUso(os.equipamento?.condicaoUso)}
             />
             {os.impactoInformado && <InfoField label="Impacto informado" value={os.impactoInformado} />}
+            {os.urgenciaPercebida && (
+              <InfoField
+                label="Urgência percebida pelo setor"
+                value={`${os.urgenciaPercebida.replace(/_/g, " ")} · a prioridade técnica é da engenharia`}
+              />
+            )}
           </div>
+
+          {os.identificacaoPendente && (
+            <div
+              style={{
+                padding: 10,
+                borderRadius: 8,
+                background: "oklch(0.96 0.03 85)",
+                fontSize: 13,
+              }}
+            >
+              Equipamento pendente. Na aba Ações, identifique o setor, o aparelho e a prioridade técnica.
+            </div>
+          )}
+
+          {(os.timeline ?? []).some((t) => t.acao === "TRANSFERENCIA") && (
+            <div style={{ fontSize: 13, padding: 10, borderRadius: 8, background: "oklch(0.96 0.02 250)" }}>
+              <strong>Transferência:</strong>{" "}
+              {(os.timeline ?? []).find((t) => t.acao === "TRANSFERENCIA")?.texto ??
+                `Responsável atual: ${os.responsavel?.nome ?? "—"}`}
+            </div>
+          )}
 
           {os.motivoAguardo && (
             <div>
@@ -409,7 +464,7 @@ export function OsEditor({
             {(os.timeline ?? []).map((t) => (
               <div key={t.id} style={{ padding: "8px 10px", border: "1px solid oklch(0.91 0.006 255)", borderRadius: 8, fontSize: 13 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <strong>{t.acao.replace(/_/g, " ")}</strong>
+                  <strong>{labelAcaoOS(t.acao)}</strong>
                   <span style={{ color: "oklch(0.5 0.02 250)", fontSize: 12 }}>
                     {t.visibilidade === "INTERNO" ? "Interno · " : ""}
                     {new Date(t.createdAt).toLocaleString("pt-BR")}
@@ -487,33 +542,115 @@ export function OsEditor({
 
       {tab === "acoes" && (
         <div style={{ display: "grid", gap: 14 }}>
-          {os.identificacaoPendente && (
+          <div
+            style={{
+              display: "grid",
+              gap: 10,
+              padding: 12,
+              borderRadius: 10,
+              border: "1px solid oklch(0.91 0.006 255)",
+              background: os.identificacaoPendente ? "oklch(0.98 0.02 85)" : "oklch(0.99 0.002 255)",
+            }}
+          >
             <div>
-              <FieldLabel>Identificar equipamento</FieldLabel>
-              <div style={{ display: "flex", gap: 8 }}>
-                <input
-                  value={equipTag}
-                  onChange={(e) => setEquipTag(e.target.value)}
-                  placeholder="TAG HEF-…"
-                  style={{ ...fieldStyle, flex: 1 }}
-                />
-                <Btn
-                  disabled={busy || !equipTag.trim()}
-                  onClick={() =>
-                    void run(async () => {
-                      await api(`/os/${numero}/equipamento`, {
-                        method: "PATCH",
-                        body: JSON.stringify({ equipamentoTag: equipTag }),
-                      });
-                      setMsg("Equipamento vinculado");
-                    })
-                  }
-                >
-                  Vincular
-                </Btn>
+              <strong>Triagem técnica</strong>
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
+                Confirme setor, equipamento e prioridade. A urgência do pedido não substitui esta decisão.
               </div>
             </div>
-          )}
+            <div>
+              <FieldLabel>Equipamento (TAG, nome, patrimônio ou série)</FieldLabel>
+              <input
+                value={buscaEquip}
+                onChange={(e) => setBuscaEquip(e.target.value)}
+                placeholder="Busque o aparelho…"
+                style={fieldStyle}
+              />
+              {equipTag && (
+                <div style={{ marginTop: 6, fontSize: 13 }}>
+                  Selecionado: <strong>{equipTag}</strong>
+                </div>
+              )}
+              {hints.length > 0 && (
+                <div style={{ marginTop: 6, border: "1px solid oklch(0.91 0.006 255)", borderRadius: 8 }}>
+                  {hints.map((h) => (
+                    <button
+                      key={h.tag}
+                      type="button"
+                      onClick={() => {
+                        setEquipTag(h.tag);
+                        setBuscaEquip(`${h.nome} (${h.tag})`);
+                        setHints([]);
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "8px 10px",
+                        background: "white",
+                        border: 0,
+                        borderBottom: "1px solid oklch(0.95 0.004 255)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <strong>{h.nome}</strong> · {h.tag}
+                      {h.patrimonio ? ` · pat. ${h.patrimonio}` : ""}
+                      {h.nSerie ? ` · s/n ${h.nSerie}` : ""}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Setor (se o aparelho ainda não estiver claro)</FieldLabel>
+              <select value={setorId} onChange={(e) => setSetorId(e.target.value)} style={fieldStyle}>
+                <option value="">Manter setor atual</option>
+                {setores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Prioridade técnica</FieldLabel>
+              <select
+                value={prioridadeTecnica}
+                onChange={(e) => setPrioridadeTecnica(e.target.value)}
+                style={fieldStyle}
+              >
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
+            </div>
+            <Btn
+              disabled={
+                busy ||
+                (!equipTag.trim() && !setorId && (!prioridadeTecnica || prioridadeTecnica === os.prioridade))
+              }
+              onClick={() =>
+                void run(async () => {
+                  await api(`/os/${numero}/triagem`, {
+                    method: "PATCH",
+                    body: JSON.stringify({
+                      equipamentoTag: equipTag.trim() || undefined,
+                      setorId: setorId || undefined,
+                      prioridade:
+                        prioridadeTecnica && prioridadeTecnica !== os.prioridade
+                          ? prioridadeTecnica
+                          : undefined,
+                    }),
+                  });
+                  setMsg("Triagem registrada");
+                  setBuscaEquip("");
+                })
+              }
+            >
+              {busy ? "Gravando triagem…" : "Salvar triagem"}
+            </Btn>
+          </div>
 
           <div>
             <FieldLabel>Responsável principal</FieldLabel>
@@ -560,7 +697,11 @@ export function OsEditor({
                         expectedVersao: os.atribuicaoVersao,
                       }),
                     });
-                    setMsg("Responsável atualizado");
+                    setMsg(
+                      os.responsavel && os.responsavel.id !== responsavelId
+                        ? `OS transferida para o segundo profissional`
+                        : "Responsável atualizado",
+                    );
                   })
                 }
               >
@@ -642,7 +783,9 @@ export function OsEditor({
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {os.status !== "CONCLUIDA" && os.status !== "CANCELADA" && (
               <Btn
+                disabled={busy}
                 onClick={() => {
+                  if (busy) return;
                   if (!servico.trim() || !resultado.trim() || !condicaoFinal) {
                     setErro("Para concluir, informe serviço realizado, resultado e a condição final do equipamento.");
                     setTab("execucao");
@@ -651,7 +794,7 @@ export function OsEditor({
                   setStatusModal("fechar");
                 }}
               >
-                Concluir OS
+                {busy ? "Aguarde — gravando…" : "Concluir OS"}
               </Btn>
             )}
             {(os.status === "NAO_ATRIBUIDA" ||

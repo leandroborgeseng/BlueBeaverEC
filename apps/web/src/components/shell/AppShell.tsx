@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { api, getToken } from "@/lib/api";
-import { SessionProvider, preferMobileShell, perfilVaiParaMobile, type SessionMe } from "@/lib/session";
+import {
+  SessionProvider,
+  destinoDesktop,
+  preferMobileShell,
+  perfilVaiParaMobile,
+  type SessionMe,
+} from "@/lib/session";
 import { Loading } from "@/components/ui/aion-ui";
 import { SideRail } from "./SideRail";
 import { TopBar } from "./TopBar";
@@ -31,6 +38,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (pathname.startsWith("/mobile")) return;
     if (perfilVaiParaMobile(me.perfil) && preferMobileShell()) {
       router.replace("/mobile");
+    }
+  }, [me, pathname, router]);
+
+  useEffect(() => {
+    if (!me) return;
+    const mapa = me.permissoesModulos;
+    const home = destinoDesktop(me.perfil);
+    if (pathname.startsWith("/os") && !temPermissao(mapa, "os", PERMISSAO_NIVEL.LEITURA)) {
+      router.replace(home);
+      return;
+    }
+    if (pathname.startsWith("/config") && !temPermissao(mapa, "config", PERMISSAO_NIVEL.LEITURA)) {
+      router.replace(home);
+      return;
+    }
+    if (pathname.startsWith("/cadastros") && !temPermissao(mapa, "equipamentos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      router.replace(home);
     }
   }, [me, pathname, router]);
 

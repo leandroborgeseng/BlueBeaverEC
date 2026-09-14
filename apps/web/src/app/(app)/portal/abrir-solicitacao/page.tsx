@@ -234,13 +234,16 @@ export default function AbrirSolicitacaoPage() {
             </div>
           </div>
           <div>
-            <FieldLabel>Urgência percebida</FieldLabel>
+            <FieldLabel>Como o setor sente a urgência</FieldLabel>
             <select name="urgencia" defaultValue="MEDIA" style={fieldStyle}>
               <option value="BAIXA">Pode esperar</option>
               <option value="MEDIA">Precisa de atendimento</option>
               <option value="ALTA">Urgente</option>
               <option value="PARADA_CRITICA">Parada crítica</option>
             </select>
+            <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+              Não define a prioridade técnica. A engenharia confirma na triagem.
+            </div>
           </div>
           <div>
             <FieldLabel>Ramal ou contato</FieldLabel>

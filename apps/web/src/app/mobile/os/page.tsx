@@ -7,6 +7,7 @@ import { MobileFrame } from "@/components/mobile/MobileFrame";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
 import { IconWrench } from "@/components/mobile/icons";
+import { SlaChip } from "@/components/os/SlaChip";
 import {
   EmptyState,
   FilterPills,
@@ -25,6 +26,8 @@ interface OsRow {
   prioridade: string;
   status: string;
   atrasada: boolean;
+  slaLimite?: string | null;
+  slaEstourado?: boolean;
   atribuicaoVersao?: number;
   equipamento: { tag: string; nome: string; setor: { nome: string } };
   responsavel?: { id: string } | null;
@@ -144,6 +147,7 @@ export default function MobileOsPage() {
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                       <PrioChip value={os.prioridade} />
                       <StatusChip value={os.status} atrasada={os.atrasada} />
+                      <SlaChip slaLimite={os.slaLimite} slaEstourado={os.slaEstourado} status={os.status} />
                     </div>
                   }
                 />
