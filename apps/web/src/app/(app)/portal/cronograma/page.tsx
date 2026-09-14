@@ -16,6 +16,7 @@ import {
 interface CronogramaRow {
   id: string;
   tipo: string;
+  dataPrevista?: string | null;
   validadeAte: string | null;
   equipamento: { tag: string; nome: string; setor: string };
   status: string;
@@ -53,7 +54,7 @@ export default function CronogramaPage() {
             <th style={th}>Equipamento</th>
             <th style={th}>Setor</th>
             <th style={th}>Tipo</th>
-            <th style={th}>Validade</th>
+            <th style={th}>Data prevista</th>
             <th style={th}>Status</th>
           </tr>
         </thead>
@@ -67,7 +68,9 @@ export default function CronogramaPage() {
               <td style={td}>{row.equipamento.setor}</td>
               <td style={td}>{row.tipo.replace(/_/g, " ")}</td>
               <td style={td}>
-                {row.validadeAte ? new Date(row.validadeAte).toLocaleDateString("pt-BR") : "—"}
+                {row.dataPrevista || row.validadeAte
+                  ? new Date(row.dataPrevista ?? row.validadeAte!).toLocaleDateString("pt-BR")
+                  : "—"}
               </td>
               <td style={td}>
                 <Badge tone={row.status}>{row.status.replace(/_/g, " ")}</Badge>
@@ -77,7 +80,7 @@ export default function CronogramaPage() {
           {items.length === 0 && (
             <tr>
               <td colSpan={6}>
-                <Empty text="Nenhum item no cronograma." />
+                <Empty text="Nenhuma preventiva, calibração, TSE ou qualificação no seu setor." />
               </td>
             </tr>
           )}

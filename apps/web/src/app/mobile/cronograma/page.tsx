@@ -17,6 +17,7 @@ import {
 interface CronogramaRow {
   id: string;
   tipo: string;
+  dataPrevista?: string | null;
   validadeAte: string | null;
   equipamento: { tag: string; nome: string; setor: string };
   status: string;
@@ -63,7 +64,7 @@ export default function MobileCronogramaPage() {
       {loading ? (
         <Skeleton rows={4} />
       ) : filtered.length === 0 ? (
-        <EmptyState title="Nada no cronograma" hint="Quando houver validade de laudo no seu setor, ela aparece aqui." />
+        <EmptyState title="Nada no cronograma" hint="Quando houver preventiva, calibração, TSE ou qualificação no seu setor, ela aparece aqui." />
       ) : (
         <div style={{ display: "grid", gap: 10 }}>
           {filtered.map((row) => (
@@ -75,9 +76,9 @@ export default function MobileCronogramaPage() {
               <div style={{ fontSize: 13.5, fontWeight: 650 }}>{row.equipamento.nome}</div>
               <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 6 }}>
                 {row.tipo.replace(/_/g, " ")} · {row.equipamento.setor}
-                {row.validadeAte
-                  ? ` · ${new Date(row.validadeAte).toLocaleDateString("pt-BR")}`
-                  : " · sem validade"}
+                {row.dataPrevista || row.validadeAte
+                  ? ` · ${new Date(row.dataPrevista ?? row.validadeAte!).toLocaleDateString("pt-BR")}`
+                  : " · sem data prevista"}
               </div>
             </div>
           ))}

@@ -119,9 +119,9 @@ export default function EstoquePage() {
       if (somenteMinimo) params.set("abaixoMinimo", "1");
       if (incluirInativos) params.set("incluirInativos", "1");
       const data = await api<{ items: Item[]; total: number; page: number }>(`/estoque/itens?${params}`);
-      setItems(data.items);
-      setTotalItens(data.total);
-      setPage(data.page);
+      setItems(data.items ?? []);
+      setTotalItens(data.total ?? 0);
+      setPage(data.page ?? p);
     } finally {
       setLoadingItens(false);
     }

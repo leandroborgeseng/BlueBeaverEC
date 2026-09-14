@@ -1,7 +1,7 @@
 import { Body, Controller, ForbiddenException, Get, NotFoundException, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { IsOptional, IsString, MinLength } from "class-validator";
 import type { Response } from "express";
-import { StatusOS, StatusDocumentoLaudo, TipoLaudo, VisibilidadeOs } from "@prisma/client";
+import { StatusOS, StatusDocumentoLaudo, StatusOcorrenciaPlano, StatusPlanoInstancia, VisibilidadeOs } from "@prisma/client";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
@@ -368,37 +368,43 @@ export class PortalController {
     const me = await this.session.me(user);
     const setorFilter = await this.resolveSetorFilter(user, me.setorIds, setor);
 
-    const laudos = await this.prisma.laudo.findMany({
+    const ocorrencias = await this.prisma.planoOcorrencia.findMany({
       where: {
         estabelecimentoId: user.estabelecimentoId,
-        tipo: { in: [TipoLaudo.CALIBRACAO, TipoLaudo.TSE, TipoLaudo.PREVENTIVA, TipoLaudo.QUALIFICACAO] },
-        ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+        status: { not: StatusOcorrenciaPlano.CANCELADA },
+        plano: {
+          status: StatusPlanoInstancia.ATIVO,
+          ...(setorFilter ? { equipamento: { setorId: { in: setorFilter } } } : {}),
+        },
       },
       include: {
-        equipamento: { include: { setor: true } },
+        plano: {
+          include: {
+            equipamento: { include: { setor: true } },
+            tipoCustom: true,
+          },
+        },
       },
-      orderBy: { validadeAte: "asc" },
+      orderBy: { dataPrevista: "asc" },
       take: 100,
     });
 
-    return laudos.map((l) => ({
-      id: l.id,
-      tipo: l.tipo,
-      validadeAte: l.validadeAte,
-      equipamento: {
-        tag: l.equipamento.tag,
-        nome: l.equipamento.nome,
-        setor: l.equipamento.setor.nome,
-      },
-      status:
-        !l.validadeAte
-          ? "SEM_VALIDADE"
-          : l.validadeAte.getTime() < Date.now()
-            ? "VENCIDO"
-            : (l.validadeAte.getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 60
-              ? "A_VENCER"
-              : "VALIDO",
-    }));
+    return ocorrencias.map((oc) => {
+      const tipo =
+        oc.plano.tipo === "OUTRO" ? (oc.plano.tipoCustom?.nome ?? "OUTRO") : oc.plano.tipo;
+      return {
+        id: oc.id,
+        tipo,
+        dataPrevista: oc.dataPrevista,
+        validadeAte: oc.dataPrevista,
+        equipamento: {
+          tag: oc.plano.equipamento.tag,
+          nome: oc.plano.equipamento.nome,
+          setor: oc.plano.equipamento.setor.nome,
+        },
+        status: oc.status,
+      };
+    });
   }
 
   private assertCronograma(user: AuthUser) {

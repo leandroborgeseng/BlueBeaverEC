@@ -8,19 +8,21 @@ Este documento descreve o que está no ar, como operar, como recuperar e o que *
 
 ## 1. O que está no main / hef (set 2026)
 
+Fatura Railway **paga** em 14/09/2026. O go-live deixou de estar bloqueado por billing. No teste imediatamente após o pagamento, o Web respondia (`/login` 200) e a API estava **502** em `/api/health` — o `@nexo/api` tinha quebrado no `nest build` e o redeploy ficou preso à fatura. Correções de build já no main: `a6ff91e`, `3bb0e57`. Relatório final/PDF: `06da417`. Health esperado após o deploy deste pacote: `{ status: "ok", service: "aion-api", version: "<sha7>" }`.
+
 | Módulo | Código no main | Produção HEF | Situação |
 |--------|----------------|--------------|----------|
-| Auth, perfis, personificação | sim | sim | Pronto |
-| Inventário HEF (ciclo de vida, TAG HEF-NNNN, etiqueta autenticada) | sim | **405** equipamentos | Pronto |
+| Auth, perfis, personificação | sim | Web sim; API só com health 200 | Pronto quando a API subir |
+| Inventário HEF (ciclo de vida, TAG HEF-NNNN, etiqueta autenticada) | sim | **405** equipamentos (último teste com API no ar) | Pronto |
 | OS núcleo (abrir, assumir, transferir, atender, aguardar, concluir, SLA, triagem) | sim | sim | Pronto, com ressalvas |
 | Portal do solicitante | sim | sim | Pronto |
 | App de campo / PWA | sim | sim | Pronto |
-| Planejamento preventiva/calibração/TSE/qualificação (Prompt 2) | sim | API no ar, **agenda vazia** (0 ocorrências) | Parcial — código sem ramp-up executado |
-| Checklist / relatório de serviço (Prompt 3) | sim (`d01f9e7`) | no teste: **0 laudos** (201 procedimentos só como biblioteca) | Parcial — código no main; hef ainda sem documento emitido |
-| Envio ao fornecedor e retorno (Prompt 4) | sim (`1f63fa4`) | no teste: contratos vazios | Parcial — código no main; jornada não exercitada no hef |
-| Consumo de material, saldo e custo (Prompt 5) | sim (`043a31e`) | no teste: 2 itens demo de seed | Parcial — código no main; estoque real não carregado |
-| Indicadores (Prompt 6) | sim (`6bf1562`) | no teste: 5 indicadores; cumprimento preventiva **100% com zero preventivas** | Parcial até o deploy do commit que deixa de tratar falta de dado como 100% |
-| Documentação / qualidade (Prompt 7) | sim (`eed6cb9`) | no teste: rotas ainda 404/sem uso | Parcial — código no main; não validado no hef |
+| Planejamento preventiva/calibração/TSE/qualificação (Prompt 2) | sim | **sem ramp-up em massa**; portal lê a agenda do plano **só do setor** | Parcial — 1 plano de teste só com API healthy |
+| Checklist / relatório de serviço (Prompt 3) | sim (`d01f9e7` + `06da417`) | rascunho → finalizar → PDF no código; hef ainda sem documento emitido | Parcial — anexo-por-item **não** feito (não é rápido) |
+| Envio ao fornecedor e retorno (Prompt 4) | sim (`1f63fa4`) | telas no ar com cadastro vazio | Parcial — jornada não exercitada |
+| Consumo de material, saldo e custo (Prompt 5) | sim (`043a31e` + `e9a44f8`) | telas no ar; 2 itens demo de seed | Parcial — estoque real não carregado |
+| Indicadores (Prompt 6) | sim (`6bf1562`) | cumprimento **0/0 = dados insuficientes**, nunca 100% | Validar no hef após o deploy |
+| Documentação / qualidade (Prompt 7) | sim (`eed6cb9`) | `/qualidade`, `/qualidade/documentos`, `/treinamentos`, `/ocorrencias`, `/alertas` | Validar no hef após o deploy (404 anterior era Web antigo) |
 
 Estabelecimento no banco: id `estab_modelo` (legado do seed). CNPJ e fuso já estão de HEF; o **nome** era regravado para “Hospital e Maternidade Modelo” a cada boot — corrigido neste pacote.
 
@@ -114,7 +116,7 @@ Até isso ser ensaiado, **não há recuperação garantida**.
 1. Merge/push em `main` (sem force push).
 2. Railway reconstrói Web (`apps/web/Dockerfile`) e API (`apps/api/Dockerfile`).
 3. API: `migrate deploy` → `maybe-seed` (não reseed se já há usuários) → `ensure-demo-users` → `ensure-admin-user` → `ensure-colaboradores-operacionais` → sobe HTTP → import de equipamentos **em background** (completa tags, sem wipe se o marcador existe).
-4. Health: API `GET /api/health` → `{ status: "ok", service: "aion-api" }`; Web `/`.
+4. Health: API `GET /api/health` → `{ status: "ok", service: "aion-api", version: "<sha7>" }`; Web `/`.
 5. Conferir `https://hef.aion.eng.br/login`.
 
 `railway.toml` da API ainda declara `releaseCommand` de import. O start já importa; o marcador evita wipe. Não usar `RESET_INVENTARIO_OPERACIONAL`.
@@ -159,7 +161,7 @@ O boot **ainda** redefine senha das contas **demo** `@aion.local` e a senha do s
 2. Etiqueta: QR `aion:eq:<token>` — leitura exige login (não é URL pública).
 3. Abrir OS interna ou triar chamado do portal (vincular equipamento).
 4. Atribuir a colaborador operacional (nunca ao solicitante).
-5. Cronograma: hoje vazio até haver instâncias de plano. Não gerar ramp-up sem acordo.
+5. Cronograma: portal/campo leem a agenda do plano (Prompt 2) **só do setor**, não a validade de laudo. Não gerar ramp-up em massa. 1 plano de teste pontual é permitido para a agenda não ficar 0.
 6. Personificar perfis demo para treinar; não alterar e-mail/senha dos engenheiros reais.
 7. Config → Organização: nome, CNPJ, fuso `America/Sao_Paulo`.
 
@@ -177,10 +179,10 @@ O boot **ainda** redefine senha das contas **demo** `@aion.local` e a senha do s
 
 **Não está pronto para produção plena.** Bloqueadores e lacunas:
 
-1. **Backup/restore não ensaiado** (bloqueador de recuperação).
-2. **Preventivas sem agenda** — Prompt 2 no ar, zero ocorrências (importante; não é bug de API).
-3. **Prompts 3–7 estão no GitHub `main`**, mas no hef do teste ainda não havia laudo emitido, contrato/fornecedor em uso, estoque real nem qualidade. Tratar como **parcial até o deploy ser revalidado**.
-4. Indicador “cumprimento de preventivas = 100%” com zero preventivas no hef do teste (o commit `6bf1562` corrige o cálculo; só vale depois do deploy).
+1. **Backup/restore não ensaiado** (bloqueador de recuperação). Continua pendente — não há como ensaiar restore daqui.
+2. **Agenda de preventiva** — código no ar; **não** disparar `POST /api/planos/ramp-up`. 1 plano + 1 ocorrência de teste, num equipamento só, depois da API healthy.
+3. **Prompts 3–7 no `main`**: laudo rascunho→final→PDF existe; anexo-por-item não. Contratos/estoque/qualidade sobem com cadastro vazio. Revalidar no hef após o deploy (o teste pós-pagamento viu API 502).
+4. Cumprimento 0/0 **não** é mais 100% no código (`6bf1562`). Confirmar no painel depois do deploy.
 5. Login “esqueci a senha” é só texto (não implementado).
 6. OS com SLA estourado no dashboard (dado operacional, não regressão).
 

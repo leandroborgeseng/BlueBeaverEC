@@ -41,8 +41,12 @@ export const STATUS_TONE: Record<string, { bg: string; color: string }> = {
   RECUSADA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
   SEM_VALIDADE: { bg: "oklch(0.94 0.01 250)", color: "oklch(0.45 0.02 250)" },
   VENCIDO: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
+  VENCIDA: { bg: "oklch(0.94 0.05 25)", color: "oklch(0.45 0.16 25)" },
   A_VENCER: { bg: "oklch(0.95 0.05 85)", color: "oklch(0.45 0.12 75)" },
   VALIDO: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
+  PREVISTA: { bg: "oklch(0.93 0.04 250)", color: "oklch(0.4 0.14 255)" },
+  OS_GERADA: { bg: "oklch(0.94 0.05 300)", color: "oklch(0.42 0.12 300)" },
+  EXECUTADA: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
 };
 
 export function tonePrio(v?: string) {
