@@ -37,6 +37,9 @@ export default function ProcedimentosPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [editJson, setEditJson] = useState("");
   const [editErro, setEditErro] = useState<string | null>(null);
+  const [criterioId, setCriterioId] = useState<string | null>(null);
+  const [criterioRef, setCriterioRef] = useState("");
+  const [criterioVer, setCriterioVer] = useState("");
 
   async function load() {
     const [p, m] = await Promise.all([
@@ -58,11 +61,11 @@ export default function ProcedimentosPage() {
     const defaultItens =
       tipo === "CALIBRACAO"
         ? [
-            { id: "p0", pergunta: "0%", valorPadrao: 0 },
-            { id: "p25", pergunta: "25%", valorPadrao: 25 },
-            { id: "p50", pergunta: "50%", valorPadrao: 50 },
-            { id: "p75", pergunta: "75%", valorPadrao: 75 },
-            { id: "p100", pergunta: "100%", valorPadrao: 100 },
+            { id: "p0", pergunta: "0%", tipo: "calibracao", valorPadrao: 0 },
+            { id: "p25", pergunta: "25%", tipo: "calibracao", valorPadrao: 25 },
+            { id: "p50", pergunta: "50%", tipo: "calibracao", valorPadrao: 50 },
+            { id: "p75", pergunta: "75%", tipo: "calibracao", valorPadrao: 75 },
+            { id: "p100", pergunta: "100%", tipo: "calibracao", valorPadrao: 100 },
           ]
         : tipo === "TSE"
           ? [
@@ -114,6 +117,30 @@ export default function ProcedimentosPage() {
     setEditErro(null);
   }
 
+  function abrirCriterio(p: Proc) {
+    setCriterioId(p.id);
+    setCriterioRef(p.criterioReferencia ?? "");
+    setCriterioVer(p.criterioVersao ?? "");
+  }
+
+  async function salvarCriterio() {
+    if (!criterioId) return;
+    try {
+      await api(`/procedimentos-laudo/${criterioId}/criterio`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          criterioReferencia: criterioRef.trim() || undefined,
+          criterioVersao: criterioVer.trim() || undefined,
+        }),
+      });
+      setMsg("Critério publicado (referência e versão). Sem isso, medições ficam não avaliadas.");
+      setCriterioId(null);
+      await load();
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
   async function salvarItens() {
     if (!editId) return;
     setEditErro(null);
@@ -159,6 +186,7 @@ export default function ProcedimentosPage() {
               <option value="PREVENTIVA">Preventiva</option>
               <option value="CALIBRACAO">Calibração</option>
               <option value="TSE">TSE</option>
+              <option value="QUALIFICACAO">Qualificação</option>
             </select>
           </div>
           <div>
@@ -203,11 +231,44 @@ export default function ProcedimentosPage() {
                     .map((m) => `${m.modelo.fabricante.nome} / ${m.modelo.nome}`)
                     .join(" · ")}
             </div>
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            {p.historico && p.historico.length > 0 && (
+              <div style={{ marginTop: 8, fontSize: 11, color: "oklch(0.5 0.02 250)" }}>
+                Histórico: {p.historico.map((h) => `v${h.versao}${h.createdByNome ? ` · ${h.createdByNome}` : ""}`).join(" → ")}
+              </div>
+            )}
+            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Btn variant="ghost" size="sm" onClick={() => abrirEdicaoItens(p)}>
                 Editar itens (nova versão)
               </Btn>
+              <Btn variant="ghost" size="sm" onClick={() => abrirCriterio(p)}>
+                Critério de aceitação
+              </Btn>
             </div>
+            {criterioId === p.id && (
+              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                <FieldLabel>Referência e versão publicadas — sem isto o ponto medido fica não avaliado</FieldLabel>
+                <input
+                  value={criterioRef}
+                  onChange={(e) => setCriterioRef(e.target.value)}
+                  placeholder="Ex.: POP.EC.CAL.001 · Quadro 7"
+                  style={fieldStyle}
+                />
+                <input
+                  value={criterioVer}
+                  onChange={(e) => setCriterioVer(e.target.value)}
+                  placeholder="Versão do critério (ex.: rev. 03/2026)"
+                  style={fieldStyle}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn size="sm" onClick={() => void salvarCriterio()}>
+                    Publicar critério
+                  </Btn>
+                  <Btn variant="ghost" size="sm" onClick={() => setCriterioId(null)}>
+                    Cancelar
+                  </Btn>
+                </div>
+              </div>
+            )}
             {editId === p.id && (
               <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                 <FieldLabel>Itens do checklist (JSON) — salvar cria nova versão; laudos já executados permanecem com o snapshot</FieldLabel>

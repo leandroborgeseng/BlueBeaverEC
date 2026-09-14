@@ -125,11 +125,7 @@ export class LaudosService {
     const respostas = this.avaliarRespostas(data.tipo, data.respostas ?? [], modeloItens, instrumentoSnap);
     const resultadoCalc = calcularResultadoLaudo(data.tipo, respostas) as ResultadoLaudo;
     const resultado = data.resultado ?? resultadoCalc;
-    if (data.resultado === ResultadoLaudo.APROVADO && resultadoCalc === ResultadoLaudo.NAO_AVALIADO) {
-      throw new BadRequestException(
-        "Não é possível declarar conformidade sem critério de aceitação publicado (referência e versão)",
-      );
-    }
+    this.assertConformidadePublicada(data.resultado, resultadoCalc);
 
     const planoTeste =
       equipamento.tipoEquipamentoPlanoId &&
@@ -216,10 +212,7 @@ export class LaudosService {
       throw new BadRequestException("Documento final não se altera em silêncio. Use retificação com justificativa.");
     }
 
-    const modeloItens =
-      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
-        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
-        []) as ItemChecklistModelo[];
+    const modeloItens = this.itensDoModelo(laudo.procedimentoSnapshot, laudo.procedimento?.itens);
 
     let instrumentoSnap = laudo.instrumentoSnapshot;
     if (data.instrumentoId) {
@@ -269,16 +262,19 @@ export class LaudosService {
       throw new BadRequestException("Relatório já está final");
     }
 
-    const modeloItens =
-      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
-        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
-        []) as ItemChecklistModelo[];
-    const respostas = (laudo.respostas as RespostaItem[]) ?? [];
+    const modeloItens = this.itensDoModelo(laudo.procedimentoSnapshot, laudo.procedimento?.itens);
+    const respostas = this.avaliarRespostas(
+      laudo.tipo,
+      (laudo.respostas as RespostaItem[]) ?? [],
+      modeloItens,
+      laudo.instrumentoSnapshot,
+    );
+    const resultado = calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo;
     const pendentes = itensObrigatoriosPendentes(respostas, modeloItens);
     if (pendentes.length) {
       throw new BadRequestException(`Itens obrigatórios sem resposta: ${pendentes.slice(0, 5).join("; ")}`);
     }
-    if (laudo.resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS && !laudo.justificativaRessalva?.trim()) {
+    if (resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS && !laudo.justificativaRessalva?.trim()) {
       throw new BadRequestException("Justificativa de ressalva obrigatória");
     }
 
@@ -286,13 +282,14 @@ export class LaudosService {
     const validadeMeses = laudo.validadeMeses ?? laudo.planoTeste?.periodicidadeMeses ?? laudo.procedimento?.validadeMeses ?? 12;
     const validadeAte = new Date();
     validadeAte.setMonth(validadeAte.getMonth() + validadeMeses);
-    const resultado = laudo.resultado;
     const comValidade =
       resultado === ResultadoLaudo.APROVADO || resultado === ResultadoLaudo.APROVADO_COM_RESSALVAS;
 
     const updated = await this.prisma.laudo.update({
       where: { id },
       data: {
+        respostas: respostas as object[],
+        resultado,
         statusDocumento: StatusDocumentoLaudo.FINAL,
         finalizadoPorId: user.userId,
         finalizadoPorNome: autor,
@@ -359,14 +356,13 @@ export class LaudosService {
       throw new BadRequestException("Retificação aplica-se a documento final");
     }
 
-    const modeloItens =
-      ((laudo.procedimentoSnapshot as { itens?: ItemChecklistModelo[] } | null)?.itens ??
-        (laudo.procedimento?.itens as ItemChecklistModelo[] | undefined) ??
-        []) as ItemChecklistModelo[];
+    const modeloItens = this.itensDoModelo(laudo.procedimentoSnapshot, laudo.procedimento?.itens);
     const respostas = data.respostas
       ? this.avaliarRespostas(laudo.tipo, data.respostas, modeloItens, laudo.instrumentoSnapshot)
       : ((laudo.respostas as RespostaItem[]) ?? []);
-    const resultado = data.resultado ?? (calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo);
+    const resultadoCalc = calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo;
+    this.assertConformidadePublicada(data.resultado, resultadoCalc);
+    const resultado = data.resultado ?? resultadoCalc;
     const autor = await this.autorNome(user);
 
     await this.prisma.laudoRevisao.create({
@@ -443,6 +439,8 @@ export class LaudosService {
     if (laudo.resultado !== ResultadoLaudo.PENDENTE_ASSINATURA) {
       throw new BadRequestException("Laudo não está pendente de assinatura");
     }
+    const calc = calcularResultadoLaudo(laudo.tipo, (laudo.respostas as RespostaItem[]) ?? []);
+    this.assertConformidadePublicada(data.resultado, calc);
 
     const validadeMeses =
       data.validadeMeses ??
@@ -656,6 +654,7 @@ export class LaudosService {
         where: {
           estabelecimentoId,
           tipo: { in: tipos },
+          statusDocumento: StatusDocumentoLaudo.FINAL,
           resultado: { in: [ResultadoLaudo.APROVADO, ResultadoLaudo.APROVADO_COM_RESSALVAS] },
         },
         include: {
@@ -831,9 +830,7 @@ export class LaudosService {
         nSerie: l.equipamento.nSerie,
       },
       executores,
-      procedimento: l.procedimento
-        ? { nome: l.procedimento.nome, versao: l.procedimentoVersao }
-        : null,
+      procedimento: this.procedimentoDoSnapshot(l.procedimentoSnapshot, l.procedimento, l.procedimentoVersao),
       respostas,
       instrumento: snap.nome
         ? {
@@ -873,6 +870,39 @@ export class LaudosService {
 
   private calcularResultado(tipo: TipoLaudo, respostas: RespostaItem[]): ResultadoLaudo {
     return calcularResultadoLaudo(tipo, respostas) as ResultadoLaudo;
+  }
+
+  private itensDoModelo(snapshot: unknown, fallback: unknown): ItemChecklistModelo[] {
+    if (snapshot && typeof snapshot === "object" && !Array.isArray(snapshot)) {
+      const itens = (snapshot as { itens?: ItemChecklistModelo[] }).itens;
+      if (Array.isArray(itens)) return itens;
+    }
+    return Array.isArray(fallback) ? (fallback as ItemChecklistModelo[]) : [];
+  }
+
+  private procedimentoDoSnapshot(
+    snapshot: unknown,
+    procedimento: { nome: string } | null,
+    versao: number | null,
+  ): { nome: string; versao?: number | null } | null {
+    if (snapshot && typeof snapshot === "object" && !Array.isArray(snapshot)) {
+      const s = snapshot as { nome?: string; versao?: number | null };
+      if (s.nome) return { nome: s.nome, versao: s.versao ?? versao };
+    }
+    return procedimento ? { nome: procedimento.nome, versao } : null;
+  }
+
+  private assertConformidadePublicada(
+    solicitado: ResultadoLaudo | undefined,
+    calculado: ResultadoLaudo | string,
+  ) {
+    const declara =
+      solicitado === ResultadoLaudo.APROVADO || solicitado === ResultadoLaudo.APROVADO_COM_RESSALVAS;
+    if (declara && calculado === ResultadoLaudo.NAO_AVALIADO) {
+      throw new BadRequestException(
+        "Não é possível declarar conformidade sem critério de aceitação publicado (referência e versão)",
+      );
+    }
   }
 
   private avaliarRespostas(

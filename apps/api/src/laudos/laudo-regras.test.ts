@@ -101,6 +101,12 @@ describe("resultado do laudo", () => {
     assert.equal(calcularResultadoLaudo("PREVENTIVA", [{ status: "SIM" }, { status: "NA" }]), "APROVADO");
   });
 
+  it("qualificação não inventa tolerância", () => {
+    assert.equal(calcularResultadoLaudo("QUALIFICACAO", [{ status: "SIM" }]), "APROVADO");
+    const d = tituloDocumentoTecnico("QUALIFICACAO");
+    assert.equal(d.titulo, "Relatório de serviço");
+  });
+
   it("obrigatórios pendentes", () => {
     assert.deepEqual(
       itensObrigatoriosPendentes([{ id: "1", pergunta: "Aspecto", tipo: "aprovado_reprovado", obrigatorio: true }]),

@@ -98,11 +98,21 @@ interface LaudoDetail {
   justificativaRessalva?: string | null;
   equipamento: { tag: string; nome: string };
   procedimento?: { id: string; nome: string; versao?: number } | null;
+  procedimentoSnapshot?: {
+    nome?: string;
+    versao?: number;
+    itens?: Proc["itens"];
+  } | null;
   instrumento?: { nome: string; nSerie: string } | null;
   instrumentoSnapshot?: {
     nome?: string;
     identificacao?: string;
-    certificado?: { numero?: string | null; statusNaData?: string | null; dataValidade?: string | null };
+    certificado?: {
+      numero?: string | null;
+      statusNaData?: string | null;
+      dataValidade?: string | null;
+      pontos?: PontoCert[];
+    } | null;
   } | null;
   revisoes?: Array<{ id: string; autorNome: string; createdAt: string; justificativa: string }>;
   responsavelTecnico?: { nome: string; registroProfissional?: string | null } | null;
@@ -173,6 +183,8 @@ export function LaudoEditor({
     setRespostas((data.respostas as RespostaItem[]) ?? []);
     setJustificativaRessalva(data.justificativaRessalva ?? "");
     if (data.osNumero != null) setOsNumero(String(data.osNumero));
+    const pontosSnap = data.instrumentoSnapshot?.certificado?.pontos;
+    if (pontosSnap?.length) setPontosCertificado(pontosSnap);
     if (windowId) {
       updateWindow(windowId, { title: `Laudo ${data.numero}` });
     }
@@ -245,11 +257,15 @@ export function LaudoEditor({
     );
   }, [proc, tipo, viewMode]);
 
+  const snapshotItens = useMemo(() => laudo?.procedimentoSnapshot?.itens ?? [], [laudo]);
+  const congelado = Boolean(viewMode && laudo && laudo.statusDocumento === "FINAL");
+
   const computedRespostas = useMemo(() => {
+    if (congelado) return respostas;
     return respostas.map((r) => {
       if (tipo === "CALIBRACAO" && r.tipo === "check") return r;
+      const item = proc?.itens.find((i) => i.id === r.id) ?? snapshotItens.find((i) => i.id === r.id);
       if (tipo === "CALIBRACAO" && (r.tipo === "calibracao" || r.valorConfigurado != null || (r.leituras && r.leituras.length))) {
-        const item = proc?.itens.find((i) => i.id === r.id);
         return avaliarPontoCalibracao({
           itemModelo: item,
           resposta: { ...r, origemMedicao: "MANUAL" },
@@ -257,7 +273,6 @@ export function LaudoEditor({
         });
       }
       if (tipo === "TSE" && r.tipo !== "check") {
-        const item = proc?.itens.find((i) => i.id === r.id);
         return avaliarPontoCalibracao({
           itemModelo: item,
           resposta: { ...r, origemMedicao: "MANUAL" },
@@ -266,7 +281,7 @@ export function LaudoEditor({
       }
       return r;
     });
-  }, [respostas, tipo, proc, pontosCertificado]);
+  }, [respostas, tipo, proc, pontosCertificado, congelado, snapshotItens]);
 
   const resultadoPreview = useMemo(
     () => calcularResultadoLaudo(tipo, computedRespostas),
@@ -315,6 +330,26 @@ export function LaudoEditor({
     }
   }
 
+  async function salvarRascunhoExistente() {
+    const id = laudo?.id ?? laudoIdAtual;
+    if (!id) return;
+    setMsg(null);
+    setErro(null);
+    try {
+      await api(`/laudos/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          respostas: computedRespostas,
+          justificativaRessalva: justificativaRessalva || undefined,
+        }),
+      });
+      setMsg("Rascunho atualizado");
+      if (viewMode) await loadLaudo();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
   async function gerarOs() {
     const id = laudo?.id ?? laudoId;
     if (!id) return;
@@ -329,9 +364,9 @@ export function LaudoEditor({
   if (viewMode && erro && !laudo) return <Err>{erro}</Err>;
   if (viewMode && !laudo) return <div style={{ color: "oklch(0.5 0.02 250)" }}>Carregando laudo…</div>;
 
-  const displayRespostas = viewMode ? (laudo?.respostas as RespostaItem[]) ?? [] : computedRespostas;
+  const displayRespostas = congelado ? (laudo?.respostas as RespostaItem[]) ?? [] : computedRespostas;
   const displayTipo = viewMode ? laudo!.tipo : tipo;
-  const displayResultado = viewMode ? laudo!.resultado : resultadoPreview;
+  const displayResultado = congelado ? laudo!.resultado : resultadoPreview;
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -352,7 +387,13 @@ export function LaudoEditor({
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
               <strong style={{ fontSize: 16 }}>{laudo.numero}</strong>
               <Badge tone={laudo.tipo}>{laudo.tipo}</Badge>
+              <Badge tone={laudo.statusDocumento === "FINAL" ? "success" : "warning"}>
+                {laudo.statusDocumento === "FINAL" ? "Final" : "Rascunho"}
+              </Badge>
               <Badge tone={laudo.resultado}>{laudo.resultado}</Badge>
+              <span style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
+                {tituloDocumentoTecnico(laudo.tipo).titulo} · não é certificado de calibração
+              </span>
             </div>
           )}
 
@@ -418,8 +459,13 @@ export function LaudoEditor({
 
           {viewMode && laudo?.procedimento && (
             <div>
-              <FieldLabel>Procedimento</FieldLabel>
-              <div style={{ fontSize: 13 }}>{laudo.procedimento.nome}</div>
+              <FieldLabel>Procedimento (versão do atendimento)</FieldLabel>
+              <div style={{ fontSize: 13 }}>
+                {laudo.procedimentoSnapshot?.nome ?? laudo.procedimento.nome}
+                {laudo.procedimentoVersao != null || laudo.procedimentoSnapshot?.versao != null
+                  ? ` · v${laudo.procedimentoSnapshot?.versao ?? laudo.procedimentoVersao}`
+                  : ""}
+              </div>
             </div>
           )}
 
@@ -455,7 +501,19 @@ export function LaudoEditor({
                 <FieldLabel>Instrumento padrão</FieldLabel>
                 {viewMode ? (
                   <div style={{ fontSize: 13 }}>
-                    {laudo?.instrumento ? `${laudo.instrumento.nome} · ${laudo.instrumento.nSerie}` : "—"}
+                    {laudo?.instrumentoSnapshot?.nome
+                      ? `${laudo.instrumentoSnapshot.nome}${laudo.instrumentoSnapshot.identificacao ? ` · ${laudo.instrumentoSnapshot.identificacao}` : ""}`
+                      : laudo?.instrumento
+                        ? `${laudo.instrumento.nome} · ${laudo.instrumento.nSerie}`
+                        : "—"}
+                    {laudo?.instrumentoSnapshot?.certificado && (
+                      <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)", marginTop: 4 }}>
+                        Cert. padrão na data do serviço: {laudo.instrumentoSnapshot.certificado.numero ?? "—"}
+                        {laudo.instrumentoSnapshot.certificado.statusNaData
+                          ? ` · ${laudo.instrumentoSnapshot.certificado.statusNaData.replace(/_/g, " ")}`
+                          : ""}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <select value={instrumentoId} onChange={(e) => setInstrumentoId(e.target.value)} style={fieldStyle}>
@@ -505,6 +563,11 @@ export function LaudoEditor({
               Não há aprovação automática nem tolerância padrão.
             </div>
           )}
+          {viewMode && displayTipo === "CALIBRACAO" && (
+            <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)" }}>
+              Medições sem critério publicado permanecem <strong>não avaliadas</strong>. Este PDF é relatório de serviço, não certificado de calibração.
+            </div>
+          )}
 
           {!viewMode && displayTipo === "TSE" && (
             <div>
@@ -530,7 +593,7 @@ export function LaudoEditor({
 
           <div>
             <FieldLabel>Justificativa ressalva</FieldLabel>
-            {viewMode ? (
+            {congelado ? (
               <div style={{ fontSize: 13 }}>{laudo?.justificativaRessalva ?? "—"}</div>
             ) : (
               <input
@@ -544,6 +607,11 @@ export function LaudoEditor({
 
           {!viewMode && (
             <Btn type="button" onClick={() => void salvar()}>
+              Salvar rascunho
+            </Btn>
+          )}
+          {viewMode && !congelado && (
+            <Btn type="button" onClick={() => void salvarRascunhoExistente()}>
               Salvar rascunho
             </Btn>
           )}
@@ -679,7 +747,7 @@ export function LaudoEditor({
                             </span>
                           ) : null}
                         </span>
-                        {viewMode ? (
+                        {congelado ? (
                           <span style={{ fontSize: 13 }}>
                             L: {(r.leituras ?? []).filter((v) => v != null).join(" / ") || "—"}
                             {" · "}média {r.media ?? r.valorMedido ?? "—"}
@@ -688,7 +756,7 @@ export function LaudoEditor({
                             {r.incertezaExpandida != null ? ` · U=${r.incertezaExpandida}` : ""}
                             {r.correcaoPadrao != null ? ` · corr=${r.correcaoPadrao}` : ""}
                             {" · "}
-                            {r.status}
+                            {r.status === "NAO_AVALIADO" ? "não avaliado" : r.status}
                           </span>
                         ) : (
                           <>
@@ -733,7 +801,7 @@ export function LaudoEditor({
                           </>
                         )}
                       </div>
-                      {!viewMode && (
+                      {!congelado && (
                         <input
                           placeholder="Obs."
                           value={r.observacao ?? ""}
@@ -756,7 +824,7 @@ export function LaudoEditor({
                       }}
                     >
                       <span style={{ fontSize: 13 }}>{r.pergunta}</span>
-                      {viewMode ? (
+                      {congelado ? (
                         <span style={{ fontSize: 13 }}>
                           {r.tipo === "medicao" || isMedicao
                             ? `${r.valorMedido ?? "—"}`
@@ -766,7 +834,9 @@ export function LaudoEditor({
                                 ? "N.C"
                                 : r.status === "NA"
                                   ? "N.A"
-                                  : r.status}
+                                  : r.status === "NAO_AVALIADO"
+                                    ? "não avaliado"
+                                    : r.status}
                         </span>
                       ) : r.tipo === "medicao" || (isMedicao && r.tipo !== "check") ? (
                         <input
@@ -807,7 +877,7 @@ export function LaudoEditor({
                           )}
                         </select>
                       )}
-                      {viewMode ? (
+                      {congelado ? (
                         <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{r.observacao ?? "—"}</span>
                       ) : (
                         <input
@@ -855,6 +925,11 @@ export function LaudoEditor({
           )}
           {!viewMode && (
             <Btn type="button" onClick={() => void salvar()}>
+              Salvar rascunho
+            </Btn>
+          )}
+          {viewMode && !congelado && (
+            <Btn type="button" onClick={() => void salvarRascunhoExistente()}>
               Salvar rascunho
             </Btn>
           )}

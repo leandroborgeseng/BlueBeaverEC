@@ -176,7 +176,7 @@ export default function CertificadosPage() {
                       void downloadApi(
                         `/certificados/${c.id}/documento.pdf`,
                         { method: "GET" },
-                        c.temAnexoOriginal ? `${c.equipamento.tag}-${c.tipo}.pdf` : "certificado.pdf",
+                        c.temAnexoOriginal ? `${c.equipamento.tag}-${c.tipo}.pdf` : `relatorio-servico-${c.numero}.pdf`,
                       ).catch((err) => setErro(err instanceof Error ? err.message : "Erro ao baixar PDF"))
                     }
                   >
@@ -191,7 +191,7 @@ export default function CertificadosPage() {
           ))}
         </tbody>
       </DataTable>
-      {filtered.length === 0 && <Empty text="Nenhum certificado neste filtro." />}
+      {filtered.length === 0 && <Empty text="Nenhum relatório de serviço neste filtro." />}
 
       {preview && (
         <div
@@ -292,7 +292,7 @@ export default function CertificadosPage() {
             body: JSON.stringify({ justificativa }),
           });
           setReabrirId(null);
-          setMsg("Certificado reaberto");
+          setMsg("Relatório reaberto como rascunho");
           fecharPreview();
           await load();
         }}
