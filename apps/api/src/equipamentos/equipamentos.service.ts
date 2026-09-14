@@ -692,6 +692,33 @@ export class EquipamentosService {
     });
     const totalOS = itens.reduce((acc, i) => acc + Number(i.quantidade) * Number(i.valorUnitario ?? 0), 0);
 
+    const [contratosCobertura, atendimentos] = await Promise.all([
+      this.prisma.contratoEquipamento.findMany({
+        where: { equipamentoId: eq.id, contrato: { estabelecimentoId: user.estabelecimentoId } },
+        include: { contrato: { include: { fornecedor: { select: { nome: true } } } } },
+      }),
+      this.prisma.atendimentoExterno.findMany({
+        where: { equipamentoId: eq.id, estabelecimentoId: user.estabelecimentoId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        include: {
+          fornecedor: { select: { nome: true } },
+          ordemServico: { select: { numero: true, codigo: true } },
+        },
+      }),
+    ]);
+    const agora = Date.now();
+    const custosExt = atendimentos.reduce(
+      (acc, a) => {
+        acc.informado += Number(a.custoInformado ?? 0);
+        acc.aprovado += Number(a.custoAprovado ?? 0);
+        acc.realizado += Number(a.custoRealizado ?? 0);
+        return acc;
+      },
+      { informado: 0, aprovado: 0, realizado: 0 },
+    );
+    const fora = atendimentos.find((a) => a.foraDoHospital || a.pendenciaRetorno);
+
     const criticidade = eq.criticidadeEquipamento ?? eq.descricao.criticidade;
     return {
       ...this.ocultarValores(eq, verValores),
@@ -703,7 +730,51 @@ export class EquipamentosService {
         totalOS: Number(totalOS.toFixed(2)),
         nItens: custosAgg._count,
         nOS: osHistorico.length,
+        externoInformado: Number(custosExt.informado.toFixed(2)),
+        externoAprovado: Number(custosExt.aprovado.toFixed(2)),
+        externoRealizado: Number(custosExt.realizado.toFixed(2)),
       },
+      cobertura: {
+        garantiaAquisicao: {
+          fonte: "GARANTIA_AQUISICAO",
+          vigente: garantiaVigente(eq.garantiaFim),
+          inicio: eq.garantiaInicio,
+          fim: eq.garantiaFim,
+        },
+        contratosManutencao: contratosCobertura.map((l) => ({
+          fonte: "CONTRATO_MANUTENCAO",
+          numero: l.contrato.numero,
+          fornecedor: l.contrato.fornecedor.nome,
+          vigenciaFim: l.contrato.vigenciaFim,
+          vigente: l.contrato.vigenciaFim.getTime() >= agora,
+          cobrePecas: l.contrato.cobrePecas,
+          cobreServicos: l.contrato.cobreServicos,
+          escopo: l.contrato.escopo,
+          exclusoes: l.contrato.exclusoes,
+        })),
+      },
+      atendimentosExternos: atendimentos.map((a) => ({
+        id: a.id,
+        status: a.status,
+        fornecedor: a.fornecedor.nome,
+        osNumero: a.ordemServico.numero,
+        osCodigo: a.ordemServico.codigo,
+        foraDoHospital: a.foraDoHospital,
+        pendenciaRetorno: a.pendenciaRetorno,
+        previsaoRetorno: a.previsaoRetorno,
+        conferenciaOk: a.conferenciaOk,
+        custoInformado: a.custoInformado,
+        custoAprovado: a.custoAprovado,
+        custoRealizado: a.custoRealizado,
+      })),
+      localizacaoAssistencia: fora
+        ? {
+            foraDoHospital: fora.foraDoHospital,
+            pendenciaRetorno: fora.pendenciaRetorno,
+            status: fora.status,
+            fornecedor: fora.fornecedor.nome,
+          }
+        : null,
     };
   }
 

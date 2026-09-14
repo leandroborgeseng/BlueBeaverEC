@@ -161,6 +161,13 @@ export default function ContratosPage() {
           slaSolucaoHoras: Number(fd.get("slaSolucao") || 0) || undefined,
           indiceReajuste: String(fd.get("indiceReajuste") || "IPCA"),
           dataReajusteAniversario: String(fd.get("dataReajuste") || "") || undefined,
+          tipo: String(fd.get("tipo") || "MANUTENCAO"),
+          periodicidade: String(fd.get("periodicidade") || "") || undefined,
+          escopo: String(fd.get("escopo") || "") || undefined,
+          exclusoes: String(fd.get("exclusoes") || "") || undefined,
+          cobrePecas: fd.get("cobrePecas") === "on",
+          cobreServicos: fd.get("cobreServicos") === "on",
+          diasAlertaVencimento: Number(fd.get("diasAlerta") || 30) || 30,
         }),
       });
       e.currentTarget.reset();
@@ -234,7 +241,7 @@ export default function ContratosPage() {
     <div>
       <PageHeader
         title="Contratos"
-        subtitle="Lista · filtros · matriz de cobertura · SLA · reajuste"
+        subtitle="Manutenção · escopo e exclusões · vencimento configurável · garantia de aquisição fica no equipamento"
         actions={
           <Btn type="button" onClick={() => setShowCreate((v) => !v)}>
             {showCreate ? "Fechar formulário" : "Novo contrato"}
@@ -352,6 +359,43 @@ export default function ContratosPage() {
               </div>
               <Btn type="submit">Criar</Btn>
             </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
+              <div>
+                <FieldLabel htmlFor="ctr-tipo">Tipo</FieldLabel>
+                <select id="ctr-tipo" name="tipo" defaultValue="MANUTENCAO" style={fieldStyle}>
+                  <option value="MANUTENCAO">Manutenção</option>
+                  <option value="OUTRO">Outro (não é garantia)</option>
+                </select>
+              </div>
+              <div>
+                <FieldLabel htmlFor="ctr-per">Periodicidade</FieldLabel>
+                <select id="ctr-per" name="periodicidade" defaultValue="" style={fieldStyle}>
+                  <option value="">Se houver</option>
+                  <option value="UNICA">Única</option>
+                  <option value="MENSAL">Mensal</option>
+                  <option value="TRIMESTRAL">Trimestral</option>
+                  <option value="SEMESTRAL">Semestral</option>
+                  <option value="ANUAL">Anual</option>
+                </select>
+              </div>
+              <div>
+                <FieldLabel htmlFor="ctr-alerta">Alerta vencimento (dias)</FieldLabel>
+                <input id="ctr-alerta" name="diasAlerta" type="number" min={1} defaultValue={30} style={fieldStyle} />
+              </div>
+              <div style={{ display: "flex", gap: 12, alignItems: "end", paddingBottom: 8, fontSize: 13 }}>
+                <label>
+                  <input name="cobrePecas" type="checkbox" /> Peças
+                </label>
+                <label>
+                  <input name="cobreServicos" type="checkbox" defaultChecked /> Serviços
+                </label>
+              </div>
+            </div>
+            <textarea name="escopo" placeholder="Escopo coberto" rows={2} style={fieldStyle} />
+            <textarea name="exclusoes" placeholder="Exclusões" rows={2} style={fieldStyle} />
+            <p style={{ margin: 0, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+              Garantia de aquisição não se cadastra como contrato — use as datas de garantia no equipamento.
+            </p>
           </form>
         </Surface>
       )}

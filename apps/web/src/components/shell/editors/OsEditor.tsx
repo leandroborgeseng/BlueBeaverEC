@@ -6,6 +6,7 @@ import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui
 import { api, downloadApi } from "@/lib/api";
 import { SlaChip } from "@/components/os/SlaChip";
 import { filesToAnexos, labelAcaoOS, labelCondicaoUso, labelStatusOS } from "@/lib/os-ui";
+import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
 import { labelResponsavel } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
 
@@ -74,7 +75,7 @@ interface OsDetail {
   anexos?: Array<{ id: string; nomeArquivo: string; visibilidade: string }>;
 }
 
-type Tab = "geral" | "execucao" | "comunicacao" | "acoes";
+type Tab = "geral" | "execucao" | "comunicacao" | "externo" | "acoes";
 type StatusAcao = "fechar" | "cancelar" | "reabrir" | "aguardar";
 
 const TIPOS_COM_LAUDO = new Set(["PREVENTIVA", "CALIBRACAO", "TSE", "QUALIFICACAO"]);
@@ -228,9 +229,17 @@ export function OsEditor({
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid oklch(0.91 0.006 255)", marginBottom: 4 }}>
-        {(["geral", "execucao", "comunicacao", "acoes"] as Tab[]).map((t) => (
+        {(["geral", "execucao", "comunicacao", "externo", "acoes"] as Tab[]).map((t) => (
           <button key={t} type="button" style={tabStyle(tab === t)} onClick={() => setTab(t)}>
-            {t === "geral" ? "Geral" : t === "execucao" ? "Execução" : t === "comunicacao" ? "Comunicação" : "Ações"}
+            {t === "geral"
+              ? "Geral"
+              : t === "execucao"
+                ? "Execução"
+                : t === "comunicacao"
+                  ? "Comunicação"
+                  : t === "externo"
+                    ? "Externo"
+                    : "Ações"}
           </button>
         ))}
       </div>
@@ -539,6 +548,8 @@ export function OsEditor({
           ))}
         </div>
       )}
+
+      {tab === "externo" && <AtendimentoExternoPanel numero={numero} />}
 
       {tab === "acoes" && (
         <div style={{ display: "grid", gap: 14 }}>

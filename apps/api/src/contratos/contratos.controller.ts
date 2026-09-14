@@ -1,15 +1,18 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
+import type { Response } from "express";
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
   Min,
   MinLength,
 } from "class-validator";
-import { IndiceReajuste, SituacaoContrato } from "@prisma/client";
+import { IndiceReajuste, PeriodicidadeContrato, SituacaoContrato, TipoContrato } from "@prisma/client";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
@@ -33,10 +36,11 @@ class CreateContratoDto {
   @IsString()
   vigenciaFim!: string;
 
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  valor!: number;
+  valor?: number;
 
   @IsOptional()
   @IsArray()
@@ -59,6 +63,40 @@ class CreateContratoDto {
   @IsOptional()
   @IsString()
   dataReajusteAniversario?: string;
+
+  @IsOptional()
+  @IsEnum(TipoContrato)
+  tipo?: TipoContrato;
+
+  @IsOptional()
+  @IsEnum(PeriodicidadeContrato)
+  periodicidade?: PeriodicidadeContrato;
+
+  @IsOptional()
+  @IsString()
+  escopo?: string;
+
+  @IsOptional()
+  @IsString()
+  exclusoes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  cobrePecas?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  cobreServicos?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  diasAlertaVencimento?: number;
+
+  @IsOptional()
+  @IsString()
+  observacoes?: string;
 }
 
 class GlosaDto {
@@ -125,6 +163,40 @@ class UpdateContratoDto {
   @IsOptional()
   @IsEnum(SituacaoContrato)
   situacao?: SituacaoContrato;
+
+  @IsOptional()
+  @IsEnum(TipoContrato)
+  tipo?: TipoContrato;
+
+  @IsOptional()
+  @IsEnum(PeriodicidadeContrato)
+  periodicidade?: PeriodicidadeContrato;
+
+  @IsOptional()
+  @IsString()
+  escopo?: string;
+
+  @IsOptional()
+  @IsString()
+  exclusoes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  cobrePecas?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  cobreServicos?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  diasAlertaVencimento?: number;
+
+  @IsOptional()
+  @IsString()
+  observacoes?: string;
 }
 
 @Controller("contratos")
@@ -153,6 +225,11 @@ export class ContratosController {
     return this.contratos.matrizCobertura(user.estabelecimentoId, numero);
   }
 
+  @Get(":numero")
+  get(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    return this.contratos.get(user.estabelecimentoId, numero);
+  }
+
   @Post()
   @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
   create(@CurrentUser() user: AuthUser, @Body() body: CreateContratoDto) {
@@ -173,5 +250,28 @@ export class ContratosController {
   @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
   glosa(@CurrentUser() user: AuthUser, @Param("numero") numero: string, @Body() body: GlosaDto) {
     return this.contratos.addGlosa(user, numero, body);
+  }
+
+  @Post(":numero/documentos")
+  @RequirePermission("contratos", PERMISSAO_NIVEL.EDICAO)
+  documento(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: { dataUrl: string; nomeArquivo?: string; descricao?: string },
+  ) {
+    return this.contratos.addDocumento(user, numero, body);
+  }
+
+  @Get(":numero/documentos/:docId")
+  async baixarDoc(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Param("docId") docId: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.contratos.baixarDocumento(user, numero, docId);
+    res.setHeader("Content-Type", doc.mimeType);
+    res.setHeader("Content-Disposition", `attachment; filename="${doc.nomeArquivo.replace(/"/g, "")}"`);
+    res.send(Buffer.from(doc.conteudo));
   }
 }

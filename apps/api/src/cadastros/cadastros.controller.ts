@@ -23,16 +23,6 @@ class ModeloDto {
   nome!: string;
 }
 
-class FornecedorDto {
-  @IsString()
-  @MinLength(2)
-  nome!: string;
-
-  @IsOptional()
-  @IsString()
-  cnpj?: string;
-}
-
 class PlanoDto {
   @IsString()
   @MinLength(2)
@@ -135,17 +125,6 @@ export class CadastrosController {
   @Post("setores")
   createSetor(@CurrentUser() user: AuthUser, @Body() body: NomeDto) {
     return this.cadastros.createSetor(user, body.nome);
-  }
-
-  @Get("fornecedores")
-  fornecedores(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
-    return this.cadastros.fornecedores(user.estabelecimentoId, q);
-  }
-
-  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
-  @Post("fornecedores")
-  createFornecedor(@CurrentUser() user: AuthUser, @Body() body: FornecedorDto) {
-    return this.cadastros.createFornecedor(user, body.nome, body.cnpj);
   }
 
   @Get("planos-descricao")

@@ -727,6 +727,17 @@ export class OsService {
       if (os.pendencia?.trim()) {
         throw new ConflictException("Não é possível fechar OS com pendência aberta");
       }
+      const encaminhamentoAberto = await this.prisma.atendimentoExterno.findFirst({
+        where: {
+          ordemServicoId: os.id,
+          status: { notIn: ["CANCELADO", "LIBERADO"] },
+        },
+      });
+      if (encaminhamentoAberto) {
+        throw new ConflictException(
+          "Há encaminhamento externo em andamento. Conclua retorno e conferência técnica antes de fechar a OS.",
+        );
+      }
       const servico = opts.servicoRealizado?.trim() || os.servicoRealizado?.trim();
       const resultado = opts.resultadoAtendimento?.trim() || os.resultadoAtendimento?.trim();
       const condicao = opts.condicaoFinal ?? os.condicaoFinal;

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -221,7 +222,10 @@ export default function CadastrosPage() {
           <PlanosSlaTable planos={planos} onSaved={() => void reload().catch((e) => setMsg(e.message))} />
         )}
         {tab === "fornecedores" && (
-          <NamedTable items={fornecedores.map((x) => ({ title: x.nome }))} cols={["Fornecedor"]} />
+          <NamedTable
+            items={fornecedores.map((x) => ({ title: x.nome, href: `/fornecedores/${x.id}` }))}
+            cols={["Fornecedor"]}
+          />
         )}
       </div>
     </div>
@@ -351,7 +355,7 @@ function NamedTable({
   items,
   cols,
 }: {
-  items: Array<{ title: string; meta?: string; badge?: string }>;
+  items: Array<{ title: string; meta?: string; badge?: string; href?: string }>;
   cols: string[];
 }) {
   if (items.length === 0) return <Empty text="Nenhum registro neste cadastro." />;
@@ -367,7 +371,15 @@ function NamedTable({
       <tbody>
         {items.map((item) => (
           <tr key={`${item.title}-${item.meta ?? ""}`}>
-            <td style={td}><strong>{item.title}</strong></td>
+            <td style={td}>
+              {item.href ? (
+                <Link href={item.href}>
+                  <strong>{item.title}</strong>
+                </Link>
+              ) : (
+                <strong>{item.title}</strong>
+              )}
+            </td>
             {item.meta != null && <td style={td}>{item.meta}</td>}
             {item.badge != null && (
               <td style={td}><Badge tone={item.badge}>{item.badge}</Badge></td>

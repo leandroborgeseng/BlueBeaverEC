@@ -102,7 +102,32 @@ interface Pagina {
     observacao?: string | null;
     documento?: { id: string; nomeArquivo: string } | null;
   }>;
-  custos: { totalOS: number; nOS: number };
+  custos: { totalOS: number; nOS: number; externoInformado?: number; externoAprovado?: number; externoRealizado?: number };
+  cobertura?: {
+    garantiaAquisicao: { vigente: boolean; inicio?: string | null; fim?: string | null };
+    contratosManutencao: Array<{
+      numero: string;
+      fornecedor: string;
+      vigente: boolean;
+      cobrePecas: boolean;
+      cobreServicos: boolean;
+      escopo?: string | null;
+      exclusoes?: string | null;
+      vigenciaFim: string;
+    }>;
+  };
+  atendimentosExternos?: Array<{
+    id: string;
+    status: string;
+    fornecedor: string;
+    osNumero: number;
+    foraDoHospital: boolean;
+    pendenciaRetorno: boolean;
+    custoInformado?: string | number | null;
+    custoAprovado?: string | number | null;
+    custoRealizado?: string | number | null;
+  }>;
+  localizacaoAssistencia?: { foraDoHospital: boolean; pendenciaRetorno: boolean; status: string; fornecedor: string } | null;
 }
 
 type Tab = "resumo" | "cadastro" | "os" | "docs" | "mov" | "ciclo";
@@ -337,6 +362,51 @@ export default function EquipamentoPagina() {
               tone="success"
             />
           </div>
+          {data.localizacaoAssistencia && (
+            <Panel title="Localização / assistência">
+              <div style={{ fontSize: 13 }}>
+                {data.localizacaoAssistencia.foraDoHospital ? "Fora do hospital" : "No hospital"} ·{" "}
+                {data.localizacaoAssistencia.fornecedor} · {data.localizacaoAssistencia.status}
+                {data.localizacaoAssistencia.pendenciaRetorno ? " · pendência de retorno" : ""}
+              </div>
+            </Panel>
+          )}
+          <Panel title="Cobertura — garantia de aquisição ≠ contrato de manutenção">
+            <div style={{ fontSize: 13, display: "grid", gap: 8 }}>
+              <div>
+                <strong>Garantia de aquisição:</strong>{" "}
+                {data.cobertura?.garantiaAquisicao.vigente ? "Vigente" : "Não vigente"}
+                {data.garantiaFim ? ` até ${new Date(data.garantiaFim).toLocaleDateString("pt-BR")}` : ""}
+              </div>
+              {(data.cobertura?.contratosManutencao.length ?? 0) === 0 ? (
+                <div>Sem contrato de manutenção vinculado.</div>
+              ) : (
+                data.cobertura!.contratosManutencao.map((c) => (
+                  <div key={c.numero}>
+                    <strong>Contrato {c.numero}</strong> · {c.fornecedor} · {c.vigente ? "vigente" : "encerrado"} ·
+                    peças {c.cobrePecas ? "sim" : "não"} / serviços {c.cobreServicos ? "sim" : "não"}
+                    {c.escopo ? ` · escopo: ${c.escopo}` : ""}
+                    {c.exclusoes ? ` · exclusões: ${c.exclusoes}` : ""}
+                  </div>
+                ))
+              )}
+              <div>
+                Externo informado{" "}
+                {(data.custos.externoInformado ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}{" "}
+                · aprovado{" "}
+                {(data.custos.externoAprovado ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}{" "}
+                · realizado{" "}
+                {(data.custos.externoRealizado ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </div>
+              {(data.atendimentosExternos ?? []).map((a) => (
+                <div key={a.id}>
+                  OS {a.osNumero} · {a.fornecedor} · {a.status}
+                  {a.foraDoHospital ? " · fora" : ""}
+                  {a.pendenciaRetorno ? " · retorno pendente" : ""}
+                </div>
+              ))}
+            </div>
+          </Panel>
           <Panel title="Identificação">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, fontSize: 13 }}>
               <div>

@@ -29,6 +29,8 @@ const LABEL_ACAO_OS: Record<string, string> = {
   ANEXO: "Anexo",
   DIAGNOSTICO: "Diagnóstico",
   ITEM_OS: "Item registrado",
+  ENCAMINHAMENTO_EXTERNO: "Encaminhamento externo",
+  CONFERENCIA_EXTERNA: "Conferência técnica do retorno",
   CHECKLIST_MOBILE: "Checklist de campo",
   FOTOS_MOBILE: "Fotos de campo",
   PECAS: "Peças",

@@ -25,6 +25,8 @@ import { RelatoriosModule } from "./relatorios/relatorios.module";
 import { ConfigAppModule } from "./config/config.module";
 import { PortalModule } from "./portal/portal.module";
 import { PlanosModule } from "./planos/planos.module";
+import { FornecedoresModule } from "./fornecedores/fornecedores.module";
+import { AtendimentoExternoModule } from "./atendimento-externo/atendimento-externo.module";
 import { QualidadeModule } from "./qualidade/qualidade.module";
 
 @Module({
@@ -60,6 +62,8 @@ import { QualidadeModule } from "./qualidade/qualidade.module";
     ConfigAppModule,
     PortalModule,
     PlanosModule,
+    FornecedoresModule,
+    AtendimentoExternoModule,
     QualidadeModule,
   ],
 })
