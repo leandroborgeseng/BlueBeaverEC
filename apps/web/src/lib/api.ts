@@ -45,6 +45,8 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(apiUrl(path), {
+      redirect: "manual",
+      cache: "no-store",
       ...init,
       headers: {
         "Content-Type": "application/json",

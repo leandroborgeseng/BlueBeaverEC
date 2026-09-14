@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL, api, setToken } from "@/lib/api";
+import { api, setToken } from "@/lib/api";
 import { destinoAposSessao, type SessionMe } from "@/lib/session";
 
 export default function LoginPage() {
@@ -14,25 +14,30 @@ export default function LoginPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    e.stopPropagation();
     setLoading(true);
     setErro(null);
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
+        cache: "no-store",
+        redirect: "manual",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
       });
+      if (res.status >= 300 && res.status < 400) {
+        throw new Error("Login deve ser POST /api/auth/login (redirecionamento inesperado).");
+      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.message ?? `Falha no login (${res.status})`);
       setToken(body.accessToken);
-      const me = await api<SessionMe>("/session/me");
+      const me = await api<SessionMe>("/session/me", { method: "GET", cache: "no-store" });
       router.push(destinoAposSessao(me.perfil));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro";
-      const target = API_URL || "/api (proxy)";
       setErro(
         /load failed|failed to fetch|networkerror/i.test(msg)
-          ? `Sem conexão com a API (${target}). Confira se a API (@nexo/api) está online e se o web tem API_INTERNAL_URL.`
+          ? "Sem conexão com a API. Confira se a API (@nexo/api) está online e se o web tem API_INTERNAL_URL."
           : msg,
       );
     } finally {
@@ -53,6 +58,8 @@ export default function LoginPage() {
       }}
     >
       <form
+        method="post"
+        action="/login"
         onSubmit={onSubmit}
         style={{
           width: 400,
@@ -88,7 +95,7 @@ export default function LoginPage() {
         <input
           style={input}
           type="password"
-          name="password"
+          name="senha"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
           autoComplete="current-password"

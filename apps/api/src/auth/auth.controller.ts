@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { Public } from "./permissions.guard";
 import type { AuthUser } from "./current-user.decorator";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 
 class LoginDto {
   @IsEmail()
@@ -34,7 +34,26 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Public()
+  @Get("login")
+  loginViaGet(@Req() req: Request, @Res() res: Response) {
+    const accept = String(req.headers.accept ?? "");
+    if (accept.includes("text/html")) {
+      const front = (process.env.WEB_ORIGIN ?? process.env.CORS_ORIGIN ?? "https://hef.aion.eng.br")
+        .split(",")[0]
+        .trim()
+        .replace(/\/$/, "");
+      return res.redirect(302, `${front}/login`);
+    }
+    return res.status(405).json({
+      error: "Use POST",
+      use: "POST",
+      path: "/api/auth/login",
+    });
+  }
+
+  @Public()
   @Post("login")
+  @HttpCode(200)
   login(@Body() body: LoginDto) {
     return this.auth.login(body.email, body.senha, body.estabelecimentoId);
   }

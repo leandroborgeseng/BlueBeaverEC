@@ -307,7 +307,7 @@ function apiPublicUrlHost() {
   return `${u.hostname}${u.port ? `:${u.port}` : ""}`;
 }
 
-let lastGoodUrl: string | null = null;
+let lastGoodOrigin: string | null = null;
 let lastGoodHost: string | null = null;
 
 async function proxy(req: NextRequest, path: string[]) {
@@ -325,16 +325,16 @@ async function proxy(req: NextRequest, path: string[]) {
   const dns6 = await dns6Report();
   const attempts = await buildAttempts(suffix);
   const ordered =
-    lastGoodUrl && lastGoodHost
+    lastGoodOrigin && lastGoodHost
       ? [
           {
             label: lastGoodHost,
-            url: lastGoodUrl,
+            url: `${lastGoodOrigin}${suffix}`,
             hostHeader: lastGoodHost,
-            publicHttps: lastGoodUrl.startsWith("https:"),
-            timeoutMs: lastGoodUrl.startsWith("https:") ? PUBLIC_CONNECT_MS : PRIVATE_CONNECT_MS,
+            publicHttps: lastGoodOrigin.startsWith("https:"),
+            timeoutMs: lastGoodOrigin.startsWith("https:") ? PUBLIC_CONNECT_MS : PRIVATE_CONNECT_MS,
           },
-          ...attempts.filter((a) => a.url !== lastGoodUrl),
+          ...attempts.filter((a) => a.url !== `${lastGoodOrigin}${suffix}`),
         ]
       : attempts;
 
@@ -357,8 +357,9 @@ async function proxy(req: NextRequest, path: string[]) {
         redirect: "manual",
         signal: AbortSignal.timeout(attempt.timeoutMs + 500),
       });
-      lastGoodUrl = attempt.url;
-      lastGoodHost = attempt.hostHeader ?? new URL(attempt.url).hostname;
+      const u = new URL(attempt.url);
+      lastGoodOrigin = `${u.protocol}//${u.host}`;
+      lastGoodHost = attempt.hostHeader ?? u.hostname;
       const buf = Buffer.from(await upstream.arrayBuffer());
       const out = new NextResponse(buf, { status: upstream.status });
       const upstreamType = upstream.headers.get("content-type");
@@ -369,8 +370,8 @@ async function proxy(req: NextRequest, path: string[]) {
     } catch (err) {
       lastErr = errorDetail(err);
       failures.push({ target: attempt.label, error: lastErr });
-      if (attempt.url === lastGoodUrl) {
-        lastGoodUrl = null;
+      if (lastGoodOrigin && attempt.url.startsWith(lastGoodOrigin)) {
+        lastGoodOrigin = null;
         lastGoodHost = null;
       }
       console.error(`[aion] proxy API falhou target=${attempt.label} ${lastErr}`);
