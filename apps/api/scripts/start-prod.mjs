@@ -97,17 +97,84 @@ function run(cmd, args) {
   }
 }
 
-const prismaJs = path.join(monorepoRoot, "node_modules", "prisma", "build", "index.js");
-const prismaLocal = path.join(root, "node_modules", "prisma", "build", "index.js");
-if (existsSync(prismaJs)) {
-  run(process.execPath, [prismaJs, "migrate", "deploy"]);
-} else if (existsSync(prismaLocal)) {
-  run(process.execPath, [prismaLocal, "migrate", "deploy"]);
-} else {
-  const prismaBin = resolveBin("prisma");
-  if (prismaBin) run(prismaBin, ["migrate", "deploy"]);
-  else run("pnpm", ["exec", "prisma", "migrate", "deploy"]);
+function runPrisma(args) {
+  const prismaJs = path.join(monorepoRoot, "node_modules", "prisma", "build", "index.js");
+  const prismaLocal = path.join(root, "node_modules", "prisma", "build", "index.js");
+  if (existsSync(prismaJs)) {
+    run(process.execPath, [prismaJs, ...args]);
+  } else if (existsSync(prismaLocal)) {
+    run(process.execPath, [prismaLocal, ...args]);
+  } else {
+    const prismaBin = resolveBin("prisma");
+    if (prismaBin) run(prismaBin, args);
+    else run("pnpm", ["exec", "prisma", ...args]);
+  }
 }
+
+function runNestBuild() {
+  const nestBin = resolveBin("nest");
+  if (nestBin) {
+    run(nestBin, ["build"]);
+    return;
+  }
+  const nestJs = [
+    path.join(root, "node_modules", "@nestjs", "cli", "bin", "nest.js"),
+    path.join(monorepoRoot, "node_modules", "@nestjs", "cli", "bin", "nest.js"),
+  ];
+  for (const c of nestJs) {
+    if (existsSync(c)) {
+      run(process.execPath, [c, "build"]);
+      return;
+    }
+  }
+  run("pnpm", ["exec", "nest", "build"]);
+}
+
+function apiEntryCandidates() {
+  return [
+    path.join(root, "dist", "main.js"),
+    path.join(root, "dist", "src", "main.js"),
+    path.join("/opt/aion-dist", "main.js"),
+    path.join("/opt/aion-dist", "src", "main.js"),
+    path.join("/tmp/aion-dist", "main.js"),
+    path.join("/tmp/aion-dist", "src", "main.js"),
+  ];
+}
+
+function resolveApiEntry() {
+  for (const c of apiEntryCandidates()) {
+    if (existsSync(c)) return c;
+  }
+  return null;
+}
+
+function ensureApiEntry() {
+  let entry = resolveApiEntry();
+  if (entry) {
+    console.log(`[aion] API entry ${entry}`);
+    return entry;
+  }
+
+  console.warn(
+    "[aion] dist/main.js e dist/src/main.js ausentes — volume pode ter tapado o bundle da imagem. Gerando prisma generate + nest build…",
+  );
+  runPrisma(["generate"]);
+  runNestBuild();
+
+  entry = resolveApiEntry();
+  if (entry) {
+    console.log(`[aion] API entry após build ${entry}`);
+    return entry;
+  }
+
+  console.error(
+    "[aion] nest build não gerou dist/main.js nem dist/src/main.js. Candidatos: " +
+      apiEntryCandidates().join(", "),
+  );
+  process.exit(1);
+}
+
+runPrisma(["migrate", "deploy"]);
 
 const seed = spawnSync(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")], {
   cwd: root,
@@ -134,7 +201,7 @@ if (convSol.status !== 0) {
 }
 
 // Import em background DEPOIS da API: healthcheck do Railway não mata o boot.
-const api = spawn(process.execPath, ["dist/main.js"], {
+const api = spawn(process.execPath, [ensureApiEntry()], {
   cwd: root,
   env: process.env,
   stdio: "inherit",

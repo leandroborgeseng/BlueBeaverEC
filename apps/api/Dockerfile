@@ -32,5 +32,7 @@ COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/apps/api ./apps/api
 COPY --from=build /app/apps/web/package.json ./apps/web/package.json
 WORKDIR /app/apps/api
+# Cópia fora de /app: bind-mount do volume no cwd esconde o dist da imagem.
+RUN mkdir -p /opt/aion-dist && cp -a dist/. /opt/aion-dist/
 EXPOSE 3001
 CMD ["node", "scripts/start-prod.mjs"]
