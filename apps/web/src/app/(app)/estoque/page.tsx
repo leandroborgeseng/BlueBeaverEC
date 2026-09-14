@@ -609,8 +609,6 @@ export default function EstoquePage() {
         </>
       )}
 
-      )}
-
       {tab === "custos" && (
         <>
           <p style={{ fontSize: 13, color: "oklch(0.45 0.02 250)", marginTop: 0 }}>

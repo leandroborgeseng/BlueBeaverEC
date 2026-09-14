@@ -854,7 +854,7 @@ export class OsService {
               create: {
                 usuarioId: user.userId,
                 acao: "REABERTURA",
-                justificativa: opts.justificativa.trim(),
+                justificativa: opts.justificativa?.trim() ?? "",
                 visibilidade: VisibilidadeOs.PUBLICO,
               },
             },
