@@ -36,6 +36,15 @@ export default function NovaOsPage() {
   const [pecaCodigo, setPecaCodigo] = useState("");
   const [pecaQtd, setPecaQtd] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [tagInicial, setTagInicial] = useState("");
+
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tag");
+    if (t) {
+      setTagInicial(t);
+      void onTagBlur(t);
+    }
+  }, []);
 
   useEffect(() => {
     void Promise.all([
@@ -118,6 +127,8 @@ export default function NovaOsPage() {
               name="equipamentoTag"
               placeholder="TAG do equipamento"
               required
+              defaultValue={tagInicial}
+              key={tagInicial || "tag"}
               style={fieldStyle}
               onBlur={(e) => void onTagBlur(e.target.value)}
             />

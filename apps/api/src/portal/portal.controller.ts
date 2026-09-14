@@ -260,11 +260,11 @@ export class PortalController {
   async equipamento(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     const me = await this.session.me(user);
     const setorFilter = await this.resolveSetorFilter(user, me.setorIds);
-    const code = tag.trim();
+    const code = tag.trim().replace(/^aion:eq:/i, "");
     const eq = await this.prisma.equipamento.findFirst({
       where: {
         estabelecimentoId: user.estabelecimentoId,
-        tag: { equals: code, mode: "insensitive" },
+        OR: [{ tag: { equals: code, mode: "insensitive" } }, { qrToken: code }],
         ...(setorFilter ? { setorId: { in: setorFilter } } : {}),
       },
       include: {

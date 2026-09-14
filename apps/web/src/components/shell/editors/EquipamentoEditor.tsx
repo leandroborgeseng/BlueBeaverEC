@@ -161,7 +161,7 @@ export function EquipamentoEditor({
       .catch(() => setModelos([]));
   }, [fabricanteId]);
 
-  const readonly = data?.situacao === "ARQUIVADO" || data?.situacao === "INATIVO";
+  const readonly = data?.situacao === "ARQUIVADO";
 
   async function salvar() {
     try {
@@ -277,6 +277,9 @@ export function EquipamentoEditor({
             <strong style={{ fontSize: 15 }}>{data.tag}</strong>
             <Badge tone={data.situacao}>{data.situacao.replace(/_/g, " ")}</Badge>
             {data.descricao && <Badge tone={data.descricao.criticidade}>{data.descricao.criticidade}</Badge>}
+            <Btn size="sm" variant="ghost" href={`/equipamentos/${encodeURIComponent(tag)}`}>
+              Página completa
+            </Btn>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -392,6 +395,12 @@ export function EquipamentoEditor({
             </Btn>
             <Btn variant="ghost" href={`/equipamentos/${encodeURIComponent(tag)}/ficha-vida`}>
               Ficha de vida
+            </Btn>
+            <Btn variant="ghost" href={`/equipamentos/${encodeURIComponent(tag)}/etiqueta`}>
+              Etiqueta / QR
+            </Btn>
+            <Btn variant="secondary" href={`/os/nova?tag=${encodeURIComponent(tag)}`}>
+              Abrir OS
             </Btn>
             <Btn variant="danger" disabled={readonly} onClick={() => setShowArquivar(true)}>
               Arquivar

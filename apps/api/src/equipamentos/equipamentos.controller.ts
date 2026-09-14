@@ -11,7 +11,15 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { SituacaoEquipamento } from "@prisma/client";
+import {
+  CondicaoUsoEquipamento,
+  Criticidade,
+  EventoCicloVida,
+  PropriedadeEquipamento,
+  SituacaoEquipamento,
+  TipoDocumentoEquipamento,
+  TipoMovimentacaoEquipamento,
+} from "@prisma/client";
 import type { Response } from "express";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -30,20 +38,24 @@ class ChangeTagDto {
 }
 
 class CreateEquipamentoDto {
+  @IsOptional()
   @IsString()
-  tag!: string;
+  tag?: string;
 
   @IsString()
   nome!: string;
 
+  @IsOptional()
   @IsString()
-  descricaoId!: string;
+  descricaoId?: string;
 
+  @IsOptional()
   @IsString()
-  fabricanteId!: string;
+  fabricanteId?: string;
 
+  @IsOptional()
   @IsString()
-  modeloId!: string;
+  modeloId?: string;
 
   @IsString()
   setorId!: string;
@@ -66,6 +78,22 @@ class CreateEquipamentoDto {
 
   @IsOptional()
   @IsString()
+  idInterna?: string;
+
+  @IsOptional()
+  @IsString()
+  unidade?: string;
+
+  @IsOptional()
+  @IsString()
+  localizacaoFisica?: string;
+
+  @IsOptional()
+  @IsEnum(PropriedadeEquipamento)
+  propriedade?: PropriedadeEquipamento;
+
+  @IsOptional()
+  @IsString()
   dataAquisicao?: string;
 
   @IsOptional()
@@ -73,8 +101,32 @@ class CreateEquipamentoDto {
   valorAquisicao?: number;
 
   @IsOptional()
+  @IsString()
+  garantiaInicio?: string;
+
+  @IsOptional()
+  @IsString()
+  garantiaFim?: string;
+
+  @IsOptional()
   @IsEnum(SituacaoEquipamento)
   situacao?: SituacaoEquipamento;
+
+  @IsOptional()
+  @IsEnum(CondicaoUsoEquipamento)
+  condicaoUso?: CondicaoUsoEquipamento;
+
+  @IsOptional()
+  @IsEnum(Criticidade)
+  criticidadeEquipamento?: Criticidade;
+
+  @IsOptional()
+  @IsString()
+  criticidadeJustificativa?: string;
+
+  @IsOptional()
+  @IsString()
+  criticidadeResponsavelId?: string;
 }
 
 class UpdateEquipamentoDto {
@@ -112,11 +164,31 @@ class UpdateEquipamentoDto {
 
   @IsOptional()
   @IsString()
+  idInterna?: string;
+
+  @IsOptional()
+  @IsString()
+  unidade?: string;
+
+  @IsOptional()
+  @IsString()
+  localizacaoFisica?: string;
+
+  @IsOptional()
+  @IsEnum(PropriedadeEquipamento)
+  propriedade?: PropriedadeEquipamento;
+
+  @IsOptional()
+  @IsString()
   observacao?: string;
 
   @IsOptional()
   @IsEnum(SituacaoEquipamento)
   situacao?: SituacaoEquipamento;
+
+  @IsOptional()
+  @IsEnum(CondicaoUsoEquipamento)
+  condicaoUso?: CondicaoUsoEquipamento;
 
   @IsOptional()
   @IsNumber()
@@ -125,6 +197,22 @@ class UpdateEquipamentoDto {
   @IsOptional()
   @IsNumber()
   valorSubstituicao?: number;
+
+  @IsOptional()
+  @IsString()
+  dataAquisicao?: string;
+
+  @IsOptional()
+  @IsString()
+  dataInstalacao?: string;
+
+  @IsOptional()
+  @IsString()
+  garantiaInicio?: string;
+
+  @IsOptional()
+  @IsString()
+  garantiaFim?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -150,26 +238,44 @@ class UpdateEquipamentoDto {
   @ValidateIf((_, v) => v !== null && v !== "")
   @IsString()
   tipoEquipamentoPlanoId?: string | null;
+
+  @IsOptional()
+  @IsEnum(Criticidade)
+  criticidadeEquipamento?: Criticidade;
+
+  @IsOptional()
+  @IsString()
+  criticidadeJustificativa?: string;
+
+  @IsOptional()
+  @IsString()
+  criticidadeResponsavelId?: string;
 }
 
 class ImportRowDto {
+  @IsOptional()
   @IsString()
-  tag!: string;
+  tag?: string;
 
+  @IsOptional()
   @IsString()
-  nome!: string;
+  nome?: string;
 
+  @IsOptional()
   @IsString()
-  planoDescricao!: string;
+  planoDescricao?: string;
 
+  @IsOptional()
   @IsString()
-  fabricante!: string;
+  fabricante?: string;
 
+  @IsOptional()
   @IsString()
-  modelo!: string;
+  modelo?: string;
 
+  @IsOptional()
   @IsString()
-  setor!: string;
+  setor?: string;
 
   @IsOptional()
   @IsString()
@@ -178,6 +284,22 @@ class ImportRowDto {
   @IsOptional()
   @IsString()
   nSerie?: string;
+
+  @IsOptional()
+  @IsString()
+  idInterna?: string;
+
+  @IsOptional()
+  @IsString()
+  unidade?: string;
+
+  @IsOptional()
+  @IsString()
+  localizacaoFisica?: string;
+
+  @IsOptional()
+  @IsString()
+  propriedade?: string;
 
   @IsOptional()
   @IsString()
@@ -202,6 +324,14 @@ class ImportRowDto {
 
   @IsOptional()
   @IsString()
+  garantiaInicio?: string;
+
+  @IsOptional()
+  @IsString()
+  garantiaFim?: string;
+
+  @IsOptional()
+  @IsString()
   observacao?: string;
 }
 
@@ -210,6 +340,98 @@ class ImportDto {
   @ValidateNested({ each: true })
   @Type(() => ImportRowDto)
   rows!: ImportRowDto[];
+}
+
+class ImportPreviewDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ImportRowDto)
+  rows?: ImportRowDto[];
+
+  @IsOptional()
+  @IsString()
+  filename?: string;
+
+  @IsOptional()
+  @IsString()
+  contentBase64?: string;
+}
+
+class MovimentacaoDto {
+  @IsEnum(TipoMovimentacaoEquipamento)
+  tipo!: TipoMovimentacaoEquipamento;
+
+  @IsOptional()
+  @IsString()
+  destinoSetorId?: string;
+
+  @IsOptional()
+  @IsString()
+  destinoLocalizacao?: string;
+
+  @IsOptional()
+  @IsString()
+  data?: string;
+
+  @IsOptional()
+  @IsString()
+  responsavelNome?: string;
+
+  @IsOptional()
+  @IsString()
+  responsavelId?: string;
+
+  @IsString()
+  @MinLength(3)
+  motivo!: string;
+}
+
+class DocumentoDto {
+  @IsEnum(TipoDocumentoEquipamento)
+  tipo!: TipoDocumentoEquipamento;
+
+  @IsString()
+  dataUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  nomeArquivo?: string;
+
+  @IsOptional()
+  @IsString()
+  descricao?: string;
+}
+
+class CicloDocDto {
+  @IsString()
+  dataUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  nomeArquivo?: string;
+}
+
+class CicloDto {
+  @IsEnum(EventoCicloVida)
+  tipo!: EventoCicloVida;
+
+  @IsOptional()
+  @IsString()
+  data?: string;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+
+  @IsOptional()
+  @IsString()
+  motivoDesativacao?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CicloDocDto)
+  documento?: CicloDocDto;
 }
 
 @Controller("equipamentos")
@@ -240,6 +462,11 @@ export class EquipamentosController {
     });
   }
 
+  @Get("proxima-tag")
+  proximaTag(@CurrentUser() user: AuthUser) {
+    return this.equipamentos.proximaTag(user.estabelecimentoId).then((tag) => ({ tag }));
+  }
+
   @Get("import/template")
   async importTemplate(@Res() res: Response) {
     const buf = await this.equipamentos.importTemplate();
@@ -252,6 +479,15 @@ export class EquipamentosController {
   }
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("import/preview")
+  async importPreview(@CurrentUser() user: AuthUser, @Body() body: ImportPreviewDto) {
+    const rows = body.contentBase64
+      ? await this.equipamentos.parseArquivoImport(body.filename ?? "import.csv", body.contentBase64)
+      : (body.rows ?? []);
+    return this.equipamentos.importPreview(user, rows);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("import")
   importRows(@CurrentUser() user: AuthUser, @Body() body: ImportDto) {
     return this.equipamentos.importRows(user, body.rows ?? []);
@@ -261,6 +497,53 @@ export class EquipamentosController {
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() body: CreateEquipamentoDto) {
     return this.equipamentos.create(user, body);
+  }
+
+  @Get("qr/:codigo")
+  qr(@CurrentUser() user: AuthUser, @Param("codigo") codigo: string) {
+    return this.equipamentos.byQr(user.estabelecimentoId, decodeURIComponent(codigo));
+  }
+
+  @Get(":tag/pagina")
+  pagina(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
+    const verValores = ["ENGENHEIRO", "GESTOR", "ADMIN"].includes(user.perfil);
+    return this.equipamentos.pagina(user, tag, verValores);
+  }
+
+  @Get(":tag/etiqueta")
+  etiqueta(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
+    return this.equipamentos.etiqueta(user, tag);
+  }
+
+  @Get(":tag/documentos/:id")
+  async documento(
+    @CurrentUser() user: AuthUser,
+    @Param("tag") tag: string,
+    @Param("id") id: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.equipamentos.getDocumento(user, tag, id);
+    res.setHeader("Content-Type", doc.mimeType);
+    res.setHeader("Content-Disposition", `attachment; filename="${doc.nomeArquivo}"`);
+    res.send(Buffer.from(doc.conteudo));
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":tag/documentos")
+  addDocumento(@CurrentUser() user: AuthUser, @Param("tag") tag: string, @Body() body: DocumentoDto) {
+    return this.equipamentos.addDocumento(user, tag, body);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":tag/movimentacoes")
+  movimentar(@CurrentUser() user: AuthUser, @Param("tag") tag: string, @Body() body: MovimentacaoDto) {
+    return this.equipamentos.movimentar(user, tag, body);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":tag/ciclo")
+  ciclo(@CurrentUser() user: AuthUser, @Param("tag") tag: string, @Body() body: CicloDto) {
+    return this.equipamentos.registrarCiclo(user, tag, body);
   }
 
   @Get(":tag")

@@ -51,6 +51,35 @@ export const LABEL_CONDICAO_USO: Record<CondicaoUsoEquipamento, string> = {
   PARADO: "Parado",
 };
 
+export type PropriedadeEquipamento = "PROPRIO" | "LOCADO" | "COMODATO";
+
+export const LABEL_PROPRIEDADE: Record<PropriedadeEquipamento, string> = {
+  PROPRIO: "Próprio",
+  LOCADO: "Locado",
+  COMODATO: "Comodato",
+};
+
+export const LABEL_SITUACAO_CICLO: Record<SituacaoEquipamento, string> = {
+  ATIVO: "Em operação",
+  EM_GARANTIA: "Em operação (garantia)",
+  EM_GARANTIA_ESTENDIDA: "Em operação (garantia estendida)",
+  INATIVO: "Desativado",
+  ARQUIVADO: "Arquivado",
+};
+
+export type TipoMovimentacaoEquipamento =
+  | "TRANSFERENCIA_SETOR"
+  | "EMPRESTIMO"
+  | "ASSISTENCIA"
+  | "RETORNO";
+
+export const LABEL_MOVIMENTACAO: Record<TipoMovimentacaoEquipamento, string> = {
+  TRANSFERENCIA_SETOR: "Transferência de setor",
+  EMPRESTIMO: "Empréstimo",
+  ASSISTENCIA: "Assistência técnica",
+  RETORNO: "Retorno",
+};
+
 export function labelStatusOS(status?: string | null): string {
   if (status && status in LABEL_STATUS_OS) return LABEL_STATUS_OS[status as StatusOS];
   return status?.replace(/_/g, " ") ?? "—";

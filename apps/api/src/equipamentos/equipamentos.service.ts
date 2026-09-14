@@ -1,13 +1,126 @@
+import { randomBytes } from "node:crypto";
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { Prisma, SituacaoEquipamento } from "@prisma/client";
+import {
+  CondicaoUsoEquipamento,
+  Criticidade,
+  EventoCicloVida,
+  Prisma,
+  PropriedadeEquipamento,
+  SituacaoEquipamento,
+  TipoDocumentoEquipamento,
+  TipoMovimentacaoEquipamento,
+} from "@prisma/client";
+import { STATUS_OS_ATIVAS, podeEditarCadastros, podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
-import { podeEditarCadastros, podeEditarModulo } from "@aion/shared";
+import { parseAnexoDataUrl } from "../os/os-anexos";
+import {
+  COLUNAS_IMPORT,
+  extrairCodigoQr,
+  garantiaVigente,
+  normalizarIdent,
+  payloadQrAutenticado,
+  proximaTagHef,
+  serieContaComoDuplicata,
+  validarLoteImportacao,
+  type ImportRowIn,
+  type IndiceExistentes,
+} from "./equipamento-regras";
+import { qrSvg } from "./qr-svg";
+
+const INCLUDE_FICHA = {
+  setor: true,
+  fabricante: true,
+  modelo: true,
+  descricao: true,
+  fornecedor: true,
+  centroCusto: true,
+  criticidadeResponsavel: { select: { id: true, nome: true } },
+  historicoTags: { orderBy: { createdAt: "desc" as const }, take: 20 },
+  tipoEquipamentoPlano: {
+    include: {
+      testes: {
+        where: { ativo: true },
+        orderBy: { tipoTeste: "asc" as const },
+        select: {
+          tipoTeste: true,
+          procedimentoCodigo: true,
+          periodicidadeMeses: true,
+          ativo: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.EquipamentoInclude;
+
+export type CreateEquipamentoInput = {
+  tag?: string;
+  nome: string;
+  descricaoId?: string;
+  fabricanteId?: string;
+  modeloId?: string;
+  setorId: string;
+  fornecedorId?: string;
+  centroCustoId?: string;
+  patrimonio?: string;
+  nSerie?: string;
+  idInterna?: string;
+  unidade?: string;
+  localizacaoFisica?: string;
+  propriedade?: PropriedadeEquipamento;
+  dataAquisicao?: string;
+  dataInstalacao?: string;
+  valorAquisicao?: number;
+  garantiaInicio?: string;
+  garantiaFim?: string;
+  registroAnvisa?: string;
+  validadeAnvisa?: string;
+  observacao?: string;
+  situacao?: SituacaoEquipamento;
+  condicaoUso?: CondicaoUsoEquipamento;
+  criticidadeEquipamento?: Criticidade;
+  criticidadeJustificativa?: string;
+  criticidadeResponsavelId?: string;
+};
+
+export type UpdateEquipamentoInput = {
+  nome?: string;
+  setorId?: string;
+  fabricanteId?: string;
+  modeloId?: string;
+  fornecedorId?: string | null;
+  centroCustoId?: string | null;
+  patrimonio?: string | null;
+  nSerie?: string | null;
+  idInterna?: string | null;
+  unidade?: string | null;
+  localizacaoFisica?: string | null;
+  propriedade?: PropriedadeEquipamento;
+  observacao?: string;
+  situacao?: SituacaoEquipamento;
+  condicaoUso?: CondicaoUsoEquipamento;
+  valorAquisicao?: number;
+  valorSubstituicao?: number;
+  dataAquisicao?: string | null;
+  dataInstalacao?: string | null;
+  garantiaInicio?: string | null;
+  garantiaFim?: string | null;
+  checklistRecebimentoPendente?: boolean;
+  registroAnvisa?: string;
+  validadeAnvisa?: string | null;
+  dataEndOfService?: string | null;
+  dataEndOfLife?: string | null;
+  tipoEquipamentoPlanoId?: string | null;
+  criticidadeEquipamento?: Criticidade | null;
+  criticidadeJustificativa?: string | null;
+  criticidadeResponsavelId?: string | null;
+};
 
 @Injectable()
 export class EquipamentosService {
@@ -27,19 +140,24 @@ export class EquipamentosService {
   ) {
     const page = Math.max(1, query.page ?? 1);
     const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
+    const termo = query.q?.trim();
     const where: Prisma.EquipamentoWhereInput = {
       estabelecimentoId,
       ...(query.setor ? { setorId: query.setor } : {}),
       ...(query.fabricante ? { fabricanteId: query.fabricante } : {}),
       ...(query.modelo ? { modeloId: query.modelo } : {}),
       ...(query.situacao ? { situacao: query.situacao } : {}),
-      ...(query.q
+      ...(termo
         ? {
             OR: [
-              { tag: { contains: query.q, mode: "insensitive" } },
-              { nome: { contains: query.q, mode: "insensitive" } },
-              { patrimonio: { contains: query.q, mode: "insensitive" } },
-              { nSerie: { contains: query.q, mode: "insensitive" } },
+              { tag: { contains: termo, mode: "insensitive" } },
+              { nome: { contains: termo, mode: "insensitive" } },
+              { patrimonio: { contains: termo, mode: "insensitive" } },
+              { nSerie: { contains: termo, mode: "insensitive" } },
+              { idInterna: { contains: termo, mode: "insensitive" } },
+              { fabricante: { nome: { contains: termo, mode: "insensitive" } } },
+              { modelo: { nome: { contains: termo, mode: "insensitive" } } },
+              { setor: { nome: { contains: termo, mode: "insensitive" } } },
             ],
           }
         : {}),
@@ -65,7 +183,6 @@ export class EquipamentosService {
     return { total, page, pageSize, items };
   }
 
-  /** Inventário completo para relatório (sem paginação). */
   async inventarioAtual(estabelecimentoId: string) {
     const items = await this.prisma.equipamento.findMany({
       where: {
@@ -86,11 +203,12 @@ export class EquipamentosService {
       tag: eq.tag,
       nome: eq.nome,
       situacao: eq.situacao,
+      condicaoUso: eq.condicaoUso,
       setor: eq.setor.nome,
       fabricante: eq.fabricante.nome,
       modelo: eq.modelo.nome,
       descricao: eq.descricao.nome,
-      criticidade: eq.descricao.criticidade,
+      criticidade: eq.criticidadeEquipamento ?? eq.descricao.criticidade,
       patrimonio: eq.patrimonio ?? "",
       nSerie: eq.nSerie ?? "",
       registroAnvisa: eq.registroAnvisa ?? "",
@@ -117,140 +235,202 @@ export class EquipamentosService {
     };
   }
 
+  private ocultarValores<T extends { valorAquisicao?: unknown; valorSubstituicao?: unknown }>(
+    eq: T,
+    verValores: boolean,
+  ) {
+    if (verValores) return eq;
+    return { ...eq, valorAquisicao: null, valorSubstituicao: null };
+  }
+
   async byTag(estabelecimentoId: string, tag: string, verValores: boolean) {
     const eq = await this.prisma.equipamento.findUnique({
       where: { estabelecimentoId_tag: { estabelecimentoId, tag } },
-      include: {
-        setor: true,
-        fabricante: true,
-        modelo: true,
-        descricao: true,
-        fornecedor: true,
-        centroCusto: true,
-        historicoTags: { orderBy: { createdAt: "desc" }, take: 20 },
-        tipoEquipamentoPlano: {
-          include: {
-            testes: {
-              where: { ativo: true },
-              orderBy: { tipoTeste: "asc" },
-              select: {
-                tipoTeste: true,
-                procedimentoCodigo: true,
-                periodicidadeMeses: true,
-                ativo: true,
-              },
-            },
-          },
-        },
-      },
+      include: INCLUDE_FICHA,
     });
 
     if (!eq) {
       throw new NotFoundException(`Equipamento ${tag} não encontrado`);
     }
 
-    if (!verValores) {
-      const { valorAquisicao: _a, valorSubstituicao: _s, ...rest } = eq;
-      return { ...rest, valorAquisicao: null, valorSubstituicao: null };
-    }
-
-    return eq;
+    return this.ocultarValores(eq, verValores);
   }
 
   async byQr(estabelecimentoId: string, codigo: string) {
-    return this.byTag(estabelecimentoId, codigo, false);
+    const raw = extrairCodigoQr(codigo);
+    if (!raw) throw new NotFoundException("Código QR vazio");
+    const eq = await this.prisma.equipamento.findFirst({
+      where: {
+        estabelecimentoId,
+        OR: [
+          { tag: { equals: raw, mode: "insensitive" } },
+          { qrToken: raw },
+        ],
+      },
+      include: INCLUDE_FICHA,
+    });
+    if (!eq) throw new NotFoundException("Equipamento não encontrado");
+    return this.ocultarValores(eq, false);
   }
 
-  async create(
-    user: AuthUser,
-    data: {
-      tag: string;
-      nome: string;
-      descricaoId: string;
-      fabricanteId: string;
-      modeloId: string;
-      setorId: string;
-      fornecedorId?: string;
-      centroCustoId?: string;
-      patrimonio?: string;
-      nSerie?: string;
-      dataAquisicao?: string;
-      dataInstalacao?: string;
-      valorAquisicao?: number;
-      registroAnvisa?: string;
-      validadeAnvisa?: string;
-      observacao?: string;
-      situacao?: SituacaoEquipamento;
-    },
+  async proximaTag(estabelecimentoId: string) {
+    const rows = await this.prisma.equipamento.findMany({
+      where: { estabelecimentoId, tag: { startsWith: "HEF-" } },
+      select: { tag: true },
+    });
+    return proximaTagHef(rows.map((r) => r.tag));
+  }
+
+  private async assertIdentificadoresUnicos(
+    estabelecimentoId: string,
+    ids: { tag?: string | null; patrimonio?: string | null; nSerie?: string | null; idInterna?: string | null },
+    excludeId?: string,
   ) {
+    const tag = normalizarIdent(ids.tag);
+    if (tag) {
+      const hit = await this.prisma.equipamento.findFirst({
+        where: { estabelecimentoId, tag: { equals: tag, mode: "insensitive" }, ...(excludeId ? { id: { not: excludeId } } : {}) },
+      });
+      if (hit) throw new ConflictException(`TAG ${tag} já existe nesta instituição`);
+    }
+    const patrimonio = normalizarIdent(ids.patrimonio);
+    if (patrimonio) {
+      const hit = await this.prisma.equipamento.findFirst({
+        where: {
+          estabelecimentoId,
+          patrimonio: { equals: patrimonio, mode: "insensitive" },
+          ...(excludeId ? { id: { not: excludeId } } : {}),
+        },
+      });
+      if (hit) throw new ConflictException(`Patrimônio ${patrimonio} já existe nesta instituição`);
+    }
+    const nSerie = normalizarIdent(ids.nSerie);
+    if (serieContaComoDuplicata(nSerie)) {
+      const hit = await this.prisma.equipamento.findFirst({
+        where: {
+          estabelecimentoId,
+          nSerie: { equals: nSerie, mode: "insensitive" },
+          ...(excludeId ? { id: { not: excludeId } } : {}),
+        },
+      });
+      if (hit) throw new ConflictException(`Nº de série ${nSerie} já existe nesta instituição`);
+    }
+    const idInterna = normalizarIdent(ids.idInterna);
+    if (idInterna) {
+      const hit = await this.prisma.equipamento.findFirst({
+        where: {
+          estabelecimentoId,
+          idInterna: { equals: idInterna, mode: "insensitive" },
+          ...(excludeId ? { id: { not: excludeId } } : {}),
+        },
+      });
+      if (hit) throw new ConflictException(`ID interna ${idInterna} já existe nesta instituição`);
+    }
+  }
+
+  private async resolverDefaults(
+    estabelecimentoId: string,
+    data: { descricaoId?: string; fabricanteId?: string; modeloId?: string },
+  ) {
+    let descricaoId = data.descricaoId;
+    if (!descricaoId) {
+      const plano = await this.prisma.planoDescricao.upsert({
+        where: { estabelecimentoId_nome: { estabelecimentoId, nome: "Outros" } },
+        update: {},
+        create: { estabelecimentoId, nome: "Outros", vidaUtilAnos: 10 },
+      });
+      descricaoId = plano.id;
+    }
+    let fabricanteId = data.fabricanteId;
+    if (!fabricanteId) {
+      const fab = await this.prisma.fabricante.upsert({
+        where: { estabelecimentoId_nome: { estabelecimentoId, nome: "Não informado" } },
+        update: {},
+        create: { estabelecimentoId, nome: "Não informado" },
+      });
+      fabricanteId = fab.id;
+    }
+    let modeloId = data.modeloId;
+    if (!modeloId) {
+      const modelo = await this.prisma.modelo.upsert({
+        where: { fabricanteId_nome: { fabricanteId, nome: "Não informado" } },
+        update: {},
+        create: { fabricanteId, nome: "Não informado" },
+      });
+      modeloId = modelo.id;
+    }
+    return { descricaoId, fabricanteId, modeloId };
+  }
+
+  async create(user: AuthUser, data: CreateEquipamentoInput) {
     if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode cadastrar equipamentos");
     }
+    const nome = normalizarIdent(data.nome);
+    if (!nome) throw new BadRequestException("Nome obrigatório");
+    if (!data.setorId) throw new BadRequestException("Setor obrigatório");
+
+    const tag = normalizarIdent(data.tag) || (await this.proximaTag(user.estabelecimentoId));
+    await this.assertIdentificadoresUnicos(user.estabelecimentoId, {
+      tag,
+      patrimonio: data.patrimonio,
+      nSerie: data.nSerie,
+      idInterna: data.idInterna,
+    });
+
+    const ids = await this.resolverDefaults(user.estabelecimentoId, data);
+    const setor = await this.prisma.setor.findFirst({
+      where: { id: data.setorId, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!setor) throw new BadRequestException("Setor inválido");
+
     return this.prisma.equipamento.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
-        tag: data.tag.trim(),
-        nome: data.nome.trim(),
-        descricaoId: data.descricaoId,
-        fabricanteId: data.fabricanteId,
-        modeloId: data.modeloId,
+        tag,
+        nome,
+        descricaoId: ids.descricaoId,
+        fabricanteId: ids.fabricanteId,
+        modeloId: ids.modeloId,
         setorId: data.setorId,
         fornecedorId: data.fornecedorId,
         centroCustoId: data.centroCustoId,
-        patrimonio: data.patrimonio,
-        nSerie: data.nSerie,
+        patrimonio: normalizarIdent(data.patrimonio) || null,
+        nSerie: normalizarIdent(data.nSerie) || null,
+        idInterna: normalizarIdent(data.idInterna) || null,
+        unidade: normalizarIdent(data.unidade) || null,
+        localizacaoFisica: normalizarIdent(data.localizacaoFisica) || null,
+        propriedade: data.propriedade ?? PropriedadeEquipamento.PROPRIO,
         dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
         dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null,
         valorAquisicao: data.valorAquisicao,
+        garantiaInicio: data.garantiaInicio ? new Date(data.garantiaInicio) : null,
+        garantiaFim: data.garantiaFim ? new Date(data.garantiaFim) : null,
         registroAnvisa: data.registroAnvisa,
         validadeAnvisa: data.validadeAnvisa ? new Date(data.validadeAnvisa) : null,
         observacao: data.observacao,
         situacao: data.situacao ?? SituacaoEquipamento.ATIVO,
+        condicaoUso: data.condicaoUso ?? CondicaoUsoEquipamento.APTO,
+        criticidadeEquipamento: data.criticidadeEquipamento,
+        criticidadeJustificativa: data.criticidadeJustificativa,
+        criticidadeResponsavelId: data.criticidadeResponsavelId,
+        qrToken: randomBytes(8).toString("hex"),
+        checklistRecebimentoPendente: true,
       },
-      include: {
-        setor: true,
-        fabricante: true,
-        modelo: true,
-        descricao: true,
-      },
+      include: INCLUDE_FICHA,
     });
   }
 
-  async update(
-    user: AuthUser,
-    tag: string,
-    data: {
-      nome?: string;
-      setorId?: string;
-      fabricanteId?: string;
-      modeloId?: string;
-      fornecedorId?: string | null;
-      centroCustoId?: string | null;
-      patrimonio?: string;
-      nSerie?: string;
-      observacao?: string;
-      situacao?: SituacaoEquipamento;
-      valorAquisicao?: number;
-      valorSubstituicao?: number;
-      checklistRecebimentoPendente?: boolean;
-      registroAnvisa?: string;
-      validadeAnvisa?: string | null;
-      dataEndOfService?: string | null;
-      dataEndOfLife?: string | null;
-      tipoEquipamentoPlanoId?: string | null;
-    },
-  ) {
+  async update(user: AuthUser, tag: string, data: UpdateEquipamentoInput) {
     if (!podeEditarModulo(user.perfil, user.permissoesModulos, "equipamentos")) {
       throw new ForbiddenException("Sem permissão para editar inventário");
     }
     const eq = await this.prisma.equipamento.findUnique({
-      where: {
-        estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag },
-      },
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
     });
     if (!eq) throw new NotFoundException();
-    if (eq.situacao === SituacaoEquipamento.ARQUIVADO || eq.situacao === SituacaoEquipamento.INATIVO) {
-      throw new ForbiddenException("Equipamento arquivado/inativo está somente leitura");
+    if (eq.situacao === SituacaoEquipamento.ARQUIVADO) {
+      throw new ForbiddenException("Equipamento arquivado está somente leitura");
     }
 
     if (data.tipoEquipamentoPlanoId) {
@@ -264,6 +444,16 @@ export class EquipamentosService {
       if (!tipo) throw new BadRequestException("Tipo de plano inválido");
     }
 
+    await this.assertIdentificadoresUnicos(
+      user.estabelecimentoId,
+      {
+        patrimonio: data.patrimonio,
+        nSerie: data.nSerie,
+        idInterna: data.idInterna,
+      },
+      eq.id,
+    );
+
     const updated = await this.prisma.equipamento.update({
       where: { id: eq.id },
       data: {
@@ -273,12 +463,31 @@ export class EquipamentosService {
         ...(data.modeloId != null ? { modeloId: data.modeloId } : {}),
         ...(data.fornecedorId !== undefined ? { fornecedorId: data.fornecedorId } : {}),
         ...(data.centroCustoId !== undefined ? { centroCustoId: data.centroCustoId } : {}),
-        ...(data.patrimonio != null ? { patrimonio: data.patrimonio } : {}),
-        ...(data.nSerie != null ? { nSerie: data.nSerie } : {}),
+        ...(data.patrimonio !== undefined ? { patrimonio: normalizarIdent(data.patrimonio) || null } : {}),
+        ...(data.nSerie !== undefined ? { nSerie: normalizarIdent(data.nSerie) || null } : {}),
+        ...(data.idInterna !== undefined ? { idInterna: normalizarIdent(data.idInterna) || null } : {}),
+        ...(data.unidade !== undefined ? { unidade: normalizarIdent(data.unidade) || null } : {}),
+        ...(data.localizacaoFisica !== undefined
+          ? { localizacaoFisica: normalizarIdent(data.localizacaoFisica) || null }
+          : {}),
+        ...(data.propriedade != null ? { propriedade: data.propriedade } : {}),
         ...(data.observacao != null ? { observacao: data.observacao } : {}),
         ...(data.situacao != null ? { situacao: data.situacao } : {}),
+        ...(data.condicaoUso != null ? { condicaoUso: data.condicaoUso } : {}),
         ...(data.valorAquisicao != null ? { valorAquisicao: data.valorAquisicao } : {}),
         ...(data.valorSubstituicao != null ? { valorSubstituicao: data.valorSubstituicao } : {}),
+        ...(data.dataAquisicao !== undefined
+          ? { dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null }
+          : {}),
+        ...(data.dataInstalacao !== undefined
+          ? { dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null }
+          : {}),
+        ...(data.garantiaInicio !== undefined
+          ? { garantiaInicio: data.garantiaInicio ? new Date(data.garantiaInicio) : null }
+          : {}),
+        ...(data.garantiaFim !== undefined
+          ? { garantiaFim: data.garantiaFim ? new Date(data.garantiaFim) : null }
+          : {}),
         ...(data.checklistRecebimentoPendente != null
           ? { checklistRecebimentoPendente: data.checklistRecebimentoPendente }
           : {}),
@@ -295,27 +504,17 @@ export class EquipamentosService {
         ...(data.tipoEquipamentoPlanoId !== undefined
           ? { tipoEquipamentoPlanoId: data.tipoEquipamentoPlanoId || null }
           : {}),
+        ...(data.criticidadeEquipamento !== undefined
+          ? { criticidadeEquipamento: data.criticidadeEquipamento }
+          : {}),
+        ...(data.criticidadeJustificativa !== undefined
+          ? { criticidadeJustificativa: data.criticidadeJustificativa }
+          : {}),
+        ...(data.criticidadeResponsavelId !== undefined
+          ? { criticidadeResponsavelId: data.criticidadeResponsavelId }
+          : {}),
       },
-      include: {
-        setor: true,
-        fabricante: true,
-        modelo: true,
-        descricao: true,
-        tipoEquipamentoPlano: {
-          include: {
-            testes: {
-              where: { ativo: true },
-              orderBy: { tipoTeste: "asc" },
-              select: {
-                tipoTeste: true,
-                procedimentoCodigo: true,
-                periodicidadeMeses: true,
-                ativo: true,
-              },
-            },
-          },
-        },
-      },
+      include: INCLUDE_FICHA,
     });
 
     await this.prisma.logAcesso.create({
@@ -338,13 +537,12 @@ export class EquipamentosService {
     }
 
     const atual = await this.prisma.equipamento.findUnique({
-      where: {
-        estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag },
-      },
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
     });
     if (!atual) {
       throw new NotFoundException(`Equipamento ${tag} não encontrado`);
     }
+    await this.assertIdentificadoresUnicos(user.estabelecimentoId, { tag: novaTag }, atual.id);
 
     return this.prisma.$transaction(async (tx) => {
       await tx.historicoTag.create({
@@ -359,6 +557,7 @@ export class EquipamentosService {
       return tx.equipamento.update({
         where: { id: atual.id },
         data: { tag: novaTag.trim() },
+        include: INCLUDE_FICHA,
       });
     });
   }
@@ -368,9 +567,7 @@ export class EquipamentosService {
       throw new ForbiddenException();
     }
     const eq = await this.prisma.equipamento.findUnique({
-      where: {
-        estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag },
-      },
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
     });
     if (!eq) throw new NotFoundException();
 
@@ -385,6 +582,7 @@ export class EquipamentosService {
     return this.prisma.equipamento.update({
       where: { id: eq.id },
       data: { situacao: SituacaoEquipamento.ARQUIVADO },
+      include: INCLUDE_FICHA,
     });
   }
 
@@ -393,9 +591,7 @@ export class EquipamentosService {
       throw new ForbiddenException();
     }
     const eq = await this.prisma.equipamento.findUnique({
-      where: {
-        estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag },
-      },
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
     });
     if (!eq) throw new NotFoundException();
 
@@ -409,66 +605,425 @@ export class EquipamentosService {
 
     return this.prisma.equipamento.update({
       where: { id: eq.id },
-      data: { situacao: SituacaoEquipamento.ATIVO },
+      data: { situacao: SituacaoEquipamento.ATIVO, dataDesativacao: null, motivoDesativacao: null },
+      include: INCLUDE_FICHA,
     });
+  }
+
+  async pagina(user: AuthUser, tag: string, verValores: boolean) {
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+      include: {
+        ...INCLUDE_FICHA,
+        movimentacoes: {
+          orderBy: { data: "desc" },
+          take: 50,
+          include: {
+            origemSetor: { select: { id: true, nome: true } },
+            destinoSetor: { select: { id: true, nome: true } },
+          },
+        },
+        documentos: {
+          orderBy: { createdAt: "desc" },
+          select: { id: true, tipo: true, nomeArquivo: true, mimeType: true, descricao: true, createdAt: true },
+        },
+        eventosCiclo: { orderBy: { data: "desc" }, include: { documento: { select: { id: true, nomeArquivo: true } } } },
+      },
+    });
+    if (!eq) throw new NotFoundException(`Equipamento ${tag} não encontrado`);
+
+    const [osAbertas, osHistorico, custosAgg] = await Promise.all([
+      this.prisma.ordemServico.findMany({
+        where: {
+          estabelecimentoId: user.estabelecimentoId,
+          equipamentoId: eq.id,
+          status: { in: [...STATUS_OS_ATIVAS] },
+        },
+        orderBy: { abertura: "desc" },
+        select: { numero: true, codigo: true, tipo: true, status: true, prioridade: true, abertura: true },
+      }),
+      this.prisma.ordemServico.findMany({
+        where: { estabelecimentoId: user.estabelecimentoId, equipamentoId: eq.id },
+        orderBy: { abertura: "desc" },
+        take: 40,
+        select: {
+          numero: true,
+          codigo: true,
+          tipo: true,
+          status: true,
+          prioridade: true,
+          abertura: true,
+          fechamento: true,
+          servicoRealizado: true,
+        },
+      }),
+      this.prisma.ordemServicoItem.aggregate({
+        where: { ordemServico: { estabelecimentoId: user.estabelecimentoId, equipamentoId: eq.id } },
+        _sum: { valorUnitario: true },
+        _count: true,
+      }),
+    ]);
+
+    const itens = await this.prisma.ordemServicoItem.findMany({
+      where: { ordemServico: { estabelecimentoId: user.estabelecimentoId, equipamentoId: eq.id } },
+      select: { quantidade: true, valorUnitario: true },
+    });
+    const totalOS = itens.reduce((acc, i) => acc + Number(i.quantidade) * Number(i.valorUnitario ?? 0), 0);
+
+    const criticidade = eq.criticidadeEquipamento ?? eq.descricao.criticidade;
+    return {
+      ...this.ocultarValores(eq, verValores),
+      criticidade,
+      garantiaVigente: garantiaVigente(eq.garantiaFim),
+      osAbertas,
+      osHistorico,
+      custos: {
+        totalOS: Number(totalOS.toFixed(2)),
+        nItens: custosAgg._count,
+        nOS: osHistorico.length,
+      },
+    };
+  }
+
+  async ensureQrToken(eqId: string) {
+    const eq = await this.prisma.equipamento.findUnique({ where: { id: eqId } });
+    if (!eq) throw new NotFoundException();
+    if (eq.qrToken) return eq.qrToken;
+    const token = randomBytes(8).toString("hex");
+    await this.prisma.equipamento.update({ where: { id: eqId }, data: { qrToken: token } });
+    return token;
+  }
+
+  async etiqueta(user: AuthUser, tag: string) {
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+      include: { setor: true },
+    });
+    if (!eq) throw new NotFoundException();
+    const token = await this.ensureQrToken(eq.id);
+    const payload = payloadQrAutenticado(token);
+    return {
+      tag: eq.tag,
+      nome: eq.nome,
+      setor: eq.setor.nome,
+      patrimonio: eq.patrimonio,
+      payload,
+      svg: qrSvg(payload),
+    };
+  }
+
+  async movimentar(
+    user: AuthUser,
+    tag: string,
+    body: {
+      tipo: TipoMovimentacaoEquipamento;
+      destinoSetorId?: string;
+      destinoLocalizacao?: string;
+      data?: string;
+      responsavelNome?: string;
+      responsavelId?: string;
+      motivo: string;
+    },
+  ) {
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "equipamentos")) {
+      throw new ForbiddenException();
+    }
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+    });
+    if (!eq) throw new NotFoundException();
+    if (eq.situacao === SituacaoEquipamento.ARQUIVADO) {
+      throw new ForbiddenException("Equipamento arquivado não se movimenta");
+    }
+    if (!body.motivo?.trim()) throw new BadRequestException("Motivo obrigatório");
+
+    let destinoSetorId = body.destinoSetorId || null;
+    if (destinoSetorId) {
+      const setor = await this.prisma.setor.findFirst({
+        where: { id: destinoSetorId, estabelecimentoId: user.estabelecimentoId },
+      });
+      if (!setor) throw new BadRequestException("Setor de destino inválido");
+    }
+
+    const destinoLocalizacao = normalizarIdent(body.destinoLocalizacao) || null;
+    const transferencia = body.tipo === TipoMovimentacaoEquipamento.TRANSFERENCIA_SETOR;
+    const retorno = body.tipo === TipoMovimentacaoEquipamento.RETORNO;
+    if ((transferencia || retorno) && !destinoSetorId) {
+      throw new BadRequestException("Informe o setor de destino");
+    }
+
+    let responsavelNome = normalizarIdent(body.responsavelNome);
+    if (body.responsavelId) {
+      const colab = await this.prisma.colaborador.findFirst({
+        where: { id: body.responsavelId, estabelecimentoId: user.estabelecimentoId },
+      });
+      if (!colab) throw new BadRequestException("Responsável inválido");
+      responsavelNome = responsavelNome || colab.nome;
+    }
+    if (!responsavelNome) throw new BadRequestException("Informe o responsável");
+
+    const mov = await this.prisma.equipamentoMovimentacao.create({
+      data: {
+        equipamentoId: eq.id,
+        tipo: body.tipo,
+        origemSetorId: eq.setorId,
+        destinoSetorId,
+        origemLocalizacao: eq.localizacaoFisica,
+        destinoLocalizacao,
+        data: body.data ? new Date(body.data) : new Date(),
+        responsavelNome,
+        responsavelId: body.responsavelId || null,
+        motivo: body.motivo.trim(),
+        usuarioId: user.userId,
+      },
+    });
+
+    const patch: Prisma.EquipamentoUpdateInput = {};
+    if (destinoSetorId && (transferencia || retorno)) patch.setor = { connect: { id: destinoSetorId } };
+    if (destinoLocalizacao !== null) patch.localizacaoFisica = destinoLocalizacao;
+    if (Object.keys(patch).length) {
+      await this.prisma.equipamento.update({ where: { id: eq.id }, data: patch });
+    }
+
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "MOVIMENTAR_EQUIPAMENTO",
+        detalhe: `tag=${tag} · ${body.tipo}`,
+      },
+    });
+
+    return mov;
+  }
+
+  async addDocumento(
+    user: AuthUser,
+    tag: string,
+    body: { tipo: TipoDocumentoEquipamento; dataUrl: string; nomeArquivo?: string; descricao?: string },
+  ) {
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "equipamentos")) {
+      throw new ForbiddenException();
+    }
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+    });
+    if (!eq) throw new NotFoundException();
+    const parsed = parseAnexoDataUrl(body.dataUrl, body.nomeArquivo);
+    const doc = await this.prisma.equipamentoDocumento.create({
+      data: {
+        equipamentoId: eq.id,
+        tipo: body.tipo,
+        nomeArquivo: parsed.nomeArquivo,
+        mimeType: parsed.mimeType,
+        conteudo: parsed.buffer,
+        descricao: body.descricao?.trim() || null,
+        usuarioId: user.userId,
+      },
+      select: { id: true, tipo: true, nomeArquivo: true, mimeType: true, descricao: true, createdAt: true },
+    });
+    return doc;
+  }
+
+  async getDocumento(user: AuthUser, tag: string, id: string) {
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+    });
+    if (!eq) throw new NotFoundException();
+    const doc = await this.prisma.equipamentoDocumento.findFirst({
+      where: { id, equipamentoId: eq.id },
+    });
+    if (!doc) throw new NotFoundException("Documento não encontrado");
+    return doc;
+  }
+
+  async registrarCiclo(
+    user: AuthUser,
+    tag: string,
+    body: {
+      tipo: EventoCicloVida;
+      data?: string;
+      observacao?: string;
+      motivoDesativacao?: string;
+      documento?: { dataUrl: string; nomeArquivo?: string };
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException();
+    }
+    const eq = await this.prisma.equipamento.findUnique({
+      where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
+    });
+    if (!eq) throw new NotFoundException();
+
+    const precisaEvidencia = body.tipo !== EventoCicloVida.ENTRADA_OPERACAO;
+    if (precisaEvidencia && !body.documento?.dataUrl && !normalizarIdent(body.observacao)) {
+      throw new BadRequestException("Informe evidência (foto/PDF) ou observação");
+    }
+    if (body.tipo === EventoCicloVida.DESATIVACAO && !normalizarIdent(body.motivoDesativacao ?? body.observacao)) {
+      throw new BadRequestException("Informe o motivo da desativação");
+    }
+
+    let documentoId: string | undefined;
+    if (body.documento?.dataUrl) {
+      const tipoDoc =
+        body.tipo === EventoCicloVida.RECEBIMENTO
+          ? TipoDocumentoEquipamento.EVIDENCIA_RECEBIMENTO
+          : body.tipo === EventoCicloVida.ENTRADA_OPERACAO
+            ? TipoDocumentoEquipamento.EVIDENCIA_ENTRADA_OPERACAO
+            : TipoDocumentoEquipamento.EVIDENCIA_DESATIVACAO;
+      const doc = await this.addDocumento(user, tag, {
+        tipo: tipoDoc,
+        dataUrl: body.documento.dataUrl,
+        nomeArquivo: body.documento.nomeArquivo,
+        descricao: body.tipo,
+      });
+      documentoId = doc.id;
+    }
+
+    const data = body.data ? new Date(body.data) : new Date();
+    const evento = await this.prisma.equipamentoEventoCiclo.create({
+      data: {
+        equipamentoId: eq.id,
+        tipo: body.tipo,
+        data,
+        observacao: body.observacao?.trim() || body.motivoDesativacao?.trim() || null,
+        usuarioId: user.userId,
+        documentoId,
+      },
+    });
+
+    const patch: Prisma.EquipamentoUpdateInput = {};
+    if (body.tipo === EventoCicloVida.RECEBIMENTO) {
+      patch.dataRecebimento = data;
+      patch.checklistRecebimentoPendente = false;
+    }
+    if (body.tipo === EventoCicloVida.ENTRADA_OPERACAO) {
+      patch.dataEntradaOperacao = data;
+      if (eq.situacao === SituacaoEquipamento.INATIVO) patch.situacao = SituacaoEquipamento.ATIVO;
+    }
+    if (body.tipo === EventoCicloVida.DESATIVACAO) {
+      patch.dataDesativacao = data;
+      patch.motivoDesativacao = body.motivoDesativacao?.trim() || body.observacao?.trim() || null;
+      patch.situacao = SituacaoEquipamento.INATIVO;
+    }
+    await this.prisma.equipamento.update({ where: { id: eq.id }, data: patch });
+    return evento;
   }
 
   async importTemplate() {
     const ExcelJS = (await import("exceljs")).default;
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("Equipamentos");
-    ws.columns = [
-      { header: "tag", key: "tag", width: 14 },
-      { header: "nome", key: "nome", width: 28 },
-      { header: "planoDescricao", key: "planoDescricao", width: 22 },
-      { header: "fabricante", key: "fabricante", width: 18 },
-      { header: "modelo", key: "modelo", width: 18 },
-      { header: "setor", key: "setor", width: 18 },
-      { header: "patrimonio", key: "patrimonio", width: 14 },
-      { header: "nSerie", key: "nSerie", width: 14 },
-    ];
+    ws.columns = COLUNAS_IMPORT.map((key) => ({ header: key, key, width: 18 }));
     ws.getRow(1).font = { bold: true };
     ws.addRow({
-      tag: "EQ-EXEMPLO",
+      tag: "",
       nome: "Monitor multiparamétrico",
       planoDescricao: "Monitor",
       fabricante: "Philips",
       modelo: "IntelliVue",
       setor: "UTI Adulto",
+      unidade: "HEF",
+      localizacaoFisica: "Leito 12",
       patrimonio: "PAT-001",
+      idInterna: "INT-001",
       nSerie: "SN-001",
+      propriedade: "PROPRIO",
+      dataAquisicao: "2024-01-15",
+      valorAquisicao: 12000,
+      garantiaInicio: "2024-01-15",
+      garantiaFim: "2026-01-15",
+      observacao: "Cadastro mínimo: deixe a TAG vazia para gerar HEF-NNNN",
     });
     const buf = await wb.xlsx.writeBuffer();
     return Buffer.from(buf);
   }
 
-  async importRows(
-    user: AuthUser,
-    rows: Array<{
-      tag: string;
-      nome: string;
-      planoDescricao: string;
-      fabricante: string;
-      modelo: string;
-      setor: string;
-      patrimonio?: string;
-      nSerie?: string;
-      registroAnvisa?: string;
-      validadeAnvisa?: string;
-      dataAquisicao?: string;
-      dataInstalacao?: string;
-      valorAquisicao?: number;
-      observacao?: string;
-    }>,
-  ) {
+  private async indiceExistentes(estabelecimentoId: string): Promise<IndiceExistentes> {
+    const rows = await this.prisma.equipamento.findMany({
+      where: { estabelecimentoId },
+      select: { tag: true, nSerie: true, patrimonio: true, idInterna: true },
+    });
+    const tags = new Set<string>();
+    const series = new Set<string>();
+    const patrimonios = new Set<string>();
+    const idInternas = new Set<string>();
+    for (const r of rows) {
+      if (r.tag) tags.add(r.tag.toLocaleLowerCase("pt-BR"));
+      if (serieContaComoDuplicata(r.nSerie)) series.add(r.nSerie!.toLocaleLowerCase("pt-BR"));
+      if (r.patrimonio?.trim()) patrimonios.add(r.patrimonio.toLocaleLowerCase("pt-BR"));
+      if (r.idInterna?.trim()) idInternas.add(r.idInterna.toLocaleLowerCase("pt-BR"));
+    }
+    return { tags, series, patrimonios, idInternas };
+  }
+
+  async importPreview(user: AuthUser, rows: ImportRowIn[]) {
     if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
-    const resultados: Array<{ tag: string; ok: boolean; erro?: string }> = [];
+    const existentes = await this.indiceExistentes(user.estabelecimentoId);
+    const resultados = validarLoteImportacao(rows, existentes);
+    return {
+      total: rows.length,
+      ok: resultados.filter((r) => r.ok).length,
+      erros: resultados.filter((r) => !r.ok),
+      resultados,
+    };
+  }
 
-    for (const row of rows) {
-      const tag = String(row.tag ?? "").trim();
+  async parseArquivoImport(filename: string, contentBase64: string): Promise<ImportRowIn[]> {
+    const raw = contentBase64.includes(",") ? contentBase64.split(",").pop()! : contentBase64;
+    const buf = Buffer.from(raw, "base64");
+    if (!buf.length) throw new BadRequestException("Arquivo vazio");
+    const name = filename.toLowerCase();
+    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      // exceljs e @types/node discordam no branded Buffer
+      await wb.xlsx.load(buf as never);
+      const ws = wb.worksheets[0];
+      if (!ws) throw new BadRequestException("Planilha sem aba");
+      const header: string[] = [];
+      ws.getRow(1).eachCell((cell, col) => {
+        header[col] = String(cell.value ?? "").trim();
+      });
+      const rows: ImportRowIn[] = [];
+      ws.eachRow((row, i) => {
+        if (i === 1) return;
+        const obj: Record<string, unknown> = {};
+        row.eachCell((cell, col) => {
+          const key = header[col];
+          if (key) obj[key] = cell.value != null ? String(cell.value).trim() : "";
+        });
+        if (Object.values(obj).some((v) => String(v ?? "").trim())) rows.push(obj as ImportRowIn);
+      });
+      return rows;
+    }
+    const text = buf.toString("utf8").replace(/^\uFEFF/, "");
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return [];
+    const sep = lines[0].includes(";") ? ";" : ",";
+    const headers = lines[0].split(sep).map((h) => h.trim());
+    return lines.slice(1).map((line) => {
+      const cols = line.split(sep).map((c) => c.trim());
+      const obj: Record<string, string> = {};
+      headers.forEach((h, i) => {
+        obj[h] = cols[i] ?? "";
+      });
+      return obj as ImportRowIn;
+    });
+  }
+
+  async importRows(user: AuthUser, rows: ImportRowIn[]) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) throw new ForbiddenException();
+    const preview = await this.importPreview(user, rows);
+    const resultados: Array<{ linha: number; tag: string; ok: boolean; erro?: string }> = [];
+
+    for (const item of preview.resultados) {
+      if (!item.ok) {
+        resultados.push({ linha: item.linha, tag: item.tag, ok: false, erro: item.erro });
+        continue;
+      }
+      const row = item.row;
       try {
-        if (!tag || !row.nome?.trim()) throw new BadRequestException("tag e nome obrigatórios");
-
         const planoNome = String(row.planoDescricao ?? "Outros").trim() || "Outros";
         const fabNome = String(row.fabricante ?? "Não informado").trim() || "Não informado";
         const setorNome = String(row.setor ?? "Geral").trim() || "Geral";
@@ -476,97 +1031,56 @@ export class EquipamentosService {
 
         const [plano, fab, setor] = await Promise.all([
           this.prisma.planoDescricao.upsert({
-            where: {
-              estabelecimentoId_nome: {
-                estabelecimentoId: user.estabelecimentoId,
-                nome: planoNome,
-              },
-            },
+            where: { estabelecimentoId_nome: { estabelecimentoId: user.estabelecimentoId, nome: planoNome } },
             update: {},
-            create: {
-              estabelecimentoId: user.estabelecimentoId,
-              nome: planoNome,
-              vidaUtilAnos: 10,
-            },
+            create: { estabelecimentoId: user.estabelecimentoId, nome: planoNome, vidaUtilAnos: 10 },
           }),
           this.prisma.fabricante.upsert({
-            where: {
-              estabelecimentoId_nome: {
-                estabelecimentoId: user.estabelecimentoId,
-                nome: fabNome,
-              },
-            },
+            where: { estabelecimentoId_nome: { estabelecimentoId: user.estabelecimentoId, nome: fabNome } },
             update: {},
             create: { estabelecimentoId: user.estabelecimentoId, nome: fabNome },
           }),
           this.prisma.setor.upsert({
-            where: {
-              estabelecimentoId_nome: {
-                estabelecimentoId: user.estabelecimentoId,
-                nome: setorNome,
-              },
-            },
+            where: { estabelecimentoId_nome: { estabelecimentoId: user.estabelecimentoId, nome: setorNome } },
             update: {},
             create: { estabelecimentoId: user.estabelecimentoId, nome: setorNome },
           }),
         ]);
-
         const modelo = await this.prisma.modelo.upsert({
           where: { fabricanteId_nome: { fabricanteId: fab.id, nome: modeloNome } },
           update: {},
           create: { fabricanteId: fab.id, nome: modeloNome },
         });
 
-        const existing = await this.prisma.equipamento.findUnique({
-          where: {
-            estabelecimentoId_tag: {
-              estabelecimentoId: user.estabelecimentoId,
-              tag,
-            },
-          },
+        const created = await this.create(user, {
+          tag: row.tag,
+          nome: String(row.nome).trim(),
+          descricaoId: plano.id,
+          fabricanteId: fab.id,
+          modeloId: modelo.id,
+          setorId: setor.id,
+          patrimonio: row.patrimonio,
+          nSerie: row.nSerie,
+          idInterna: row.idInterna,
+          unidade: row.unidade,
+          localizacaoFisica: row.localizacaoFisica,
+          propriedade: (["PROPRIO", "LOCADO", "COMODATO"] as const).includes(
+            String(row.propriedade ?? "").toUpperCase() as PropriedadeEquipamento,
+          )
+            ? (String(row.propriedade).toUpperCase() as PropriedadeEquipamento)
+            : undefined,
+          dataAquisicao: row.dataAquisicao,
+          dataInstalacao: row.dataInstalacao,
+          valorAquisicao: row.valorAquisicao != null && row.valorAquisicao !== "" ? Number(row.valorAquisicao) : undefined,
+          garantiaInicio: row.garantiaInicio,
+          garantiaFim: row.garantiaFim,
+          observacao: row.observacao,
         });
-
-        if (existing) {
-          await this.update(user, tag, {
-            nome: String(row.nome).trim(),
-            patrimonio: row.patrimonio ? String(row.patrimonio) : undefined,
-            nSerie: row.nSerie ? String(row.nSerie) : undefined,
-            registroAnvisa: row.registroAnvisa,
-            validadeAnvisa: row.validadeAnvisa ?? null,
-            valorAquisicao: row.valorAquisicao,
-            observacao: row.observacao,
-          });
-          if (row.dataAquisicao || row.dataInstalacao) {
-            await this.prisma.equipamento.update({
-              where: { id: existing.id },
-              data: {
-                ...(row.dataAquisicao ? { dataAquisicao: new Date(row.dataAquisicao) } : {}),
-                ...(row.dataInstalacao ? { dataInstalacao: new Date(row.dataInstalacao) } : {}),
-              },
-            });
-          }
-        } else {
-          await this.create(user, {
-            tag,
-            nome: String(row.nome).trim(),
-            descricaoId: plano.id,
-            fabricanteId: fab.id,
-            modeloId: modelo.id,
-            setorId: setor.id,
-            patrimonio: row.patrimonio ? String(row.patrimonio) : undefined,
-            nSerie: row.nSerie ? String(row.nSerie) : undefined,
-            registroAnvisa: row.registroAnvisa,
-            validadeAnvisa: row.validadeAnvisa,
-            dataAquisicao: row.dataAquisicao,
-            dataInstalacao: row.dataInstalacao,
-            valorAquisicao: row.valorAquisicao,
-            observacao: row.observacao,
-          });
-        }
-        resultados.push({ tag, ok: true });
+        resultados.push({ linha: item.linha, tag: created.tag, ok: true });
       } catch (e) {
         resultados.push({
-          tag: tag || "(vazio)",
+          linha: item.linha,
+          tag: item.tag,
           ok: false,
           erro: e instanceof Error ? e.message : "Erro",
         });

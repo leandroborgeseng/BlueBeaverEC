@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api, downloadApi } from "@/lib/api";
 import { useCan } from "@/lib/session";
-import { useWindowStore } from "@/store/windows";
+import { LABEL_CONDICAO_USO, LABEL_SITUACAO_CICLO } from "@aion/shared";
 import {
   Badge,
   Btn,
@@ -29,6 +30,9 @@ interface EquipamentoRow {
   tag: string;
   nome: string;
   situacao: string;
+  condicaoUso?: string;
+  patrimonio?: string | null;
+  nSerie?: string | null;
   checklistRecebimentoPendente: boolean;
   setor: { nome: string };
   fabricante: { nome: string };
@@ -61,10 +65,16 @@ export default function EquipamentosPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [importCsv, setImportCsv] = useState("");
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<{
+    total: number;
+    ok: number;
+    erros: Array<{ linha?: number; tag: string; erro?: string }>;
+    resultados?: Array<{ ok: boolean; linha: number; tag: string; erro?: string }>;
+  } | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
-  const [importErros, setImportErros] = useState<Array<{ tag: string; erro?: string }>>([]);
   const [exportBusy, setExportBusy] = useState(false);
-  const open = useWindowStore((s) => s.open);
+  const router = useRouter();
 
   useEffect(() => {
     Promise.all([api<Lookup[]>("/setores"), api<Lookup[]>("/fabricantes")])
@@ -106,13 +116,23 @@ export default function EquipamentosPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function parseCsv(text: string) {
-    return text
-      .trim()
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const cols = line.split(";").map((c) => c.trim());
+    const lines = text.trim().split(/\r?\n/).filter(Boolean);
+    if (!lines.length) return [];
+    const first = lines[0];
+    const sep = first.includes(";") ? ";" : ",";
+    const headers = first.split(sep).map((h) => h.trim());
+    const looksHeader = /tag|nome|setor|nSerie|patrimonio/i.test(first);
+    const dataLines = looksHeader ? lines.slice(1) : lines;
+    const headerKeys = looksHeader
+      ? headers
+      : ["tag", "nome", "planoDescricao", "fabricante", "modelo", "setor", "patrimonio", "nSerie"];
+    return dataLines.map((line) => {
+      const cols = line.split(sep).map((c) => c.trim());
+      const row: Record<string, string> = {};
+      headerKeys.forEach((h, i) => {
+        row[h] = cols[i] ?? "";
+      });
+      if (!looksHeader) {
         return {
           tag: cols[0] ?? "",
           nome: cols[1] ?? "",
@@ -123,29 +143,82 @@ export default function EquipamentosPage() {
           patrimonio: cols[6] || undefined,
           nSerie: cols[7] || undefined,
         };
-      })
-      .filter((r) => r.tag);
+      }
+      return row;
+    });
+  }
+
+  async function fileToBase64(file: File) {
+    const buf = await file.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    bytes.forEach((b) => {
+      binary += String.fromCharCode(b);
+    });
+    return btoa(binary);
+  }
+
+  async function gerarPrevia() {
+    setImportMsg(null);
+    setImportPreview(null);
+    try {
+      let body: Record<string, unknown>;
+      if (importFile) {
+        body = { filename: importFile.name, contentBase64: await fileToBase64(importFile) };
+      } else {
+        const rows = parseCsv(importCsv);
+        if (!rows.length) {
+          setImportMsg("Cole CSV ou escolha um arquivo XLSX/CSV");
+          return;
+        }
+        body = { rows };
+      }
+      const res = await api<{
+        total: number;
+        ok: number;
+        erros: Array<{ linha?: number; tag: string; erro?: string }>;
+        resultados: Array<{ ok: boolean; linha: number; tag: string; erro?: string }>;
+      }>("/equipamentos/import/preview", { method: "POST", body: JSON.stringify(body) });
+      setImportPreview(res);
+      setImportMsg(`Prévia: ${res.ok} linha(s) pronta(s), ${res.erros.length} com erro. Nada foi gravado.`);
+    } catch (e) {
+      setImportMsg(e instanceof Error ? e.message : "Erro na prévia");
+    }
   }
 
   async function executarImport() {
     setImportMsg(null);
-    setImportErros([]);
     const rows = parseCsv(importCsv);
-    if (rows.length === 0) {
-      setImportMsg("Nenhuma linha válida. Formato: tag;nome;plano;fabricante;modelo;setor");
+    if (!importFile && rows.length === 0) {
+      setImportMsg("Gere a prévia antes. Importação não sobrescreve TAG existente.");
       return;
     }
     try {
+      let payload: Record<string, unknown>;
+      if (importFile && !importCsv.trim()) {
+        const parsed = await api<{
+          resultados: Array<{ ok: boolean; row?: Record<string, unknown> }>;
+        }>("/equipamentos/import/preview", {
+          method: "POST",
+          body: JSON.stringify({ filename: importFile.name, contentBase64: await fileToBase64(importFile) }),
+        });
+        const okRows = (parsed.resultados ?? [])
+          .filter((r) => r.ok && r.row)
+          .map((r) => r.row);
+        payload = { rows: okRows };
+      } else {
+        payload = { rows };
+      }
       const res = await api<{
         total: number;
         ok: number;
         erros: Array<{ tag: string; erro?: string }>;
       }>("/equipamentos/import", {
         method: "POST",
-        body: JSON.stringify({ rows }),
+        body: JSON.stringify(payload),
       });
-      setImportMsg(`${res.ok} de ${res.total} importado(s) com sucesso`);
-      setImportErros(res.erros ?? []);
+      setImportMsg(`${res.ok} de ${res.total} criado(s). Linhas existentes não foram alteradas.`);
+      setImportPreview({ total: res.total, ok: res.ok, erros: res.erros ?? [] });
       if (res.ok > 0) await load();
     } catch (e) {
       setImportMsg(e instanceof Error ? e.message : "Erro na importação");
@@ -175,9 +248,14 @@ export default function EquipamentosPage() {
     <div>
       <PageHeader
         title="Equipamentos"
-        subtitle="Inventário patrimonial com alerta de checklist de recebimento pendente"
+        subtitle="Inventário HEF · condição operacional separada do ciclo de vida · TAG HEF-NNNN"
         actions={
           <>
+            {podeCadastrar && (
+              <Btn href="/equipamentos/novo" variant="primary">
+                Novo equipamento
+              </Btn>
+            )}
             <Btn
               variant="secondary"
               disabled={exportBusy}
@@ -205,7 +283,7 @@ export default function EquipamentosPage() {
                   Template XLSX
                 </Btn>
                 <Btn variant="secondary" onClick={() => setImportOpen(true)}>
-                  Importar CSV
+                  Importar CSV/XLSX
                 </Btn>
               </>
             )}
@@ -232,7 +310,7 @@ export default function EquipamentosPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && aplicarFiltros()}
-            placeholder="Ex: Monitor, EQ-0198, patrimônio…"
+            placeholder="Patrimônio, série, nome, fabricante, modelo ou setor"
             style={fieldStyle}
           />
         </div>
@@ -289,20 +367,15 @@ export default function EquipamentosPage() {
             <th style={th}>Fabricante / Modelo</th>
             <th style={th}>Plano</th>
             <th style={th}>Criticidade</th>
-            <th style={th}>Situação</th>
+            <th style={th}>Condição</th>
+            <th style={th}>Ciclo</th>
           </tr>
         </thead>
         <tbody>
           {items.map((eq) => (
             <tr
               key={eq.id}
-              onClick={() =>
-                open({
-                  kind: "equipamento",
-                  title: `${eq.tag} — ${eq.nome}`,
-                  payload: { tag: eq.tag },
-                })
-              }
+              onClick={() => router.push(`/equipamentos/${encodeURIComponent(eq.tag)}`)}
               style={{ cursor: "pointer" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "oklch(0.975 0.01 250)";
@@ -345,13 +418,18 @@ export default function EquipamentosPage() {
                 <Badge tone={eq.descricao.criticidade}>{eq.descricao.criticidade}</Badge>
               </td>
               <td style={td}>
-                <Badge tone={eq.situacao}>{eq.situacao.replace(/_/g, " ")}</Badge>
+                <Badge tone={eq.condicaoUso}>{eq.condicaoUso ? LABEL_CONDICAO_USO[eq.condicaoUso as keyof typeof LABEL_CONDICAO_USO] ?? eq.condicaoUso : "—"}</Badge>
+              </td>
+              <td style={td}>
+                <Badge tone={eq.situacao}>
+                  {LABEL_SITUACAO_CICLO[eq.situacao as keyof typeof LABEL_SITUACAO_CICLO] ?? eq.situacao.replace(/_/g, " ")}
+                </Badge>
               </td>
             </tr>
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={7}>
+              <td colSpan={8}>
                 <Empty text="Nenhum equipamento encontrado" />
               </td>
             </tr>
@@ -389,26 +467,33 @@ export default function EquipamentosPage() {
           onClick={() => setImportOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>
-          <Surface style={{ width: "min(560px, 100%)", maxHeight: "80vh", overflow: "auto" }}>
-            <strong style={{ display: "block", marginBottom: 8 }}>Importar equipamentos (CSV)</strong>
+          <Surface style={{ width: "min(640px, 100%)", maxHeight: "80vh", overflow: "auto" }}>
+            <strong style={{ display: "block", marginBottom: 8 }}>Importar equipamentos</strong>
             <p style={{ margin: "0 0 12px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-              Cole linhas no formato: <code>tag;nome;plano;fabricante;modelo;setor;patrimonio;nSerie</code>
+              Baixe o modelo, gere a prévia e confira erros por linha. TAG existente não é sobrescrita.
+              Série vazia não conta como duplicata. TAG vazia gera HEF-NNNN.
             </p>
+            <input
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+              style={{ marginBottom: 10 }}
+            />
             <textarea
               value={importCsv}
               onChange={(e) => setImportCsv(e.target.value)}
-              rows={10}
-              placeholder={"EQ-0001;Monitor;Monitor;Philips;IntelliVue;UTI Adulto;PAT-001;SN-001"}
+              rows={8}
+              placeholder={"tag;nome;planoDescricao;fabricante;modelo;setor;patrimonio;nSerie"}
               style={{ ...fieldStyle, fontFamily: "monospace", fontSize: 12 }}
             />
             {importMsg && (
               <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600 }}>{importMsg}</div>
             )}
-            {importErros.length > 0 && (
+            {importPreview && importPreview.erros.length > 0 && (
               <div style={{ marginTop: 10, fontSize: 12, color: "oklch(0.45 0.15 25)" }}>
-                {importErros.map((e) => (
-                  <div key={e.tag}>
-                    {e.tag}: {e.erro}
+                {importPreview.erros.map((e, i) => (
+                  <div key={`${e.tag}-${i}`}>
+                    Linha {e.linha ?? "—"} · {e.tag}: {e.erro}
                   </div>
                 ))}
               </div>
@@ -417,7 +502,10 @@ export default function EquipamentosPage() {
               <Btn variant="ghost" onClick={() => setImportOpen(false)}>
                 Fechar
               </Btn>
-              <Btn onClick={() => void executarImport()}>Importar</Btn>
+              <Btn variant="secondary" onClick={() => void gerarPrevia()}>
+                Prévia
+              </Btn>
+              <Btn onClick={() => void executarImport()}>Importar válidos</Btn>
             </div>
           </Surface>
           </div>

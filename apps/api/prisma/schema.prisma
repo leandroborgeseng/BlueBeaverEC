@@ -58,6 +58,36 @@ enum CondicaoUsoEquipamento {
   PARADO
 }
 
+enum PropriedadeEquipamento {
+  PROPRIO
+  LOCADO
+  COMODATO
+}
+
+enum TipoMovimentacaoEquipamento {
+  TRANSFERENCIA_SETOR
+  EMPRESTIMO
+  ASSISTENCIA
+  RETORNO
+}
+
+enum TipoDocumentoEquipamento {
+  FOTO
+  MANUAL
+  GARANTIA
+  NOTA_FISCAL
+  EVIDENCIA_RECEBIMENTO
+  EVIDENCIA_ENTRADA_OPERACAO
+  EVIDENCIA_DESATIVACAO
+  OUTRO
+}
+
+enum EventoCicloVida {
+  RECEBIMENTO
+  ENTRADA_OPERACAO
+  DESATIVACAO
+}
+
 enum TipoOS {
   CORRETIVA
   PREVENTIVA
@@ -137,6 +167,9 @@ model Usuario {
   logsOS           LogOrdemServico[]
   comentariosOS    OsComentario[]
   anexosOS         OsAnexo[]
+  movimentacoesEquip EquipamentoMovimentacao[]
+  documentosEquip    EquipamentoDocumento[]
+  eventosCicloEquip  EquipamentoEventoCiclo[]
 }
 
 model UsuarioEstabelecimento {
@@ -172,6 +205,8 @@ model Setor {
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamentos    Equipamento[]
   ordensServico   OrdemServico[]
+  movimentacoesOrigem  EquipamentoMovimentacao[] @relation("MovOrigemSetor")
+  movimentacoesDestino EquipamentoMovimentacao[] @relation("MovDestinoSetor")
 
   @@unique([estabelecimentoId, nome])
 }
@@ -300,6 +335,8 @@ model Colaborador {
   equipes          EquipeMembro[]
   competencias     Competencia[]
   auditoriasResp   Auditoria[]    @relation("AuditoriaResponsavel")
+  criticidadeEquipamentos Equipamento[] @relation("EquipCriticidadeResp")
+  movimentacoesEquip EquipamentoMovimentacao[]
 
   @@unique([estabelecimentoId, matricula])
 }
@@ -329,6 +366,20 @@ model Equipamento {
   dataEndOfLife      DateTime?
   observacao         String?
   condicaoUso        CondicaoUsoEquipamento @default(APTO)
+  idInterna          String?
+  unidade            String?
+  localizacaoFisica  String?
+  propriedade        PropriedadeEquipamento @default(PROPRIO)
+  garantiaInicio     DateTime?
+  garantiaFim        DateTime?
+  criticidadeEquipamento Criticidade?
+  criticidadeJustificativa String?
+  criticidadeResponsavelId String?
+  qrToken            String?              @unique
+  dataRecebimento    DateTime?
+  dataEntradaOperacao DateTime?
+  dataDesativacao    DateTime?
+  motivoDesativacao  String?
   tipoEquipamentoPlanoId String?
   planoMatchTipo     String?   // exato | aproximado | sem_correspondencia
   planoMatchObs      String?
@@ -343,6 +394,7 @@ model Equipamento {
   fornecedor      Fornecedor?     @relation(fields: [fornecedorId], references: [id])
   centroCusto     CentroCusto?    @relation(fields: [centroCustoId], references: [id])
   tipoEquipamentoPlano TipoEquipamentoPlano? @relation(fields: [tipoEquipamentoPlanoId], references: [id], onDelete: SetNull)
+  criticidadeResponsavel Colaborador? @relation("EquipCriticidadeResp", fields: [criticidadeResponsavelId], references: [id])
   historicoTags   HistoricoTag[]
   ordensServico   OrdemServico[]
   solicitacoes    SolicitacaoServico[]
@@ -350,9 +402,15 @@ model Equipamento {
   contratos       ContratoEquipamento[]
   componentesOrigem ComponenteRecuperado[] @relation("CompOrigem")
   componentesDestino ComponenteRecuperado[] @relation("CompDestino")
+  movimentacoes   EquipamentoMovimentacao[]
+  documentos      EquipamentoDocumento[]
+  eventosCiclo    EquipamentoEventoCiclo[]
 
   @@unique([estabelecimentoId, tag])
   @@index([estabelecimentoId, situacao])
+  @@index([estabelecimentoId, patrimonio])
+  @@index([estabelecimentoId, nSerie])
+  @@index([estabelecimentoId, idInterna])
   @@index([setorId])
   @@index([tipoEquipamentoPlanoId])
 }
@@ -368,6 +426,65 @@ model HistoricoTag {
 
   equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
   usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+}
+
+model EquipamentoMovimentacao {
+  id                 String                       @id @default(cuid())
+  equipamentoId      String
+  tipo               TipoMovimentacaoEquipamento
+  origemSetorId      String?
+  destinoSetorId     String?
+  origemLocalizacao  String?
+  destinoLocalizacao String?
+  data               DateTime
+  responsavelNome    String
+  responsavelId      String?
+  motivo             String
+  usuarioId          String?
+  createdAt          DateTime                     @default(now())
+
+  equipamento Equipamento  @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  origemSetor Setor?       @relation("MovOrigemSetor", fields: [origemSetorId], references: [id])
+  destinoSetor Setor?      @relation("MovDestinoSetor", fields: [destinoSetorId], references: [id])
+  responsavel Colaborador? @relation(fields: [responsavelId], references: [id])
+  usuario     Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([equipamentoId, data])
+}
+
+model EquipamentoDocumento {
+  id            String                    @id @default(cuid())
+  equipamentoId String
+  tipo          TipoDocumentoEquipamento
+  nomeArquivo   String
+  mimeType      String
+  conteudo      Bytes
+  descricao     String?
+  usuarioId     String?
+  createdAt     DateTime                  @default(now())
+
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  eventosCiclo EquipamentoEventoCiclo[]
+
+  @@index([equipamentoId])
+}
+
+model EquipamentoEventoCiclo {
+  id            String          @id @default(cuid())
+  equipamentoId String
+  tipo          EventoCicloVida
+  data          DateTime
+  observacao    String?
+  usuarioId     String?
+  documentoId   String?
+  createdAt     DateTime        @default(now())
+
+  equipamento Equipamento           @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario?              @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  documento   EquipamentoDocumento? @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+
+  @@index([equipamentoId, data])
 }
 
 model OrdemServico {
