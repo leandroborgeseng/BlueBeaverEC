@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const DEFAULT_API_PORT = "3001";
-const CONNECT_MS = 2_500;
+const CONNECT_MS = 1_500;
+const DNS_MS = 800;
 
 const upstreamAgent = new Agent({
   connect: { timeout: CONNECT_MS, autoSelectFamily: true },
@@ -19,6 +20,20 @@ const onRailway = Boolean(
 
 function unique(items: string[]) {
   return [...new Set(items.filter(Boolean))];
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 function isSelfWebHost(hostname: string) {
@@ -106,22 +121,23 @@ function portCandidates(): string[] {
 }
 
 /** Alpine/musl getaddrinfo costuma devolver ENOTFOUND para AAAA-only (rede privada Railway). */
+const dnsCache = new Map<string, Promise<string[]>>();
+
 async function resolveIps(hostname: string): Promise<string[]> {
-  if (hostname.startsWith("[") || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
-    return [hostname];
-  }
-  const ips: string[] = [];
-  try {
-    for (const ip of await resolve6(hostname)) ips.push(`[${ip}]`);
-  } catch {
-    /* sem AAAA */
-  }
-  try {
-    ips.push(...(await resolve4(hostname)));
-  } catch {
-    /* sem A */
-  }
-  return unique(ips);
+  const cached = dnsCache.get(hostname);
+  if (cached) return cached;
+  const pending = (async () => {
+    if (hostname.startsWith("[") || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return [hostname];
+    }
+    const [v6, v4] = await Promise.all([
+      withTimeout(resolve6(hostname).catch(() => [] as string[]), DNS_MS, [] as string[]),
+      withTimeout(resolve4(hostname).catch(() => [] as string[]), DNS_MS, [] as string[]),
+    ]);
+    return unique([...v6.map((ip) => `[${ip}]`), ...v4]);
+  })();
+  dnsCache.set(hostname, pending);
+  return pending;
 }
 
 type Attempt = { label: string; url: string; hostHeader: string };
@@ -153,20 +169,16 @@ async function buildAttempts(pathSuffix: string): Promise<Attempt[]> {
       }
     }
   }
-  return attempts.slice(0, 16);
+  return attempts.slice(0, 8);
 }
 
 async function dns6Report() {
   const configured = parseConfiguredUrl()?.hostname;
   const own = process.env.RAILWAY_PRIVATE_DOMAIN?.trim();
   const report: Record<string, string> = {};
-  for (const host of unique([configured, own, ...hostnameCandidates().slice(0, 4)].filter(Boolean) as string[])) {
-    try {
-      const aaaa = await resolve6(host);
-      report[host] = aaaa.length ? `AAAA ${aaaa.slice(0, 2).join(",")}` : "empty";
-    } catch (err) {
-      report[host] = err instanceof Error ? err.message : "fail";
-    }
+  for (const host of unique([configured, own, ...hostnameCandidates().slice(0, 3)].filter(Boolean) as string[])) {
+    const ips = await resolveIps(host);
+    report[host] = ips.length ? ips.slice(0, 2).join(",") : "sem A/AAAA";
   }
   return report;
 }
@@ -216,6 +228,7 @@ async function proxy(req: NextRequest, path: string[]) {
         body,
         dispatcher: upstreamAgent,
         redirect: "manual",
+        signal: AbortSignal.timeout(CONNECT_MS + 500),
       });
       lastGoodUrl = attempt.url;
       lastGoodHost = attempt.hostHeader;
