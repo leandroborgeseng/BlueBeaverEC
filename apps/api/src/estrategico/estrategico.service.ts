@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { EtapaJornada, SituacaoContrato, SituacaoEquipamento, StatusNC, StatusOS } from "@prisma/client";
+import { EtapaJornada, SituacaoContrato, SituacaoEquipamento, StatusNC, StatusOS, CondicaoUsoEquipamento } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -18,11 +18,18 @@ export class EstrategicoService {
   constructor(private readonly prisma: PrismaService) {}
 
   async dashboardExecutivo(estabelecimentoId: string) {
-    const [maturidade, conformidade, disponibilidade, riscos, contratos, recomendacoes, prioridades] =
+    const [maturidade, conformidade, parque, parados, riscos, contratos, recomendacoes, prioridades] =
       await Promise.all([
         this.indiceMaturidade(estabelecimentoId),
         this.indiceConformidade(estabelecimentoId),
-        this.disponibilidade(estabelecimentoId),
+        this.parqueEmOperacao(estabelecimentoId),
+        this.prisma.equipamento.count({
+          where: {
+            estabelecimentoId,
+            situacao: { not: SituacaoEquipamento.ARQUIVADO },
+            condicaoUso: CondicaoUsoEquipamento.PARADO,
+          },
+        }),
         this.riscosCriticos(estabelecimentoId),
         this.prisma.contrato.findMany({
           where: {
@@ -56,7 +63,11 @@ export class EstrategicoService {
       indiceMaturidadePct: maturidade.pct,
       nivelMaturidade: maturidade.nivel,
       indiceConformidadePct: conformidade,
-      disponibilidadePct: disponibilidade,
+      parqueEmOperacaoPct: parque,
+      equipamentosParados: parados,
+      disponibilidadePct: null,
+      disponibilidadeNota:
+        "Disponibilidade (uptime) só aparece no painel de indicadores quando há paradas registradas. O snapshot do parque não é 100% por ausência de dado.",
       riscosCriticos: riscos,
       evolucaoPorDominio: evolucao.map((d) => ({
         codigo: d.codigo,
@@ -113,7 +124,7 @@ export class EstrategicoService {
     return Number(((conformes / requisitos) * 100).toFixed(1));
   }
 
-  private async disponibilidade(estabelecimentoId: string) {
+  private async parqueEmOperacao(estabelecimentoId: string) {
     const ativos = await this.prisma.equipamento.count({
       where: {
         estabelecimentoId,

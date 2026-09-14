@@ -9,9 +9,16 @@ import { Badge, Empty, Err, KpiCard, PageHeader, Panel } from "@/components/ui/a
 interface Kpis {
   equipamentosAtivos: number;
   osAbertas: number;
+  osSemResponsavel?: number;
+  equipamentosParados?: number;
   osSlaEstourado?: number;
+  duracaoMediaOsHoras?: number | null;
   mttrMedioHoras: number | null;
+  mttrStatus?: string;
+  mttrMotivo?: string | null;
+  parqueEmOperacaoPct?: number | null;
   disponibilidadePct: number | null;
+  atualizadoEm?: string;
 }
 
 interface OsSlaRow {
@@ -87,35 +94,63 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Visão geral" subtitle={hoje.charAt(0).toUpperCase() + hoje.slice(1)} />
+      <PageHeader
+        title="Visão geral"
+        subtitle={
+          <>
+            {hoje.charAt(0).toUpperCase() + hoje.slice(1)}
+            {kpis?.atualizadoEm ? ` · atualizado ${new Date(kpis.atualizadoEm).toLocaleString("pt-BR")}` : ""}
+            {" · "}
+            <Link href="/gestao/indicadores">Indicadores do gestor</Link>
+          </>
+        }
+      />
       {erro && <Err>{erro}</Err>}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, marginBottom: 22 }}>
-        <KpiCard label="Equipamentos ativos" value={kpis?.equipamentosAtivos ?? "—"} tone="info" ringPct={78} />
+        <KpiCard
+          label="Equipamentos ativos"
+          value={kpis?.equipamentosAtivos ?? "—"}
+          hint={
+            kpis?.parqueEmOperacaoPct != null
+              ? `${kpis.parqueEmOperacaoPct}% do parque (snapshot, não é uptime)`
+              : "parque vazio — não é 100%"
+          }
+          tone="info"
+        />
         <KpiCard
           label="OS abertas"
           value={kpis?.osAbertas ?? "—"}
           hint={
             (kpis?.osSlaEstourado ?? atrasadas.length) > 0
-              ? `${kpis?.osSlaEstourado ?? atrasadas.length} com SLA estourado`
-              : "sem atraso de SLA"
+              ? `${kpis?.osSlaEstourado ?? atrasadas.length} com SLA estourado · ${kpis?.osSemResponsavel ?? 0} sem responsável`
+              : `${kpis?.osSemResponsavel ?? 0} sem responsável`
           }
           tone={(kpis?.osSlaEstourado ?? atrasadas.length) > 0 ? "danger" : "neutral"}
-          ringPct={(kpis?.osSlaEstourado ?? atrasadas.length) > 0 ? 55 : 40}
         />
         <KpiCard
-          label="MTTR médio"
-          value={kpis?.mttrMedioHoras != null ? `${kpis.mttrMedioHoras.toFixed(1)} h` : "—"}
-          hint="tempo médio de reparo"
+          label="MTTR"
+          value={
+            kpis?.mttrStatus === "medido" && kpis.mttrMedioHoras != null
+              ? `${kpis.mttrMedioHoras.toFixed(1)} h`
+              : "dados insuficientes"
+          }
+          hint={
+            kpis?.mttrStatus === "medido"
+              ? "paradas registradas encerradas"
+              : kpis?.mttrMotivo ?? "duração da OS não é MTTR"
+          }
           tone="info"
-          ringPct={kpis?.mttrMedioHoras != null ? Math.min(100, kpis.mttrMedioHoras * 5) : 40}
         />
         <KpiCard
-          label="Contratos a vencer"
-          value={contratos.length}
-          hint="próximos 30 dias"
-          tone={contratos.length > 0 ? "warning" : "neutral"}
-          ringPct={contratos.length > 0 ? 45 : 20}
+          label="Equipamentos parados"
+          value={kpis?.equipamentosParados ?? "—"}
+          hint={
+            kpis?.duracaoMediaOsHoras != null
+              ? `duração média das OS concluídas: ${kpis.duracaoMediaOsHoras.toFixed(1)} h (não é MTTR)`
+              : "condição de uso PARADO"
+          }
+          tone={(kpis?.equipamentosParados ?? 0) > 0 ? "danger" : "neutral"}
         />
       </div>
 

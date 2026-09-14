@@ -6,6 +6,7 @@ import { EstrategicoService } from "../estrategico/estrategico.service";
 import { FinanceiroService } from "../financeiro/financeiro.service";
 import { PlanosService } from "../planos/planos.service";
 import { EquipamentosService } from "../equipamentos/equipamentos.service";
+import { IndicadoresService } from "../indicadores/indicadores.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { buildPdfBuffer, buildXlsxBuffer, type ReportPayload } from "./report-export";
 import { sendMail } from "./mail";
@@ -41,6 +42,11 @@ const TEMPLATES = [
     nome: "Inventário de Equipamentos",
     descricao: "Lista atual do parque (PDF/XLSX), excluindo arquivados",
   },
+  {
+    codigo: "indicadores_gestor",
+    nome: "Indicadores do gestor",
+    descricao: "Demanda, atrasos, programadas, tempos, confiabilidade e custos verificáveis",
+  },
 ] as const;
 
 @Injectable()
@@ -51,6 +57,7 @@ export class RelatoriosService {
     private readonly financeiro: FinanceiroService,
     private readonly planos: PlanosService,
     private readonly equipamentos: EquipamentosService,
+    private readonly indicadores: IndicadoresService,
   ) {}
 
   templates() {
@@ -71,6 +78,9 @@ export class RelatoriosService {
           maturidade: dash.indiceMaturidadePct,
           conformidade: dash.indiceConformidadePct,
           disponibilidade: dash.disponibilidadePct,
+          parqueEmOperacaoPct: dash.parqueEmOperacaoPct,
+          equipamentosParados: dash.equipamentosParados,
+          disponibilidadeNota: dash.disponibilidadeNota,
           riscos: dash.riscosCriticos,
           prioridades: dash.prioridadesMes,
           recomendacoes: dash.recomendacoes,
@@ -114,6 +124,37 @@ export class RelatoriosService {
           template,
           geradoEm: new Date().toISOString(),
           ...inv,
+        };
+      }
+      case "indicadores_gestor": {
+        const painel = await this.indicadores.painel(
+          {
+            userId: "relatorio",
+            email: "",
+            estabelecimentoId,
+            perfil: "GESTOR",
+          },
+          { de: opts.de, ate: opts.ate },
+        );
+        return {
+          template,
+          geradoEm: painel.atualizadoEm,
+          filtros: painel.filtros,
+          limitacoes: painel.limitacoes,
+          operacional: painel.operacional.totais,
+          cumprimento: painel.programadas.cumprimento,
+          tempos: {
+            primeiroAtendimento: painel.tempos.atePrimeiroAtendimento,
+            duracaoOs: painel.tempos.duracaoTotalOs,
+            trabalhado: painel.tempos.tempoTrabalhado,
+          },
+          confiabilidade: {
+            mttr: painel.confiabilidade.mttr,
+            mtbf: painel.confiabilidade.mtbf,
+            disponibilidade: painel.confiabilidade.disponibilidade,
+            parqueEmOperacao: painel.confiabilidade.parqueEmOperacao,
+          },
+          custos: painel.custos,
         };
       }
       default:
@@ -198,7 +239,7 @@ export class RelatoriosService {
   }
 
   /** Cron horário: processa agendamentos vencidos (desligável com RELATORIOS_CRON=0). */
-  @Cron("0 * * * *")
+  @Cron("0 * * * *", { timeZone: "America/Sao_Paulo" })
   async cronDispararPendentes() {
     await this.dispararPendentesGlobal();
   }

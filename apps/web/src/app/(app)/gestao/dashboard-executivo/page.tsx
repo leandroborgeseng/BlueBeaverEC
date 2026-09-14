@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import {
@@ -15,7 +16,10 @@ interface Dash {
   indiceMaturidadePct: number | null;
   nivelMaturidade: number | null;
   indiceConformidadePct: number | null;
+  parqueEmOperacaoPct?: number | null;
+  equipamentosParados?: number;
   disponibilidadePct: number | null;
+  disponibilidadeNota?: string;
   riscosCriticos: { total: number; ncAbertas: number; osUrgentes: number; anvisaVencida: number };
   evolucaoPorDominio: Array<{ codigo: string; nome: string; nivel: number | null }>;
   contratosVencendo: Array<{ numero: string; fornecedor: { nome: string }; vigenciaFim: string }>;
@@ -35,7 +39,15 @@ export default function DashboardExecutivoPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard Executivo" subtitle="Índice de maturidade calculado automaticamente a partir dos domínios avaliados" />
+      <PageHeader
+        title="Dashboard Executivo"
+        subtitle={
+          <>
+            Índice de maturidade a partir dos domínios avaliados ·{" "}
+            <Link href="/gestao/indicadores">indicadores operacionais do gestor</Link>
+          </>
+        }
+      />
       {erro && <Err>{erro}</Err>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard
@@ -50,8 +62,13 @@ export default function DashboardExecutivoPage() {
           tone="success"
         />
         <KpiCard
-          label="Disponibilidade"
-          value={d?.disponibilidadePct != null ? `${d.disponibilidadePct}%` : "—"}
+          label="Parque em operação"
+          value={d?.parqueEmOperacaoPct != null ? `${d.parqueEmOperacaoPct}%` : "dados insuficientes"}
+          hint={
+            d?.equipamentosParados != null
+              ? `${d.equipamentosParados} parado(s) agora · snapshot, não é uptime`
+              : d?.disponibilidadeNota ?? "snapshot de situação, não é disponibilidade medida"
+          }
           tone="neutral"
         />
         <KpiCard

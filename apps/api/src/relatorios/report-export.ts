@@ -11,6 +11,7 @@ function templateTitle(codigo: string) {
     maturidade: "Maturidade da Engenharia Clínica",
     calendario_manutencao: "Calendário de Manutenção",
     inventario_equipamentos: "Inventário de Equipamentos",
+    indicadores_gestor: "Indicadores do gestor",
   };
   return map[codigo] ?? codigo;
 }
