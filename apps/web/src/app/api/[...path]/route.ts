@@ -164,6 +164,10 @@ async function proxy(req: NextRequest, path: string[]) {
       message:
         "API inacessível. Tente de novo em instantes. Se persistir, o serviço da API pode estar fora do ar.",
       target: publicTarget(lastBase),
+      reason: lastErr,
+      tried: ordered.map(publicTarget),
+      hasInternalUrl: Boolean(process.env.API_INTERNAL_URL?.trim()),
+      hasInternalHost: Boolean(process.env.API_INTERNAL_HOST?.trim()),
     },
     // 503: Cloudflare substitui 502 de origem pela página genérica "error code: 502".
     { status: 503 },
