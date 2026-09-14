@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
+import { PERMISSAO_NIVEL, temPermissao, type NivelPermissao } from "@aion/shared";
 import { api, getToken } from "@/lib/api";
 import {
   SessionProvider,
@@ -47,7 +47,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const home = destinoDesktop(me.perfil);
     const L = PERMISSAO_NIVEL.LEITURA;
     const A = PERMISSAO_NIVEL.EDICAO_APROVACAO;
-    const deny = (modulo: Parameters<typeof temPermissao>[1], minimo = L) => !temPermissao(mapa, modulo, minimo);
+    const deny = (modulo: Parameters<typeof temPermissao>[1], minimo: NivelPermissao = L) =>
+      !temPermissao(mapa, modulo, minimo);
 
     if (pathname.startsWith("/gestao/cronograma-manutencao")) {
       if (deny("os") && deny("estrategico")) router.replace(home);

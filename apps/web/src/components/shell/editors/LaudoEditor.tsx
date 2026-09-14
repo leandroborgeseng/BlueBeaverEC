@@ -9,6 +9,7 @@ import {
   avaliarPontoCalibracao,
   calcularResultadoLaudo,
   tituloDocumentoTecnico,
+  type RespostaChecklist,
 } from "@/lib/laudo-regras";
 
 interface Proc {
@@ -48,28 +49,7 @@ interface Inst {
   selecionavel: boolean;
 }
 
-interface RespostaItem {
-  id?: string;
-  pergunta?: string;
-  secao?: string;
-  tipo?: string;
-  status?: string;
-  valorMedido?: number;
-  valorConfigurado?: number;
-  leituras?: Array<number | undefined>;
-  media?: number;
-  mediaCorrigida?: number;
-  erroAbs?: number;
-  erroPct?: number;
-  limite?: number;
-  unidade?: string;
-  toleranciaTexto?: string;
-  observacao?: string;
-  correcaoPadrao?: number;
-  incertezaExpandida?: number;
-  fatorK?: number;
-  pontoCertificadoRef?: string;
-}
+type RespostaItem = RespostaChecklist;
 
 type PontoCert = {
   id?: string;
