@@ -82,9 +82,11 @@ async function proxy(req: NextRequest, path: string[]) {
     if (disposition) out.headers.set("content-disposition", disposition);
     return out;
   } catch (err) {
+    const code = errorDetail(err);
+    console.error(`[aion] proxy API falhou target=${base} ${code}`);
     return NextResponse.json(
       {
-        message: `API inacessível (${base}): ${errorDetail(err)}. ECONNREFUSED = API fora do ar ou porta errada (no Railway costuma ser $PORT, ex. 8080 — veja o log "listening on"). Ajuste API_INTERNAL_URL ou use a URL pública https://…up.railway.app.`,
+        message: "API inacessível. Tente de novo em instantes. Se persistir, o serviço da API pode estar fora do ar.",
       },
       { status: 502 },
     );

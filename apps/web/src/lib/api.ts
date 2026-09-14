@@ -58,7 +58,9 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message ?? `Erro ${res.status}`);
+    const raw = body.message;
+    const message = Array.isArray(raw) ? raw.join(" · ") : raw;
+    throw new Error(typeof message === "string" && message.trim() ? message : `Erro ${res.status}`);
   }
 
   return res.json() as Promise<T>;

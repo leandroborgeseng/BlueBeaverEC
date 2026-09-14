@@ -114,7 +114,7 @@ export class PlanosService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Cron("20 6 * * *")
+  @Cron("20 6 * * *", { timeZone: "America/Sao_Paulo" })
   async cronGerarOsPendentes() {
     if (process.env.PLANOS_CRON === "0") return;
     const estabs = await this.prisma.estabelecimento.findMany({

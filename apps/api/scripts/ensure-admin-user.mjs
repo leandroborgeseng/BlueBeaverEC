@@ -41,7 +41,7 @@ async function resolveHospital() {
   return prisma.estabelecimento.upsert({
     where: { id: ESTAB_FALLBACK_ID },
     update: {},
-    create: { id: ESTAB_FALLBACK_ID, nome: "Hospital e Maternidade Modelo" },
+    create: { id: ESTAB_FALLBACK_ID, nome: "Hospital Estadual de Formosa" },
   });
 }
 

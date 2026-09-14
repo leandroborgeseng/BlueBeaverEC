@@ -52,13 +52,18 @@ async function vincularSolicitanteSetor(estabelecimentoId) {
   if (!uti) return;
   const solicitante = await prisma.usuario.findUnique({ where: { email: "solicitante@aion.local" } });
   if (!solicitante) return;
-  await prisma.usuarioEstabelecimento.update({
+  const vinculo = await prisma.usuarioEstabelecimento.findUnique({
     where: {
       usuarioId_estabelecimentoId: {
         usuarioId: solicitante.id,
         estabelecimentoId,
       },
     },
+  });
+  if (!vinculo) return;
+  if (vinculo.setorIds?.length) return;
+  await prisma.usuarioEstabelecimento.update({
+    where: { usuarioId_estabelecimentoId: { usuarioId: solicitante.id, estabelecimentoId } },
     data: { setorIds: [uti.id] },
   });
 }
@@ -111,8 +116,9 @@ try {
 
   const hospital = await prisma.estabelecimento.upsert({
     where: { id: ESTAB_ID },
-    update: { nome: "Hospital e Maternidade Modelo" },
-    create: { id: ESTAB_ID, nome: "Hospital e Maternidade Modelo" },
+    // Não regrava o nome: em produção HEF o gestor ajusta em Config e o boot não pode desfazer.
+    update: {},
+    create: { id: ESTAB_ID, nome: "Hospital Estadual de Formosa" },
   });
 
   for (const demo of DEMOS) {

@@ -74,8 +74,8 @@ export default function LoginPage() {
         </div>
 
         <div style={label}>UNIDADE</div>
-        <select style={{ ...input, marginBottom: 0 }} defaultValue="Hospital e Maternidade Modelo" disabled>
-          <option>Hospital e Maternidade Modelo</option>
+        <select style={{ ...input, marginBottom: 0 }} defaultValue="Hospital Estadual de Formosa" disabled>
+          <option>Hospital Estadual de Formosa</option>
         </select>
 
         <div style={{ ...label, marginTop: 14 }}>USUÁRIO</div>

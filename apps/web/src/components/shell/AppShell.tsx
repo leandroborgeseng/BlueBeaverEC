@@ -45,20 +45,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (!me) return;
     const mapa = me.permissoesModulos;
     const home = destinoDesktop(me.perfil);
-    if (pathname.startsWith("/os") && !temPermissao(mapa, "os", PERMISSAO_NIVEL.LEITURA)) {
+    const L = PERMISSAO_NIVEL.LEITURA;
+    const A = PERMISSAO_NIVEL.EDICAO_APROVACAO;
+    const deny = (modulo: Parameters<typeof temPermissao>[1], minimo = L) => !temPermissao(mapa, modulo, minimo);
+
+    if (pathname.startsWith("/gestao/cronograma-manutencao")) {
+      if (deny("os") && deny("estrategico")) router.replace(home);
+      return;
+    }
+    if (pathname.startsWith("/cadastros") && deny("equipamentos", A)) {
       router.replace(home);
       return;
     }
-    if (pathname.startsWith("/config") && !temPermissao(mapa, "config", PERMISSAO_NIVEL.LEITURA)) {
-      router.replace(home);
-      return;
-    }
-    if (pathname.startsWith("/cadastros") && !temPermissao(mapa, "equipamentos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
-      router.replace(home);
-      return;
-    }
-    if (pathname.startsWith("/qualidade") && !temPermissao(mapa, "auditorias", PERMISSAO_NIVEL.LEITURA)) {
-      router.replace(home);
+
+    const guards: Array<[string, Parameters<typeof temPermissao>[1]]> = [
+      ["/os", "os"],
+      ["/config", "config"],
+      ["/equipamentos", "equipamentos"],
+      ["/laudos", "laudos"],
+      ["/procedimentos-laudo", "laudos"],
+      ["/instrumentos", "laudos"],
+      ["/certificados", "laudos"],
+      ["/biblioteca-pops", "laudos"],
+      ["/estoque", "estoque"],
+      ["/financeiro", "financeiro"],
+      ["/contratos", "contratos"],
+      ["/pessoas", "pessoas"],
+      ["/auditorias", "auditorias"],
+      ["/qualidade", "auditorias"],
+      ["/gestao", "estrategico"],
+      ["/dashboard", "dashboard"],
+      ["/portal", "portal"],
+    ];
+    for (const [prefix, modulo] of guards) {
+      if (pathname.startsWith(prefix) && deny(modulo)) {
+        router.replace(home);
+        return;
+      }
     }
   }, [me, pathname, router]);
 
