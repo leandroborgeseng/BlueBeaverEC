@@ -8,10 +8,6 @@ export const runtime = "nodejs";
 const DEFAULT_API_PORT = "3001";
 const CONNECT_MS = 2_000;
 
-/**
- * API escuta em `::`. Rede privada Railway legado é AAAA-only.
- * Não customizar `lookup`: o Node 22 usa Happy Eyeballs com `all: true`.
- */
 dns.setDefaultResultOrder("ipv6first");
 
 const upstreamAgent = new Agent({
@@ -27,9 +23,9 @@ function unique(items: string[]) {
   return [...new Set(items.filter(Boolean))];
 }
 
-function isLoopHost(hostname: string) {
+/** Loop de volta para este Next — não para a API pública. */
+function isSelfWebHost(hostname: string) {
   const h = hostname.toLowerCase();
-  // Só o próprio web — não bloquear api.hef.aion.eng.br nem outros hosts Aion.
   return h === "hef.aion.eng.br" || h === "localhost" || h === "127.0.0.1" || h === "::1";
 }
 
@@ -42,6 +38,32 @@ function formatBase(host: string, port: string, protocol = "http") {
   return `${protocol}://${wrapped}:${port}`;
 }
 
+function parseConfiguredUrl() {
+  let raw = process.env.API_INTERNAL_URL?.trim() || "";
+  if (!raw) return null;
+  if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
+  try {
+    return new URL(raw.replace(/\/$/, ""));
+  } catch {
+    return null;
+  }
+}
+
+function hostsFromWebServiceName() {
+  const name = process.env.RAILWAY_SERVICE_NAME?.trim() || "";
+  if (!name) return [];
+  const slug = name
+    .toLowerCase()
+    .replace(/^@/, "")
+    .replace(/[/_]/g, "-");
+  const asApi = slug.replace(/-web$/, "-api").replace(/^web$/, "api");
+  return unique([
+    `${slug}.railway.internal`,
+    `${asApi}.railway.internal`,
+    slug === asApi ? "" : asApi,
+  ]);
+}
+
 function candidateBases(): string[] {
   const bases: string[] = [];
   const extraHosts: string[] = [];
@@ -49,28 +71,21 @@ function candidateBases(): string[] {
   const fromHost = process.env.API_INTERNAL_HOST?.trim();
   if (fromHost) extraHosts.push(stripHost(fromHost));
 
-  let raw = process.env.API_INTERNAL_URL?.trim() || "";
-  if (raw) {
-    raw = raw.replace(/\/$/, "");
-    if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
-    try {
-      const u = new URL(raw);
-      if (!isLoopHost(u.hostname)) {
-        if (u.hostname.endsWith(".railway.internal")) u.protocol = "http:";
-        extraHosts.unshift(u.hostname);
-        const proto = u.protocol.replace(":", "");
-        if (u.port) {
-          bases.push(formatBase(u.hostname, u.port, proto));
-        } else if (u.protocol === "https:") {
-          bases.push(`${u.protocol}//${u.hostname}`);
-        } else {
-          bases.push(formatBase(u.hostname, DEFAULT_API_PORT, proto));
-        }
-      }
-    } catch {
-      /* ignore */
+  const configured = parseConfiguredUrl();
+  if (configured && !isSelfWebHost(configured.hostname)) {
+    if (configured.hostname.endsWith(".railway.internal")) configured.protocol = "http:";
+    extraHosts.unshift(configured.hostname);
+    const proto = configured.protocol.replace(":", "");
+    if (configured.port) {
+      bases.push(formatBase(configured.hostname, configured.port, proto));
+    } else if (configured.protocol === "https:") {
+      bases.push(`${configured.protocol}//${configured.hostname}`);
+    } else {
+      bases.push(formatBase(configured.hostname, DEFAULT_API_PORT, proto));
     }
   }
+
+  extraHosts.push(...hostsFromWebServiceName());
 
   if (onRailway) {
     extraHosts.push(
@@ -84,13 +99,13 @@ function candidateBases(): string[] {
     extraHosts.push("127.0.0.1");
   }
 
-  // Não usar API_PORT/PORT do web (Railway do Next costuma ser 8080).
   const ports = unique([
+    configured?.port ?? "",
     process.env.API_INTERNAL_PORT?.trim() ?? "",
     DEFAULT_API_PORT,
     "8080",
   ]);
-  for (const host of unique(extraHosts).filter((h) => !isLoopHost(h))) {
+  for (const host of unique(extraHosts).filter((h) => !isSelfWebHost(h))) {
     for (const port of ports) {
       bases.push(formatBase(host, port, "http"));
     }
@@ -107,18 +122,13 @@ function errorDetail(err: unknown): string {
 }
 
 function configuredInternalHost() {
-  let raw = process.env.API_INTERNAL_URL?.trim() || "";
-  if (!raw) return null;
-  if (!/^https?:\/\//i.test(raw)) raw = `http://${raw}`;
-  try {
-    return new URL(raw.replace(/\/$/, "")).hostname;
-  } catch {
-    return "(inválida)";
-  }
+  return parseConfiguredUrl()?.hostname ?? null;
 }
+
+function publicTarget(base: string) {
   try {
     const u = new URL(base);
-    return `${u.hostname}:${u.port || "80"}`;
+    return `${u.hostname}:${u.port || (u.protocol === "https:" ? "443" : "80")}`;
   } catch {
     return "unknown";
   }
@@ -176,11 +186,9 @@ async function proxy(req: NextRequest, path: string[]) {
       target: publicTarget(lastBase),
       reason: lastErr,
       tried: ordered.map(publicTarget),
-      hasInternalUrl: Boolean(process.env.API_INTERNAL_URL?.trim()),
-      hasInternalHost: Boolean(process.env.API_INTERNAL_HOST?.trim()),
       configuredHost: configuredInternalHost(),
+      webService: process.env.RAILWAY_SERVICE_NAME ?? null,
     },
-    // 503: Cloudflare substitui 502 de origem pela página genérica "error code: 502".
     { status: 503 },
   );
 }
