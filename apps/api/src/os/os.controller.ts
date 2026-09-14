@@ -233,8 +233,21 @@ class ExecucaoDto {
 }
 
 class VincularEquipamentoOsDto {
+  @IsOptional()
   @IsString()
-  equipamentoTag!: string;
+  equipamentoTag?: string;
+
+  @IsOptional()
+  @IsString()
+  setorId?: string;
+
+  @IsOptional()
+  @IsString()
+  setorNome?: string;
+
+  @IsOptional()
+  @IsEnum(PrioridadeOS)
+  prioridade?: PrioridadeOS;
 }
 
 @Controller("os")
@@ -441,7 +454,17 @@ export class OsController {
     @Param("numero") numero: string,
     @Body() body: VincularEquipamentoOsDto,
   ) {
-    return this.os.vincularEquipamento(user, Number(numero), body.equipamentoTag);
+    return this.os.triar(user, Number(numero), body);
+  }
+
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
+  @Patch(":numero/triagem")
+  triagem(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Body() body: VincularEquipamentoOsDto,
+  ) {
+    return this.os.triar(user, Number(numero), body);
   }
 
   @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)

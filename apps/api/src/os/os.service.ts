@@ -29,7 +29,7 @@ import type { AuthUser } from "../auth/current-user.decorator";
 import { colaboradorPodeReceberOS, listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
 import { parseAnexoDataUrl } from "./os-anexos";
 import { atribuicaoConflitou, transicaoStatusOS } from "./os-transicoes";
-import { ehSolicitante, filtrarTimeline, visibilidadeLog } from "./os-visibilidade";
+import { ehSolicitante, filtrarTimeline, podeVerInterno, textoTransferencia, visibilidadeLog } from "./os-visibilidade";
 
 const STATUS_ATIVAS: StatusOS[] = [
   StatusOS.NAO_ATRIBUIDA,
@@ -299,6 +299,7 @@ export class OsService {
       ...sla,
       atrasada: sla.slaEstourado,
       condicaoUsoAtual: os.equipamento && "condicaoUso" in os.equipamento ? os.equipamento.condicaoUso : null,
+      urgenciaPercebida: os.solicitacao?.urgencia ?? null,
     };
   }
 
@@ -614,11 +615,26 @@ export class OsService {
       );
     }
 
+    const [deColab, paraColab] = await Promise.all([
+      os.responsavelId
+        ? this.prisma.colaborador.findUnique({ where: { id: os.responsavelId }, select: { nome: true } })
+        : Promise.resolve(null),
+      this.prisma.colaborador.findUnique({
+        where: { id: opts.responsavelId },
+        select: { nome: true },
+      }),
+    ]);
+    const transferiu = Boolean(os.responsavelId && os.responsavelId !== opts.responsavelId);
     await this.prisma.logOrdemServico.create({
       data: {
         ordemServicoId: os.id,
         usuarioId: user.userId,
-        acao: os.responsavelId && os.responsavelId !== opts.responsavelId ? "TRANSFERENCIA" : "ATRIBUICAO",
+        acao: transferiu ? "TRANSFERENCIA" : "ATRIBUICAO",
+        justificativa: transferiu
+          ? textoTransferencia(deColab?.nome, paraColab?.nome)
+          : paraColab?.nome
+            ? `Atribuída a ${paraColab.nome}`
+            : null,
         visibilidade: VisibilidadeOs.PUBLICO,
       },
     });
@@ -940,8 +956,8 @@ export class OsService {
       where: { id: anexoId, ordemServicoId: os.id },
     });
     if (!anexo) throw new NotFoundException("Anexo não encontrado");
-    if (ehSolicitante(user.perfil) && anexo.visibilidade === VisibilidadeOs.INTERNO) {
-      throw new ForbiddenException("Anexo interno");
+    if (!podeVerInterno(user.perfil) && anexo.visibilidade === VisibilidadeOs.INTERNO) {
+      throw new ForbiddenException("Sem autorização para este anexo interno");
     }
     return anexo;
   }
@@ -975,31 +991,89 @@ export class OsService {
   }
 
   async vincularEquipamento(user: AuthUser, numero: number, equipamentoTag: string) {
+    return this.triar(user, numero, { equipamentoTag });
+  }
+
+  async triar(
+    user: AuthUser,
+    numero: number,
+    data: {
+      equipamentoTag?: string;
+      setorId?: string;
+      setorNome?: string;
+      prioridade?: PrioridadeOS;
+    },
+  ) {
     if (!podeAtribuirOS(user.perfil, user.permissoesModulos)) {
-      throw new ForbiddenException("Sem permissão para identificar o equipamento");
+      throw new ForbiddenException("Sem permissão para fazer a triagem desta OS");
     }
     const os = await this.findByNumero(user.estabelecimentoId, numero);
-    const eq = await this.prisma.equipamento.findFirst({
-      where: {
-        estabelecimentoId: user.estabelecimentoId,
-        tag: { equals: equipamentoTag.trim(), mode: "insensitive" },
-      },
-    });
-    if (!eq) throw new NotFoundException("Equipamento não encontrado");
+    const tag = data.equipamentoTag?.trim();
+    const setorNome = data.setorNome?.trim();
+    if (!tag && !data.setorId && !setorNome && !data.prioridade) {
+      throw new BadRequestException("Informe setor, equipamento ou a prioridade técnica");
+    }
+
+    let equipamentoId = os.equipamentoId;
+    let setorId = os.setorId;
+    const logs: Array<{ usuarioId: string; acao: string; justificativa: string; visibilidade: VisibilidadeOs }> = [];
+
+    if (tag) {
+      const eq = await this.prisma.equipamento.findFirst({
+        where: {
+          estabelecimentoId: user.estabelecimentoId,
+          tag: { equals: tag, mode: "insensitive" },
+        },
+      });
+      if (!eq) throw new NotFoundException("Equipamento não encontrado");
+      equipamentoId = eq.id;
+      setorId = eq.setorId;
+      logs.push({
+        usuarioId: user.userId,
+        acao: "IDENTIFICACAO_EQUIPAMENTO",
+        justificativa: eq.tag,
+        visibilidade: VisibilidadeOs.PUBLICO,
+      });
+    }
+
+    if (!tag && (data.setorId || setorNome)) {
+      const setor = data.setorId
+        ? await this.prisma.setor.findFirst({
+            where: { id: data.setorId, estabelecimentoId: user.estabelecimentoId },
+          })
+        : await this.prisma.setor.findFirst({
+            where: {
+              estabelecimentoId: user.estabelecimentoId,
+              nome: { equals: setorNome, mode: "insensitive" },
+            },
+          });
+      if (!setor) throw new NotFoundException("Setor não encontrado");
+      setorId = setor.id;
+      logs.push({
+        usuarioId: user.userId,
+        acao: "IDENTIFICACAO_SETOR",
+        justificativa: setor.nome,
+        visibilidade: VisibilidadeOs.PUBLICO,
+      });
+    }
+
+    if (data.prioridade) {
+      logs.push({
+        usuarioId: user.userId,
+        acao: "PRIORIDADE_TECNICA",
+        justificativa: data.prioridade,
+        visibilidade: VisibilidadeOs.PUBLICO,
+      });
+    }
+
     return this.prisma.ordemServico.update({
       where: { id: os.id },
       data: {
-        equipamentoId: eq.id,
-        setorId: eq.setorId,
-        identificacaoPendente: false,
-        logs: {
-          create: {
-            usuarioId: user.userId,
-            acao: "IDENTIFICACAO_EQUIPAMENTO",
-            justificativa: eq.tag,
-            visibilidade: VisibilidadeOs.PUBLICO,
-          },
-        },
+        equipamentoId,
+        setorId,
+        identificacaoPendente: !equipamentoId,
+        ...(data.prioridade ? { prioridade: data.prioridade } : {}),
+        logs: logs.length ? { create: logs } : undefined,
       },
     });
   }

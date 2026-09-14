@@ -1,5 +1,5 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { PERMISSAO_NIVEL } from "@aion/shared";
+import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
@@ -13,10 +13,11 @@ export class NavController {
   constructor(private readonly nav: NavService) {}
 
   @Get("favoritos")
-  favoritos() {
-    // Sugestões padrão; a TopBar persiste favoritos reais em localStorage (`aion_favoritos`).
+  favoritos(@CurrentUser() user: AuthUser) {
+    const base = [{ id: "equipamentos", label: "Equipamentos", href: "/equipamentos" }];
+    if (!temPermissao(user.permissoesModulos, "os", PERMISSAO_NIVEL.LEITURA)) return base;
     return [
-      { id: "equipamentos", label: "Equipamentos", href: "/equipamentos" },
+      ...base,
       { id: "os", label: "Ordens de Serviço", href: "/os" },
       { id: "triagem", label: "Triagem", href: "/os/triagem-solicitacoes" },
       { id: "nao-atribuidas", label: "Não atribuídas", href: "/os/nao-atribuidas" },
@@ -29,8 +30,12 @@ export class NavController {
   }
 
   @Get("busca")
-  busca(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
-    return this.nav.busca(user.estabelecimentoId, q ?? "");
+  async busca(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
+    const res = await this.nav.busca(user.estabelecimentoId, q ?? "");
+    if (!temPermissao(user.permissoesModulos, "os", PERMISSAO_NIVEL.LEITURA)) {
+      return { ...res, os: [] };
+    }
+    return res;
   }
 }
 

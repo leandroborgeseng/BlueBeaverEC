@@ -227,6 +227,7 @@ export class EquipamentosController {
     @Query("situacao") situacao?: SituacaoEquipamento,
     @Query("q") q?: string,
     @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
   ) {
     return this.equipamentos.list(user.estabelecimentoId, {
       setor,
@@ -235,6 +236,7 @@ export class EquipamentosController {
       situacao,
       q,
       page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
   }
 

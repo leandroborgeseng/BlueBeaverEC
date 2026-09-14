@@ -173,6 +173,7 @@ export class OrganizacaoConfigService {
       vinculoData.setorIds = await this.resolveSetorIds(user.estabelecimentoId, body.setorIds);
     }
 
+    const perfilAnterior = vinculo.perfil;
     if (Object.keys(vinculoData).length > 0) {
       await this.prisma.usuarioEstabelecimento.update({
         where: {
@@ -185,12 +186,39 @@ export class OrganizacaoConfigService {
       });
     }
 
+    if (body.perfil != null && body.perfil !== perfilAnterior) {
+      const colab = await this.prisma.colaborador.findFirst({
+        where: { usuarioId: id, estabelecimentoId: user.estabelecimentoId },
+      });
+      if (colab) {
+        const cargo =
+          body.perfil === "ENGENHEIRO"
+            ? "Engenheiro clínico"
+            : body.perfil === "TECNICO_RESTRITO"
+              ? "Técnico de campo"
+              : body.perfil === "TECNICO"
+                ? "Técnico em equipamentos"
+                : colab.cargo;
+        await this.prisma.colaborador.update({
+          where: { id: colab.id },
+          data: { cargo, ativo: true },
+        });
+      }
+      await this.prisma.logAcesso.create({
+        data: {
+          usuarioId: user.userId,
+          acao: "TROCA_PERFIL",
+          detalhe: `${vinculo.usuario.email} · ${perfilAnterior} → ${body.perfil} · histórico de OS preservado`,
+        },
+      });
+    }
+
     const detalhes: string[] = [];
     if (body.nome != null) detalhes.push("nome");
     if (body.email != null) detalhes.push("email");
     if (body.senha) detalhes.push("senha");
     if (body.ativo != null) detalhes.push(`ativo=${body.ativo}`);
-    if (body.perfil != null) detalhes.push(`perfil=${body.perfil}`);
+    if (body.perfil != null) detalhes.push(`perfil=${perfilAnterior}→${body.perfil}`);
     if (body.setorIds != null) detalhes.push(`setores=${vinculoData.setorIds?.length ?? 0}`);
 
     await this.prisma.logAcesso.create({

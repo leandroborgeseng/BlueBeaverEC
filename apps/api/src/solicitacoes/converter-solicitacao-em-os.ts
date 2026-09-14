@@ -26,6 +26,11 @@ export function mapUrgenciaParaPrioridade(urgencia: UrgenciaSolicitacao): Priori
   }
 }
 
+/** Prioridade técnica é da engenharia. O portal só informa parado/impacto. */
+export function prioridadeInicialDoPedido(opts: { equipamentoParado?: boolean }): PrioridadeOS {
+  return opts.equipamentoParado ? PrioridadeOS.ALTA : PrioridadeOS.MEDIA;
+}
+
 export function observacaoDaSolicitacao(sol: {
   protocolo: string;
   descricao: string;
@@ -125,7 +130,7 @@ export async function converterSolicitacaoEmOs(
         equipamentoId: sol.equipamentoId ?? null,
         setorId,
         tipo: TipoOS.CORRETIVA,
-        prioridade: mapUrgenciaParaPrioridade(sol.urgencia),
+        prioridade: prioridadeInicialDoPedido({ equipamentoParado: sol.equipamentoParado }),
         observacaoRequisicao: observacaoDaSolicitacao(sol),
         responsavelId: opts.responsavelId,
         solicitacaoId: sol.id,

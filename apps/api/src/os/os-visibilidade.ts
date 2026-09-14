@@ -22,6 +22,12 @@ export function podeVerInterno(perfil?: string | null) {
   return !ehSolicitante(perfil);
 }
 
+export function textoTransferencia(de?: string | null, para?: string | null) {
+  const origem = de?.trim() || "sem responsável";
+  const destino = para?.trim() || "outro profissional";
+  return `Transferida de ${origem} para ${destino}`;
+}
+
 export function filtrarTimeline<T extends { visibilidade?: VisibilidadeOs | null; acao?: string }>(
   itens: T[],
   perfil?: string | null,

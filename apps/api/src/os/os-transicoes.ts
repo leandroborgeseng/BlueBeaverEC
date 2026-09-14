@@ -51,6 +51,12 @@ export function transicaoStatusOS(
 
   if (acao === "fechar") {
     if (!ABERTAS.includes(atual)) {
+      if (atual === "CONCLUIDA") {
+        return { ok: false, erro: "Esta OS já está concluída. Atualize a tela." };
+      }
+      if (atual === "CANCELADA") {
+        return { ok: false, erro: "Esta OS foi cancelada. Atualize a tela." };
+      }
       return { ok: false, erro: "Só é possível concluir OS em aberto" };
     }
     return { ok: true, proximo: "CONCLUIDA" };

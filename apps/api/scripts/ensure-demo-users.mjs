@@ -37,6 +37,32 @@ async function resolveHospitalHef() {
   return comTagHef;
 }
 
+async function vincularSolicitanteSetor(estabelecimentoId) {
+  const uti =
+    (await prisma.setor.findFirst({
+      where: { estabelecimentoId, nome: { in: ["U.T.I.", "UTI Adulto", "UTI"] } },
+    })) ??
+    (await prisma.setor.findFirst({
+      where: { estabelecimentoId, nome: { contains: "U.T.I.", mode: "insensitive" } },
+    })) ??
+    (await prisma.setor.findFirst({
+      where: { estabelecimentoId },
+      orderBy: { nome: "asc" },
+    }));
+  if (!uti) return;
+  const solicitante = await prisma.usuario.findUnique({ where: { email: "solicitante@aion.local" } });
+  if (!solicitante) return;
+  await prisma.usuarioEstabelecimento.update({
+    where: {
+      usuarioId_estabelecimentoId: {
+        usuarioId: solicitante.id,
+        estabelecimentoId,
+      },
+    },
+    data: { setorIds: [uti.id] },
+  });
+}
+
 async function ensureColab(hospitalId, user, demo) {
   if (!demo.matricula) return;
   const cargo =
@@ -118,7 +144,6 @@ try {
   const hef = await resolveHospitalHef();
   if (hef && hef.id !== hospital.id) {
     for (const demo of DEMOS) {
-      if (!demo.matricula) continue;
       const user = await prisma.usuario.findUnique({ where: { email: demo.email } });
       if (!user) continue;
       await prisma.usuarioEstabelecimento.upsert({
@@ -135,35 +160,20 @@ try {
           perfil: demo.perfil,
         },
       });
-      await ensureColab(hef.id, user, demo);
+      if (demo.matricula) {
+        await ensureColab(hef.id, user, demo);
+      }
     }
     console.log(`[aion] demo users também no HEF · estab=${hef.id} (${hef.nome})`);
   }
 
-  const uti =
-    (await prisma.setor.findFirst({
-      where: { estabelecimentoId: hospital.id, nome: { in: ["U.T.I.", "UTI Adulto", "UTI"] } },
-    })) ??
-    (await prisma.setor.findFirst({
-      where: { estabelecimentoId: hospital.id, nome: { contains: "U.T.I.", mode: "insensitive" } },
-    }));
-  if (uti) {
-    const solicitante = await prisma.usuario.findUnique({ where: { email: "solicitante@aion.local" } });
-    if (solicitante) {
-      await prisma.usuarioEstabelecimento.update({
-        where: {
-          usuarioId_estabelecimentoId: {
-            usuarioId: solicitante.id,
-            estabelecimentoId: hospital.id,
-          },
-        },
-        data: { setorIds: [uti.id] },
-      });
-    }
+  await vincularSolicitanteSetor(hospital.id);
+  if (hef && hef.id !== hospital.id) {
+    await vincularSolicitanteSetor(hef.id);
   }
 
   console.log(
-    `[aion] demo users ok · senha ${DEMO_PASSWORD} · campo@aion.local (TECNICO_RESTRITO)`,
+    `[aion] demo users ok · senha ${DEMO_PASSWORD} · tecnico@aion.local (TECNICO) · campo@aion.local (TECNICO_RESTRITO)`,
   );
   process.exit(0);
 } catch (e) {
