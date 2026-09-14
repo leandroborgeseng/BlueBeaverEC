@@ -49,6 +49,7 @@ export type ImportRowIn = {
   unidade?: string;
   localizacaoFisica?: string;
   propriedade?: string;
+  propriedadeOutra?: string;
   registroAnvisa?: string;
   validadeAnvisa?: string;
   dataAquisicao?: string;
@@ -158,6 +159,7 @@ export const COLUNAS_IMPORT = [
   "idInterna",
   "nSerie",
   "propriedade",
+  "propriedadeOutra",
   "dataAquisicao",
   "valorAquisicao",
   "garantiaInicio",

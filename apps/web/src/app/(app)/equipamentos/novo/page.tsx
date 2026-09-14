@@ -64,6 +64,7 @@ export default function NovoEquipamentoPage() {
       unidade: String(fd.get("unidade") ?? "").trim() || undefined,
       localizacaoFisica: String(fd.get("localizacaoFisica") ?? "").trim() || undefined,
       propriedade: (String(fd.get("propriedade") ?? "PROPRIO") || "PROPRIO") as PropriedadeEquipamento,
+      propriedadeOutra: String(fd.get("propriedadeOutra") ?? "").trim() || undefined,
     };
     try {
       const created = await api<{ tag: string }>("/equipamentos", {
@@ -175,6 +176,10 @@ export default function NovoEquipamentoPage() {
                 ))}
               </select>
             </div>
+          </div>
+          <div>
+            <FieldLabel>Se for outra classificação, descreva</FieldLabel>
+            <input name="propriedadeOutra" placeholder="Ex.: cessão, parceria…" style={fieldStyle} />
           </div>
           {erro && <Err>{erro}</Err>}
           <div style={{ display: "flex", gap: 8 }}>

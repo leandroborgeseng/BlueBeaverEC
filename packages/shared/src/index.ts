@@ -51,12 +51,13 @@ export const LABEL_CONDICAO_USO: Record<CondicaoUsoEquipamento, string> = {
   PARADO: "Parado",
 };
 
-export type PropriedadeEquipamento = "PROPRIO" | "LOCADO" | "COMODATO";
+export type PropriedadeEquipamento = "PROPRIO" | "LOCADO" | "COMODATO" | "OUTRO";
 
 export const LABEL_PROPRIEDADE: Record<PropriedadeEquipamento, string> = {
   PROPRIO: "Próprio",
   LOCADO: "Locado",
   COMODATO: "Comodato",
+  OUTRO: "Outra (configurável)",
 };
 
 export const LABEL_SITUACAO_CICLO: Record<SituacaoEquipamento, string> = {

@@ -54,6 +54,7 @@ interface Pagina {
   unidade?: string | null;
   localizacaoFisica?: string | null;
   propriedade: PropriedadeEquipamento;
+  propriedadeOutra?: string | null;
   observacao?: string | null;
   valorAquisicao?: number | string | null;
   dataAquisicao?: string | null;
@@ -161,6 +162,7 @@ export default function EquipamentoPagina() {
           unidade: String(fd.get("unidade") ?? ""),
           localizacaoFisica: String(fd.get("localizacaoFisica") ?? ""),
           propriedade: String(fd.get("propriedade")),
+          propriedadeOutra: String(fd.get("propriedadeOutra") ?? ""),
           setorId: String(fd.get("setorId")),
           observacao: String(fd.get("observacao") ?? ""),
           condicaoUso: String(fd.get("condicaoUso")),
@@ -363,7 +365,10 @@ export default function EquipamentoPagina() {
               </div>
               <div>
                 <strong>Propriedade</strong>
-                <div>{LABEL_PROPRIEDADE[data.propriedade] ?? data.propriedade}</div>
+                <div>
+                  {LABEL_PROPRIEDADE[data.propriedade] ?? data.propriedade}
+                  {data.propriedadeOutra ? ` · ${data.propriedadeOutra}` : ""}
+                </div>
               </div>
               <div>
                 <strong>Criticidade</strong>
@@ -451,6 +456,13 @@ export default function EquipamentoPagina() {
                     </option>
                   ))}
                 </select>
+                <input
+                  name="propriedadeOutra"
+                  defaultValue={data.propriedadeOutra ?? ""}
+                  placeholder="Outra classificação"
+                  disabled={readonly}
+                  style={{ ...fieldStyle, marginTop: 8 }}
+                />
               </div>
               <div>
                 <FieldLabel>Condição operacional</FieldLabel>

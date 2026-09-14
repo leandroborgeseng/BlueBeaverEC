@@ -74,6 +74,7 @@ export type CreateEquipamentoInput = {
   unidade?: string;
   localizacaoFisica?: string;
   propriedade?: PropriedadeEquipamento;
+  propriedadeOutra?: string;
   dataAquisicao?: string;
   dataInstalacao?: string;
   valorAquisicao?: number;
@@ -102,6 +103,7 @@ export type UpdateEquipamentoInput = {
   unidade?: string | null;
   localizacaoFisica?: string | null;
   propriedade?: PropriedadeEquipamento;
+  propriedadeOutra?: string | null;
   observacao?: string;
   situacao?: SituacaoEquipamento;
   condicaoUso?: CondicaoUsoEquipamento;
@@ -401,6 +403,10 @@ export class EquipamentosService {
         unidade: normalizarIdent(data.unidade) || null,
         localizacaoFisica: normalizarIdent(data.localizacaoFisica) || null,
         propriedade: data.propriedade ?? PropriedadeEquipamento.PROPRIO,
+        propriedadeOutra:
+          (data.propriedade ?? PropriedadeEquipamento.PROPRIO) === PropriedadeEquipamento.OUTRO
+            ? normalizarIdent(data.propriedadeOutra) || null
+            : null,
         dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
         dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null,
         valorAquisicao: data.valorAquisicao,
@@ -471,6 +477,14 @@ export class EquipamentosService {
           ? { localizacaoFisica: normalizarIdent(data.localizacaoFisica) || null }
           : {}),
         ...(data.propriedade != null ? { propriedade: data.propriedade } : {}),
+        ...(data.propriedade != null || data.propriedadeOutra !== undefined
+          ? {
+              propriedadeOutra:
+                (data.propriedade ?? eq.propriedade) === PropriedadeEquipamento.OUTRO
+                  ? normalizarIdent(data.propriedadeOutra) || null
+                  : null,
+            }
+          : {}),
         ...(data.observacao != null ? { observacao: data.observacao } : {}),
         ...(data.situacao != null ? { situacao: data.situacao } : {}),
         ...(data.condicaoUso != null ? { condicaoUso: data.condicaoUso } : {}),
@@ -1064,11 +1078,12 @@ export class EquipamentosService {
           idInterna: row.idInterna,
           unidade: row.unidade,
           localizacaoFisica: row.localizacaoFisica,
-          propriedade: (["PROPRIO", "LOCADO", "COMODATO"] as const).includes(
+          propriedade: (["PROPRIO", "LOCADO", "COMODATO", "OUTRO"] as const).includes(
             String(row.propriedade ?? "").toUpperCase() as PropriedadeEquipamento,
           )
             ? (String(row.propriedade).toUpperCase() as PropriedadeEquipamento)
             : undefined,
+          propriedadeOutra: row.propriedadeOutra,
           dataAquisicao: row.dataAquisicao,
           dataInstalacao: row.dataInstalacao,
           valorAquisicao: row.valorAquisicao != null && row.valorAquisicao !== "" ? Number(row.valorAquisicao) : undefined,

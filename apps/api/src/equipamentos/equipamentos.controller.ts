@@ -94,6 +94,10 @@ class CreateEquipamentoDto {
 
   @IsOptional()
   @IsString()
+  propriedadeOutra?: string;
+
+  @IsOptional()
+  @IsString()
   dataAquisicao?: string;
 
   @IsOptional()
@@ -177,6 +181,10 @@ class UpdateEquipamentoDto {
   @IsOptional()
   @IsEnum(PropriedadeEquipamento)
   propriedade?: PropriedadeEquipamento;
+
+  @IsOptional()
+  @IsString()
+  propriedadeOutra?: string;
 
   @IsOptional()
   @IsString()
@@ -300,6 +308,10 @@ class ImportRowDto {
   @IsOptional()
   @IsString()
   propriedade?: string;
+
+  @IsOptional()
+  @IsString()
+  propriedadeOutra?: string;
 
   @IsOptional()
   @IsString()

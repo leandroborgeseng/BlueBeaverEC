@@ -62,6 +62,7 @@ enum PropriedadeEquipamento {
   PROPRIO
   LOCADO
   COMODATO
+  OUTRO
 }
 
 enum TipoMovimentacaoEquipamento {
@@ -370,6 +371,7 @@ model Equipamento {
   unidade            String?
   localizacaoFisica  String?
   propriedade        PropriedadeEquipamento @default(PROPRIO)
+  propriedadeOutra   String?
   garantiaInicio     DateTime?
   garantiaFim        DateTime?
   criticidadeEquipamento Criticidade?
