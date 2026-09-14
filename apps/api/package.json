@@ -7,7 +7,7 @@
     "build": "pnpm --filter @aion/shared build && prisma generate && nest build && node scripts/persist-dist.mjs",
     "start": "node start-api.mjs",
     "start:prod": "node start-api.mjs",
-    "lint": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.build.json --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",

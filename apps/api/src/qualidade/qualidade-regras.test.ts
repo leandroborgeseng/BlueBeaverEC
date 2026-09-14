@@ -16,7 +16,7 @@ import {
   transicaoStatusDocumento,
   transicaoStatusOcorrencia,
   versaoVigente,
-} from "../../../../packages/shared/src/qualidade-regras";
+} from "@aion/shared";
 
 describe("documento controlado", () => {
   it("localiza a versão vigente", () => {
