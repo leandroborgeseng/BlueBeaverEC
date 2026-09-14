@@ -206,6 +206,7 @@ async function proxy(req: NextRequest, path: string[]) {
 
   let lastErr = attempts.length ? "sem destino" : "nenhum host interno com A/AAAA";
   let lastLabel = ordered[0]?.label ?? "";
+  const failures: { target: string; error: string }[] = [];
   for (const attempt of ordered) {
     lastLabel = attempt.label;
     try {
@@ -227,6 +228,7 @@ async function proxy(req: NextRequest, path: string[]) {
       return out;
     } catch (err) {
       lastErr = errorDetail(err);
+      failures.push({ target: attempt.label, error: lastErr });
       if (attempt.url === lastGoodUrl) {
         lastGoodUrl = null;
         lastGoodHost = null;
@@ -242,6 +244,7 @@ async function proxy(req: NextRequest, path: string[]) {
       target: lastLabel,
       reason: lastErr,
       tried: ordered.map((a) => a.label),
+      failures: failures.slice(0, 8),
       configuredHost: parseConfiguredUrl()?.hostname ?? null,
       webPrivateDomain: process.env.RAILWAY_PRIVATE_DOMAIN ?? null,
       dns6,
