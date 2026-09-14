@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { json, urlencoded } from "express";
-import type { Server } from "node:http";
+import { createServer, type Server } from "node:http";
 import { AppModule } from "./app.module";
 
 function listenHost() {
@@ -45,13 +45,27 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = Number(process.env.API_PORT ?? process.env.PORT ?? 3001);
-  // Não ler HOSTNAME (no Railway é o nome do container → conexão recusada).
+  // Railway healthcheck usa PORT; o web interno costuma usar API_PORT=3001.
+  // Escutar os dois evita 503 no login quando as portas divergem.
+  const ports = [
+    ...new Set(
+      [process.env.API_PORT, process.env.PORT, "3001"]
+        .map((v) => Number(v?.trim() || 0))
+        .filter((p) => Number.isInteger(p) && p > 0 && p < 65536),
+    ),
+  ];
   const host = listenHost();
   await app.init();
-  await listenDualStack(app.getHttpServer() as Server, port, host);
+  const expressApp = app.getHttpAdapter().getInstance();
+  await listenDualStack(app.getHttpServer() as Server, ports[0], host);
   // eslint-disable-next-line no-console
-  console.log(`Aion API listening on ${host}:${port}`);
+  console.log(`Aion API listening on ${host}:${ports[0]}`);
+  for (const extra of ports.slice(1)) {
+    const server = createServer(expressApp);
+    await listenDualStack(server, extra, host);
+    // eslint-disable-next-line no-console
+    console.log(`Aion API also listening on ${host}:${extra}`);
+  }
 }
 
 void bootstrap().catch((err) => {
