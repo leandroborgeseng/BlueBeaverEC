@@ -332,13 +332,13 @@ export class AtendimentoExternoService {
     if (!t.ok) throw new ConflictException(t.erro);
 
     const versao = (row.orcamentos.at(-1)?.versao ?? 0) + 1;
-    let anexo: { nomeArquivo: string; mimeType: string; conteudo: Uint8Array } | null = null;
+    let anexo: { nomeArquivo: string; mimeType: string; conteudo: Uint8Array<ArrayBuffer> } | null = null;
     if (body.dataUrl) {
       const parsed = parseAnexoDataUrl(body.dataUrl, body.nomeArquivo);
       anexo = {
         nomeArquivo: parsed.nomeArquivo,
         mimeType: parsed.mimeType,
-        conteudo: Uint8Array.from(parsed.buffer),
+        conteudo: new Uint8Array(parsed.buffer),
       };
     }
 
