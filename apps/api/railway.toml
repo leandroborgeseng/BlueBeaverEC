@@ -5,11 +5,12 @@
 
 [build]
 builder = "DOCKERFILE"
+# Relativo à raiz do repo (Root Directory vazio) e a apps/api (Root Directory = apps/api).
 dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
-# Fora de apps/api: volume no cwd esconde scripts/start-prod.mjs da imagem.
-startCommand = "node /app/start-api.mjs"
+# Fora do cwd: volume no apps/api esconde dist e scripts da imagem.
+startCommand = "node /opt/aion-boot/start-prod.mjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

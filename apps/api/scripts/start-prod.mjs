@@ -119,6 +119,30 @@ function run(cmd, args) {
   }
 }
 
+function runSoft(cmd, args) {
+  const result = spawnSync(cmd, args, {
+    cwd: root,
+    env: process.env,
+    stdio: "inherit",
+    shell: false,
+  });
+  if (result.error) {
+    console.error(result.error);
+    return false;
+  }
+  return result.status === 0;
+}
+
+function runPrismaSoft(args) {
+  const prismaJs = path.join(monorepoRoot, "node_modules", "prisma", "build", "index.js");
+  const prismaLocal = path.join(root, "node_modules", "prisma", "build", "index.js");
+  if (existsSync(prismaJs)) return runSoft(process.execPath, [prismaJs, ...args]);
+  if (existsSync(prismaLocal)) return runSoft(process.execPath, [prismaLocal, ...args]);
+  const prismaBin = resolveBin("prisma");
+  if (prismaBin) return runSoft(prismaBin, args);
+  return runSoft("pnpm", ["exec", "prisma", ...args]);
+}
+
 function runPrisma(args) {
   const prismaJs = path.join(monorepoRoot, "node_modules", "prisma", "build", "index.js");
   const prismaLocal = path.join(root, "node_modules", "prisma", "build", "index.js");
@@ -239,7 +263,17 @@ function ensureApiEntry() {
   process.exit(1);
 }
 
-runPrisma(["migrate", "deploy"]);
+// HTTP primeiro: o volume/migrate não pode deixar a porta muda (TCP timeout no web).
+const api = spawn(process.execPath, [ensureApiEntry()], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  shell: false,
+});
+
+if (!runPrismaSoft(["migrate", "deploy"])) {
+  console.error("[aion] migrate deploy falhou — API já está escutando, não derruba o HTTP");
+}
 
 const seed = spawnSync(process.execPath, [path.join(root, "scripts/maybe-seed.mjs")], {
   cwd: root,
@@ -264,14 +298,6 @@ if (convSol.status !== 0) {
     `[aion] conversão de solicitações abertas falhou (code=${convSol.status ?? "?"}) — API sobe mesmo assim`,
   );
 }
-
-// Import em background DEPOIS da API: healthcheck do Railway não mata o boot.
-const api = spawn(process.execPath, [ensureApiEntry()], {
-  cwd: root,
-  env: process.env,
-  stdio: "inherit",
-  shell: false,
-});
 
 const importOnBoot =
   process.env.IMPORT_ON_BOOT === "true" || process.env.IMPORT_ON_BOOT === "1";
