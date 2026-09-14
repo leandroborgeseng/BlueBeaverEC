@@ -1262,6 +1262,38 @@ export class OsService {
     }
   }
 
+  /** Hard delete só de OS de teste (Ana Engenheira / Carlos Técnico). Não mexe em usuário nem inventário. */
+  async removerTesteAnaCarlos(user: AuthUser, numero: number) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para excluir OS");
+    }
+    const os = await this.prisma.ordemServico.findUnique({
+      where: { estabelecimentoId_numero: { estabelecimentoId: user.estabelecimentoId, numero } },
+      include: { responsavel: { select: { nome: true } } },
+    });
+    if (!os) throw new NotFoundException(`OS ${numero} não encontrada`);
+    const nome = os.responsavel?.nome?.trim() ?? "";
+    if (nome !== "Ana Engenheira" && nome !== "Carlos Técnico") {
+      throw new BadRequestException(
+        "Só é permitido excluir OS de teste de Ana Engenheira ou Carlos Técnico",
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.naoConformidade.updateMany({
+        where: { ordemServicoId: os.id },
+        data: { ordemServicoId: null },
+      });
+      await tx.ocorrenciaSeguranca.updateMany({
+        where: { ordemServicoId: os.id },
+        data: { ordemServicoId: null },
+      });
+      await tx.ordemServico.delete({ where: { id: os.id } });
+    });
+
+    return { ok: true, numero, codigo: os.codigo, responsavel: nome };
+  }
+
   private async findByNumero(estabelecimentoId: string, numero: number) {
     const os = await this.prisma.ordemServico.findUnique({
       where: { estabelecimentoId_numero: { estabelecimentoId, numero } },

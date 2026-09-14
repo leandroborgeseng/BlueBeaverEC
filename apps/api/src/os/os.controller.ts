@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import type { Response } from "express";
 import { Type } from "class-transformer";
 import {
@@ -507,5 +507,11 @@ export class OsController {
     @Body() body: StatusDto,
   ) {
     return this.os.changeStatus(user, Number(numero), body.acao, body);
+  }
+
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Delete(":numero")
+  remover(@CurrentUser() user: AuthUser, @Param("numero") numero: string) {
+    return this.os.removerTesteAnaCarlos(user, Number(numero));
   }
 }
