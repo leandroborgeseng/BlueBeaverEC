@@ -40,6 +40,6 @@ ENV LISTEN_HOST=0.0.0.0
 RUN mkdir -p /opt/aion-dist /opt/aion-boot \
   && cp -a dist/. /opt/aion-dist/ \
   && cp scripts/start-prod.mjs /opt/aion-boot/start-prod.mjs \
-  && cp /app/start-api.mjs /opt/aion-boot/start-api.mjs
+  && cp start-api.mjs /opt/aion-boot/start-api.mjs
 EXPOSE 3001
-CMD ["node", "/opt/aion-boot/start-prod.mjs"]
+CMD ["node", "/opt/aion-boot/start-api.mjs"]

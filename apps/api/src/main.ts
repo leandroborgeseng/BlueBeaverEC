@@ -59,7 +59,14 @@ async function bootstrap() {
     const port = ports[i];
     const server = i === 0 ? nestServer : createServer(expressApp);
 
-    if (customHost && customHost !== "0.0.0.0" && customHost !== "::" && customHost !== "127.0.0.1") {
+    if (customHost === "127.0.0.1") {
+      await listenOn(server, port, "127.0.0.1");
+      // eslint-disable-next-line no-console
+      console.log(`Aion API listening on 127.0.0.1:${port}`);
+      continue;
+    }
+
+    if (customHost && customHost !== "0.0.0.0" && customHost !== "::") {
       await listenOn(server, port, customHost);
       // eslint-disable-next-line no-console
       console.log(`Aion API listening on ${customHost}:${port}`);

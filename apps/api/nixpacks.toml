@@ -1,4 +1,4 @@
 # Railpack/Nixpacks: o painel às vezes ignora o Dockerfile (Node 20).
 # persist-dist no `pnpm build` copia bundle+boot para /opt (fora do volume).
 [start]
-cmd = "node /opt/aion-boot/start-prod.mjs"
+cmd = "node start-api.mjs"

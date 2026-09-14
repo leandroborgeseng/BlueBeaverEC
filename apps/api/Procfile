@@ -1,1 +1,1 @@
-web: node /opt/aion-boot/start-prod.mjs
+web: node start-api.mjs

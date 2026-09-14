@@ -10,7 +10,7 @@ dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
 # Fora do cwd: volume no apps/api esconde dist e scripts da imagem.
-startCommand = "node /opt/aion-boot/start-prod.mjs"
+startCommand = "node /opt/aion-boot/start-api.mjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

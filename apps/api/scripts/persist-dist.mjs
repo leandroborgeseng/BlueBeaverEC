@@ -31,6 +31,7 @@ for (const dest of distDests) {
 }
 
 const boot = path.join(root, "scripts", "start-prod.mjs");
+const startApi = path.join(root, "start-api.mjs");
 const bootDests = [
   "/opt/aion-boot/start-prod.mjs",
   path.join(monorepoRoot, "aion-runtime", "start-prod.mjs"),
@@ -44,6 +45,19 @@ if (existsSync(boot)) {
     } catch (err) {
       console.warn(
         `[aion] não copiou start-prod para ${dest}: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
+}
+if (existsSync(startApi)) {
+  for (const dest of ["/opt/aion-boot/start-api.mjs", path.join(monorepoRoot, "aion-runtime", "start-api.mjs")]) {
+    try {
+      mkdirSync(path.dirname(dest), { recursive: true });
+      cpSync(startApi, dest);
+      console.log(`[aion] start-api copiado para ${dest}`);
+    } catch (err) {
+      console.warn(
+        `[aion] não copiou start-api para ${dest}: ${err instanceof Error ? err.message : err}`,
       );
     }
   }
