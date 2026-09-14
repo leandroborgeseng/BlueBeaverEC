@@ -55,6 +55,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
     if (pathname.startsWith("/cadastros") && !temPermissao(mapa, "equipamentos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
       router.replace(home);
+      return;
+    }
+    if (pathname.startsWith("/qualidade") && !temPermissao(mapa, "auditorias", PERMISSAO_NIVEL.LEITURA)) {
+      router.replace(home);
     }
   }, [me, pathname, router]);
 

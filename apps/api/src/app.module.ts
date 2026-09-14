@@ -25,6 +25,7 @@ import { RelatoriosModule } from "./relatorios/relatorios.module";
 import { ConfigAppModule } from "./config/config.module";
 import { PortalModule } from "./portal/portal.module";
 import { PlanosModule } from "./planos/planos.module";
+import { QualidadeModule } from "./qualidade/qualidade.module";
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { PlanosModule } from "./planos/planos.module";
     ConfigAppModule,
     PortalModule,
     PlanosModule,
+    QualidadeModule,
   ],
 })
 export class AppModule {}
