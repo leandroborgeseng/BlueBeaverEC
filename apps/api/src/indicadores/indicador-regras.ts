@@ -500,7 +500,7 @@ export const FORMULAS_PAINEL: Array<{ chave: string; nome: string; formula: stri
     chave: "sla",
     nome: "Meta de SLA",
     formula: "prazo do tipo de equipamento; senão, prazo por prioridade",
-    nota: "Relógio corrido a partir da abertura. Não há calendário de expediente nem desconto automático de pausa no SLA.",
+    nota: "Horas úteis (seg–sex 8h–17h, America/Sao_Paulo). Noite e fim de semana não entram. Pausas ainda não descontam o limite.",
   },
 ];
 
@@ -508,7 +508,7 @@ export const LIMITACOES_HEF = [
   "O histórico operacional da HEF foi reimportado recentemente: OS antigas não sustentam MTBF nem disponibilidade de longo prazo.",
   "OS novas só entram nos indicadores depois de existirem no banco desta instituição.",
   "Tempo até 1º atendimento e tempo trabalhado dependem dos logs INICIO_EXECUCAO / PAUSA / AGUARDO / RETOMADA.",
-  "SLA e durações usam relógio corrido (24 h). Pausas não descontam o limite de SLA.",
+  "SLA da OS usa horas úteis (seg–sex 8h–17h). Pausas ainda não descontam o limite.",
   "Ausência de registro (parque parado não marcado, denominador vazio) nunca é apresentada como 100%.",
   "Custo realizado vem de itens da OS (material e mão de obra). CAPEX estimado/aprovado aparece separado. Rateio de contrato não entra como realizado da OS.",
 ];

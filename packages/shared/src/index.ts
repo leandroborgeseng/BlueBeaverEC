@@ -1,3 +1,10 @@
+import {
+  addHorasUteis,
+  calendarioExpediente,
+  minutosUteisEntre,
+  type CalendarioExpediente,
+} from "./expediente";
+
 export type PerfilAcesso =
   | "ENGENHEIRO"
   | "GESTOR"
@@ -123,7 +130,16 @@ export type ResultadoLaudo =
   | "APROVADO_COM_RESSALVAS"
   | "PENDENTE_ASSINATURA";
 
-/** SLA em horas a partir da abertura, por prioridade (fallback se o tipo não tiver prazo). */
+export {
+  EXPEDIENTE_PADRAO,
+  addHorasUteis,
+  calendarioExpediente,
+  minutosUteisEntre,
+  snapParaExpediente,
+  type CalendarioExpediente,
+} from "./expediente";
+
+/** SLA em horas úteis (seg–sex 8h–17h) a partir da abertura, por prioridade. */
 export const SLA_HORAS: Record<PrioridadeOS, number> = {
   URGENTE: 2,
   ALTA: 8,
@@ -139,6 +155,8 @@ export type SlaOsInput = {
   slaConclusaoHoras?: number | null;
   slaAtendimentoHoras?: number | null;
   agora?: Date | number | string;
+  timeZone?: string | null;
+  calendario?: CalendarioExpediente;
 };
 
 export type SlaOsCampos = {
@@ -172,17 +190,21 @@ export function horasSlaOs(input: {
 
 export function calcularSlaOs(input: SlaOsInput): SlaOsCampos {
   const { horas, fonte } = horasSlaOs(input);
-  const abertura = new Date(input.abertura).getTime();
-  const slaLimite = new Date(abertura + horas * 60 * 60 * 1000);
+  const cal = input.calendario ?? calendarioExpediente(input.timeZone);
+  const abertura = new Date(input.abertura);
+  const slaLimite = addHorasUteis(abertura, horas, cal);
   const encerrada =
     Boolean(input.fechamento) || input.status === "CONCLUIDA" || input.status === "CANCELADA";
-  const ref = encerrada && input.fechamento ? new Date(input.fechamento).getTime() : input.agora != null
-    ? new Date(input.agora).getTime()
-    : Date.now();
-  const slaMinutosRestantes = Math.round((slaLimite.getTime() - ref) / 60_000);
+  const ref =
+    encerrada && input.fechamento
+      ? new Date(input.fechamento)
+      : input.agora != null
+        ? new Date(input.agora)
+        : new Date();
+  const slaMinutosRestantes = minutosUteisEntre(ref, slaLimite, cal);
   return {
     slaLimite,
-    slaEstourado: !encerrada && slaMinutosRestantes < 0,
+    slaEstourado: !encerrada && ref.getTime() > slaLimite.getTime(),
     slaMinutosRestantes,
     slaHoras: horas,
     slaFonte: fonte,

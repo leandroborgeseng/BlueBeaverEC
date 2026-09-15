@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { StatusNC, StatusOS, TipoLaudo } from "@prisma/client";
-import { SLA_HORAS, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
+import { calcularSlaOs, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -93,9 +93,12 @@ export class NavService {
     });
 
     for (const os of osAbertas) {
-      const horas = SLA_HORAS[os.prioridade as PrioridadeShared] ?? 72;
-      const limite = os.abertura.getTime() + horas * 60 * 60 * 1000;
-      if (agora > limite) {
+      const sla = calcularSlaOs({
+        abertura: os.abertura,
+        status: os.status,
+        prioridade: os.prioridade as PrioridadeShared,
+      });
+      if (sla.slaEstourado) {
         items.push({
           id: `os-atrasada-${os.numero}`,
           tipo: "OS_ATRASADA",

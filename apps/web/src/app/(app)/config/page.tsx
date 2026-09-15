@@ -316,8 +316,11 @@ export default function ConfigPage() {
               <input id="org-fuso" name="fuso" defaultValue={org.fusoHorario} style={fieldStyle} />
             </div>
             <div>
-              <FieldLabel htmlFor="org-sla">SLA urgente (horas)</FieldLabel>
+              <FieldLabel htmlFor="org-sla">SLA urgente (horas úteis)</FieldLabel>
               <input id="org-sla" name="sla" type="number" defaultValue={org.slaUrgenteHoras} style={fieldStyle} />
+              <p style={{ margin: "6px 0 0", fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                O timer das OS conta só expediente (seg–sex 8h–17h, horário de Brasília). Técnicos não são cobrados 24/7.
+              </p>
             </div>
             <div>
               <FieldLabel htmlFor="org-alerta">Alerta de vencimento do padrão (dias)</FieldLabel>

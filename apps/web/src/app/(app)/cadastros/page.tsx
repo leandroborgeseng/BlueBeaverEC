@@ -185,12 +185,12 @@ export default function CadastrosPage() {
               </select>
               <FieldLabel>Vida útil (anos)</FieldLabel>
               <input name="vidaUtilAnos" type="number" min={1} defaultValue={10} style={{ ...fieldStyle, marginBottom: 10 }} />
-              <FieldLabel>SLA 1º atendimento (horas)</FieldLabel>
+              <FieldLabel>SLA 1º atendimento (horas úteis)</FieldLabel>
               <input name="slaAtendimentoHoras" type="number" min={1} placeholder="ex.: 4" style={{ ...fieldStyle, marginBottom: 10 }} />
-              <FieldLabel>SLA conclusão (horas)</FieldLabel>
+              <FieldLabel>SLA conclusão (horas úteis)</FieldLabel>
               <input name="slaConclusaoHoras" type="number" min={1} placeholder="ex.: 24" style={{ ...fieldStyle, marginBottom: 10 }} />
               <p style={{ margin: "0 0 10px", fontSize: 12, color: "oklch(0.5 0.02 250)", lineHeight: 1.4 }}>
-                O timer da OS usa o prazo do tipo a partir da abertura. Sem SLA no tipo, vale a prioridade da OS.
+                Horas úteis seg–sex 8h–17h. Sem SLA no tipo, vale a prioridade da OS.
               </p>
               <Btn type="submit">Adicionar plano</Btn>
             </form>
@@ -283,7 +283,8 @@ function PlanosSlaTable({
     <div>
       {erro && <Err>{erro}</Err>}
       <p style={{ margin: "0 0 10px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-        Defina o SLA por tipo de equipamento. O timer da OS usa a conclusão (ou o 1º atendimento, se só ele existir).
+        Defina o SLA por tipo de equipamento em <strong>horas úteis</strong> (seg–sex 8h–17h).
+        Noite e fim de semana não entram no timer. Sem SLA no tipo, vale a prioridade da OS.
       </p>
       <DataTable>
         <thead>

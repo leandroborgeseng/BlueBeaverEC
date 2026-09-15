@@ -399,6 +399,12 @@ export class OsController {
     return this.os.rapida(user, body);
   }
 
+  @RequirePermission("os", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post("compactar-numeros")
+  compactarNumeros(@CurrentUser() user: AuthUser) {
+    return this.os.compactarNumeros(user);
+  }
+
   @RequirePermission("os", PERMISSAO_NIVEL.EDICAO)
   @Patch(":numero/atribuir")
   atribuir(

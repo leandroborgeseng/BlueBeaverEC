@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatarSlaMinutos } from "@aion/shared";
+import { formatarSlaMinutos, minutosUteisEntre } from "@aion/shared";
 
 export type SlaChipProps = {
   slaLimite?: string | Date | null;
@@ -10,8 +10,8 @@ export type SlaChipProps = {
   status?: string;
 };
 
-function tomSla(mins: number): "late" | "warn" | "ok" {
-  if (mins < 0) return "late";
+function tomSla(atrasado: boolean, mins: number): "late" | "warn" | "ok" {
+  if (atrasado) return "late";
   if (mins <= 120) return "warn";
   return "ok";
 }
@@ -22,7 +22,7 @@ const CORES: Record<"late" | "warn" | "ok", { bg: string; color: string }> = {
   ok: { bg: "oklch(0.94 0.05 150)", color: "oklch(0.4 0.12 150)" },
 };
 
-export function SlaChip({ slaLimite, status }: SlaChipProps) {
+export function SlaChip({ slaLimite, slaEstourado, status }: SlaChipProps) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -33,15 +33,17 @@ export function SlaChip({ slaLimite, status }: SlaChipProps) {
   if (!slaLimite) return null;
   if (status === "CONCLUIDA" || status === "CANCELADA") return null;
 
-  const mins = Math.round((new Date(slaLimite).getTime() - now) / 60_000);
-  const tom = tomSla(mins);
+  const limite = new Date(slaLimite);
+  const mins = minutosUteisEntre(now, limite);
+  const atrasado = slaEstourado ?? now > limite.getTime();
+  const tom = tomSla(atrasado, mins);
   const tempo = formatarSlaMinutos(mins);
-  const label = mins < 0 ? `atraso ${tempo}` : `falta ${tempo}`;
+  const label = atrasado ? (mins >= 0 ? "atrasado" : `atraso ${tempo}`) : `falta ${tempo}`;
   const style = CORES[tom];
 
   return (
     <span
-      title={new Date(slaLimite).toLocaleString("pt-BR")}
+      title={`${limite.toLocaleString("pt-BR")} · horas úteis seg–sex 8h–17h`}
       style={{
         display: "inline-flex",
         alignItems: "center",

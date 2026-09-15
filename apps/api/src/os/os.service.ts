@@ -1295,6 +1295,77 @@ export class OsService {
     return { ok: true, numero, codigo: os.codigo, responsavel: nome };
   }
 
+  /** Reordena OS-00001… sem lacunas e alinha o contador da próxima OS. Não apaga nada. */
+  async compactarNumeros(user: AuthUser) {
+    if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para renumerar OS");
+    }
+    const rows = await this.prisma.ordemServico.findMany({
+      where: { estabelecimentoId: user.estabelecimentoId },
+      orderBy: { numero: "asc" },
+      select: { id: true, numero: true, codigo: true },
+    });
+    const plano = rows.map((r, i) => ({
+      id: r.id,
+      de: r.numero,
+      codigoDe: r.codigo ?? `OS-${String(r.numero).padStart(5, "0")}`,
+      para: i + 1,
+    }));
+    const alteradas = plano.filter((p) => p.de !== p.para);
+
+    await this.prisma.$transaction(async (tx) => {
+      if (alteradas.length > 0) {
+        const offset = 1_000_000;
+        for (const r of rows) {
+          await tx.ordemServico.update({
+            where: { id: r.id },
+            data: {
+              numero: offset + r.numero,
+              codigo: `OS-${String(offset + r.numero).padStart(5, "0")}`,
+            },
+          });
+        }
+        for (const p of plano) {
+          await tx.ordemServico.update({
+            where: { id: p.id },
+            data: {
+              numero: p.para,
+              codigo: `OS-${String(p.para).padStart(5, "0")}`,
+              logs: {
+                create: {
+                  usuarioId: user.userId,
+                  acao: "RENUMERACAO",
+                  justificativa: `${p.codigoDe} → OS-${String(p.para).padStart(5, "0")}`,
+                  visibilidade: VisibilidadeOs.INTERNO,
+                },
+              },
+            },
+          });
+        }
+      }
+      await tx.contadorSequencia.upsert({
+        where: {
+          estabelecimentoId_chave: { estabelecimentoId: user.estabelecimentoId, chave: "OS" },
+        },
+        create: {
+          estabelecimentoId: user.estabelecimentoId,
+          chave: "OS",
+          valor: rows.length,
+        },
+        update: { valor: rows.length },
+      });
+    });
+
+    return {
+      ok: true,
+      total: rows.length,
+      alteradas: alteradas.map((p) => ({
+        de: p.codigoDe,
+        para: `OS-${String(p.para).padStart(5, "0")}`,
+      })),
+    };
+  }
+
   private async findByNumero(estabelecimentoId: string, numero: number) {
     const os = await this.prisma.ordemServico.findUnique({
       where: { estabelecimentoId_numero: { estabelecimentoId, numero } },

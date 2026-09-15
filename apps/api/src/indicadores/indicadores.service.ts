@@ -9,7 +9,7 @@ import {
   TipoMovimentacaoEquipamento,
   TipoOS,
 } from "@prisma/client";
-import { calcularSlaOs, horasSlaOs, LABEL_STATUS_OS, podeVerFinanceiro } from "@aion/shared";
+import { addHorasUteis, calcularSlaOs, horasSlaOs, LABEL_STATUS_OS, minutosUteisEntre, podeVerFinanceiro } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import {
@@ -466,12 +466,15 @@ export class IndicadoresService {
         o.equipamento?.descricao.slaAtendimentoHoras != null && o.equipamento.descricao.slaAtendimentoHoras > 0;
       if (temMetaAtend && t.atePrimeiroAtendimentoMs != null) {
         slaAtendOk.n += 1;
-        if (t.atePrimeiroAtendimentoMs / 36e5 <= o.equipamento!.descricao.slaAtendimentoHoras!) slaAtendOk.ok += 1;
+        const fimAtend = new Date(o.abertura.getTime() + t.atePrimeiroAtendimentoMs);
+        if (minutosUteisEntre(o.abertura, fimAtend) / 60 <= o.equipamento!.descricao.slaAtendimentoHoras!) {
+          slaAtendOk.ok += 1;
+        }
       }
       if (o.status === StatusOS.CONCLUIDA && o.fechamento) {
         slaConcOk.n += 1;
-        const limite = o.abertura.getTime() + slaHoras.horas * 36e5;
-        if (o.fechamento.getTime() <= limite) slaConcOk.ok += 1;
+        const limite = addHorasUteis(o.abertura, slaHoras.horas);
+        if (o.fechamento.getTime() <= limite.getTime()) slaConcOk.ok += 1;
       }
 
       const parado = o.equipamentoParado || o.condicaoFinal === CondicaoUsoEquipamento.PARADO;
@@ -695,12 +698,12 @@ export class IndicadoresService {
         slaConclusao: razaoPercentual(
           slaConcOk.ok,
           slaConcOk.n,
-          "OS concluídas com fechamento ≤ abertura + prazo (tipo ou prioridade)",
+          "OS concluídas com fechamento ≤ abertura + prazo em horas úteis (tipo ou prioridade)",
           "Nenhuma OS concluída no recorte.",
         ),
         notas: [
           "1º atendimento ≠ duração da OS ≠ tempo trabalhado ≠ indisponibilidade.",
-          "SLA usa relógio corrido a partir da abertura; pausas e calendário de expediente não descontam o limite.",
+          "SLA usa horas úteis (seg–sex 8h–17h). Pausas ainda não descontam o limite.",
           "Metas de 1º atendimento só existem quando o tipo de equipamento tem slaAtendimentoHoras.",
         ],
       },

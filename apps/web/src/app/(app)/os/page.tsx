@@ -95,7 +95,8 @@ export default function OsPage() {
         title="Ordens de Serviço"
         subtitle={
           <span>
-            <strong>{total}</strong> registro(s) · <strong>{abertas}</strong> abertas nesta página ·{" "}
+            <strong>{total}</strong> registro(s) · SLA em horas úteis (seg–sex 8h–17h) ·{" "}
+            <strong>{abertas}</strong> abertas nesta página ·{" "}
             <span style={{ color: atrasadas ? "oklch(0.5 0.17 25)" : undefined, fontWeight: 700 }}>
               {atrasadas} atrasadas
             </span>
