@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { api, downloadApi } from "@/lib/api";
 import { useCan } from "@/lib/session";
 import {
@@ -147,6 +147,7 @@ function fileToDataUrl(file: File) {
 
 export default function EquipamentoPagina() {
   const params = useParams<{ tag: string }>();
+  const router = useRouter();
   const tag = decodeURIComponent(params.tag);
   const podeEditar = useCan("equipamentos", 3);
   const podeOs = useCan("os", 3);
@@ -177,9 +178,15 @@ export default function EquipamentoPagina() {
     if (!data) return;
     const fd = new FormData(e.currentTarget);
     try {
+      const novaTag = String(fd.get("tag") ?? tag).trim();
+      if (!novaTag) {
+        setErro("TAG obrigatória");
+        return;
+      }
       await api(`/equipamentos/${encodeURIComponent(tag)}`, {
         method: "PATCH",
         body: JSON.stringify({
+          tag: novaTag,
           nome: String(fd.get("nome")),
           patrimonio: String(fd.get("patrimonio") ?? ""),
           nSerie: String(fd.get("nSerie") ?? ""),
@@ -202,6 +209,10 @@ export default function EquipamentoPagina() {
         }),
       });
       setMsg("Cadastro atualizado");
+      if (novaTag !== tag) {
+        router.replace(`/equipamentos/${encodeURIComponent(novaTag)}`);
+        return;
+      }
       await load();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro");
@@ -473,6 +484,20 @@ export default function EquipamentoPagina() {
             <p style={{ margin: 0, fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
               Condição operacional e situação de ciclo são campos separados. Fechar OS não muda a condição sozinha.
             </p>
+            <div>
+              <FieldLabel>TAG</FieldLabel>
+              <input
+                name="tag"
+                defaultValue={data.tag}
+                disabled={readonly}
+                required
+                placeholder="Ex.: HEF-CME-001"
+                style={{ ...fieldStyle, fontWeight: 700, letterSpacing: "0.04em" }}
+              />
+              <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                Livre para vocês definirem. Só não pode repetir outra TAG desta instituição.
+              </div>
+            </div>
             <div>
               <FieldLabel>Nome</FieldLabel>
               <input name="nome" defaultValue={data.nome} disabled={readonly} style={fieldStyle} />

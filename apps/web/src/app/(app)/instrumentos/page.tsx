@@ -1,21 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { Overlay, WinForm, fld } from "@/components/os/os-win-ui";
 import {
-  Badge,
-  Btn,
-  DataTable,
-  Empty,
-  Err,
-  FieldLabel,
-  PageHeader,
-  Surface,
-  fieldStyle,
+  FItem,
+  FRow,
+  ToolBtn,
+  WinScreen,
+  ZebraTable,
+  padCount,
   td,
-  th,
-} from "@/components/ui/aion-ui";
+  winFld,
+  zebraRow,
+} from "@/components/equipamentos/eq-win-ui";
 
 interface Inst {
   id: string;
@@ -33,10 +33,19 @@ interface Inst {
   selecionavel: boolean;
 }
 
+function fmtDate(v?: string | null) {
+  if (!v) return "";
+  return new Date(v).toLocaleDateString("pt-BR");
+}
+
 export default function InstrumentosPage() {
+  const router = useRouter();
   const [items, setItems] = useState<Inst[]>([]);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [novo, setNovo] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     setItems(await api<Inst[]>("/instrumentos-padroes"));
@@ -46,11 +55,25 @@ export default function InstrumentosPage() {
     void load().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, []);
 
-  async function onCreate(e: FormEvent<HTMLFormElement>) {
+  const filtrados = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return items;
+    return items.filter(
+      (i) =>
+        i.nome.toLowerCase().includes(t) ||
+        i.nSerie.toLowerCase().includes(t) ||
+        (i.fabricante ?? "").toLowerCase().includes(t) ||
+        (i.modelo ?? "").toLowerCase().includes(t),
+    );
+  }, [items, q]);
+
+  const selected = filtrados.find((i) => i.id === selectedId) ?? null;
+
+  async function onCreate(e: FormEvent) {
     e.preventDefault();
     setErro(null);
-    setMsg(null);
-    const fd = new FormData(e.currentTarget);
+    setBusy(true);
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
     const grandezas = String(fd.get("grandezas") || "")
       .split(/[,;]/)
       .map((s) => s.trim())
@@ -69,128 +92,108 @@ export default function InstrumentosPage() {
           tipoAnalisador: String(fd.get("tipoAnalisador") || "") || undefined,
         }),
       });
-      e.currentTarget.reset();
-      setMsg("Padrão cadastrado — cadastre o certificado na ficha");
+      setNovo(false);
       await load();
-      window.location.href = `/instrumentos/${created.id}`;
+      router.push(`/instrumentos/${created.id}`);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Instrumentos e Padrões"
-        subtitle="Cadastre padrões e o histórico de certificados RBC (pontos, U e PDF) para os cálculos de calibração"
-      />
-      {erro && <Err>{erro}</Err>}
-      {msg && (
-        <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)", marginBottom: 12 }}>
-          {msg}
-        </div>
-      )}
-
-      <Surface style={{ marginBottom: 16 }}>
-        <form
-          onSubmit={(e) => void onCreate(e)}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}
+    <>
+      <WinScreen
+        title="Rastreabilidade dos Padrões"
+        error={erro}
+        toolbar={
+          <>
+            <ToolBtn onClick={() => setNovo(true)}>Novo</ToolBtn>
+            <ToolBtn disabled={!selected} onClick={() => selected && router.push(`/instrumentos/${selected.id}`)}>
+              Alterar
+            </ToolBtn>
+            <ToolBtn disabled={!selected} onClick={() => selected && router.push(`/instrumentos/${selected.id}`)}>
+              Consultar
+            </ToolBtn>
+          </>
+        }
+        filters={
+          <FRow>
+            <FItem label="Pesquisar:" grow>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Todo ou parte do nome"
+                style={{ ...winFld, flex: 1 }}
+              />
+            </FItem>
+            <span style={{ fontSize: 12, color: "#555" }}>No campo: Descrição</span>
+          </FRow>
+        }
+        footer={<span style={{ marginLeft: "auto" }}>Exibindo {padCount(filtrados.length)} registros</span>}
+      >
+        <ZebraTable
+          columns={[
+            { key: "desc", label: "Descrição" },
+            { key: "serie", label: "Nº série", width: 140 },
+            { key: "val", label: "Validade", width: 110 },
+          ]}
         >
-          <div>
-            <FieldLabel>Nome</FieldLabel>
-            <input name="nome" placeholder="Ex.: Termômetro digital" required style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Nº série</FieldLabel>
-            <input name="nSerie" placeholder="Nº série" required style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Fabricante</FieldLabel>
-            <input name="fabricante" placeholder="Fabricante" style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Modelo</FieldLabel>
-            <input name="modelo" placeholder="Modelo" style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Grandezas</FieldLabel>
-            <input
-              name="grandezas"
-              placeholder="temperatura, umidade"
-              style={fieldStyle}
-            />
-          </div>
-          <div>
-            <FieldLabel>Faixa de medição</FieldLabel>
-            <input name="faixaMedicao" placeholder="0 a 70 °C" style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Resolução</FieldLabel>
-            <input name="resolucao" placeholder="0,1 °C" style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Tipo de analisador (categoria, sem marca)</FieldLabel>
-            <input name="tipoAnalisador" placeholder="Ex.: segurança elétrica, infusão" style={fieldStyle} />
-          </div>
-          <div style={{ display: "flex", alignItems: "end" }}>
-            <Btn type="submit">Cadastrar padrão</Btn>
-          </div>
-        </form>
-      </Surface>
-
-      <DataTable>
-        <thead>
-          <tr>
-            <th style={th}>Padrão</th>
-            <th style={th}>Nº série</th>
-            <th style={th}>Grandezas</th>
-            <th style={th}>Validade</th>
-            <th style={th}>Pontos U</th>
-            <th style={th}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 ? (
-            <tr>
-              <td colSpan={6} style={td}>
-                <Empty text="Nenhum padrão cadastrado." />
+          {filtrados.map((i, idx) => (
+            <tr
+              key={i.id}
+              style={zebraRow(idx, i.id === selectedId)}
+              onClick={() => setSelectedId(i.id)}
+              onDoubleClick={() => router.push(`/instrumentos/${i.id}`)}
+            >
+              <td style={td}>
+                <Link href={`/instrumentos/${i.id}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                  {i.nome}
+                </Link>
               </td>
+              <td style={td}>{i.nSerie}</td>
+              <td style={td}>{fmtDate(i.certificadoValidade)}</td>
             </tr>
-          ) : (
-            items.map((i) => (
-              <tr key={i.id}>
-                <td style={td}>
-                  <Link href={`/instrumentos/${i.id}`} style={{ fontWeight: 700, color: "inherit" }}>
-                    {i.nome}
-                  </Link>
-                  {(i.fabricante || i.modelo) && (
-                    <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                      {[i.fabricante, i.modelo].filter(Boolean).join(" · ")}
-                    </div>
-                  )}
-                </td>
-                <td style={td}>{i.nSerie}</td>
-                <td style={td}>{i.grandezas?.length ? i.grandezas.join(", ") : "—"}</td>
-                <td style={td}>
-                  {i.certificadoValidade
-                    ? new Date(i.certificadoValidade).toLocaleDateString("pt-BR")
-                    : "—"}
-                </td>
-                <td style={td}>
-                  {i.pontosVigente}/{i.certificadosCount} cert.
-                </td>
-                <td style={td}>
-                  <Badge tone={i.statusCertificado === "VALIDO" ? "VALIDO" : i.statusCertificado === "A_VENCER" ? "A_VENCER" : "VENCIDO"}>
-                    {i.statusCertificado === "SEM_CERTIFICADO"
-                      ? "Sem certificado"
-                      : i.statusCertificado.replace("_", " ")}
-                  </Badge>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </DataTable>
-    </div>
+          ))}
+        </ZebraTable>
+        {filtrados.length === 0 && (
+          <div style={{ padding: 24, textAlign: "center", color: "#777", fontSize: 13 }}>Nenhum padrão cadastrado.</div>
+        )}
+      </WinScreen>
+
+      {novo && (
+        <Overlay onClose={() => setNovo(false)} fixed>
+          <WinForm
+            title="Novo padrão"
+            width="min(520px, 96vw)"
+            onSubmit={(e) => void onCreate(e)}
+            onCancel={() => setNovo(false)}
+            busy={busy}
+            showContinuar={false}
+            submitLabel="Cadastrar"
+          >
+            <label style={lab}>Nome</label>
+            <input name="nome" required style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Nº série</label>
+            <input name="nSerie" required style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Fabricante</label>
+            <input name="fabricante" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Modelo</label>
+            <input name="modelo" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Grandezas</label>
+            <input name="grandezas" placeholder="temperatura, umidade" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Faixa de medição</label>
+            <input name="faixaMedicao" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Resolução</label>
+            <input name="resolucao" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Tipo de analisador</label>
+            <input name="tipoAnalisador" placeholder="segurança elétrica, infusão" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+          </WinForm>
+        </Overlay>
+      )}
+    </>
   );
 }
+
+const lab = { display: "block", fontSize: 12, marginBottom: 4 } as const;

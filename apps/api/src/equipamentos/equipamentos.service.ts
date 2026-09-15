@@ -16,7 +16,7 @@ import {
   TipoDocumentoEquipamento,
   TipoMovimentacaoEquipamento,
 } from "@prisma/client";
-import { STATUS_OS_ATIVAS, podeEditarCadastros, podeEditarModulo } from "@aion/shared";
+import { STATUS_OS_ATIVAS, podeEditarCadastros, podeEditarModulo, podeVerFinanceiro } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { parseAnexoDataUrl } from "../os/os-anexos";
@@ -92,6 +92,7 @@ export type CreateEquipamentoInput = {
 };
 
 export type UpdateEquipamentoInput = {
+  tag?: string;
   nome?: string;
   setorId?: string;
   fabricanteId?: string;
@@ -137,6 +138,13 @@ export class EquipamentosService {
       modelo?: string;
       situacao?: SituacaoEquipamento;
       q?: string;
+      tag?: string;
+      patrimonio?: string;
+      nSerie?: string;
+      criticidade?: Criticidade;
+      centroCusto?: string;
+      inativos?: boolean;
+      semInstalacao?: boolean;
       page?: number;
       pageSize?: number;
     },
@@ -144,26 +152,54 @@ export class EquipamentosService {
     const page = Math.max(1, query.page ?? 1);
     const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
     const termo = query.q?.trim();
+    const and: Prisma.EquipamentoWhereInput[] = [];
+    if (termo) {
+      and.push({
+        OR: [
+          { tag: { contains: termo, mode: "insensitive" } },
+          { nome: { contains: termo, mode: "insensitive" } },
+          { patrimonio: { contains: termo, mode: "insensitive" } },
+          { nSerie: { contains: termo, mode: "insensitive" } },
+          { idInterna: { contains: termo, mode: "insensitive" } },
+          { fabricante: { nome: { contains: termo, mode: "insensitive" } } },
+          { modelo: { nome: { contains: termo, mode: "insensitive" } } },
+          { setor: { nome: { contains: termo, mode: "insensitive" } } },
+        ],
+      });
+    }
+    if (query.tag?.trim()) {
+      and.push({ tag: { contains: query.tag.trim(), mode: "insensitive" } });
+    }
+    if (query.patrimonio?.trim()) {
+      and.push({ patrimonio: { contains: query.patrimonio.trim(), mode: "insensitive" } });
+    }
+    if (query.nSerie?.trim()) {
+      and.push({ nSerie: { contains: query.nSerie.trim(), mode: "insensitive" } });
+    }
+    if (query.criticidade) {
+      and.push({
+        OR: [
+          { criticidadeEquipamento: query.criticidade },
+          {
+            AND: [{ criticidadeEquipamento: null }, { descricao: { criticidade: query.criticidade } }],
+          },
+        ],
+      });
+    }
+    if (query.semInstalacao) {
+      and.push({ dataInstalacao: null });
+    }
+    if (query.inativos === false && !query.situacao) {
+      and.push({ situacao: { notIn: [SituacaoEquipamento.INATIVO, SituacaoEquipamento.ARQUIVADO] } });
+    }
     const where: Prisma.EquipamentoWhereInput = {
       estabelecimentoId,
       ...(query.setor ? { setorId: query.setor } : {}),
       ...(query.fabricante ? { fabricanteId: query.fabricante } : {}),
       ...(query.modelo ? { modeloId: query.modelo } : {}),
       ...(query.situacao ? { situacao: query.situacao } : {}),
-      ...(termo
-        ? {
-            OR: [
-              { tag: { contains: termo, mode: "insensitive" } },
-              { nome: { contains: termo, mode: "insensitive" } },
-              { patrimonio: { contains: termo, mode: "insensitive" } },
-              { nSerie: { contains: termo, mode: "insensitive" } },
-              { idInterna: { contains: termo, mode: "insensitive" } },
-              { fabricante: { nome: { contains: termo, mode: "insensitive" } } },
-              { modelo: { nome: { contains: termo, mode: "insensitive" } } },
-              { setor: { nome: { contains: termo, mode: "insensitive" } } },
-            ],
-          }
-        : {}),
+      ...(query.centroCusto ? { centroCustoId: query.centroCusto } : {}),
+      ...(and.length ? { AND: and } : {}),
     };
 
     const [total, items] = await Promise.all([
@@ -184,6 +220,151 @@ export class EquipamentosService {
     ]);
 
     return { total, page, pageSize, items };
+  }
+
+  async custosSubstituicao(
+    user: AuthUser,
+    query: { q?: string; fabricanteId?: string; apenasAtivos?: boolean },
+  ) {
+    if (!podeVerFinanceiro(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para ver custos de substituição");
+    }
+    const termo = query.q?.trim();
+    const items = await this.prisma.equipamento.findMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        ...(query.apenasAtivos === false
+          ? {}
+          : { situacao: { notIn: [SituacaoEquipamento.INATIVO, SituacaoEquipamento.ARQUIVADO] } }),
+        ...(query.fabricanteId ? { fabricanteId: query.fabricanteId } : {}),
+        ...(termo
+          ? {
+              OR: [
+                { nome: { contains: termo, mode: "insensitive" } },
+                { descricao: { nome: { contains: termo, mode: "insensitive" } } },
+                { modelo: { nome: { contains: termo, mode: "insensitive" } } },
+                { fabricante: { nome: { contains: termo, mode: "insensitive" } } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        descricao: { select: { id: true, nome: true } },
+        fabricante: { select: { id: true, nome: true } },
+        modelo: { select: { id: true, nome: true } },
+      },
+      orderBy: [{ descricao: { nome: "asc" } }, { fabricante: { nome: "asc" } }, { modelo: { nome: "asc" } }],
+    });
+
+    const map = new Map<
+      string,
+      {
+        descricaoId: string;
+        descricao: string;
+        fabricanteId: string;
+        fabricante: string;
+        modeloId: string;
+        modelo: string;
+        custo: number | null;
+        data: string | null;
+        quantidade: number;
+      }
+    >();
+    for (const eq of items) {
+      const key = `${eq.descricaoId}|${eq.fabricanteId}|${eq.modeloId}`;
+      const custo = eq.valorSubstituicao != null ? Number(eq.valorSubstituicao) : null;
+      const data = eq.updatedAt.toISOString().slice(0, 10);
+      const cur = map.get(key);
+      if (!cur) {
+        map.set(key, {
+          descricaoId: eq.descricaoId,
+          descricao: eq.descricao.nome,
+          fabricanteId: eq.fabricanteId,
+          fabricante: eq.fabricante.nome,
+          modeloId: eq.modeloId,
+          modelo: eq.modelo.nome,
+          custo,
+          data,
+          quantidade: 1,
+        });
+        continue;
+      }
+      cur.quantidade += 1;
+      if (custo != null && (cur.custo == null || data > (cur.data ?? ""))) {
+        cur.custo = custo;
+        cur.data = data;
+      } else if (data > (cur.data ?? "")) {
+        cur.data = data;
+      }
+    }
+    return { total: map.size, items: [...map.values()] };
+  }
+
+  async salvarCustoSubstituicao(
+    user: AuthUser,
+    body: {
+      descricaoId: string;
+      fabricanteId: string;
+      modeloId: string;
+      valorSubstituicao: number | null;
+    },
+  ) {
+    if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Somente Engenheiro/Gestor pode alterar custo de substituição");
+    }
+    if (!podeVerFinanceiro(user.perfil, user.permissoesModulos)) {
+      throw new ForbiddenException("Sem permissão para ver custos de substituição");
+    }
+    const valor = body.valorSubstituicao;
+    if (valor != null && (Number.isNaN(valor) || valor < 0)) {
+      throw new BadRequestException("Custo inválido");
+    }
+    const res = await this.prisma.equipamento.updateMany({
+      where: {
+        estabelecimentoId: user.estabelecimentoId,
+        descricaoId: body.descricaoId,
+        fabricanteId: body.fabricanteId,
+        modeloId: body.modeloId,
+        situacao: { not: SituacaoEquipamento.ARQUIVADO },
+      },
+      data: { valorSubstituicao: valor },
+    });
+    return { atualizados: res.count };
+  }
+
+  async obsoletos(estabelecimentoId: string) {
+    const items = await this.prisma.equipamento.findMany({
+      where: {
+        estabelecimentoId,
+        situacao: { in: [SituacaoEquipamento.INATIVO, SituacaoEquipamento.ARQUIVADO] },
+      },
+      include: {
+        setor: { select: { nome: true } },
+        ordensServico: {
+          orderBy: { abertura: "desc" },
+          take: 1,
+          select: { numero: true, codigo: true, abertura: true, fechamento: true },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    return items.map((eq) => {
+      const os = eq.ordensServico[0];
+      return {
+        id: eq.id,
+        tag: eq.tag,
+        nome: eq.nome,
+        situacao: eq.situacao,
+        setor: eq.setor.nome,
+        destino: eq.situacao === SituacaoEquipamento.ARQUIVADO ? "ARQUIVADO" : "INATIVO",
+        dataDesativacao: eq.dataDesativacao?.toISOString().slice(0, 10) ?? null,
+        dataCriacao: (eq.dataDesativacao ?? eq.updatedAt).toISOString().slice(0, 10),
+        dataAprovacao: eq.updatedAt.toISOString().slice(0, 10),
+        osNumero: os?.numero ?? null,
+        osCodigo: os?.codigo ?? (os ? String(os.numero) : null),
+        motivo: eq.motivoDesativacao ?? null,
+      };
+    });
   }
 
   async inventarioAtual(estabelecimentoId: string) {
@@ -331,6 +512,13 @@ export class EquipamentosService {
     }
   }
 
+  private rethrowIdentDuplicado(e: unknown, tag: string): never {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      throw new ConflictException(`TAG ${tag} já existe nesta instituição`);
+    }
+    throw e;
+  }
+
   private async resolverDefaults(
     estabelecimentoId: string,
     data: { descricaoId?: string; fabricanteId?: string; modeloId?: string },
@@ -387,7 +575,8 @@ export class EquipamentosService {
     });
     if (!setor) throw new BadRequestException("Setor inválido");
 
-    return this.prisma.equipamento.create({
+    try {
+      return await this.prisma.equipamento.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
         tag,
@@ -426,6 +615,9 @@ export class EquipamentosService {
       },
       include: INCLUDE_FICHA,
     });
+    } catch (e) {
+      this.rethrowIdentDuplicado(e, tag);
+    }
   }
 
   async update(user: AuthUser, tag: string, data: UpdateEquipamentoInput) {
@@ -451,9 +643,15 @@ export class EquipamentosService {
       if (!tipo) throw new BadRequestException("Tipo de plano inválido");
     }
 
+    const tagNova = data.tag !== undefined ? normalizarIdent(data.tag) : eq.tag;
+    if (data.tag !== undefined && !tagNova) {
+      throw new BadRequestException("TAG obrigatória");
+    }
+
     await this.assertIdentificadoresUnicos(
       user.estabelecimentoId,
       {
+        tag: tagNova !== eq.tag ? tagNova : undefined,
         patrimonio: data.patrimonio,
         nSerie: data.nSerie,
         idInterna: data.idInterna,
@@ -461,9 +659,24 @@ export class EquipamentosService {
       eq.id,
     );
 
-    const updated = await this.prisma.equipamento.update({
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+      if (tagNova !== eq.tag) {
+        await tx.historicoTag.create({
+          data: {
+            equipamentoId: eq.id,
+            tagAnterior: eq.tag,
+            tagNova,
+            justificativa: "Alteração no cadastro",
+            usuarioId: user.userId,
+          },
+        });
+      }
+      return tx.equipamento.update({
       where: { id: eq.id },
       data: {
+        ...(tagNova !== eq.tag ? { tag: tagNova } : {}),
         ...(data.nome != null ? { nome: data.nome.trim() } : {}),
         ...(data.setorId != null ? { setorId: data.setorId } : {}),
         ...(data.fabricanteId != null ? { fabricanteId: data.fabricanteId } : {}),
@@ -531,12 +744,16 @@ export class EquipamentosService {
       },
       include: INCLUDE_FICHA,
     });
+    });
+    } catch (e) {
+      this.rethrowIdentDuplicado(e, tagNova);
+    }
 
     await this.prisma.logAcesso.create({
       data: {
         usuarioId: user.userId,
         acao: "EDICAO_INVENTARIO",
-        detalhe: `tag=${tag} · campos=${Object.keys(data).join(",")}`,
+        detalhe: `tag=${tagNova} · campos=${Object.keys(data).join(",")}`,
       },
     });
 
@@ -550,13 +767,12 @@ export class EquipamentosService {
     return updated;
   }
 
-  async updateTag(user: AuthUser, tag: string, novaTag: string, justificativa: string) {
+  async updateTag(user: AuthUser, tag: string, novaTag: string, justificativa?: string) {
     if (!podeEditarCadastros(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Somente Engenheiro/Gestor pode alterar TAG");
     }
-    if (!justificativa?.trim()) {
-      throw new BadRequestException("Justificativa obrigatória");
-    }
+    const tagNova = normalizarIdent(novaTag);
+    if (!tagNova) throw new BadRequestException("TAG obrigatória");
 
     const atual = await this.prisma.equipamento.findUnique({
       where: { estabelecimentoId_tag: { estabelecimentoId: user.estabelecimentoId, tag } },
@@ -564,24 +780,29 @@ export class EquipamentosService {
     if (!atual) {
       throw new NotFoundException(`Equipamento ${tag} não encontrado`);
     }
-    await this.assertIdentificadoresUnicos(user.estabelecimentoId, { tag: novaTag }, atual.id);
+    if (tagNova === atual.tag) return this.byTag(user.estabelecimentoId, atual.tag, true);
+    await this.assertIdentificadoresUnicos(user.estabelecimentoId, { tag: tagNova }, atual.id);
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.historicoTag.create({
-        data: {
-          equipamentoId: atual.id,
-          tagAnterior: atual.tag,
-          tagNova: novaTag.trim(),
-          justificativa: justificativa.trim(),
-          usuarioId: user.userId,
-        },
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.historicoTag.create({
+          data: {
+            equipamentoId: atual.id,
+            tagAnterior: atual.tag,
+            tagNova,
+            justificativa: justificativa?.trim() || "Alteração no cadastro",
+            usuarioId: user.userId,
+          },
+        });
+        return tx.equipamento.update({
+          where: { id: atual.id },
+          data: { tag: tagNova },
+          include: INCLUDE_FICHA,
+        });
       });
-      return tx.equipamento.update({
-        where: { id: atual.id },
-        data: { tag: novaTag.trim() },
-        include: INCLUDE_FICHA,
-      });
-    });
+    } catch (e) {
+      this.rethrowIdentDuplicado(e, tagNova);
+    }
   }
 
   async arquivar(user: AuthUser, tag: string) {

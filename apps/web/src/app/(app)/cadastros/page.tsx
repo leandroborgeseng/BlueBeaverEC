@@ -1,26 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
+import { useCan } from "@/lib/session";
+import { Overlay, WinForm, fld } from "@/components/os/os-win-ui";
 import {
-  Badge,
-  Btn,
-  DataTable,
-  Empty,
-  Err,
-  FieldLabel,
-  PageHeader,
-  Surface,
-  fieldStyle,
+  FItem,
+  FRow,
+  ToolBtn,
+  WinScreen,
+  ZebraTable,
+  padCount,
   td,
-  th,
-} from "@/components/ui/aion-ui";
+  winFld,
+  zebraRow,
+} from "@/components/equipamentos/eq-win-ui";
 
 interface Named {
   id: string;
   nome: string;
+  _count?: { equipamentos?: number; modelos?: number };
 }
 
 interface Modelo extends Named {
@@ -38,25 +39,40 @@ interface Plano extends Named {
 type CadastroTab = "fabricantes" | "modelos" | "setores" | "planos" | "fornecedores";
 const TAB_KEYS: CadastroTab[] = ["fabricantes", "modelos", "setores", "planos", "fornecedores"];
 
+const TITULO: Record<CadastroTab, string> = {
+  fabricantes: "Fabricantes",
+  modelos: "Modelos",
+  setores: "Setores",
+  planos: "Plano de Descrições",
+  fornecedores: "Fornecedores",
+};
+
 export default function CadastrosPage() {
+  return (
+    <Suspense fallback={<div style={{ color: "#777", fontSize: 13 }}>Carregando cadastros…</div>}>
+      <CadastrosInner />
+    </Suspense>
+  );
+}
+
+function CadastrosInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const podeEditar = useCan("equipamentos", 2);
+  const tabParam = searchParams.get("tab");
+  const tab: CadastroTab = TAB_KEYS.includes(tabParam as CadastroTab) ? (tabParam as CadastroTab) : "fabricantes";
+
   const [fabricantes, setFabricantes] = useState<Named[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [setores, setSetores] = useState<Named[]>([]);
   const [planos, setPlanos] = useState<Plano[]>([]);
   const [fornecedores, setFornecedores] = useState<Named[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
-  const [tab, setTab] = useState<CadastroTab>("fabricantes");
-
-  useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("tab");
-    if (t && TAB_KEYS.includes(t as CadastroTab)) setTab(t as CadastroTab);
-  }, []);
-
-  function selectTab(next: CadastroTab) {
-    setTab(next);
-    router.replace(`/cadastros?tab=${next}`);
-  }
+  const [q, setQ] = useState("");
+  const [filtroCampo, setFiltroCampo] = useState("nome");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<"novo" | "alterar" | null>(null);
+  const [treeOpen, setTreeOpen] = useState(true);
 
   async function reload() {
     const [f, m, s, p, fo] = await Promise.all([
@@ -74,8 +90,28 @@ export default function CadastrosPage() {
   }
 
   useEffect(() => {
-    void reload().catch((e) => setMsg(e.message));
+    void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
   }, []);
+
+  useEffect(() => {
+    setQ("");
+    setSelectedId(null);
+    setDialog(null);
+    setMsg(null);
+  }, [tab]);
+
+  const termo = q.trim().toLowerCase();
+  const lista = useMemo(() => {
+    const match = (nome: string, extra?: string) =>
+      !termo || nome.toLowerCase().includes(termo) || (extra ?? "").toLowerCase().includes(termo);
+    if (tab === "fabricantes") return fabricantes.filter((x) => match(x.nome));
+    if (tab === "modelos") return modelos.filter((x) => match(x.nome, x.fabricante.nome));
+    if (tab === "setores") return setores.filter((x) => match(x.nome));
+    if (tab === "planos") return planos.filter((x) => match(x.nome, x.criticidade));
+    return fornecedores.filter((x) => match(x.nome));
+  }, [tab, termo, fabricantes, modelos, setores, planos, fornecedores]);
+
+  const selectedPlano = planos.find((p) => p.id === selectedId) ?? null;
 
   async function createNamed(path: string, body: Record<string, unknown>, e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -92,302 +128,427 @@ export default function CadastrosPage() {
       await api(path, { method: "POST", body: JSON.stringify(payload) });
       form.reset();
       setMsg("Salvo com sucesso");
+      setDialog(null);
       await reload();
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Erro");
     }
   }
 
-  const tabs = [
-    { key: "fabricantes" as const, label: "Fabricantes", count: fabricantes.length },
-    { key: "modelos" as const, label: "Modelos", count: modelos.length },
-    { key: "setores" as const, label: "Setores", count: setores.length },
-    { key: "planos" as const, label: "Plano de Descrições", count: planos.length },
-    { key: "fornecedores" as const, label: "Fornecedores", count: fornecedores.length },
-  ];
-
   return (
-    <div>
-      <PageHeader
-        title="Cadastros Básicos"
-        subtitle="Fabricantes, modelos, setores, planos de descrição e fornecedores"
-      />
-      {msg &&
-        (msg.toLowerCase().includes("erro") || msg.toLowerCase().includes("fail") ? (
-          <Err>{msg}</Err>
-        ) : (
-          <div
-            style={{
-              marginBottom: 12,
-              padding: "10px 12px",
-              borderRadius: 10,
-              background: "oklch(0.96 0.03 150)",
-              color: "oklch(0.4 0.12 150)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
+    <>
+      <WinScreen
+        title={TITULO[tab]}
+        error={msg && /erro|fail/i.test(msg) ? msg : null}
+        toolbar={
+          <>
+            {podeEditar && (
+              <ToolBtn onClick={() => { setMsg(null); setDialog("novo"); }}>
+                {tab === "planos" ? "Nova Descrição" : "Novo"}
+              </ToolBtn>
+            )}
+            {tab === "planos" && podeEditar && (
+              <ToolBtn disabled={!selectedPlano} onClick={() => selectedPlano && setDialog("alterar")}>
+                Alterar
+              </ToolBtn>
+            )}
+            <ToolBtn onClick={() => void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"))}>
+              Atualizar
+            </ToolBtn>
+            {tab !== "planos" && tab !== "fabricantes" && tab !== "modelos" && (
+              <>
+                <span style={{ width: 12 }} />
+                <ToolBtn onClick={() => router.replace("/cadastros?tab=setores")}>Setores</ToolBtn>
+                <ToolBtn onClick={() => router.replace("/cadastros?tab=fornecedores")}>Fornecedores</ToolBtn>
+              </>
+            )}
+          </>
+        }
+        filters={
+          tab === "planos" ? undefined : (
+            <>
+              <FRow>
+                <FItem label="Pesquisar:" grow>
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Todo ou parte do nome"
+                    style={{ ...winFld, flex: 1 }}
+                  />
+                </FItem>
+                <FItem label="No campo:" labelWidth={70}>
+                  <select value={filtroCampo} onChange={(e) => setFiltroCampo(e.target.value)} style={{ ...winFld, width: 140 }}>
+                    <option value="nome">{tab === "fabricantes" ? "Razão Social" : "Nome"}</option>
+                  </select>
+                </FItem>
+                <span style={{ fontSize: 12, color: "#555" }}>Nos Registros Ativos</span>
+              </FRow>
+            </>
+          )
+        }
+        footer={<span style={{ marginLeft: "auto" }}>Exibindo {padCount(lista.length)} registros</span>}
+      >
+        {msg && !/erro|fail/i.test(msg) && (
+          <div style={{ padding: "8px 12px", fontSize: 12, color: "#2a7a2a", fontWeight: 600 }}>{msg}</div>
+        )}
+        {tab === "planos" ? (
+          <PlanosTree
+            planos={lista as Plano[]}
+            q={q}
+            setQ={setQ}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+            treeOpen={treeOpen}
+            setTreeOpen={setTreeOpen}
+            onOpen={() => selectedId && podeEditar && setDialog("alterar")}
+          />
+        ) : tab === "fabricantes" ? (
+          <ZebraTable
+            columns={[
+              { key: "cod", label: "Código", width: 80 },
+              { key: "nome", label: "Razão Social" },
+              { key: "mod", label: "Modelos", width: 90 },
+              { key: "eq", label: "Equipamentos", width: 110 },
+              { key: "ativo", label: "Ativo", width: 70 },
+            ]}
           >
-            {msg}
-          </div>
-        ))}
+            {(lista as Named[]).map((f, i) => (
+              <tr
+                key={f.id}
+                style={zebraRow(i, f.id === selectedId)}
+                onClick={() => setSelectedId(f.id)}
+              >
+                <td style={td}>{String(i + 1).padStart(4, "0")}</td>
+                <td style={td}>{f.nome}</td>
+                <td style={td}>{f._count?.modelos ?? ""}</td>
+                <td style={td}>{f._count?.equipamentos ?? ""}</td>
+                <td style={td}>SIM</td>
+              </tr>
+            ))}
+          </ZebraTable>
+        ) : tab === "modelos" ? (
+          <ZebraTable
+            columns={[
+              { key: "cod", label: "Código", width: 80 },
+              { key: "mod", label: "Modelo" },
+              { key: "fab", label: "Fabricante" },
+              { key: "eq", label: "Equipamentos", width: 110 },
+              { key: "ativo", label: "Ativo", width: 70 },
+            ]}
+          >
+            {(lista as Modelo[]).map((m, i) => (
+              <tr
+                key={m.id}
+                style={zebraRow(i, m.id === selectedId)}
+                onClick={() => setSelectedId(m.id)}
+              >
+                <td style={td}>{String(i + 1).padStart(4, "0")}</td>
+                <td style={td}>{m.nome}</td>
+                <td style={td}>{m.fabricante.nome}</td>
+                <td style={td}>{m._count?.equipamentos ?? ""}</td>
+                <td style={td}>SIM</td>
+              </tr>
+            ))}
+          </ZebraTable>
+        ) : tab === "setores" ? (
+          <ZebraTable columns={[{ key: "nome", label: "Setor" }]}>
+            {(lista as Named[]).map((s, i) => (
+              <tr key={s.id} style={zebraRow(i, s.id === selectedId)} onClick={() => setSelectedId(s.id)}>
+                <td style={td}>{s.nome}</td>
+              </tr>
+            ))}
+          </ZebraTable>
+        ) : (
+          <ZebraTable columns={[{ key: "nome", label: "Fornecedor" }]}>
+            {(lista as Named[]).map((s, i) => (
+              <tr key={s.id} style={zebraRow(i, s.id === selectedId)} onClick={() => setSelectedId(s.id)}>
+                <td style={td}>
+                  <Link href={`/fornecedores/${s.id}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                    {s.nome}
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </ZebraTable>
+        )}
+        {lista.length === 0 && tab !== "planos" && (
+          <div style={{ padding: 24, textAlign: "center", color: "#777", fontSize: 13 }}>Nenhum registro neste cadastro.</div>
+        )}
+      </WinScreen>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-        {tabs.map((t) => (
-          <Btn key={t.key} variant={tab === t.key ? "primary" : "ghost"} onClick={() => selectTab(t.key)}>
-            {t.label} ({t.count})
-          </Btn>
-        ))}
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 14 }}>
-        <Surface>
-          {tab === "fabricantes" && (
-            <form onSubmit={(e) => void createNamed("/fabricantes", {}, e)}>
-              <FieldLabel>Nome</FieldLabel>
-              <input name="nome" placeholder="Fabricante" style={{ ...fieldStyle, marginBottom: 10 }} required />
-              <Btn type="submit">Adicionar fabricante</Btn>
-            </form>
-          )}
-          {tab === "modelos" && (
-            <form onSubmit={(e) => void createNamed("/modelos", {}, e)}>
-              <FieldLabel>Fabricante</FieldLabel>
-              <select name="fabricanteId" style={{ ...fieldStyle, marginBottom: 10 }} required defaultValue="">
-                <option value="" disabled>
-                  Selecione
-                </option>
-                {fabricantes.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.nome}
+      {dialog === "novo" && (
+        <Overlay onClose={() => setDialog(null)} fixed>
+          <WinForm
+            title={`Novo — ${TITULO[tab]}`}
+            width="min(420px, 96vw)"
+            onCancel={() => setDialog(null)}
+            showContinuar={false}
+            hideSubmit
+          >
+            {tab === "fabricantes" && (
+              <form onSubmit={(e) => void createNamed("/fabricantes", {}, e)}>
+                <Campo nome="Nome" name="nome" placeholder="Fabricante" />
+                <button type="submit" style={saveBtn}>Adicionar fabricante</button>
+              </form>
+            )}
+            {tab === "modelos" && (
+              <form onSubmit={(e) => void createNamed("/modelos", {}, e)}>
+                <label style={lab}>Fabricante</label>
+                <select name="fabricanteId" style={{ ...fld, width: "100%", marginBottom: 10 }} required defaultValue="">
+                  <option value="" disabled>
+                    Selecione
                   </option>
-                ))}
-              </select>
-              <FieldLabel>Modelo</FieldLabel>
-              <input name="nome" placeholder="Modelo" style={{ ...fieldStyle, marginBottom: 10 }} required />
-              <Btn type="submit">Adicionar modelo</Btn>
-            </form>
-          )}
-          {tab === "setores" && (
-            <form onSubmit={(e) => void createNamed("/setores", {}, e)}>
-              <FieldLabel>Setor</FieldLabel>
-              <input name="nome" placeholder="UTI Adulto…" style={{ ...fieldStyle, marginBottom: 10 }} required />
-              <Btn type="submit">Adicionar setor</Btn>
-            </form>
-          )}
-          {tab === "planos" && (
-            <form onSubmit={(e) => void createNamed("/planos-descricao", {}, e)}>
-              <FieldLabel>Tipo do ativo</FieldLabel>
-              <input name="nome" placeholder="Ventilador Pulmonar" style={{ ...fieldStyle, marginBottom: 10 }} required />
-              <FieldLabel>Criticidade</FieldLabel>
-              <select name="criticidade" style={{ ...fieldStyle, marginBottom: 10 }} defaultValue="MEDIA">
-                <option value="BAIXA">Baixa</option>
-                <option value="MEDIA">Média</option>
-                <option value="ALTA">Alta</option>
-              </select>
-              <FieldLabel>Vida útil (anos)</FieldLabel>
-              <input name="vidaUtilAnos" type="number" min={1} defaultValue={10} style={{ ...fieldStyle, marginBottom: 10 }} />
-              <FieldLabel>SLA 1º atendimento (horas úteis)</FieldLabel>
-              <input name="slaAtendimentoHoras" type="number" min={1} placeholder="ex.: 4" style={{ ...fieldStyle, marginBottom: 10 }} />
-              <FieldLabel>SLA conclusão (horas úteis)</FieldLabel>
-              <input name="slaConclusaoHoras" type="number" min={1} placeholder="ex.: 24" style={{ ...fieldStyle, marginBottom: 10 }} />
-              <p style={{ margin: "0 0 10px", fontSize: 12, color: "oklch(0.5 0.02 250)", lineHeight: 1.4 }}>
-                Horas úteis seg–sex 8h–17h. Sem SLA no tipo, vale a prioridade da OS.
-              </p>
-              <Btn type="submit">Adicionar plano</Btn>
-            </form>
-          )}
-          {tab === "fornecedores" && (
-            <form onSubmit={(e) => void createNamed("/fornecedores", {}, e)}>
-              <FieldLabel>Nome</FieldLabel>
-              <input name="nome" placeholder="Razão social" style={{ ...fieldStyle, marginBottom: 10 }} required />
-              <FieldLabel>CNPJ</FieldLabel>
-              <input name="cnpj" placeholder="00.000.000/0000-00" style={{ ...fieldStyle, marginBottom: 10 }} />
-              <Btn type="submit">Adicionar fornecedor</Btn>
-            </form>
-          )}
-        </Surface>
+                  {fabricantes.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nome}
+                    </option>
+                  ))}
+                </select>
+                <Campo nome="Modelo" name="nome" placeholder="Modelo" />
+                <button type="submit" style={saveBtn}>Adicionar modelo</button>
+              </form>
+            )}
+            {tab === "setores" && (
+              <form onSubmit={(e) => void createNamed("/setores", {}, e)}>
+                <Campo nome="Setor" name="nome" placeholder="UTI Adulto…" />
+                <button type="submit" style={saveBtn}>Adicionar setor</button>
+              </form>
+            )}
+            {tab === "planos" && (
+              <form onSubmit={(e) => void createNamed("/planos-descricao", {}, e)}>
+                <Campo nome="Tipo do ativo" name="nome" placeholder="Ventilador Pulmonar" />
+                <label style={lab}>Criticidade</label>
+                <select name="criticidade" style={{ ...fld, width: "100%", marginBottom: 10 }} defaultValue="MEDIA">
+                  <option value="BAIXA">Baixa</option>
+                  <option value="MEDIA">Média</option>
+                  <option value="ALTA">Alta</option>
+                </select>
+                <Campo nome="Vida útil (anos)" name="vidaUtilAnos" type="number" defaultValue="10" />
+                <Campo nome="SLA 1º atendimento (h úteis)" name="slaAtendimentoHoras" type="number" placeholder="ex.: 4" required={false} />
+                <Campo nome="SLA conclusão (h úteis)" name="slaConclusaoHoras" type="number" placeholder="ex.: 24" required={false} />
+                <p style={{ margin: "0 0 10px", fontSize: 12, color: "#555" }}>
+                  Horas úteis seg–sex 8h–17h. Sem SLA no tipo, vale a prioridade da OS.
+                </p>
+                <button type="submit" style={saveBtn}>Adicionar plano</button>
+              </form>
+            )}
+            {tab === "fornecedores" && (
+              <form onSubmit={(e) => void createNamed("/fornecedores", {}, e)}>
+                <Campo nome="Nome" name="nome" placeholder="Razão social" />
+                <Campo nome="CNPJ" name="cnpj" placeholder="00.000.000/0000-00" required={false} />
+                <button type="submit" style={saveBtn}>Adicionar fornecedor</button>
+              </form>
+            )}
+          </WinForm>
+        </Overlay>
+      )}
 
-        {tab === "fabricantes" && (
-          <NamedTable items={fabricantes.map((x) => ({ title: x.nome }))} cols={["Nome"]} />
-        )}
-        {tab === "modelos" && (
-          <NamedTable
-            items={modelos.map((m) => ({ title: m.nome, meta: m.fabricante.nome }))}
-            cols={["Modelo", "Fabricante"]}
-          />
-        )}
-        {tab === "setores" && (
-          <NamedTable items={setores.map((x) => ({ title: x.nome }))} cols={["Setor"]} />
-        )}
-        {tab === "planos" && (
-          <PlanosSlaTable planos={planos} onSaved={() => void reload().catch((e) => setMsg(e.message))} />
-        )}
-        {tab === "fornecedores" && (
-          <NamedTable
-            items={fornecedores.map((x) => ({ title: x.nome, href: `/fornecedores/${x.id}` }))}
-            cols={["Fornecedor"]}
-          />
+      {dialog === "alterar" && selectedPlano && (
+        <AlterarPlanoDialog
+          plano={selectedPlano}
+          onClose={() => setDialog(null)}
+          onSaved={() => {
+            setDialog(null);
+            void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function PlanosTree({
+  planos,
+  q,
+  setQ,
+  selectedId,
+  setSelectedId,
+  treeOpen,
+  setTreeOpen,
+  onOpen,
+}: {
+  planos: Plano[];
+  q: string;
+  setQ: (v: string) => void;
+  selectedId: string | null;
+  setSelectedId: (id: string | null) => void;
+  treeOpen: boolean;
+  setTreeOpen: (v: boolean) => void;
+  onOpen: () => void;
+}) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: 420 }}>
+      <div style={{ borderRight: "1px solid #ccc", padding: 12, background: "#e8e8e8" }}>
+        <div style={{ fontSize: 12, marginBottom: 4 }}>Procurar texto:</div>
+        <input value={q} onChange={(e) => setQ(e.target.value)} style={{ ...winFld, width: "100%", marginBottom: 8 }} />
+        <div style={{ fontSize: 12, marginBottom: 4 }}>No campo:</div>
+        <select style={{ ...winFld, width: "100%", marginBottom: 8 }} defaultValue="descricao">
+          <option value="descricao">Descrição</option>
+        </select>
+        <div style={{ fontSize: 12, marginBottom: 4 }}>Filtro:</div>
+        <select style={{ ...winFld, width: "100%", marginBottom: 10 }} defaultValue="todos">
+          <option value="todos">Todos</option>
+        </select>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" style={saveBtn} onClick={() => undefined}>
+            Procurar
+          </button>
+          <button type="button" style={saveBtn} onClick={() => setQ("")}>
+            Limpar
+          </button>
+        </div>
+      </div>
+      <div style={{ padding: "10px 14px", overflow: "auto", background: "white", fontSize: 13 }}>
+        <button
+          type="button"
+          onClick={() => setTreeOpen(!treeOpen)}
+          style={{ border: "none", background: "transparent", cursor: "pointer", fontWeight: 700, fontSize: 13 }}
+        >
+          {treeOpen ? "▾" : "▸"} PLANO DE DESCRIÇÕES
+        </button>
+        {treeOpen &&
+          planos.map((p, i) => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedId(p.id)}
+              onDoubleClick={onOpen}
+              style={{
+                padding: "4px 8px 4px 22px",
+                cursor: "pointer",
+                background: p.id === selectedId ? "#cfe8ff" : "transparent",
+                display: "flex",
+                gap: 8,
+              }}
+            >
+              <span style={{ color: "#888" }}>▤</span>
+              <span>
+                {i + 1} — {p.nome}
+                <span style={{ color: "#777", marginLeft: 8, fontSize: 11 }}>
+                  {p.criticidade}
+                  {p._count?.equipamentos != null ? ` · ${p._count.equipamentos} eq.` : ""}
+                </span>
+              </span>
+            </div>
+          ))}
+        {planos.length === 0 && (
+          <div style={{ padding: 16, color: "#777" }}>Nenhum tipo cadastrado.</div>
         )}
       </div>
     </div>
   );
 }
 
-function PlanosSlaTable({
-  planos,
+function AlterarPlanoDialog({
+  plano,
+  onClose,
   onSaved,
 }: {
-  planos: Plano[];
+  plano: Plano;
+  onClose: () => void;
   onSaved: () => void;
 }) {
-  const [draft, setDraft] = useState<Record<string, { slaAtendimentoHoras: string; slaConclusaoHoras: string }>>({});
-  const [saving, setSaving] = useState<string | null>(null);
+  const [slaAtendimento, setSlaAtendimento] = useState(plano.slaAtendimentoHoras != null ? String(plano.slaAtendimentoHoras) : "");
+  const [slaConclusao, setSlaConclusao] = useState(plano.slaConclusaoHoras != null ? String(plano.slaConclusaoHoras) : "");
+  const [criticidade, setCriticidade] = useState(plano.criticidade);
+  const [vida, setVida] = useState(String(plano.vidaUtilAnos));
+  const [nome, setNome] = useState(plano.nome);
+  const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  useEffect(() => {
-    const next: Record<string, { slaAtendimentoHoras: string; slaConclusaoHoras: string }> = {};
-    for (const p of planos) {
-      next[p.id] = {
-        slaAtendimentoHoras: p.slaAtendimentoHoras != null ? String(p.slaAtendimentoHoras) : "",
-        slaConclusaoHoras: p.slaConclusaoHoras != null ? String(p.slaConclusaoHoras) : "",
-      };
-    }
-    setDraft(next);
-  }, [planos]);
-
-  async function salvar(id: string) {
-    const row = draft[id];
-    if (!row) return;
-    setSaving(id);
+  async function salvar() {
+    setBusy(true);
     setErro(null);
     try {
-      const atend = Number(row.slaAtendimentoHoras);
-      const concl = Number(row.slaConclusaoHoras);
-      await api(`/planos-descricao/${id}`, {
+      const atend = Number(slaAtendimento);
+      const concl = Number(slaConclusao);
+      await api(`/planos-descricao/${plano.id}`, {
         method: "PATCH",
         body: JSON.stringify({
-          slaAtendimentoHoras: row.slaAtendimentoHoras.trim() && atend > 0 ? atend : null,
-          slaConclusaoHoras: row.slaConclusaoHoras.trim() && concl > 0 ? concl : null,
+          nome,
+          criticidade,
+          vidaUtilAnos: Number(vida) || undefined,
+          slaAtendimentoHoras: slaAtendimento.trim() && atend > 0 ? atend : null,
+          slaConclusaoHoras: slaConclusao.trim() && concl > 0 ? concl : null,
         }),
       });
       onSaved();
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Erro ao salvar SLA");
+      setErro(e instanceof Error ? e.message : "Erro ao salvar");
     } finally {
-      setSaving(null);
+      setBusy(false);
     }
   }
 
-  if (planos.length === 0) return <Empty text="Nenhum tipo cadastrado." />;
-
   return (
-    <div>
-      {erro && <Err>{erro}</Err>}
-      <p style={{ margin: "0 0 10px", fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-        Defina o SLA por tipo de equipamento em <strong>horas úteis</strong> (seg–sex 8h–17h).
-        Noite e fim de semana não entram no timer. Sem SLA no tipo, vale a prioridade da OS.
-      </p>
-      <DataTable>
-        <thead>
-          <tr>
-            <th style={th}>Tipo</th>
-            <th style={th}>Criticidade</th>
-            <th style={th}>1º atend. (h)</th>
-            <th style={th}>Conclusão (h)</th>
-            <th style={th} />
-          </tr>
-        </thead>
-        <tbody>
-          {planos.map((p) => {
-            const row = draft[p.id] ?? { slaAtendimentoHoras: "", slaConclusaoHoras: "" };
-            return (
-              <tr key={p.id}>
-                <td style={td}>
-                  <strong>{p.nome}</strong>
-                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>{p.vidaUtilAnos} anos</div>
-                </td>
-                <td style={td}>
-                  <Badge tone={p.criticidade}>{p.criticidade}</Badge>
-                </td>
-                <td style={td}>
-                  <input
-                    type="number"
-                    min={1}
-                    value={row.slaAtendimentoHoras}
-                    onChange={(e) =>
-                      setDraft((d) => ({
-                        ...d,
-                        [p.id]: { ...row, slaAtendimentoHoras: e.target.value },
-                      }))
-                    }
-                    style={{ ...fieldStyle, width: 88 }}
-                    placeholder="—"
-                  />
-                </td>
-                <td style={td}>
-                  <input
-                    type="number"
-                    min={1}
-                    value={row.slaConclusaoHoras}
-                    onChange={(e) =>
-                      setDraft((d) => ({
-                        ...d,
-                        [p.id]: { ...row, slaConclusaoHoras: e.target.value },
-                      }))
-                    }
-                    style={{ ...fieldStyle, width: 88 }}
-                    placeholder="—"
-                  />
-                </td>
-                <td style={td}>
-                  <Btn size="sm" disabled={saving === p.id} onClick={() => void salvar(p.id)}>
-                    {saving === p.id ? "Salvando…" : "Salvar SLA"}
-                  </Btn>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </DataTable>
-    </div>
+    <Overlay onClose={onClose} fixed>
+      <WinForm
+        title="Alterar descrição"
+        width="min(440px, 96vw)"
+        onCancel={onClose}
+        busy={busy}
+        erro={erro}
+        showContinuar={false}
+        hideSubmit
+        extraRight={
+          <button type="button" disabled={busy} style={saveBtn} onClick={() => void salvar()}>
+            {busy ? "Salvando…" : "Salvar"}
+          </button>
+        }
+      >
+        <label style={lab}>Tipo do ativo</label>
+        <input value={nome} onChange={(e) => setNome(e.target.value)} style={{ ...fld, width: "100%", marginBottom: 10 }} />
+        <label style={lab}>Criticidade</label>
+        <select value={criticidade} onChange={(e) => setCriticidade(e.target.value)} style={{ ...fld, width: "100%", marginBottom: 10 }}>
+          <option value="BAIXA">Baixa</option>
+          <option value="MEDIA">Média</option>
+          <option value="ALTA">Alta</option>
+        </select>
+        <label style={lab}>Vida útil (anos)</label>
+        <input type="number" min={1} value={vida} onChange={(e) => setVida(e.target.value)} style={{ ...fld, width: "100%", marginBottom: 10 }} />
+        <label style={lab}>SLA 1º atendimento (h úteis)</label>
+        <input type="number" min={1} value={slaAtendimento} onChange={(e) => setSlaAtendimento(e.target.value)} style={{ ...fld, width: "100%", marginBottom: 10 }} />
+        <label style={lab}>SLA conclusão (h úteis)</label>
+        <input type="number" min={1} value={slaConclusao} onChange={(e) => setSlaConclusao(e.target.value)} style={{ ...fld, width: "100%", marginBottom: 10 }} />
+      </WinForm>
+    </Overlay>
   );
 }
 
-function NamedTable({
-  items,
-  cols,
+function Campo({
+  nome,
+  name,
+  placeholder,
+  type = "text",
+  defaultValue,
+  required = true,
 }: {
-  items: Array<{ title: string; meta?: string; badge?: string; href?: string }>;
-  cols: string[];
+  nome: string;
+  name: string;
+  placeholder?: string;
+  type?: string;
+  defaultValue?: string;
+  required?: boolean;
 }) {
-  if (items.length === 0) return <Empty text="Nenhum registro neste cadastro." />;
   return (
-    <DataTable>
-      <thead>
-        <tr>
-          {cols.map((c) => (
-            <th key={c} style={th}>{c}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={`${item.title}-${item.meta ?? ""}`}>
-            <td style={td}>
-              {item.href ? (
-                <Link href={item.href}>
-                  <strong>{item.title}</strong>
-                </Link>
-              ) : (
-                <strong>{item.title}</strong>
-              )}
-            </td>
-            {item.meta != null && <td style={td}>{item.meta}</td>}
-            {item.badge != null && (
-              <td style={td}><Badge tone={item.badge}>{item.badge}</Badge></td>
-            )}
-          </tr>
-        ))}
-      </tbody>
-    </DataTable>
+    <>
+      <label style={lab}>{nome}</label>
+      <input
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        required={required}
+        style={{ ...fld, width: "100%", marginBottom: 10 }}
+      />
+    </>
   );
 }
+
+const lab = { display: "block", fontSize: 12, marginBottom: 4 } as const;
+const saveBtn = {
+  background: "#e8e8e8",
+  border: "1px solid #888",
+  padding: "5px 14px",
+  fontSize: 12,
+  cursor: "pointer" as const,
+};

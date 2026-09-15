@@ -17,6 +17,7 @@ export default function NovoEquipamentoPage() {
   const [planos, setPlanos] = useState<Lookup[]>([]);
   const [fabricantes, setFabricantes] = useState<Lookup[]>([]);
   const [modelos, setModelos] = useState<Lookup[]>([]);
+  const [tag, setTag] = useState("");
   const [proxima, setProxima] = useState("HEF-····");
   const [fabricanteId, setFabricanteId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export default function NovoEquipamentoPage() {
       setPlanos(p);
       setFabricantes(f);
       setProxima(t.tag);
+      setTag((atual) => (atual.trim() ? atual : t.tag));
     });
   }, []);
 
@@ -52,7 +54,14 @@ export default function NovoEquipamentoPage() {
     setBusy(true);
     setErro(null);
     const fd = new FormData(e.currentTarget);
+    const tagInformada = String(fd.get("tag") ?? tag).trim();
+    if (!tagInformada) {
+      setErro("Informe a TAG");
+      setBusy(false);
+      return;
+    }
     const body: Record<string, unknown> = {
+      tag: tagInformada,
       nome: String(fd.get("nome") ?? "").trim(),
       setorId: String(fd.get("setorId") ?? ""),
       descricaoId: String(fd.get("descricaoId") ?? "") || undefined,
@@ -82,10 +91,24 @@ export default function NovoEquipamentoPage() {
     <div style={{ maxWidth: 760 }}>
       <PageHeader
         title="Novo equipamento"
-        subtitle={`Cadastro mínimo: nome e setor. TAG sugerida ${proxima}. O restante pode ser completado depois.`}
+        subtitle="Defina a TAG no cadastro (ex.: HEF-CME-001). A sugestão HEF-NNNN fica no campo, mas você pode trocar. TAG repetida é recusada."
       />
       <Surface>
         <form onSubmit={(e) => void onSubmit(e)} style={{ display: "grid", gap: 12 }}>
+          <div>
+            <FieldLabel>TAG *</FieldLabel>
+            <input
+              name="tag"
+              required
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder={proxima}
+              style={{ ...fieldStyle, fontWeight: 700, letterSpacing: "0.04em" }}
+            />
+            <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+              Sugestão sequencial: {proxima}. Pode usar qualquer código, desde que não exista outro igual nesta instituição.
+            </div>
+          </div>
           <div>
             <FieldLabel>Nome *</FieldLabel>
             <input name="nome" required placeholder="Ex.: Monitor multiparamétrico" style={fieldStyle} />
@@ -184,7 +207,7 @@ export default function NovoEquipamentoPage() {
           {erro && <Err>{erro}</Err>}
           <div style={{ display: "flex", gap: 8 }}>
             <Btn type="submit" disabled={busy}>
-              {busy ? "Salvando…" : `Cadastrar (${proxima})`}
+              {busy ? "Salvando…" : "Cadastrar"}
             </Btn>
             <Btn type="button" variant="ghost" href="/equipamentos">
               Cancelar

@@ -26,8 +26,9 @@ export class CadastrosService {
         ativo: true,
         ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
       },
+      include: { _count: { select: { equipamentos: true, modelos: true } } },
       orderBy: { nome: "asc" },
-      take: 100,
+      take: 500,
     });
   }
 
@@ -46,9 +47,12 @@ export class CadastrosService {
         ...(fabricanteId ? { fabricanteId } : {}),
         ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
       },
-      include: { fabricante: { select: { id: true, nome: true } } },
+      include: {
+        fabricante: { select: { id: true, nome: true } },
+        _count: { select: { equipamentos: true } },
+      },
       orderBy: { nome: "asc" },
-      take: 100,
+      take: 500,
     });
   }
 
@@ -111,6 +115,7 @@ export class CadastrosService {
         ativo: true,
         ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
       },
+      include: { _count: { select: { equipamentos: true } } },
       orderBy: { nome: "asc" },
     });
   }

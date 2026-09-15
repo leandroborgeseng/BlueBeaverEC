@@ -88,6 +88,7 @@ export function EquipamentoEditor({
   const [fornecedores, setFornecedores] = useState<Lookup[]>([]);
 
   const [nome, setNome] = useState("");
+  const [tagEdit, setTagEdit] = useState("");
   const [observacao, setObservacao] = useState("");
   const [patrimonio, setPatrimonio] = useState("");
   const [nSerie, setNSerie] = useState("");
@@ -113,6 +114,7 @@ export function EquipamentoEditor({
   function applyForm(eq: EquipDetail) {
     setData(eq);
     setNome(eq.nome ?? "");
+    setTagEdit(eq.tag ?? "");
     setObservacao(eq.observacao ?? "");
     setPatrimonio(eq.patrimonio ?? "");
     setNSerie(eq.nSerie ?? "");
@@ -165,9 +167,15 @@ export function EquipamentoEditor({
 
   async function salvar() {
     try {
+      const tagInformada = tagEdit.trim();
+      if (!tagInformada) {
+        setErro("TAG obrigatória");
+        return;
+      }
       const updated = await api<EquipDetail>(`/equipamentos/${encodeURIComponent(tag)}`, {
         method: "PATCH",
         body: JSON.stringify({
+          tag: tagInformada,
           nome,
           observacao,
           patrimonio: patrimonio || null,
@@ -183,6 +191,15 @@ export function EquipamentoEditor({
           tipoEquipamentoPlanoId: tipoPlanoId || null,
         }),
       });
+      if (windowId && updated.tag !== tag) {
+        updateWindow(windowId, {
+          title: `${updated.tag} — ${updated.nome}`,
+          payload: { tag: updated.tag },
+        });
+        setMsg("Salvo");
+        setErro(null);
+        return;
+      }
       applyForm(updated);
       setMsg("Salvo");
       setErro(null);
@@ -274,12 +291,25 @@ export function EquipamentoEditor({
       {tab === "geral" && (
         <div style={{ display: "grid", gap: 10 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-            <strong style={{ fontSize: 15 }}>{data.tag}</strong>
             <Badge tone={data.situacao}>{data.situacao.replace(/_/g, " ")}</Badge>
             {data.descricao && <Badge tone={data.descricao.criticidade}>{data.descricao.criticidade}</Badge>}
             <Btn size="sm" variant="ghost" href={`/equipamentos/${encodeURIComponent(tag)}`}>
               Página completa
             </Btn>
+          </div>
+
+          <div>
+            <FieldLabel>TAG</FieldLabel>
+            <input
+              value={tagEdit}
+              disabled={readonly}
+              onChange={(e) => setTagEdit(e.target.value)}
+              placeholder="Ex.: HEF-CME-001"
+              style={{ ...fieldStyle, fontWeight: 700, letterSpacing: "0.04em" }}
+            />
+            <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+              Livre para vocês definirem. Só não pode repetir outra TAG desta instituição.
+            </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -631,7 +661,7 @@ export function EquipamentoEditor({
               />
               <Btn
                 variant="secondary"
-                disabled={!novaTag.trim() || justificativaTag.trim().length < 3}
+                disabled={!novaTag.trim()}
                 onClick={() => setShowTagModal(true)}
               >
                 Alterar TAG
@@ -656,8 +686,7 @@ export function EquipamentoEditor({
         title="Alterar TAG do equipamento"
         message={`A TAG ${data.tag} será alterada para ${novaTag.trim()}.`}
         confirmLabel="Confirmar alteração"
-        requireJustification
-        onConfirm={() => confirmarNovaTag(justificativaTag.trim())}
+        onConfirm={() => confirmarNovaTag(justificativaTag.trim() || "Alteração no cadastro")}
         onCancel={() => setShowTagModal(false)}
       />
     </div>

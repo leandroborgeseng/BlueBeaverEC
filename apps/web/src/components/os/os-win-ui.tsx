@@ -18,9 +18,9 @@ export const YELLOW = "#fff4c2";
 export const GRAY = "#e8e8e8";
 export const BLUE = "#1a73e8";
 
-export function Overlay({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+export function Overlay({ onClose, children, fixed }: { onClose: () => void; children: ReactNode; fixed?: boolean }) {
   return (
-    <div style={overlay} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlay, position: fixed ? "fixed" : "absolute", zIndex: fixed ? 80 : overlay.zIndex }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       {children}
     </div>
   );

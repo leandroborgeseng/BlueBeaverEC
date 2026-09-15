@@ -1,0 +1,17 @@
+---
+description: HEF em produção — nunca alterar ou apagar dado existente sem pedido explícito
+alwaysApply: true
+---
+
+# Dados de produção (HEF)
+
+O sistema já está em produção (`hef.aion.eng.br`). Os dados existentes são sagrados.
+
+- **Inserir** cadastro, OS, equipamento, anexo: permitido.
+- **Alterar ou apagar** registro que já existe: só se o usuário pedir explicitamente nessa mensagem (qual registro, qual campo, por quê).
+- Pedido de tela, filtro, relatório ou “copiar o Effort” **não** autoriza migrar, seedar, resetar, sync, overwrite, `updateMany` em lote, `deleteMany`, `migrate reset`, `db push` destrutivo, nem rodar `prisma db seed` no HEF.
+- Importação nunca sobrescreve TAG / registro existente; duplicata vira erro, não update.
+- Preferir campo novo, tabela nova ou valor opcional a reescrever o que já está gravado.
+- Não “corrigir” TAG, patrimônio, série, custos ou cadastros de produção por conta própria.
+
+Exemplo: implementar custo de substituição pode **mostrar** o valor atual; gravar só quando o usuário salvar naquela tela, e só nas linhas que ele mudou.

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import type { ModuloPermissao, NivelPermissao } from "@aion/shared";
 import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
 import { irParaMobile, useSession } from "@/lib/session";
@@ -43,6 +43,52 @@ const RAIL: RailItem[] = [
     items: [
       { label: "Equipamentos", href: "/equipamentos", icon: "equip", modulo: "equipamentos" },
       {
+        label: "Plano de Descrições",
+        href: "/cadastros?tab=planos",
+        icon: "clipboard",
+        modulo: "equipamentos",
+      },
+      { label: "Fabricantes", href: "/cadastros?tab=fabricantes", icon: "factory", modulo: "equipamentos" },
+      { label: "Modelos", href: "/cadastros?tab=modelos", icon: "layers", modulo: "equipamentos" },
+      {
+        label: "Novos Modelos e Fabricantes",
+        href: "/equipamentos/novos-modelos",
+        icon: "plus",
+        modulo: "equipamentos",
+        minNivel: PERMISSAO_NIVEL.EDICAO,
+      },
+      {
+        label: "Custo de Substituição",
+        href: "/equipamentos/custo-substituicao",
+        icon: "dollar",
+        modulo: "financeiro",
+      },
+      {
+        label: "Rastreabilidade dos Padrões",
+        href: "/instrumentos",
+        icon: "target",
+        modulo: "laudos",
+      },
+      {
+        label: "Equipamentos Sem Data de Instalação",
+        href: "/equipamentos/sem-instalacao",
+        icon: "calendar",
+        modulo: "equipamentos",
+      },
+      {
+        label: "Relatórios",
+        href: "/equipamentos/relatorios",
+        icon: "clipboard",
+        modulo: "equipamentos",
+        group: true,
+      },
+      {
+        label: "Obsolescência",
+        href: "/equipamentos/obsolescencia",
+        icon: "archive",
+        modulo: "equipamentos",
+      },
+      {
         label: "Ficha Vida",
         href: "/equipamentos/ficha-vida",
         icon: "history",
@@ -54,7 +100,7 @@ const RAIL: RailItem[] = [
       { label: "Procedimentos de Laudo", href: "/procedimentos-laudo", icon: "layers", modulo: "laudos" },
       {
         label: "Cadastros Básicos",
-        href: "/cadastros",
+        href: "/cadastros?tab=setores",
         icon: "folder",
         group: true,
         modulo: "equipamentos",
@@ -168,14 +214,31 @@ const RAIL: RailItem[] = [
 
 const ACCENT = "#ffffff";
 
-function flyItemActive(item: FlyItem, pathname: string) {
+function flyItemActive(item: FlyItem, pathname: string, search: string) {
   if (item.match?.includes(pathname)) return true;
-  const path = item.href.split("?")[0] ?? item.href;
-  return pathname === path;
+  const [path, qs] = item.href.split("?");
+  if (pathname !== (path ?? item.href)) return false;
+  if (!qs) return true;
+  const want = new URLSearchParams(qs);
+  const have = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  for (const [k, v] of want) {
+    if (have.get(k) !== v) return false;
+  }
+  return true;
 }
 
 export function SideRail() {
+  return (
+    <Suspense fallback={null}>
+      <SideRailInner />
+    </Suspense>
+  );
+}
+
+function SideRailInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
   const router = useRouter();
   const me = useSession();
   const [openRail, setOpenRail] = useState<string | null>(null);
@@ -208,7 +271,8 @@ export function SideRail() {
       pathname.startsWith("/equipamentos") ||
       pathname.startsWith("/cadastros") ||
       pathname.startsWith("/procedimentos") ||
-      pathname.startsWith("/laudos")
+      pathname.startsWith("/laudos") ||
+      pathname.startsWith("/instrumentos")
     ) {
       return "equip";
     }
@@ -218,7 +282,6 @@ export function SideRail() {
       pathname.startsWith("/fornecedores") ||
       pathname.startsWith("/atendimentos-externos") ||
       pathname.startsWith("/pessoas") ||
-      pathname.startsWith("/instrumentos") ||
       pathname.startsWith("/certificados") ||
       pathname.startsWith("/biblioteca-pops") ||
       pathname.startsWith("/qualidade") ||
@@ -346,7 +409,7 @@ export function SideRail() {
             }}
           >
             {(visibleRail.find((x) => x.key === openRail)?.items ?? []).map((f) => {
-              const selected = flyItemActive(f, pathname);
+              const selected = flyItemActive(f, pathname, search);
               return (
                 <Link
                   key={`${f.href}-${f.label}`}

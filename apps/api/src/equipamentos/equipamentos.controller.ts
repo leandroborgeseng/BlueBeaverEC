@@ -32,9 +32,9 @@ class ChangeTagDto {
   @MinLength(1)
   novaTag!: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(3)
-  justificativa!: string;
+  justificativa?: string;
 }
 
 class CreateEquipamentoDto {
@@ -134,6 +134,11 @@ class CreateEquipamentoDto {
 }
 
 class UpdateEquipamentoDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  tag?: string;
+
   @IsOptional()
   @IsString()
   nome?: string;
@@ -446,6 +451,23 @@ class CicloDto {
   documento?: CicloDocDto;
 }
 
+class CustoSubstituicaoDto {
+  @IsString()
+  descricaoId!: string;
+
+  @IsString()
+  fabricanteId!: string;
+
+  @IsString()
+  modeloId!: string;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v != null)
+  @Type(() => Number)
+  @IsNumber()
+  valorSubstituicao?: number | null;
+}
+
 @Controller("equipamentos")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("equipamentos", PERMISSAO_NIVEL.LEITURA)
@@ -460,6 +482,13 @@ export class EquipamentosController {
     @Query("modelo") modelo?: string,
     @Query("situacao") situacao?: SituacaoEquipamento,
     @Query("q") q?: string,
+    @Query("tag") tag?: string,
+    @Query("patrimonio") patrimonio?: string,
+    @Query("nSerie") nSerie?: string,
+    @Query("criticidade") criticidade?: Criticidade,
+    @Query("centroCusto") centroCusto?: string,
+    @Query("inativos") inativos?: string,
+    @Query("semInstalacao") semInstalacao?: string,
     @Query("page") page?: string,
     @Query("pageSize") pageSize?: string,
   ) {
@@ -469,6 +498,13 @@ export class EquipamentosController {
       modelo,
       situacao,
       q,
+      tag,
+      patrimonio,
+      nSerie,
+      criticidade,
+      centroCusto,
+      inativos: inativos === "1" || inativos === "true" ? true : inativos === "0" || inativos === "false" ? false : undefined,
+      semInstalacao: semInstalacao === "1" || semInstalacao === "true",
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : undefined,
     });
@@ -477,6 +513,36 @@ export class EquipamentosController {
   @Get("proxima-tag")
   proximaTag(@CurrentUser() user: AuthUser) {
     return this.equipamentos.proximaTag(user.estabelecimentoId).then((tag) => ({ tag }));
+  }
+
+  @Get("custos-substituicao")
+  custosSubstituicao(
+    @CurrentUser() user: AuthUser,
+    @Query("q") q?: string,
+    @Query("fabricante") fabricante?: string,
+    @Query("apenasAtivos") apenasAtivos?: string,
+  ) {
+    return this.equipamentos.custosSubstituicao(user, {
+      q,
+      fabricanteId: fabricante,
+      apenasAtivos: apenasAtivos === "0" || apenasAtivos === "false" ? false : true,
+    });
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Patch("custos-substituicao")
+  salvarCustoSubstituicao(@CurrentUser() user: AuthUser, @Body() body: CustoSubstituicaoDto) {
+    return this.equipamentos.salvarCustoSubstituicao(user, {
+      descricaoId: body.descricaoId,
+      fabricanteId: body.fabricanteId,
+      modeloId: body.modeloId,
+      valorSubstituicao: body.valorSubstituicao ?? null,
+    });
+  }
+
+  @Get("obsoletos")
+  obsoletos(@CurrentUser() user: AuthUser) {
+    return this.equipamentos.obsoletos(user.estabelecimentoId);
   }
 
   @Get("import/template")
@@ -577,7 +643,7 @@ export class EquipamentosController {
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Patch(":tag/tag")
   changeTag(@CurrentUser() user: AuthUser, @Param("tag") tag: string, @Body() body: ChangeTagDto) {
-    return this.equipamentos.updateTag(user, tag, body.novaTag, body.justificativa);
+    return this.equipamentos.updateTag(user, tag, body.novaTag, body.justificativa ?? "Alteração no cadastro");
   }
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)

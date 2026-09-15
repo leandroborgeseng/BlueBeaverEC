@@ -66,7 +66,7 @@ export const useWindowStore = create<WindowState>((set) => ({
             kind,
             title,
             minimized: false,
-            maximized: false,
+            maximized: kind === "os",
             x: 120 + offset,
             y: 80 + offset,
             width: size.width,
