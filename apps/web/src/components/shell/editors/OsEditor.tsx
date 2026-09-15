@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
 import { OsItemDialogs, type OsItemMeta } from "@/components/os/OsItemDialogs";
 import { OsActionDialogs } from "@/components/os/OsActionDialogs";
+import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
 import { labelResponsavel, useSession } from "@/lib/session";
 import { LABEL_DESTINO_FISICO, SLA_HORAS } from "@aion/shared";
 import { useWindowStore } from "@/store/windows";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type PointerEvent } from "react";
 import { api, downloadApi } from "@/lib/api";
 import { filesToAnexos } from "@/lib/os-ui";
 import { useSession } from "@/lib/session";
@@ -985,7 +985,7 @@ function DialogAssinatura({
     clear();
   }, [clear]);
 
-  function pos(e: React.PointerEvent<HTMLCanvasElement>) {
+  function pos(e: PointerEvent<HTMLCanvasElement>) {
     const c = canvasRef.current!;
     const r = c.getBoundingClientRect();
     return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height };
