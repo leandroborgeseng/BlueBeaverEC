@@ -8,6 +8,7 @@ import { labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
 import { OsItemDialogs, type OsItemMeta } from "@/components/os/OsItemDialogs";
 import { OsActionDialogs } from "@/components/os/OsActionDialogs";
 import { OsImpressaoDialog } from "@/components/os/OsImpressaoDialog";
+import { OsEtiquetaDialog } from "@/components/os/OsEtiquetaDialog";
 import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
 import { labelResponsavel, useSession } from "@/lib/session";
 import { LABEL_DESTINO_FISICO, SLA_HORAS } from "@aion/shared";
@@ -150,6 +151,7 @@ export function OsEditor({
   const [busy, setBusy] = useState(false);
   const [dominios, setDominios] = useState<OsDominiosMap | null>(null);
   const [impressaoAberta, setImpressaoAberta] = useState(false);
+  const [etiquetaAberta, setEtiquetaAberta] = useState(false);
 
   const load = useCallback(async () => {
     const data = await api<OsDetail>(`/os/${numero}`);
@@ -577,13 +579,7 @@ export function OsEditor({
         <button type="button" style={ghostBtn} onClick={() => setItemAba("auditoria")}>
           Auditoria
         </button>
-        <button
-          type="button"
-          style={ghostBtn}
-          onClick={() => {
-            setMsg("Etiqueta: você detalha este botão no próximo passo.");
-          }}
-        >
+        <button type="button" style={ghostBtn} onClick={() => setEtiquetaAberta(true)}>
           Etiqueta
         </button>
         <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -790,6 +786,12 @@ export function OsEditor({
         codigo={os.codigo || codigo}
         podeMonetario={verValores}
         onClose={() => setImpressaoAberta(false)}
+      />
+      <OsEtiquetaDialog
+        open={etiquetaAberta}
+        tag={os.equipamento?.tag && os.equipamento.tag !== "—" ? os.equipamento.tag : null}
+        osCodigo={os.codigo || codigo}
+        onClose={() => setEtiquetaAberta(false)}
       />
 
       <ConfirmModal
