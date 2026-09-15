@@ -7,13 +7,23 @@ import {
   IsEnum,
   IsIn,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Min,
   ValidateIf,
   ValidateNested,
 } from "class-validator";
-import { CondicaoUsoEquipamento, PrioridadeOS, StatusOS, TipoOS, VisibilidadeOs } from "@prisma/client";
+import {
+  CondicaoUsoEquipamento,
+  NaturezaCustoOS,
+  OrigemMaterialOS,
+  PrioridadeOS,
+  StatusOS,
+  TipoItemOS,
+  TipoOS,
+  VisibilidadeOs,
+} from "@prisma/client";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { ACOES_STATUS } from "./os-transicoes";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -214,6 +224,41 @@ class AnexoDto {
   visibilidade?: VisibilidadeOs;
 }
 
+class ExecucaoItemDto {
+  @IsOptional()
+  @IsEnum(TipoItemOS)
+  tipo?: TipoItemOS;
+
+  @IsString()
+  descricao!: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  quantidade?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  valorUnitario?: number;
+
+  @IsOptional()
+  @IsEnum(OrigemMaterialOS)
+  origemMaterial?: OrigemMaterialOS;
+
+  @IsOptional()
+  @IsEnum(NaturezaCustoOS)
+  naturezaCusto?: NaturezaCustoOS;
+
+  @IsOptional()
+  @IsString()
+  itemCodigo?: string;
+
+  @IsOptional()
+  @IsObject()
+  meta?: Record<string, unknown>;
+}
+
 class ExecucaoDto {
   @IsOptional()
   @IsString()
@@ -237,15 +282,9 @@ class ExecucaoDto {
 
   @IsOptional()
   @IsArray()
-  itens?: Array<{
-    tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";
-    descricao: string;
-    quantidade?: number;
-    valorUnitario?: number;
-    origemMaterial?: "ESTOQUE" | "COMPRA_DIRETA";
-    naturezaCusto?: "ESTIMADO" | "APROVADO" | "REALIZADO";
-    itemCodigo?: string;
-  }>;
+  @ValidateNested({ each: true })
+  @Type(() => ExecucaoItemDto)
+  itens?: ExecucaoItemDto[];
 }
 
 class VincularEquipamentoOsDto {

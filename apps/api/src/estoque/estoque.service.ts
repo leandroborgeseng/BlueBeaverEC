@@ -754,6 +754,7 @@ export class EstoqueService {
       naturezaCusto?: NaturezaCustoOS;
       itemCodigo?: string;
       qtd?: number;
+      meta?: Prisma.InputJsonValue | null;
     },
   ) {
     const os = await this.findOs(user.estabelecimentoId, osNumero);
@@ -787,19 +788,31 @@ export class EstoqueService {
     if (!orc.ok) throw new BadRequestException(orc.erro);
 
     if (tipo === TipoItemOS.MATERIAL && data.origemMaterial === OrigemMaterialOS.ESTOQUE && data.itemCodigo) {
-      return this.baixar(user, data.itemCodigo, data.qtd ?? data.quantidade ?? 1, osNumero);
+      const r = await this.baixar(user, data.itemCodigo, data.qtd ?? data.quantidade ?? 1, osNumero);
+      const itemOs = r && "itemOs" in r ? r.itemOs : null;
+      if (data.meta && itemOs && "id" in itemOs) {
+        await this.prisma.ordemServicoItem.update({
+          where: { id: String(itemOs.id) },
+          data: { meta: data.meta },
+        });
+      }
+      return r;
     }
 
     let valor = data.valorUnitario ?? null;
     if (tipo === TipoItemOS.MAO_DE_OBRA) {
-      const org = await this.prisma.estabelecimento.findUnique({
-        where: { id: user.estabelecimentoId },
-        select: { valorHoraMaoDeObra: true },
-      });
-      valor = resolverValorHoraMaoDeObra({
-        valorHoraConfigurado: org?.valorHoraMaoDeObra != null ? Number(org.valorHoraMaoDeObra) : null,
-        podeVerFinanceiro: podeVerFinanceiro(user.perfil, user.permissoesModulos),
-      });
+      if (valor == null) {
+        const org = await this.prisma.estabelecimento.findUnique({
+          where: { id: user.estabelecimentoId },
+          select: { valorHoraMaoDeObra: true },
+        });
+        valor = resolverValorHoraMaoDeObra({
+          valorHoraConfigurado: org?.valorHoraMaoDeObra != null ? Number(org.valorHoraMaoDeObra) : null,
+          podeVerFinanceiro: podeVerFinanceiro(user.perfil, user.permissoesModulos),
+        });
+      } else if (!podeVerFinanceiro(user.perfil, user.permissoesModulos)) {
+        valor = null;
+      }
     } else if (valor != null && !podeVerFinanceiro(user.perfil, user.permissoesModulos)) {
       valor = null;
     }
@@ -813,6 +826,7 @@ export class EstoqueService {
         valorUnitario: valor,
         origemMaterial: data.origemMaterial ?? (tipo === TipoItemOS.MATERIAL ? OrigemMaterialOS.COMPRA_DIRETA : null),
         naturezaCusto: data.naturezaCusto ?? NaturezaCustoOS.REALIZADO,
+        meta: data.meta ?? undefined,
       },
     });
   }

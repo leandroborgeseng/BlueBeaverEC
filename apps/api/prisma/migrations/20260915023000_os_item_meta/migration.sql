@@ -1,0 +1,1 @@
+ALTER TABLE "OrdemServicoItem" ADD COLUMN IF NOT EXISTS "meta" JSONB;

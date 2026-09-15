@@ -1111,6 +1111,7 @@ export class OsService {
         origemMaterial?: "ESTOQUE" | "COMPRA_DIRETA";
         naturezaCusto?: "ESTIMADO" | "APROVADO" | "REALIZADO";
         itemCodigo?: string;
+        meta?: Record<string, unknown>;
       }>;
     },
   ) {
@@ -1130,6 +1131,7 @@ export class OsService {
           naturezaCusto: item.naturezaCusto as never,
           itemCodigo: item.itemCodigo,
           qtd: item.quantidade,
+          meta: item.meta ? (item.meta as Prisma.InputJsonValue) : undefined,
         });
       }
     }

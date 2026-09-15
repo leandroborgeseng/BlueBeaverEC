@@ -784,6 +784,7 @@ model OrdemServicoItem {
   origemMaterial OrigemMaterialOS?
   naturezaCusto  NaturezaCustoOS   @default(REALIZADO)
   estornado      Boolean           @default(false)
+  meta           Json?
 
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
   estoqueItem  EstoqueItem? @relation(fields: [estoqueItemId], references: [id])

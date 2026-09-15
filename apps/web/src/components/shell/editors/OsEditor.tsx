@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
-import { api, downloadApi } from "@/lib/api";
-import { filesToAnexos, labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
-import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
+import { api } from "@/lib/api";
+import { labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
+import { OsItemDialogs, type OsItemMeta } from "@/components/os/OsItemDialogs";
+import { OsActionDialogs } from "@/components/os/OsActionDialogs";
 import { labelResponsavel, useSession } from "@/lib/session";
 import { LABEL_DESTINO_FISICO, SLA_HORAS } from "@aion/shared";
 import { useWindowStore } from "@/store/windows";
@@ -27,6 +28,7 @@ interface OsItem {
   origemMaterial?: string | null;
   naturezaCusto?: string | null;
   estornado?: boolean;
+  meta?: OsItemMeta | null;
 }
 
 interface TimelineItem {
@@ -112,7 +114,8 @@ export function OsEditor({
   onDone: () => void;
 }) {
   const open = useWindowStore((s) => s.open);
-  const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
+  const session = useSession();
+  const verValores = Boolean(session?.permissoes?.verValoresFinanceiros);
   const [os, setOs] = useState<OsDetail | null>(null);
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [dadosAberto, setDadosAberto] = useState(true);
@@ -124,15 +127,11 @@ export function OsEditor({
   const [diagnostico, setDiagnostico] = useState("");
   const [servico, setServico] = useState("");
   const [resultado, setResultado] = useState("");
-  const [horas, setHoras] = useState("");
   const [condicaoFinal, setCondicaoFinal] = useState("");
   const [textoPublico, setTextoPublico] = useState("");
-  const [itemDesc, setItemDesc] = useState("");
-  const [pecasEstoque, setPecasEstoque] = useState<Array<{ codigo: string; descricao: string; disponivel: number }>>([]);
-  const [pecaCodigo, setPecaCodigo] = useState("");
-  const [pecaQtd, setPecaQtd] = useState("1");
-  const [servicoExt, setServicoExt] = useState("");
-  const [servicoExtValor, setServicoExtValor] = useState("");
+  const [pecasEstoque, setPecasEstoque] = useState<
+    Array<{ codigo: string; descricao: string; disponivel: number; unidade?: string; almoxarifado?: string }>
+  >([]);
   const [destinoFisico, setDestinoFisico] = useState("");
   const [comentario, setComentario] = useState("");
   const [visComentario, setVisComentario] = useState<"PUBLICO" | "INTERNO">("PUBLICO");
@@ -162,7 +161,9 @@ export function OsEditor({
     api<Colaborador[]>("/os/responsaveis")
       .then(setColaboradores)
       .catch(() => undefined);
-    api<{ items: Array<{ codigo: string; descricao: string; disponivel: number }> }>("/estoque/itens?pageSize=100")
+    api<{ items: Array<{ codigo: string; descricao: string; disponivel: number; unidade?: string; almoxarifado?: string }> }>(
+      "/estoque/itens?pageSize=100",
+    )
       .then((r) => setPecasEstoque(r.items ?? []))
       .catch(() => undefined);
   }, [load]);
@@ -472,224 +473,6 @@ export function OsEditor({
             ))}
           </div>
 
-          {itemAba && (
-            <div style={{ marginBottom: 12, padding: 10, border: "1px solid #eee", borderRadius: 4, background: "#fcfcfc" }}>
-              {itemAba === "ocorrencia" && (
-                <Grid2>
-                  <FichaField label="Serviço realizado">
-                    <textarea value={servico} onChange={(e) => setServico(e.target.value)} rows={3} style={area} />
-                  </FichaField>
-                  <FichaField label="Resultado / condição final">
-                    <textarea value={resultado} onChange={(e) => setResultado(e.target.value)} rows={2} style={area} />
-                    <select value={condicaoFinal} onChange={(e) => setCondicaoFinal(e.target.value)} style={{ ...inp, marginTop: 6 }}>
-                      <option value="">Condição final…</option>
-                      <option value="APTO">Apto para uso</option>
-                      <option value="RESTRITO">Uso restrito</option>
-                      <option value="PARADO">Parado</option>
-                    </select>
-                    <textarea
-                      value={textoPublico}
-                      onChange={(e) => setTextoPublico(e.target.value)}
-                      rows={2}
-                      style={{ ...area, marginTop: 6 }}
-                      placeholder="Texto ao solicitante"
-                    />
-                  </FichaField>
-                </Grid2>
-              )}
-              {itemAba === "mao" && (
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input value={horas} onChange={(e) => setHoras(e.target.value)} type="number" min="0.1" step="0.1" placeholder="Horas" style={{ ...inp, width: 120 }} />
-                  <button
-                    type="button"
-                    style={orangeBtn(true)}
-                    disabled={busy || !horas || Number(horas) <= 0}
-                    onClick={() =>
-                      void run(async () => {
-                        await api(`/os/${numero}/execucao`, {
-                          method: "PATCH",
-                          body: JSON.stringify({
-                            itens: [{ tipo: "MAO_DE_OBRA", descricao: "Tempo de execução", quantidade: Number(horas) }],
-                          }),
-                        });
-                        setHoras("");
-                        setMsg("Mão de obra lançada");
-                      })
-                    }
-                  >
-                    Lançar
-                  </button>
-                </div>
-              )}
-              {itemAba === "material" && (
-                <div style={{ display: "grid", gap: 8 }}>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <select value={pecaCodigo} onChange={(e) => setPecaCodigo(e.target.value)} style={{ ...inp, flex: 2 }}>
-                      <option value="">Peça do estoque…</option>
-                      {pecasEstoque.map((p) => (
-                        <option key={p.codigo} value={p.codigo}>
-                          {p.codigo} — {p.descricao} (disp. {p.disponivel})
-                        </option>
-                      ))}
-                    </select>
-                    <input value={pecaQtd} onChange={(e) => setPecaQtd(e.target.value)} type="number" min="0.01" step="0.01" style={{ ...inp, width: 80 }} />
-                    <button
-                      type="button"
-                      style={orangeBtn(true)}
-                      disabled={busy || !pecaCodigo}
-                      onClick={() =>
-                        void run(async () => {
-                          await api(`/os/${numero}/execucao`, {
-                            method: "PATCH",
-                            body: JSON.stringify({
-                              itens: [
-                                {
-                                  tipo: "MATERIAL",
-                                  descricao: pecaCodigo,
-                                  itemCodigo: pecaCodigo,
-                                  quantidade: Number(pecaQtd || 1),
-                                  origemMaterial: "ESTOQUE",
-                                },
-                              ],
-                            }),
-                          });
-                          setPecaCodigo("");
-                          setMsg("Material baixado");
-                        })
-                      }
-                    >
-                      Baixar
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input value={itemDesc} onChange={(e) => setItemDesc(e.target.value)} placeholder="Material comprado direto" style={{ ...inp, flex: 1 }} />
-                    <button
-                      type="button"
-                      style={orangeBtn(true)}
-                      disabled={busy || !itemDesc.trim()}
-                      onClick={() =>
-                        void run(async () => {
-                          await api(`/os/${numero}/execucao`, {
-                            method: "PATCH",
-                            body: JSON.stringify({
-                              itens: [{ descricao: itemDesc, tipo: "MATERIAL", origemMaterial: "COMPRA_DIRETA" }],
-                            }),
-                          });
-                          setItemDesc("");
-                          setMsg("Material registrado");
-                        })
-                      }
-                    >
-                      Incluir
-                    </button>
-                  </div>
-                </div>
-              )}
-              {itemAba === "pendencia" && (
-                <textarea value={pendencia} onChange={(e) => setPendencia(e.target.value)} rows={3} style={area} placeholder="Pendência da OS" />
-              )}
-              {itemAba === "externo-item" && (
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <input value={servicoExt} onChange={(e) => setServicoExt(e.target.value)} placeholder="Descrição do serviço" style={{ ...inp, flex: 1 }} />
-                  {verValores && (
-                    <input value={servicoExtValor} onChange={(e) => setServicoExtValor(e.target.value)} type="number" min="0" step="0.01" placeholder="R$" style={{ ...inp, width: 110 }} />
-                  )}
-                  <button
-                    type="button"
-                    style={orangeBtn(true)}
-                    disabled={busy || !servicoExt.trim()}
-                    onClick={() =>
-                      void run(async () => {
-                        await api(`/os/${numero}/execucao`, {
-                          method: "PATCH",
-                          body: JSON.stringify({
-                            itens: [
-                              {
-                                tipo: "SERVICO_EXTERNO",
-                                descricao: servicoExt,
-                                quantidade: 1,
-                                valorUnitario: verValores ? Number(servicoExtValor || 0) || undefined : undefined,
-                              },
-                            ],
-                          }),
-                        });
-                        setServicoExt("");
-                        setServicoExtValor("");
-                        setMsg("Serviço externo lançado");
-                      })
-                    }
-                  >
-                    Lançar
-                  </button>
-                </div>
-              )}
-              {itemAba === "procedimento" && (
-                <div>
-                  {os.tipo && TIPOS_COM_LAUDO.has(os.tipo) ? (
-                    <button
-                      type="button"
-                      style={orangeBtn(true)}
-                      onClick={() =>
-                        open({
-                          kind: "laudo",
-                          title: `Laudo · OS ${os.numero}`,
-                          payload: { tipo: os.tipo, equipamentoTag: tag, osNumero: os.numero },
-                        })
-                      }
-                    >
-                      Registrar laudo / procedimento
-                    </button>
-                  ) : (
-                    <div style={{ fontSize: 12, color: "#777" }}>
-                      Este tipo de OS não exige laudo. Você detalha o botão Procedimento no próximo passo.
-                    </div>
-                  )}
-                </div>
-              )}
-              {(itemAba === "foto" || itemAba === "anexos") && (
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, cursor: "pointer", color: ORANGE }}>
-                    Enviar {itemAba === "foto" ? "foto" : "anexo"}
-                    <input
-                      type="file"
-                      accept={itemAba === "foto" ? "image/*" : "image/*,application/pdf"}
-                      hidden
-                      onChange={(e) =>
-                        void run(async () => {
-                          const files = await filesToAnexos(e.target.files);
-                          for (const f of files) {
-                            await api(`/os/${numero}/anexos`, {
-                              method: "POST",
-                              body: JSON.stringify({ ...f, visibilidade: visComentario }),
-                            });
-                          }
-                          setMsg("Arquivo enviado");
-                        })
-                      }
-                    />
-                  </label>
-                  <div style={{ marginTop: 8, display: "grid", gap: 4 }}>
-                    {(os.anexos ?? []).map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        style={{ ...ghostBtn, textAlign: "left" }}
-                        onClick={() => void downloadApi(`/os/${numero}/anexos/${a.id}`, undefined, a.nomeArquivo)}
-                      >
-                        {a.nomeArquivo}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {itemAba === "assinatura" && (
-                <div style={{ fontSize: 12, color: "#777" }}>
-                  Assinatura de campo já existe no mobile. O conteúdo deste botão na ficha você detalha no próximo passo.
-                </div>
-              )}
-            </div>
-          )}
-
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #e5e5e5", color: "#666", textAlign: "left" }}>
@@ -875,6 +658,96 @@ export function OsEditor({
         </div>
       )}
 
+      <OsItemDialogs
+        open={itemAba === "ocorrencia" || itemAba === "mao" || itemAba === "material" ? itemAba : null}
+        ctx={{
+          numero,
+          codigo: os.codigo || codigo,
+          statusLabel: labelStatusOS(os.status),
+          alocacao,
+          abertura: os.abertura,
+          setorNome: os.equipamento?.setor?.nome ?? os.setor?.nome ?? "—",
+          responsavelId: os.responsavel?.id,
+        }}
+        itens={(os.itens ?? []).map((i) => ({
+          id: i.id,
+          tipo: i.tipo,
+          descricao: i.descricao,
+          quantidade: Number(i.quantidade),
+          valorUnitario: i.valorUnitario,
+          origemMaterial: i.origemMaterial,
+          meta: i.meta ?? null,
+        }))}
+        colaboradores={colaboradores}
+        pecas={pecasEstoque}
+        aberturaChamado={
+          aberturaLog
+            ? { descricao: "ABERTURA DE CHAMADO", em: aberturaLog.createdAt }
+            : os.abertura
+              ? { descricao: "ABERTURA DE CHAMADO", em: os.abertura }
+              : undefined
+        }
+        onClose={() => setItemAba(null)}
+        onSaved={async () => {
+          await load();
+          setMsg("Registro incluído");
+        }}
+      />
+
+      <OsActionDialogs
+        open={
+          itemAba === "pendencia" ||
+          itemAba === "externo-item" ||
+          itemAba === "procedimento" ||
+          itemAba === "foto" ||
+          itemAba === "assinatura" ||
+          itemAba === "anexos"
+            ? itemAba
+            : null
+        }
+        ctx={{
+          numero,
+          codigo: os.codigo || codigo,
+          statusLabel: labelStatusOS(os.status),
+          alocacao,
+          abertura: os.abertura,
+          setorNome: os.equipamento?.setor?.nome ?? os.setor?.nome ?? "—",
+          responsavelId: os.responsavel?.id,
+        }}
+        itens={(os.itens ?? []).map((i) => ({
+          id: i.id,
+          tipo: i.tipo,
+          descricao: i.descricao,
+          quantidade: Number(i.quantidade),
+          valorUnitario: i.valorUnitario,
+          origemMaterial: i.origemMaterial,
+          meta: i.meta ?? null,
+        }))}
+        anexos={os.anexos ?? []}
+        osTipo={os.tipo}
+        equipamentoTag={tag}
+        hospitalNome={session?.estabelecimentoNome}
+        slaAtendimento={os.slaHoras != null ? `${os.slaHoras}h` : ""}
+        slaSolucao={os.slaHoras != null ? `${os.slaHoras}h` : ""}
+        onClose={() => setItemAba(null)}
+        onSaved={async () => {
+          await load();
+          setMsg("Registro incluído");
+        }}
+        onOpenChecklist={(procedimentoId) => {
+          open({
+            kind: "laudo",
+            title: `Laudo · OS ${os.numero}`,
+            payload: {
+              tipo: os.tipo && TIPOS_COM_LAUDO.has(os.tipo) ? os.tipo : "PREVENTIVA",
+              equipamentoTag: tag,
+              osNumero: os.numero,
+              procedimentoId,
+            },
+          });
+        }}
+      />
+
       <ConfirmModal
         open={statusModal === "fechar"}
         title="Concluir ordem de serviço"
@@ -995,10 +868,6 @@ function FichaField({
       {children}
     </div>
   );
-}
-
-function Grid2({ children }: { children: ReactNode }) {
-  return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>{children}</div>;
 }
 
 function labelPrio(p?: string) {
