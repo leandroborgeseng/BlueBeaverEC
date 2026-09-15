@@ -86,9 +86,25 @@ function WindowFrame({
           userSelect: "none",
         }}
       >
-        <strong style={{ fontSize: 13.5, fontWeight: 700, color: "oklch(0.25 0.02 250)" }}>
-          {win.title}
-        </strong>
+        {win.kind === "os" ? (
+          <span
+            style={{
+              background: "#f58220",
+              color: "white",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "3px 10px",
+              borderRadius: 3,
+              letterSpacing: "0.02em",
+            }}
+          >
+            {String(win.payload?.codigo ? `OS - ${win.payload.codigo}` : win.title)}
+          </span>
+        ) : (
+          <strong style={{ fontSize: 13.5, fontWeight: 700, color: "oklch(0.25 0.02 250)" }}>
+            {win.title}
+          </strong>
+        )}
         <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
           <button type="button" onClick={onMinimize} style={btn} title="Minimizar">
             —
@@ -98,7 +114,17 @@ function WindowFrame({
           </button>
         </div>
       </div>
-      <div style={{ padding: 16, overflow: "auto", flex: 1, fontSize: 13 }}>
+      <div
+        style={{
+          padding: win.kind === "os" ? 0 : 16,
+          overflow: win.kind === "os" ? "hidden" : "auto",
+          flex: 1,
+          fontSize: 13,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
         {win.kind === "equipamento" && equipTag ? (
           <EquipamentoEditor key={equipTag} tag={equipTag} windowId={win.id} onDone={onClose} />
         ) : win.kind === "os" && win.payload?.numero != null ? (

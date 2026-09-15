@@ -27,7 +27,7 @@ export interface FloatingWin {
 
 const SIZE_BY_KIND: Record<WindowKind, { width: number; height: number }> = {
   equipamento: { width: 920, height: 640 },
-  os: { width: 960, height: 680 },
+  os: { width: 1180, height: 800 },
   laudo: { width: 900, height: 660 },
   contrato: { width: 880, height: 620 },
   fabricante: { width: 520, height: 420 },

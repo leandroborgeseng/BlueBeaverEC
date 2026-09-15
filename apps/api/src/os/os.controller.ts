@@ -232,6 +232,10 @@ class ExecucaoDto {
   pendencia?: string | null;
 
   @IsOptional()
+  @IsString()
+  oficina?: string | null;
+
+  @IsOptional()
   @IsArray()
   itens?: Array<{
     tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";

@@ -192,7 +192,7 @@ export default function OsPage() {
               onClick={() =>
                 open({
                   kind: "os",
-                  title: `${os.codigo} — ${os.equipamento?.nome ?? "Chamado do setor"}${os.equipamento?.tag ? ` · ${os.equipamento.tag}` : ""}`,
+                  title: `OS - ${os.codigo}`,
                   payload: { numero: os.numero, codigo: os.codigo },
                 })
               }

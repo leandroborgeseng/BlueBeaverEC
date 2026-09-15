@@ -1102,6 +1102,7 @@ export class OsService {
       servicoRealizado?: string;
       resultadoAtendimento?: string;
       pendencia?: string | null;
+      oficina?: string | null;
       itens?: Array<{
         tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";
         descricao: string;
@@ -1139,6 +1140,7 @@ export class OsService {
         servicoRealizado: data.servicoRealizado?.trim() ?? os.servicoRealizado,
         resultadoAtendimento: data.resultadoAtendimento?.trim() ?? os.resultadoAtendimento,
         pendencia: data.pendencia !== undefined ? data.pendencia?.trim() || null : os.pendencia,
+        oficina: data.oficina !== undefined ? data.oficina?.trim() || null : os.oficina,
         logs: data.diagnostico?.trim()
           ? {
               create: {
