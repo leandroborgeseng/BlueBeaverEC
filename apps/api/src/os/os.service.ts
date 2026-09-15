@@ -1262,7 +1262,7 @@ export class OsService {
     }
   }
 
-  /** Hard delete de OS de teste: Ana/Carlos, ou cancelada sem responsável (ex. OS-00010). */
+  /** Hard delete de OS de teste: Ana/Carlos, ou sem responsável (ex. antiga OS-00006 / 00010). */
   async removerTesteAnaCarlos(user: AuthUser, numero: number) {
     if (!podeAlterarStatusOS(user.perfil, user.permissoesModulos)) {
       throw new ForbiddenException("Sem permissão para excluir OS");
@@ -1273,10 +1273,10 @@ export class OsService {
     });
     if (!os) throw new NotFoundException(`OS ${numero} não encontrada`);
     const nome = os.responsavel?.nome?.trim() ?? "";
-    const canceladaSemResponsavel = !os.responsavelId && os.status === StatusOS.CANCELADA;
-    if (nome !== "Ana Engenheira" && nome !== "Carlos Técnico" && !canceladaSemResponsavel) {
+    const semResponsavel = !os.responsavelId;
+    if (nome !== "Ana Engenheira" && nome !== "Carlos Técnico" && !semResponsavel) {
       throw new BadRequestException(
-        "Só é permitido excluir OS de teste (Ana Engenheira, Carlos Técnico ou cancelada sem responsável)",
+        "Só é permitido excluir OS de teste (Ana Engenheira, Carlos Técnico ou sem responsável)",
       );
     }
 
