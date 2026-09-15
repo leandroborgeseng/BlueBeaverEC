@@ -164,6 +164,7 @@ model Estabelecimento {
   treinamentos           Treinamento[]
   ocorrenciasSeguranca   OcorrenciaSeguranca[]
   alertasCampo           AlertaCampo[]
+  osDominios             OsDominioValor[]
 }
 
 model Usuario {
@@ -643,6 +644,8 @@ model OrdemServico {
   textoConclusaoPublico String?
   conclusaoSnapshot  String?
   atribuicaoVersao   Int          @default(0)
+  complexidade       String?
+  projeto            String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -668,6 +671,23 @@ model OrdemServico {
   @@index([estabelecimentoId, status])
   @@index([equipamentoId])
   @@index([setorId])
+}
+
+model OsDominioValor {
+  id                String   @id @default(cuid())
+  estabelecimentoId String
+  tipo              String
+  codigo            String?
+  nome              String
+  ativo             Boolean  @default(true)
+  ordem             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+
+  @@unique([estabelecimentoId, tipo, nome])
+  @@index([estabelecimentoId, tipo])
 }
 
 model LogOrdemServico {

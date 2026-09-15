@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
+import { nomesDominio, type OsDominiosMap } from "@/lib/os-dominios";
 import { labelResponsavel } from "@/lib/session";
 import {
   Cabecalho,
@@ -73,6 +74,7 @@ export function OsItemDialogs({
   colaboradores,
   pecas,
   aberturaChamado,
+  dominios,
   onClose,
   onSaved,
 }: {
@@ -82,6 +84,7 @@ export function OsItemDialogs({
   colaboradores: Colab[];
   pecas: Peca[];
   aberturaChamado?: { descricao: string; em: string };
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -89,7 +92,14 @@ export function OsItemDialogs({
   return (
     <Overlay onClose={onClose}>
       {open === "ocorrencia" && (
-        <DialogOcorrencia ctx={ctx} itens={itens} aberturaChamado={aberturaChamado} onClose={onClose} onSaved={onSaved} />
+        <DialogOcorrencia
+          ctx={ctx}
+          itens={itens}
+          aberturaChamado={aberturaChamado}
+          dominios={dominios}
+          onClose={onClose}
+          onSaved={onSaved}
+        />
       )}
       {open === "mao" && (
         <DialogMao
@@ -97,12 +107,13 @@ export function OsItemDialogs({
           itens={itens}
           colaboradores={colaboradores}
           aberturaChamado={aberturaChamado}
+          dominios={dominios}
           onClose={onClose}
           onSaved={onSaved}
         />
       )}
       {open === "material" && (
-        <DialogMaterial ctx={ctx} itens={itens} pecas={pecas} onClose={onClose} onSaved={onSaved} />
+        <DialogMaterial ctx={ctx} itens={itens} pecas={pecas} dominios={dominios} onClose={onClose} onSaved={onSaved} />
       )}
     </Overlay>
   );
@@ -112,12 +123,14 @@ function DialogOcorrencia({
   ctx,
   itens,
   aberturaChamado,
+  dominios,
   onClose,
   onSaved,
 }: {
   ctx: OsDialogCtx;
   itens: OsLancamento[];
   aberturaChamado?: { descricao: string; em: string };
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -161,11 +174,17 @@ function DialogOcorrencia({
   const [erro, setErro] = useState<string | null>(null);
 
   const opcoesOcorrencia = useMemo(
-    () => Array.from(new Set(["ABERTURA DE CHAMADO", ...hist.map((h) => h.ocorrencia).filter(Boolean)])),
-    [hist],
+    () => nomesDominio(dominios, "OCORRENCIA", hist.map((h) => h.ocorrencia)),
+    [hist, dominios],
   );
-  const opcoesCausa = useMemo(() => Array.from(new Set(hist.map((h) => h.causa).filter((c) => c && c !== "NÃO INFORMADA"))), [hist]);
-  const opcoesServico = useMemo(() => Array.from(new Set(itens.map((i) => i.meta?.servico).filter((s): s is string => Boolean(s)))), [itens]);
+  const opcoesCausa = useMemo(
+    () => nomesDominio(dominios, "CAUSA", hist.map((h) => h.causa)),
+    [hist, dominios],
+  );
+  const opcoesServico = useMemo(
+    () => nomesDominio(dominios, "SERVICO", itens.map((i) => i.meta?.servico)),
+    [itens, dominios],
+  );
 
   function limpar() {
     setData("");
@@ -285,6 +304,7 @@ function DialogMao({
   itens,
   colaboradores,
   aberturaChamado,
+  dominios,
   onClose,
   onSaved,
 }: {
@@ -292,6 +312,7 @@ function DialogMao({
   itens: OsLancamento[];
   colaboradores: Colab[];
   aberturaChamado?: { descricao: string; em: string };
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -316,15 +337,19 @@ function DialogMao({
 
   const opcoesOcorrencia = useMemo(
     () =>
-      Array.from(
-        new Set(
-          [
-            aberturaChamado?.descricao || "ABERTURA DE CHAMADO",
-            ...itens.map((i) => i.meta?.ocorrencia).filter((s): s is string => Boolean(s)),
-          ].filter(Boolean),
-        ),
-      ),
-    [itens, aberturaChamado],
+      nomesDominio(dominios, "OCORRENCIA", [
+        aberturaChamado?.descricao,
+        ...itens.map((i) => i.meta?.ocorrencia),
+      ]),
+    [itens, aberturaChamado, dominios],
+  );
+  const opcoesCausa = useMemo(
+    () => nomesDominio(dominios, "CAUSA", itens.map((i) => i.meta?.causa)),
+    [itens, dominios],
+  );
+  const opcoesServico = useMemo(
+    () => nomesDominio(dominios, "SERVICO", itens.map((i) => i.meta?.servico)),
+    [itens, dominios],
   );
 
   function limpar() {
@@ -423,10 +448,10 @@ function DialogMao({
         <Combo value={ocorrencia} onChange={setOcorrencia} options={opcoesOcorrencia} />
       </Linha>
       <Linha label="Causa:">
-        <Combo value={causa} onChange={setCausa} options={[]} />
+        <Combo value={causa} onChange={setCausa} options={opcoesCausa} />
       </Linha>
       <Linha label="Serviço:">
-        <Combo value={servico} onChange={setServico} options={[]} />
+        <Combo value={servico} onChange={setServico} options={opcoesServico} />
       </Linha>
       <Linha label="">
         <label style={{ fontSize: 12, display: "flex", gap: 6, alignItems: "center" }}>
@@ -475,12 +500,14 @@ function DialogMaterial({
   ctx,
   itens,
   pecas,
+  dominios,
   onClose,
   onSaved,
 }: {
   ctx: OsDialogCtx;
   itens: OsLancamento[];
   pecas: Peca[];
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -496,8 +523,12 @@ function DialogMaterial({
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const almoxes = useMemo(
-    () => Array.from(new Set(pecas.map((p) => p.almoxarifado).filter((a): a is string => Boolean(a)))),
-    [pecas],
+    () =>
+      nomesDominio(dominios, "ALMOXARIFADO", [
+        ...pecas.map((p) => p.almoxarifado),
+        ...itens.map((i) => i.meta?.almoxarifado),
+      ]),
+    [pecas, itens, dominios],
   );
 
   const peca = acharPeca(pecas, produto);

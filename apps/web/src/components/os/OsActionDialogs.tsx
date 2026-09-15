@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type PointerEvent } from "react";
 import { api, downloadApi } from "@/lib/api";
 import { filesToAnexos } from "@/lib/os-ui";
+import { nomesDominio, type OsDominiosMap } from "@/lib/os-dominios";
 import { useSession } from "@/lib/session";
 import type { OsDialogCtx, OsLancamento } from "./OsItemDialogs";
 import {
@@ -46,9 +47,11 @@ export function OsActionDialogs({
   hospitalNome,
   slaAtendimento,
   slaSolucao,
+  dominios,
   onClose,
   onSaved,
   onOpenChecklist,
+  onImprimir,
 }: {
   open: "pendencia" | "externo-item" | "procedimento" | "foto" | "assinatura" | "anexos" | null;
   ctx: OsDialogCtx;
@@ -59,20 +62,25 @@ export function OsActionDialogs({
   hospitalNome?: string;
   slaAtendimento?: string;
   slaSolucao?: string;
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
   onOpenChecklist: (procedimentoId?: string) => void;
+  onImprimir?: () => void;
 }) {
   if (!open) return null;
   return (
     <Overlay onClose={onClose}>
-      {open === "pendencia" && <DialogPendencia ctx={ctx} itens={itens} onClose={onClose} onSaved={onSaved} />}
+      {open === "pendencia" && (
+        <DialogPendencia ctx={ctx} itens={itens} dominios={dominios} onClose={onClose} onSaved={onSaved} />
+      )}
       {open === "externo-item" && (
         <DialogExterno
           ctx={ctx}
           itens={itens}
           slaAtendimento={slaAtendimento}
           slaSolucao={slaSolucao}
+          dominios={dominios}
           onClose={onClose}
           onSaved={onSaved}
         />
@@ -90,8 +98,12 @@ export function OsActionDialogs({
         />
       )}
       {open === "foto" && <DialogFoto ctx={ctx} onClose={onClose} onSaved={onSaved} />}
-      {open === "assinatura" && <DialogAssinatura ctx={ctx} onClose={onClose} onSaved={onSaved} />}
-      {open === "anexos" && <DialogAnexos ctx={ctx} anexos={anexos} onClose={onClose} onSaved={onSaved} />}
+      {open === "assinatura" && (
+        <DialogAssinatura ctx={ctx} dominios={dominios} onClose={onClose} onSaved={onSaved} onImprimir={onImprimir} />
+      )}
+      {open === "anexos" && (
+        <DialogAnexos ctx={ctx} anexos={anexos} dominios={dominios} onClose={onClose} onSaved={onSaved} />
+      )}
     </Overlay>
   );
 }
@@ -99,11 +111,13 @@ export function OsActionDialogs({
 function DialogPendencia({
   ctx,
   itens,
+  dominios,
   onClose,
   onSaved,
 }: {
   ctx: OsDialogCtx;
   itens: OsLancamento[];
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -120,9 +134,15 @@ function DialogPendencia({
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const opcoes = useMemo(
-    () => Array.from(new Set(hist.map((i) => i.meta?.ocorrencia || i.descricao).filter(Boolean))),
-    [hist],
+    () => nomesDominio(dominios, "PENDENCIA", hist.map((i) => i.meta?.ocorrencia || i.descricao)),
+    [hist, dominios],
   );
+
+  function escolherPendencia(v: string) {
+    setNome(v);
+    const d = (dominios?.PENDENCIA ?? []).find((x) => x.nome === v);
+    if (d?.codigo) setCodigo(d.codigo);
+  }
 
   async function salvar(e: FormEvent) {
     e.preventDefault();
@@ -177,7 +197,7 @@ function DialogPendencia({
       <Cabecalho ctx={ctx} />
       <Linha label="Pendência:">
         <input value={codigo} onChange={(e) => setCodigo(e.target.value)} style={{ ...fld, width: 90, background: YELLOW }} />
-        <Combo value={nome} onChange={setNome} options={opcoes} yellow />
+        <Combo value={nome} onChange={escolherPendencia} options={opcoes} yellow />
       </Linha>
       <Linha label="Aberta em:">
         <DateHora date={abertaData} time={abertaHora} onDate={setAbertaData} onTime={setAbertaHora} yellow />
@@ -223,6 +243,7 @@ function DialogExterno({
   itens,
   slaAtendimento,
   slaSolucao,
+  dominios,
   onClose,
   onSaved,
 }: {
@@ -230,6 +251,7 @@ function DialogExterno({
   itens: OsLancamento[];
   slaAtendimento?: string;
   slaSolucao?: string;
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -256,7 +278,7 @@ function DialogExterno({
   const [valor, setValor] = useState("");
   const [orcStatus, setOrcStatus] = useState<"AGUARDANDO" | "NAO" | "APROVADO">("AGUARDANDO");
   const [orcData, setOrcData] = useState("");
-  const [metodo, setMetodo] = useState("Mediante execução dos serviço");
+  const [metodo, setMetodo] = useState("");
   const [concData, setConcData] = useState("");
   const [concHora, setConcHora] = useState("");
   const [garantia, setGarantia] = useState("");
@@ -267,13 +289,28 @@ function DialogExterno({
   const [causa, setCausa] = useState("");
   const [servico, setServico] = useState("");
   const [resolvida, setResolvida] = useState(false);
-  const [avaliacao, setAvaliacao] = useState<"BOM" | "REGULAR" | "RUIM" | "">("");
+  const [avaliacao, setAvaliacao] = useState("");
   const [obs, setObs] = useState("");
   const [continuar, setContinuar] = useState(false);
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const extOn = necessitaExt || primeiro === "EXTERNO";
   const extFld: CSSProperties = extOn ? fld : disabledFld;
+  const opcoesOcorrencia = useMemo(
+    () => nomesDominio(dominios, "OCORRENCIA", itens.map((i) => i.meta?.ocorrencia || i.descricao)),
+    [itens, dominios],
+  );
+  const opcoesCausa = useMemo(() => nomesDominio(dominios, "CAUSA", itens.map((i) => i.meta?.causa)), [itens, dominios]);
+  const opcoesServico = useMemo(
+    () => nomesDominio(dominios, "SERVICO", itens.map((i) => i.meta?.servico)),
+    [itens, dominios],
+  );
+  const opcoesMetodo = useMemo(() => nomesDominio(dominios, "METODO_CUSTO"), [dominios]);
+  const opcoesAvaliacao = useMemo(() => nomesDominio(dominios, "AVALIACAO_SERVICO"), [dominios]);
+
+  useEffect(() => {
+    if (!metodo && opcoesMetodo[0]) setMetodo(opcoesMetodo[0]);
+  }, [metodo, opcoesMetodo]);
 
   useEffect(() => {
     api<Fornecedor[]>("/fornecedores")
@@ -456,9 +493,12 @@ function DialogExterno({
       </div>
       <Linha label="Método de Apropriação de Custos:">
         <select value={metodo} onChange={(e) => setMetodo(e.target.value)} style={{ ...fld, width: 260 }}>
-          <option>Mediante execução dos serviço</option>
-          <option>Nota fiscal</option>
-          <option>Contrato</option>
+          <option value="">Selecione…</option>
+          {opcoesMetodo.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
         </select>
       </Linha>
 
@@ -477,13 +517,13 @@ function DialogExterno({
         <input type="date" value={vencimento} onChange={(e) => setVencimento(e.target.value)} style={{ ...fld, width: 130 }} />
       </div>
       <Linha label="Ocorrência:">
-        <Combo value={ocorrencia} onChange={setOcorrencia} options={itens.map((i) => i.meta?.ocorrencia || i.descricao)} />
+        <Combo value={ocorrencia} onChange={setOcorrencia} options={opcoesOcorrencia} />
       </Linha>
       <Linha label="Causa:">
-        <Combo value={causa} onChange={setCausa} options={[]} />
+        <Combo value={causa} onChange={setCausa} options={opcoesCausa} />
       </Linha>
       <Linha label="Serviço:">
-        <Combo value={servico} onChange={setServico} options={[]} />
+        <Combo value={servico} onChange={setServico} options={opcoesServico} />
       </Linha>
       <div style={{ display: "flex", gap: 16, alignItems: "center", margin: "4px 0 8px 168px", fontSize: 12 }}>
         <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -491,15 +531,11 @@ function DialogExterno({
           A ocorrência foi resolvida com este serviço
         </label>
         <span>Avaliação do Serviço:</span>
-        <label style={radio}>
-          <input type="radio" checked={avaliacao === "BOM"} onChange={() => setAvaliacao("BOM")} /> Bom
-        </label>
-        <label style={radio}>
-          <input type="radio" checked={avaliacao === "REGULAR"} onChange={() => setAvaliacao("REGULAR")} /> Regular
-        </label>
-        <label style={radio}>
-          <input type="radio" checked={avaliacao === "RUIM"} onChange={() => setAvaliacao("RUIM")} /> Ruim
-        </label>
+        {opcoesAvaliacao.map((o) => (
+          <label key={o} style={radio}>
+            <input type="radio" checked={avaliacao === o} onChange={() => setAvaliacao(o)} /> {o}
+          </label>
+        ))}
       </div>
       <Linha label="Observação:" align="start">
         <textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={2} style={{ ...fld, flex: 1, height: 48 }} />
@@ -953,22 +989,31 @@ function DialogFoto({
 
 function DialogAssinatura({
   ctx,
+  dominios,
   onClose,
   onSaved,
+  onImprimir,
 }: {
   ctx: OsDialogCtx;
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  onImprimir?: () => void;
 }) {
   const session = useSession();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
-  const [papel, setPapel] = useState("Técnico Responsável");
+  const [papel, setPapel] = useState("");
   const [nome, setNome] = useState("");
   const [imprimir, setImprimir] = useState(true);
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [temTraço, setTemTraco] = useState(false);
+  const papeis = useMemo(() => nomesDominio(dominios, "PAPEL_ASSINATURA"), [dominios]);
+
+  useEffect(() => {
+    if (!papel && papeis[0]) setPapel(papeis[0]);
+  }, [papel, papeis]);
 
   const clear = useCallback(() => {
     const c = canvasRef.current;
@@ -1052,7 +1097,7 @@ function DialogAssinatura({
       await persistir();
       await onSaved();
       if (fechar) {
-        if (imprimir) window.print();
+        if (imprimir) onImprimir?.();
         onClose();
       }
     } catch (err) {
@@ -1093,10 +1138,11 @@ function DialogAssinatura({
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10, fontSize: 12, flexWrap: "wrap" }}>
         <span>Assinatura:</span>
         <select value={papel} onChange={(e) => setPapel(e.target.value)} style={{ ...fld, width: 180 }}>
-          <option>Técnico Responsável</option>
-          <option>Solicitante</option>
-          <option>Engenheiro Clínico</option>
-          <option>Testemunha</option>
+          {papeis.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
         </select>
         <span>Nome:</span>
         <input value={nome} onChange={(e) => setNome(e.target.value)} style={{ ...fld, flex: 1, minWidth: 160 }} />
@@ -1144,11 +1190,13 @@ function DialogAssinatura({
 function DialogAnexos({
   ctx,
   anexos,
+  dominios,
   onClose,
   onSaved,
 }: {
   ctx: OsDialogCtx;
   anexos: Anexo[];
+  dominios?: OsDominiosMap | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -1157,6 +1205,7 @@ function DialogAnexos({
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const tiposAnexo = useMemo(() => nomesDominio(dominios, "TIPO_ANEXO"), [dominios]);
 
   async function enviar(files: FileList | File[] | null) {
     const list = await filesToAnexos(files);
@@ -1243,12 +1292,7 @@ function DialogAnexos({
           <span style={{ color: "#666" }}>ou Soltar arquivo aqui</span>
         </div>
         <span style={{ fontSize: 12 }}>Tipo de Anexo:</span>
-        <Combo
-          value={tipo}
-          onChange={setTipo}
-          options={["Laudo", "Foto", "NF", "Orçamento", "Checklist", "Outro"]}
-          width={180}
-        />
+        <Combo value={tipo} onChange={setTipo} options={tiposAnexo} width={180} />
         <button type="button" disabled={busy} style={saveBtn} onClick={() => fileRef.current?.click()}>
           Enviar
         </button>

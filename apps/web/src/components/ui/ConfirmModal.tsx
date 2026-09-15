@@ -12,6 +12,8 @@ export function ConfirmModal({
   danger,
   requireJustification,
   justificationMin = 3,
+  justificationOptions,
+  justificationLabel = "Justificativa",
   children,
   onConfirm,
   onCancel,
@@ -24,18 +26,23 @@ export function ConfirmModal({
   danger?: boolean;
   requireJustification?: boolean;
   justificationMin?: number;
+  justificationOptions?: string[];
+  justificationLabel?: string;
   children?: React.ReactNode;
   onConfirm: (justificativa?: string) => void | Promise<void>;
   onCancel: () => void;
 }) {
   const [justificativa, setJustificativa] = useState("");
+  const [motivo, setMotivo] = useState("");
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const id = useId();
+  const temOpcoes = Boolean(justificationOptions?.length);
 
   useEffect(() => {
     if (open) {
       setJustificativa("");
+      setMotivo("");
       setErro(null);
       setBusy(false);
     }
@@ -44,14 +51,24 @@ export function ConfirmModal({
   if (!open) return null;
 
   async function submit() {
-    if (requireJustification && justificativa.trim().length < justificationMin) {
-      setErro(`Justificativa obrigatória (mín. ${justificationMin} caracteres)`);
-      return;
+    let texto: string | undefined;
+    if (requireJustification && temOpcoes) {
+      if (!motivo.trim()) {
+        setErro("Selecione o motivo");
+        return;
+      }
+      texto = justificativa.trim() ? `${motivo.trim()} — ${justificativa.trim()}` : motivo.trim();
+    } else if (requireJustification) {
+      if (justificativa.trim().length < justificationMin) {
+        setErro(`Justificativa obrigatória (mín. ${justificationMin} caracteres)`);
+        return;
+      }
+      texto = justificativa.trim();
     }
     setBusy(true);
     setErro(null);
     try {
-      await onConfirm(requireJustification ? justificativa.trim() || undefined : undefined);
+      await onConfirm(texto);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro");
       setBusy(false);
@@ -95,15 +112,40 @@ export function ConfirmModal({
         )}
         {requireJustification && (
           <div style={{ marginBottom: 14 }}>
-            <FieldLabel>Justificativa</FieldLabel>
-            <textarea
-              autoFocus
-              value={justificativa}
-              onChange={(e) => setJustificativa(e.target.value)}
-              rows={3}
-              style={fieldStyle}
-              placeholder="Descreva o motivo…"
-            />
+            <FieldLabel>{justificationLabel}</FieldLabel>
+            {temOpcoes ? (
+              <>
+                <select
+                  autoFocus
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  style={{ ...fieldStyle, marginBottom: 8 }}
+                >
+                  <option value="">Selecione…</option>
+                  {justificationOptions!.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  value={justificativa}
+                  onChange={(e) => setJustificativa(e.target.value)}
+                  rows={2}
+                  style={fieldStyle}
+                  placeholder="Complemento (opcional)"
+                />
+              </>
+            ) : (
+              <textarea
+                autoFocus
+                value={justificativa}
+                onChange={(e) => setJustificativa(e.target.value)}
+                rows={3}
+                style={fieldStyle}
+                placeholder="Descreva o motivo…"
+              />
+            )}
           </div>
         )}
         {children}

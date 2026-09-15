@@ -281,6 +281,14 @@ class ExecucaoDto {
   oficina?: string | null;
 
   @IsOptional()
+  @IsString()
+  complexidade?: string | null;
+
+  @IsOptional()
+  @IsString()
+  projeto?: string | null;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ExecucaoItemDto)
@@ -418,6 +426,32 @@ export class OsController {
   @Get("equipamento/:tag/ativas")
   ativas(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
     return this.os.ativasDoEquipamento(user.estabelecimentoId, tag);
+  }
+
+  @Get(":numero/impressao.pdf")
+  async impressaoPdf(
+    @CurrentUser() user: AuthUser,
+    @Param("numero") numero: string,
+    @Res() res: Response,
+    @Query("observacao") observacao?: string,
+    @Query("itens") itens?: string,
+    @Query("monetario") monetario?: string,
+    @Query("analiseExterna") analiseExterna?: string,
+    @Query("preenchido") preenchido?: string,
+    @Query("papel") papel?: string,
+  ) {
+    const flag = (v: string | undefined, d: boolean) => (v == null || v === "" ? d : v === "1" || v === "true");
+    const { pdf, nome } = await this.os.impressaoPdf(user, Number(numero), {
+      observacao: flag(observacao, true),
+      itens: flag(itens, true),
+      monetario: flag(monetario, false),
+      analiseExterna: flag(analiseExterna, false),
+      preenchido: flag(preenchido, false),
+      papel: papel === "letter" || papel === "carta" ? "letter" : "A4",
+    });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${nome.replace(/"/g, "")}"`);
+    res.send(pdf);
   }
 
   @Get(":numero")

@@ -7,10 +7,12 @@ import { api } from "@/lib/api";
 import { labelAcaoOS, labelStatusOS } from "@/lib/os-ui";
 import { OsItemDialogs, type OsItemMeta } from "@/components/os/OsItemDialogs";
 import { OsActionDialogs } from "@/components/os/OsActionDialogs";
+import { OsImpressaoDialog } from "@/components/os/OsImpressaoDialog";
 import { AtendimentoExternoPanel } from "@/components/os/AtendimentoExternoPanel";
 import { labelResponsavel, useSession } from "@/lib/session";
 import { LABEL_DESTINO_FISICO, SLA_HORAS } from "@aion/shared";
 import { useWindowStore } from "@/store/windows";
+import { carregarOsDominios, nomesDominio, type OsDominiosMap } from "@/lib/os-dominios";
 
 interface Colaborador {
   id: string;
@@ -52,6 +54,8 @@ interface OsDetail {
   slaEstourado?: boolean;
   tipo?: string;
   oficina?: string | null;
+  complexidade?: string | null;
+  projeto?: string | null;
   observacaoRequisicao?: string | null;
   pendencia?: string | null;
   diagnostico?: string | null;
@@ -124,6 +128,8 @@ export function OsEditor({
   const [itemAba, setItemAba] = useState<ItemAba>(null);
   const [alocacao, setAlocacao] = useState<"INTERNA" | "EXTERNA">("INTERNA");
   const [oficina, setOficina] = useState("");
+  const [complexidade, setComplexidade] = useState("");
+  const [projeto, setProjeto] = useState("");
   const [pendencia, setPendencia] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
   const [servico, setServico] = useState("");
@@ -142,6 +148,8 @@ export function OsEditor({
   const [erro, setErro] = useState<string | null>(null);
   const [statusModal, setStatusModal] = useState<StatusAcao | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dominios, setDominios] = useState<OsDominiosMap | null>(null);
+  const [impressaoAberta, setImpressaoAberta] = useState(false);
 
   const load = useCallback(async () => {
     const data = await api<OsDetail>(`/os/${numero}`);
@@ -155,6 +163,8 @@ export function OsEditor({
     setResponsavelId(data.responsavel?.id ?? "");
     setPrioridadeTecnica(data.prioridade ?? "");
     setOficina(data.oficina ?? "");
+    setComplexidade(data.complexidade ?? "");
+    setProjeto(data.projeto ?? "");
   }, [numero]);
 
   useEffect(() => {
@@ -166,6 +176,9 @@ export function OsEditor({
       "/estoque/itens?pageSize=100",
     )
       .then((r) => setPecasEstoque(r.items ?? []))
+      .catch(() => undefined);
+    carregarOsDominios()
+      .then(setDominios)
       .catch(() => undefined);
   }, [load]);
 
@@ -193,6 +206,8 @@ export function OsEditor({
           resultadoAtendimento: resultado,
           pendencia: pendencia || null,
           oficina: oficina || null,
+          complexidade: complexidade || null,
+          projeto: projeto || null,
         }),
       });
       if (prioridadeTecnica && prioridadeTecnica !== os?.prioridade) {
@@ -375,14 +390,26 @@ export function OsEditor({
           </FichaField>
 
           <FichaField label="Projeto" style={{ marginTop: 8 }}>
-            <select disabled style={inp}>
-              <option>Selecione …</option>
+            <select value={projeto} onChange={(e) => setProjeto(e.target.value)} style={inp}>
+              <option value="">Selecione …</option>
+              {nomesDominio(dominios, "PROJETO").map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
             </select>
           </FichaField>
 
           <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.4fr 1.2fr", gap: 12, marginTop: 8 }}>
             <FichaField label="Oficina *" required>
-              <input value={oficina} onChange={(e) => setOficina(e.target.value)} placeholder="Oficina" style={inp} />
+              <select value={oficina} onChange={(e) => setOficina(e.target.value)} style={inp}>
+                <option value="">Selecione …</option>
+                {nomesDominio(dominios, "OFICINA", [os.oficina]).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
             </FichaField>
             <FichaField label="Tipo *" required>
               <input readOnly value={os.tipo?.replace(/_/g, " ") ?? "—"} style={inp} />
@@ -413,8 +440,13 @@ export function OsEditor({
               </select>
             </FichaField>
             <FichaField label="Complexidade">
-              <select disabled style={inp}>
-                <option>Selecione …</option>
+              <select value={complexidade} onChange={(e) => setComplexidade(e.target.value)} style={inp}>
+                <option value="">Selecione …</option>
+                {nomesDominio(dominios, "COMPLEXIDADE", [os.complexidade]).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
               </select>
             </FichaField>
             <FichaField label="Requisição">
@@ -555,7 +587,7 @@ export function OsEditor({
           Etiqueta
         </button>
         <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button type="button" style={ghostBtn} onClick={() => window.print()}>
+          <button type="button" style={ghostBtn} onClick={() => setImpressaoAberta(true)}>
             Imprimir
           </button>
           {!encerrada && (
@@ -681,6 +713,7 @@ export function OsEditor({
         }))}
         colaboradores={colaboradores}
         pecas={pecasEstoque}
+        dominios={dominios}
         aberturaChamado={
           aberturaLog
             ? { descricao: "ABERTURA DE CHAMADO", em: aberturaLog.createdAt }
@@ -730,6 +763,7 @@ export function OsEditor({
         hospitalNome={session?.estabelecimentoNome}
         slaAtendimento={os.slaHoras != null ? `${os.slaHoras}h` : ""}
         slaSolucao={os.slaHoras != null ? `${os.slaHoras}h` : ""}
+        dominios={dominios}
         onClose={() => setItemAba(null)}
         onSaved={async () => {
           await load();
@@ -747,6 +781,15 @@ export function OsEditor({
             },
           });
         }}
+        onImprimir={() => setImpressaoAberta(true)}
+      />
+
+      <OsImpressaoDialog
+        open={impressaoAberta}
+        numero={numero}
+        codigo={os.codigo || codigo}
+        podeMonetario={verValores}
+        onClose={() => setImpressaoAberta(false)}
       />
 
       <ConfirmModal
@@ -763,6 +806,8 @@ export function OsEditor({
         message="O motivo fica no histórico e o solicitante vê que o atendimento está pausado."
         confirmLabel="Aguardar"
         requireJustification
+        justificationLabel="Motivo de aguardo"
+        justificationOptions={nomesDominio(dominios, "MOTIVO_AGUARDO")}
         onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
       />
@@ -773,6 +818,8 @@ export function OsEditor({
         confirmLabel="Cancelar OS"
         danger
         requireJustification
+        justificationLabel="Motivo de cancelamento / baixa"
+        justificationOptions={nomesDominio(dominios, "MOTIVO_CANCELAMENTO")}
         onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
       >
@@ -794,6 +841,8 @@ export function OsEditor({
         message="Reabrir não devolve material automaticamente. Confirme o destino físico se houve baixa."
         confirmLabel="Reabrir"
         requireJustification
+        justificationLabel="Motivo de reabertura"
+        justificationOptions={nomesDominio(dominios, "MOTIVO_REABERTURA")}
         onConfirm={(j) => confirmarStatus(j)}
         onCancel={() => setStatusModal(null)}
       >

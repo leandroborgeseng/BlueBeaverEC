@@ -80,6 +80,13 @@ const RAIL: RailItem[] = [
       { label: "Cronograma de Manutenção", href: "/gestao/cronograma-manutencao", icon: "calendar", modulo: "os" },
       { label: "Nova OS", href: "/os/nova", icon: "plus", modulo: "os", minNivel: PERMISSAO_NIVEL.EDICAO },
       {
+        label: "Domínios da OS",
+        href: "/os/dominios",
+        icon: "layers",
+        modulo: "os",
+        minNivel: PERMISSAO_NIVEL.EDICAO_APROVACAO,
+      },
+      {
         label: "Auditoria de OS",
         href: "/os/auditoria",
         icon: "users",

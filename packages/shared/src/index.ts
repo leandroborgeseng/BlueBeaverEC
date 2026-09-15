@@ -656,3 +656,12 @@ export type {
   StatusAlertaCampo,
   FiltroBuscaQualidade,
 } from "./qualidade-regras";
+
+export {
+  OS_DOMINIO_TIPOS,
+  LABEL_OS_DOMINIO,
+  OS_DOMINIO_TELA,
+  OS_DOMINIO_PADROES,
+  ehOsDominioTipo,
+} from "./os-dominios";
+export type { OsDominioTipo } from "./os-dominios";

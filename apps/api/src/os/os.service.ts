@@ -18,8 +18,11 @@ import {
   VisibilidadeOs,
 } from "@prisma/client";
 import {
+  LABEL_STATUS_OS,
   PERMISSAO_NIVEL,
+  SLA_HORAS,
   calcularSlaOs,
+  labelStatusOS,
   podeAlterarStatusOS,
   podeAtribuirOS,
   podeExecutarAcaoStatusOS,
@@ -27,7 +30,9 @@ import {
   resolverValorHoraMaoDeObra,
   temPermissao,
   type AcaoStatusOS,
+  type PrioridadeOS as PrioridadeOsShared,
 } from "@aion/shared";
+import { buildOsImpressaoPdf, type OsImpressaoOpcoes, type OsImpressaoPayload } from "./os-impressao-pdf";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { EstoqueService } from "../estoque/estoque.service";
@@ -1103,6 +1108,8 @@ export class OsService {
       resultadoAtendimento?: string;
       pendencia?: string | null;
       oficina?: string | null;
+      complexidade?: string | null;
+      projeto?: string | null;
       itens?: Array<{
         tipo?: "MATERIAL" | "MAO_DE_OBRA" | "SERVICO_EXTERNO" | "OUTROS_DIRETOS";
         descricao: string;
@@ -1143,6 +1150,8 @@ export class OsService {
         resultadoAtendimento: data.resultadoAtendimento?.trim() ?? os.resultadoAtendimento,
         pendencia: data.pendencia !== undefined ? data.pendencia?.trim() || null : os.pendencia,
         oficina: data.oficina !== undefined ? data.oficina?.trim() || null : os.oficina,
+        complexidade: data.complexidade !== undefined ? data.complexidade?.trim() || null : os.complexidade,
+        projeto: data.projeto !== undefined ? data.projeto?.trim() || null : os.projeto,
         logs: data.diagnostico?.trim()
           ? {
               create: {
@@ -1378,6 +1387,26 @@ export class OsService {
     return os;
   }
 
+  async impressaoPdf(user: AuthUser, numero: number, opcoes: OsImpressaoOpcoes) {
+    const os = await this.getByNumero(user.estabelecimentoId, numero, user.perfil);
+    const [estab, gerador] = await Promise.all([
+      this.prisma.estabelecimento.findUnique({
+        where: { id: user.estabelecimentoId },
+        select: { nome: true },
+      }),
+      this.prisma.usuario.findUnique({ where: { id: user.userId }, select: { nome: true } }),
+    ]);
+    const verValores = opcoes.monetario && podeVerFinanceiro(user.perfil, user.permissoesModulos);
+    const payload = montarPayloadImpressao(os, {
+      instituicao: estab?.nome ?? "",
+      geradoPor: gerador?.nome ?? "",
+      opcoes: { ...opcoes, monetario: Boolean(verValores) },
+    });
+    const pdf = await buildOsImpressaoPdf(payload);
+    const codigo = payload.codigo.replace(/\s+/g, "");
+    return { pdf, nome: `OS-${codigo}.pdf` };
+  }
+
   private async nextNumero(estabelecimentoId: string) {
     const row = await this.prisma.contadorSequencia.upsert({
       where: {
@@ -1388,4 +1417,193 @@ export class OsService {
     });
     return row.valor;
   }
+}
+
+type OsImpressaoFonte = {
+  numero: number;
+  codigo?: string | null;
+  status: string;
+  tipo?: string | null;
+  oficina?: string | null;
+  prioridade: string;
+  abertura?: Date | string | null;
+  pendencia?: string | null;
+  observacaoRequisicao?: string | null;
+  diagnostico?: string | null;
+  servicoRealizado?: string | null;
+  textoConclusaoPublico?: string | null;
+  slaHoras?: number | null;
+  responsavel?: { matricula?: string | null; nome?: string | null } | null;
+  setor?: { nome?: string | null } | null;
+  equipamento?: { setor?: { nome?: string | null } | null } | null;
+  solicitacao?: { protocolo?: string | null; solicitanteNome?: string | null; descricao?: string | null } | null;
+  itens?: Array<{
+    tipo: string;
+    descricao: string;
+    quantidade?: unknown;
+    valorUnitario?: unknown;
+    meta?: unknown;
+  }>;
+};
+
+function montarPayloadImpressao(
+  os: OsImpressaoFonte,
+  extra: { instituicao: string; geradoPor: string; opcoes: OsImpressaoOpcoes },
+): OsImpressaoPayload {
+  const itensOs = os.itens ?? [];
+  const ocorrencias = itensOs.filter((i) => meta(i).kind === "OCORRENCIA");
+  const ultimaOc = [...ocorrencias].reverse()[0];
+  const mao = itensOs.filter((i) => i.tipo === "MAO_DE_OBRA");
+  const materiais = itensOs.filter((i) => i.tipo === "MATERIAL");
+  const externos = itensOs.filter((i) => i.tipo === "SERVICO_EXTERNO" || meta(i).kind === "SERVICO_EXTERNO");
+  const prio = os.prioridade in SLA_HORAS ? (os.prioridade as PrioridadeOsShared) : null;
+  const sla = os.slaHoras ?? (prio ? SLA_HORAS[prio] : undefined);
+  const itens: OsImpressaoPayload["itens"] = [
+    {
+      codigo: "OC",
+      quando: fmtOsDt(os.abertura),
+      descricao: "ABERTURA DE CHAMADO",
+    },
+    ...itensOs.map((i) => itemImpressao(i, extra.opcoes.monetario)).filter((x): x is NonNullable<typeof x> => Boolean(x)),
+  ];
+
+  return {
+    instituicao: extra.instituicao,
+    geradoEm: fmtOsDt(new Date()),
+    geradoPor: extra.geradoPor,
+    codigo: String(os.codigo || os.numero).replace(/^OS-/i, ""),
+    status: os.status in LABEL_STATUS_OS
+      ? LABEL_STATUS_OS[os.status as keyof typeof LABEL_STATUS_OS]
+      : labelStatusOS(os.status),
+    tipo: labelTipoOsImpressao(os.tipo),
+    oficina: os.oficina?.trim() || "—",
+    abertaEm: fmtOsDt(os.abertura),
+    setor: os.equipamento?.setor?.nome || os.setor?.nome || "—",
+    prioridade: sla ? `${os.prioridade} (MÁX. ${sla}HS)` : os.prioridade,
+    responsavel: os.responsavel
+      ? [os.responsavel.matricula, os.responsavel.nome].filter(Boolean).join(" - ")
+      : "—",
+    requisitante: os.solicitacao?.solicitanteNome || "—",
+    chamado: os.solicitacao?.protocolo || "—",
+    reclamacao: os.solicitacao?.descricao || os.observacaoRequisicao || "—",
+    ocorrencia: str(meta(ultimaOc).ocorrencia) || ultimaOc?.descricao || os.observacaoRequisicao || "",
+    causa: str(meta(ultimaOc).causa) || "",
+    pendencia: os.pendencia || itensOs.find((i) => meta(i).kind === "PENDENCIA")?.descricao || "",
+    observacoes: [os.diagnostico, os.servicoRealizado, os.textoConclusaoPublico].filter(Boolean).join("\n") || "",
+    itens,
+    mao: mao.map((i) => ({
+      tecnico: str(meta(i).tecnicoNome) || i.descricao,
+      servico: str(meta(i).servico) || "",
+      inicio: juntarDataHora(meta(i).inicio, meta(i).horaInicio),
+      termino: juntarDataHora(meta(i).termino, meta(i).horaFim),
+    })),
+    materiais: materiais.map((i) => ({
+      descricao: str(meta(i).produto) || i.descricao,
+      data: fmtOsDt(str(meta(i).dataSaida) || str(meta(i).data) || null),
+      quantidade: fmtNum(i.quantidade),
+      valor: extra.opcoes.monetario ? fmtMoeda(i.valorUnitario) : undefined,
+    })),
+    externos: externos.map((i) => ({
+      fornecedor: str(meta(i).fornecedor) || "",
+      servico: str(meta(i).servico) || i.descricao,
+      previsao: fmtOsDt(str(meta(i).previsaoConclusao) || str(meta(i).previsaoAtendimento) || null),
+      valor: extra.opcoes.monetario ? fmtMoeda(i.valorUnitario) : undefined,
+    })),
+    opcoes: extra.opcoes,
+  };
+}
+
+function itemImpressao(
+  item: NonNullable<OsImpressaoFonte["itens"]>[number],
+  monetario: boolean,
+) {
+  const m = meta(item);
+  const kind = str(m.kind);
+  if (kind === "OCORRENCIA" && /abertura de chamado/i.test(item.descricao)) return null;
+  const codigo =
+    kind === "OCORRENCIA"
+      ? "OC"
+      : item.tipo === "MAO_DE_OBRA" || kind === "MAO"
+        ? "MO"
+        : item.tipo === "MATERIAL" || kind === "MATERIAL"
+          ? "MT"
+          : kind === "PENDENCIA"
+            ? "PE"
+            : item.tipo === "SERVICO_EXTERNO" || kind === "SERVICO_EXTERNO"
+              ? "SE"
+              : kind === "PROCEDIMENTO"
+                ? "PR"
+                : kind === "FOTO"
+                  ? "FT"
+                  : kind === "ANEXO"
+                    ? "AN"
+                    : "OC";
+  const quando = fmtOsDt(str(m.data) || str(m.inicio) || str(m.dataSaida) || null);
+  const descricao = str(m.ocorrencia) || str(m.produto) || str(m.tecnicoNome) || item.descricao;
+  return {
+    codigo,
+    quando,
+    descricao,
+    quantidade: fmtNum(item.quantidade),
+    valor: monetario ? fmtMoeda(item.valorUnitario) : undefined,
+  };
+}
+
+function meta(item?: { meta?: unknown } | null): Record<string, unknown> {
+  if (!item?.meta || typeof item.meta !== "object" || Array.isArray(item.meta)) return {};
+  return item.meta as Record<string, unknown>;
+}
+
+function str(v: unknown) {
+  return typeof v === "string" ? v.trim() : v == null ? "" : String(v);
+}
+
+function fmtNum(v: unknown) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n === 0) return "";
+  return Number.isInteger(n) ? String(n) : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+}
+
+function fmtMoeda(v: unknown) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n === 0) return "";
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function fmtOsDt(v?: Date | string | null) {
+  if (!v) return "";
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return typeof v === "string" ? v : "";
+  return d
+    .toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .replace(",", "");
+}
+
+function juntarDataHora(data: unknown, hora: unknown) {
+  const d = str(data);
+  const h = str(hora);
+  if (!d) return h;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    const [y, m, day] = d.split("-");
+    return h ? `${day}/${m}/${y} ${h}` : `${day}/${m}/${y}`;
+  }
+  return h ? `${fmtOsDt(d)} ${h}` : fmtOsDt(d);
+}
+
+function labelTipoOsImpressao(tipo?: string | null) {
+  const map: Record<string, string> = {
+    CORRETIVA: "CORRETIVA",
+    PREVENTIVA: "PREVENTIVA",
+    CALIBRACAO: "CALIBRAÇÃO",
+    TSE: "TSE",
+    QUALIFICACAO: "QUALIFICAÇÃO",
+  };
+  return tipo ? (map[tipo] ?? tipo.replace(/_/g, " ")) : "—";
 }
