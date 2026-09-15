@@ -7,7 +7,7 @@ import { OsEditor } from "@/components/shell/editors/OsEditor";
 import { useWindowStore, type FloatingWin } from "@/store/windows";
 
 export function FloatingWindowLayer() {
-  const { windows, close, minimize, move } = useWindowStore();
+  const { windows, close, minimize, move, toggleMaximize } = useWindowStore();
   const drag = useRef<{ id: string; ox: number; oy: number } | null>(null);
 
   return (
@@ -20,7 +20,9 @@ export function FloatingWindowLayer() {
             win={w}
             onClose={() => close(w.id)}
             onMinimize={() => minimize(w.id)}
+            onMaximize={() => toggleMaximize(w.id)}
             onPointerDown={(e) => {
+              if (w.maximized) return;
               drag.current = { id: w.id, ox: e.clientX - w.x, oy: e.clientY - w.y };
             }}
             onPointerMove={(e) => {
@@ -40,6 +42,7 @@ function WindowFrame({
   win,
   onClose,
   onMinimize,
+  onMaximize,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -47,23 +50,25 @@ function WindowFrame({
   win: FloatingWin;
   onClose: () => void;
   onMinimize: () => void;
+  onMaximize: () => void;
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: () => void;
 }) {
   const equipTag = win.kind === "equipamento" ? String(win.payload?.tag ?? "") : "";
+  const max = win.maximized;
 
   return (
     <div
       style={{
         position: "fixed",
-        left: win.x,
-        top: win.y,
-        width: win.width,
-        height: win.height,
+        left: max ? 76 : win.x,
+        top: max ? 58 : win.y,
+        width: max ? "calc(100vw - 76px)" : win.width,
+        height: max ? "calc(100vh - 58px - 48px)" : win.height,
         background: "white",
         border: "1px solid oklch(0.88 0.01 250)",
-        borderRadius: 10,
+        borderRadius: max ? 0 : 10,
         boxShadow: "0 24px 48px -20px rgba(16,24,40,0.45)",
         zIndex: 45,
         display: "flex",
@@ -75,13 +80,14 @@ function WindowFrame({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onDoubleClick={onMaximize}
         style={{
           height: 40,
           display: "flex",
           alignItems: "center",
           padding: "0 12px",
           borderBottom: "1px solid oklch(0.91 0.006 255)",
-          cursor: "grab",
+          cursor: max ? "default" : "grab",
           background: "white",
           userSelect: "none",
         }}
@@ -105,9 +111,21 @@ function WindowFrame({
             {win.title}
           </strong>
         )}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+        <div
+          style={{ marginLeft: "auto", display: "flex", gap: 4 }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
           <button type="button" onClick={onMinimize} style={btn} title="Minimizar">
             —
+          </button>
+          <button
+            type="button"
+            onClick={onMaximize}
+            style={btn}
+            title={max ? "Restaurar" : "Maximizar"}
+          >
+            {max ? "❐" : "□"}
           </button>
           <button type="button" onClick={onClose} style={btn} title="Fechar">
             ×

@@ -18,6 +18,7 @@ export interface FloatingWin {
   kind: WindowKind;
   title: string;
   minimized: boolean;
+  maximized: boolean;
   x: number;
   y: number;
   width: number;
@@ -43,6 +44,7 @@ interface WindowState {
   close: (id: string) => void;
   minimize: (id: string) => void;
   restore: (id: string) => void;
+  toggleMaximize: (id: string) => void;
   move: (id: string, x: number, y: number) => void;
   update: (id: string, patch: Partial<Pick<FloatingWin, "title" | "payload">>) => void;
 }
@@ -64,6 +66,7 @@ export const useWindowStore = create<WindowState>((set) => ({
             kind,
             title,
             minimized: false,
+            maximized: false,
             x: 120 + offset,
             y: 80 + offset,
             width: size.width,
@@ -81,6 +84,12 @@ export const useWindowStore = create<WindowState>((set) => ({
   restore: (id) =>
     set((s) => ({
       windows: s.windows.map((w) => (w.id === id ? { ...w, minimized: false } : w)),
+    })),
+  toggleMaximize: (id) =>
+    set((s) => ({
+      windows: s.windows.map((w) =>
+        w.id === id ? { ...w, maximized: !w.maximized, minimized: false } : w,
+      ),
     })),
   move: (id, x, y) =>
     set((s) => ({
