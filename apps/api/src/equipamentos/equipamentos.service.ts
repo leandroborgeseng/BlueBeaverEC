@@ -419,6 +419,65 @@ export class EquipamentosService {
     };
   }
 
+  async listMovimentacoes(
+    estabelecimentoId: string,
+    query: {
+      q?: string;
+      tipo?: TipoMovimentacaoEquipamento;
+      setorId?: string;
+      de?: string;
+      ate?: string;
+      page?: number;
+      pageSize?: number;
+    },
+  ) {
+    const page = Math.max(1, query.page ?? 1);
+    const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 100));
+    const q = query.q?.trim();
+    const where: Prisma.EquipamentoMovimentacaoWhereInput = {
+      equipamento: {
+        estabelecimentoId,
+        ...(q
+          ? {
+              OR: [
+                { tag: { contains: q, mode: "insensitive" } },
+                { nome: { contains: q, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
+      ...(query.tipo ? { tipo: query.tipo } : {}),
+      ...(query.setorId
+        ? { OR: [{ origemSetorId: query.setorId }, { destinoSetorId: query.setorId }] }
+        : {}),
+      ...(query.de || query.ate
+        ? {
+            data: {
+              ...(query.de ? { gte: new Date(query.de) } : {}),
+              ...(query.ate ? { lte: new Date(`${query.ate}T23:59:59.999`) } : {}),
+            },
+          }
+        : {}),
+    };
+
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.equipamentoMovimentacao.count({ where }),
+      this.prisma.equipamentoMovimentacao.findMany({
+        where,
+        include: {
+          equipamento: { select: { tag: true, nome: true, situacao: true } },
+          origemSetor: { select: { id: true, nome: true } },
+          destinoSetor: { select: { id: true, nome: true } },
+        },
+        orderBy: { data: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return { total, page, pageSize, items };
+  }
+
   private ocultarValores<T extends { valorAquisicao?: unknown; valorSubstituicao?: unknown }>(
     eq: T,
     verValores: boolean,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
-import { ToolBtn, WinScreen, td, zebraRow } from "@/components/equipamentos/eq-win-ui";
+import { ToolBtn, WinScreen, zebraRow } from "@/components/equipamentos/eq-win-ui";
 
 interface Tpl {
   codigo: string;
@@ -10,7 +10,15 @@ interface Tpl {
   descricao: string;
 }
 
-const EQUIP_TEMPLATES = new Set(["inventario_equipamentos", "custos_manutencao", "calendario_manutencao"]);
+const ORDEM = [
+  "inventario_equipamentos",
+  "custos_manutencao",
+  "calendario_manutencao",
+  "resumo_mensal",
+  "conformidade",
+  "maturidade",
+  "indicadores_gestor",
+];
 
 export default function RelatoriosEquipamentosPage() {
   const [templates, setTemplates] = useState<Tpl[]>([]);
@@ -20,7 +28,15 @@ export default function RelatoriosEquipamentosPage() {
 
   useEffect(() => {
     api<Tpl[]>("/relatorios/templates")
-      .then((t) => setTemplates(t.filter((x) => EQUIP_TEMPLATES.has(x.codigo))))
+      .then((t) =>
+        setTemplates(
+          [...t].sort((a, b) => {
+            const ia = ORDEM.indexOf(a.codigo);
+            const ib = ORDEM.indexOf(b.codigo);
+            return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+          }),
+        ),
+      )
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, []);
 
@@ -74,7 +90,7 @@ export default function RelatoriosEquipamentosPage() {
         </tbody>
       </table>
       {templates.length === 0 && !erro && (
-        <div style={{ padding: 24, color: "#777", fontSize: 13 }}>Nenhum relatório de equipamentos disponível.</div>
+        <div style={{ padding: 24, color: "#777", fontSize: 13 }}>Nenhum relatório disponível.</div>
       )}
     </WinScreen>
   );

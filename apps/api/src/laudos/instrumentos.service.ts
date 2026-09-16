@@ -386,4 +386,87 @@ export class InstrumentosService {
       conteudo: cert.anexoConteudo,
     };
   }
+
+  async listPreferenciais(estabelecimentoId: string) {
+    const [instrumentos, prefs] = await Promise.all([
+      this.prisma.instrumentoPadrao.findMany({
+        where: { estabelecimentoId, ativo: true },
+        select: {
+          id: true,
+          nome: true,
+          nSerie: true,
+          fabricante: true,
+          modelo: true,
+          tipoAnalisador: true,
+          identificacaoExterna: true,
+        },
+        orderBy: { nome: "asc" },
+      }),
+      this.prisma.padraoPreferencial.findMany({
+        where: { estabelecimentoId },
+        include: {
+          instrumento: {
+            select: { id: true, nome: true, nSerie: true, fabricante: true, modelo: true },
+          },
+        },
+        orderBy: { tipo: "asc" },
+      }),
+    ]);
+
+    const tipos = new Set<string>();
+    for (const i of instrumentos) {
+      const t = i.tipoAnalisador?.trim();
+      if (t) tipos.add(t);
+    }
+    for (const p of prefs) tipos.add(p.tipo);
+
+    return {
+      tipos: [...tipos].sort((a, b) => a.localeCompare(b, "pt-BR")),
+      instrumentos,
+      preferenciais: prefs.map((p) => ({
+        tipo: p.tipo,
+        instrumentoId: p.instrumentoId,
+        instrumento: p.instrumento,
+      })),
+    };
+  }
+
+  async salvarPreferenciais(
+    user: AuthUser,
+    itens: Array<{ tipo: string; instrumentoId?: string | null }>,
+  ) {
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "laudos")) {
+      throw new ForbiddenException();
+    }
+
+    for (const item of itens) {
+      const tipo = item.tipo?.trim();
+      if (!tipo) continue;
+      const instrumentoId = item.instrumentoId?.trim() || "";
+      if (!instrumentoId) {
+        await this.prisma.padraoPreferencial.deleteMany({
+          where: { estabelecimentoId: user.estabelecimentoId, tipo },
+        });
+        continue;
+      }
+      const inst = await this.prisma.instrumentoPadrao.findFirst({
+        where: { id: instrumentoId, estabelecimentoId: user.estabelecimentoId, ativo: true },
+        select: { id: true },
+      });
+      if (!inst) throw new BadRequestException(`Padrão inválido para o tipo ${tipo}`);
+      await this.prisma.padraoPreferencial.upsert({
+        where: {
+          estabelecimentoId_tipo: { estabelecimentoId: user.estabelecimentoId, tipo },
+        },
+        create: {
+          estabelecimentoId: user.estabelecimentoId,
+          tipo,
+          instrumentoId,
+        },
+        update: { instrumentoId },
+      });
+    }
+
+    return this.listPreferenciais(user.estabelecimentoId);
+  }
 }

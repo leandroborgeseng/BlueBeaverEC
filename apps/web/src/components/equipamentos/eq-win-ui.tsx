@@ -3,8 +3,8 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 export const ORANGE = "#f58220";
-export const ORANGE_ROW = "#ffd4a8";
-export const ORANGE_SEL = "#f5a04a";
+export const ROW_STRIPE = "#e8eef5";
+export const ROW_SEL = "#c5d4ea";
 export const GRAY = "#ececec";
 export const HEADER_BG = "#7a7a7a";
 
@@ -123,7 +123,7 @@ export function ZebraTable({
 
 export function zebraRow(index: number, selected: boolean, extra?: CSSProperties): CSSProperties {
   return {
-    background: selected ? ORANGE_SEL : index % 2 === 1 ? ORANGE_ROW : "#fff",
+    background: selected ? ROW_SEL : index % 2 === 1 ? ROW_STRIPE : "#fff",
     cursor: "pointer",
     color: "#222",
     ...extra,

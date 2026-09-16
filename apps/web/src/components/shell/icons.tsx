@@ -75,6 +75,8 @@ export const ICONS = {
     '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18"></path>',
   archive:
     '<rect x="3" y="4" width="18" height="5" rx="1.5"></rect><path d="M5 9v11h14V9M10 13h4"></path>',
+  truck:
+    '<path d="M3 7h11v10H3z"></path><path d="M14 11h5l2 3v3h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle>',
 } as const;
 
 export type IconKey = keyof typeof ICONS;

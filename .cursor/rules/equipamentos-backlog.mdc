@@ -1,0 +1,21 @@
+---
+description: Backlog do menu Equipamentos — não implementar até o HEF pedir
+globs: apps/web/src/app/(app)/equipamentos/**,apps/web/src/components/shell/SideRail.tsx
+alwaysApply: false
+---
+
+# Equipamentos — backlog (não implementar agora)
+
+O menu Equipamentos fecha nesta ordem, já feita: transporte → padrões preferenciais → relatórios que já existem.
+
+O restante **só entra quando o usuário disser que o HEF vai usar**. Não criar tela vazia, stub, seed nem item de menu para estes itens:
+
+- **Reserva** de equipamentos (agenda de reserva / conflito).
+- **Atualizar contadores** (horímetro, ciclos, leituras).
+- **Agendamento / Agenda** de equipamentos (além do calendário de manutenção que já exporta relatório).
+- **Layout de etiqueta** (editor de layout; a impressão atual da etiqueta permanece).
+- **Software / configuração do modelo** (cadastro de software ligado ao modelo).
+- **Destinos de obsolescência** (processo tipo LO-YYYY; a lista de inativos/arquivados já existe).
+- **Criticidade como tabela** de catálogo (hoje é enum no plano/ficha).
+
+Quando for a hora: copiar o Effort só com dado real, sem inventar relatório (depreciação etc.) nem apagar produção.

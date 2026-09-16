@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Res,
   UseGuards,
@@ -229,6 +230,23 @@ class CreateCertificadoDto {
   anexoNome?: string;
 }
 
+class PreferencialItemDto {
+  @IsString()
+  @MinLength(1)
+  tipo!: string;
+
+  @IsOptional()
+  @IsString()
+  instrumentoId?: string | null;
+}
+
+class SavePreferenciaisDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PreferencialItemDto)
+  itens!: PreferencialItemDto[];
+}
+
 @Controller("instrumentos-padroes")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("laudos", PERMISSAO_NIVEL.LEITURA)
@@ -238,6 +256,17 @@ export class InstrumentosController {
   @Get()
   list(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
     return this.instrumentos.list(user.estabelecimentoId, q);
+  }
+
+  @Get("preferenciais")
+  listPreferenciais(@CurrentUser() user: AuthUser) {
+    return this.instrumentos.listPreferenciais(user.estabelecimentoId);
+  }
+
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Put("preferenciais")
+  salvarPreferenciais(@CurrentUser() user: AuthUser, @Body() body: SavePreferenciaisDto) {
+    return this.instrumentos.salvarPreferenciais(user, body.itens ?? []);
   }
 
   @Get(":id")

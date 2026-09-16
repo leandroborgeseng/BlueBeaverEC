@@ -70,6 +70,12 @@ const RAIL: RailItem[] = [
         modulo: "laudos",
       },
       {
+        label: "Padrões Preferenciais",
+        href: "/equipamentos/padroes-preferenciais",
+        icon: "star",
+        modulo: "laudos",
+      },
+      {
         label: "Equipamentos Sem Data de Instalação",
         href: "/equipamentos/sem-instalacao",
         icon: "calendar",
@@ -81,6 +87,12 @@ const RAIL: RailItem[] = [
         icon: "clipboard",
         modulo: "equipamentos",
         group: true,
+      },
+      {
+        label: "Transporte",
+        href: "/equipamentos/transporte",
+        icon: "truck",
+        modulo: "equipamentos",
       },
       {
         label: "Obsolescência",

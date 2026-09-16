@@ -165,6 +165,7 @@ model Estabelecimento {
   ocorrenciasSeguranca   OcorrenciaSeguranca[]
   alertasCampo           AlertaCampo[]
   osDominios             OsDominioValor[]
+  padroesPreferenciais   PadraoPreferencial[]
 }
 
 model Usuario {
@@ -1203,9 +1204,27 @@ model InstrumentoPadrao {
   estabelecimento Estabelecimento     @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   laudos          Laudo[]
   certificados    CertificadoPadrao[]
+  preferencias    PadraoPreferencial[]
 
   @@unique([estabelecimentoId, nSerie])
   @@index([estabelecimentoId, ativo])
+}
+
+/// Padrão preferencial por tipo de analisador (um por estabelecimento + tipo).
+model PadraoPreferencial {
+  id                String   @id @default(cuid())
+  estabelecimentoId String
+  tipo              String
+  instrumentoId     String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  estabelecimento Estabelecimento   @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  instrumento     InstrumentoPadrao @relation(fields: [instrumentoId], references: [id], onDelete: Cascade)
+
+  @@unique([estabelecimentoId, tipo])
+  @@index([estabelecimentoId])
+  @@index([instrumentoId])
 }
 
 /// Histórico de certificados de calibração do padrão (RBC / laboratório).

@@ -545,6 +545,28 @@ export class EquipamentosController {
     return this.equipamentos.obsoletos(user.estabelecimentoId);
   }
 
+  @Get("movimentacoes")
+  listMovimentacoes(
+    @CurrentUser() user: AuthUser,
+    @Query("q") q?: string,
+    @Query("tipo") tipo?: TipoMovimentacaoEquipamento,
+    @Query("setor") setor?: string,
+    @Query("de") de?: string,
+    @Query("ate") ate?: string,
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
+  ) {
+    return this.equipamentos.listMovimentacoes(user.estabelecimentoId, {
+      q,
+      tipo,
+      setorId: setor,
+      de,
+      ate,
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 100,
+    });
+  }
+
   @Get("import/template")
   async importTemplate(@Res() res: Response) {
     const buf = await this.equipamentos.importTemplate();
