@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useCan } from "@/lib/session";
 import { Overlay, WinForm, fld } from "@/components/os/os-win-ui";
+import { ConsolidarCadastroDialog } from "@/components/equipamentos/ConsolidarCadastroDialog";
 import {
   FItem,
   FRow,
@@ -37,6 +38,7 @@ interface Plano extends Named {
 }
 
 type CadastroTab = "fabricantes" | "modelos" | "setores" | "planos" | "fornecedores";
+type DialogKind = "novo" | "alterar" | "consolidar-modelos" | "consolidar-fabricantes";
 const TAB_KEYS: CadastroTab[] = ["fabricantes", "modelos", "setores", "planos", "fornecedores"];
 
 const TITULO: Record<CadastroTab, string> = {
@@ -71,7 +73,7 @@ function CadastrosInner() {
   const [q, setQ] = useState("");
   const [filtroCampo, setFiltroCampo] = useState("nome");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<"novo" | "alterar" | null>(null);
+  const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [treeOpen, setTreeOpen] = useState(true);
 
   async function reload() {
@@ -150,6 +152,21 @@ function CadastrosInner() {
             {tab === "planos" && podeEditar && (
               <ToolBtn disabled={!selectedPlano} onClick={() => selectedPlano && setDialog("alterar")}>
                 Alterar
+              </ToolBtn>
+            )}
+            {tab === "modelos" && podeEditar && (
+              <>
+                <ToolBtn onClick={() => { setMsg(null); setDialog("consolidar-modelos"); }}>
+                  Consolidar modelos
+                </ToolBtn>
+                <ToolBtn onClick={() => { setMsg(null); setDialog("consolidar-fabricantes"); }}>
+                  Consolidar fabricantes
+                </ToolBtn>
+              </>
+            )}
+            {tab === "fabricantes" && podeEditar && (
+              <ToolBtn onClick={() => { setMsg(null); setDialog("consolidar-fabricantes"); }}>
+                Consolidar
               </ToolBtn>
             )}
             <ToolBtn onClick={() => void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"))}>
@@ -343,6 +360,33 @@ function CadastrosInner() {
         </Overlay>
       )}
 
+      {dialog === "consolidar-modelos" && (
+        <Overlay onClose={() => setDialog(null)} fixed>
+          <ConsolidarCadastroDialog
+            kind="modelos"
+            onClose={() => setDialog(null)}
+            onDone={(texto) => {
+              setDialog(null);
+              setMsg(texto);
+              void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
+            }}
+          />
+        </Overlay>
+      )}
+
+      {dialog === "consolidar-fabricantes" && (
+        <Overlay onClose={() => setDialog(null)} fixed>
+          <ConsolidarCadastroDialog
+            kind="fabricantes"
+            onClose={() => setDialog(null)}
+            onDone={(texto) => {
+              setDialog(null);
+              setMsg(texto);
+              void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
+            }}
+          />
+        </Overlay>
+      )}
       {dialog === "alterar" && selectedPlano && (
         <AlterarPlanoDialog
           plano={selectedPlano}

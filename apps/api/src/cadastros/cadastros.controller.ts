@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, Min, MinLength, ValidateIf } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsOptional, IsString, Min, MinLength, ArrayMinSize, ValidateIf } from "class-validator";
 import { Criticidade } from "@prisma/client";
 import { PERMISSAO_NIVEL } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -21,6 +21,16 @@ class ModeloDto {
   @IsString()
   @MinLength(1)
   nome!: string;
+}
+
+class ConsolidarModelosDto {
+  @IsString()
+  destinoId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  origemIds!: string[];
 }
 
 class PlanoDto {
@@ -95,6 +105,17 @@ export class CadastrosController {
     return this.cadastros.fabricantes(user.estabelecimentoId, q);
   }
 
+  @Get("fabricantes/similares")
+  fabricantesSimilares(@CurrentUser() user: AuthUser) {
+    return this.cadastros.fabricantesSimilares(user.estabelecimentoId);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("fabricantes/consolidar")
+  consolidarFabricantes(@CurrentUser() user: AuthUser, @Body() body: ConsolidarModelosDto) {
+    return this.cadastros.consolidarFabricantes(user, body.destinoId, body.origemIds);
+  }
+
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("fabricantes")
   createFabricante(@CurrentUser() user: AuthUser, @Body() body: NomeDto) {
@@ -108,6 +129,17 @@ export class CadastrosController {
     @Query("q") q?: string,
   ) {
     return this.cadastros.modelos(user.estabelecimentoId, fabricanteId, q);
+  }
+
+  @Get("modelos/similares")
+  modelosSimilares(@CurrentUser() user: AuthUser, @Query("fabricanteId") fabricanteId?: string) {
+    return this.cadastros.modelosSimilares(user.estabelecimentoId, fabricanteId);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("modelos/consolidar")
+  consolidarModelos(@CurrentUser() user: AuthUser, @Body() body: ConsolidarModelosDto) {
+    return this.cadastros.consolidarModelos(user, body.destinoId, body.origemIds);
   }
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
