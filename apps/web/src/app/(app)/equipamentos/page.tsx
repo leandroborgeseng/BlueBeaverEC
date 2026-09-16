@@ -8,6 +8,7 @@ import { LABEL_SITUACAO_CICLO } from "@aion/shared";
 import { useWindowStore } from "@/store/windows";
 import { Overlay, WinForm, fld } from "@/components/os/os-win-ui";
 import { EquipEtiquetaDialog } from "@/components/equipamentos/EquipEtiquetaDialog";
+import { EquipamentoNovoOverlay } from "@/components/equipamentos/EquipamentoNovoDialog";
 import {
   FItem,
   FRow,
@@ -111,6 +112,7 @@ export default function EquipamentosPage() {
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [etiquetaAberta, setEtiquetaAberta] = useState(false);
+  const [cadastro, setCadastro] = useState<"um" | "multiplos" | null>(null);
   const router = useRouter();
   const openWin = useWindowStore((s) => s.open);
 
@@ -340,7 +342,8 @@ export default function EquipamentosPage() {
         error={erro}
         toolbar={
           <>
-            {podeCadastrar && <ToolBtn onClick={() => router.push("/equipamentos/novo")}>Novo</ToolBtn>}
+            {podeCadastrar && <ToolBtn onClick={() => setCadastro("um")}>Novo</ToolBtn>}
+            {podeCadastrar && <ToolBtn onClick={() => setCadastro("multiplos")}>Múltiplos</ToolBtn>}
             <ToolBtn disabled={!selected} onClick={() => selected && abrirFicha(selected)}>
               Alterar
             </ToolBtn>
@@ -600,6 +603,19 @@ export default function EquipamentosPage() {
           )}
         </ZebraTable>
       </WinScreen>
+
+      {cadastro && (
+        <EquipamentoNovoOverlay
+          multiplos={cadastro === "multiplos"}
+          onClose={() => setCadastro(null)}
+          onCreated={(tag, continuar) => {
+            void load();
+            if (continuar) return;
+            setCadastro(null);
+            if (tag) openWin({ kind: "equipamento", title: tag, payload: { tag } });
+          }}
+        />
+      )}
 
       <EquipEtiquetaDialog open={etiquetaAberta} tag={selected?.tag} onClose={() => setEtiquetaAberta(false)} />
 

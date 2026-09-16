@@ -13,7 +13,7 @@ export type OsDialogCtx = {
   responsavelId?: string;
 };
 
-export const ORANGE = "#f58220";
+export const ORANGE = "var(--aion-primary)";
 export const YELLOW = "#fff4c2";
 export const GRAY = "#e8e8e8";
 export const BLUE = "#1a73e8";
@@ -73,7 +73,7 @@ export function WinForm({
           ×
         </button>
       </div>
-      <div style={{ padding: "10px 14px 8px", background: GRAY, flex: 1, overflow: "auto" }}>
+      <div style={{ padding: "10px 14px 8px", background: GRAY, flex: 1, overflow: "auto", minHeight: 0 }}>
         {erro && <div style={{ color: "#a00", fontSize: 12, marginBottom: 8 }}>{erro}</div>}
         {children}
       </div>
@@ -306,7 +306,7 @@ const overlay: CSSProperties = {
 
 const dialog: CSSProperties = {
   width: "min(1040px, 100%)",
-  maxHeight: "100%",
+  maxHeight: "92vh",
   background: GRAY,
   border: "1px solid #999",
   boxShadow: "4px 6px 18px rgba(0,0,0,0.25)",

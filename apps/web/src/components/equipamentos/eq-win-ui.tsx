@@ -2,7 +2,7 @@
 
 import { type CSSProperties, type ReactNode } from "react";
 
-export const ORANGE = "#f58220";
+export const ORANGE = "var(--aion-primary)";
 export const ROW_STRIPE = "#e8eef5";
 export const ROW_SEL = "#c5d4ea";
 export const GRAY = "#ececec";

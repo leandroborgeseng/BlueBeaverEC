@@ -96,7 +96,7 @@ type ItemAba =
   | null;
 
 const TIPOS_COM_LAUDO = new Set(["PREVENTIVA", "CALIBRACAO", "TSE", "QUALIFICACAO"]);
-const ORANGE = "#f58220";
+const ORANGE = "var(--aion-primary)";
 
 const ORANGE_BTNS: Array<{ id: Exclude<ItemAba, null>; label: string }> = [
   { id: "ocorrencia", label: "Ocorrência/Serviço" },
@@ -979,7 +979,7 @@ function orangeBtn(active: boolean): CSSProperties {
   return {
     background: ORANGE,
     color: "white",
-    border: `1px solid ${active ? "#d56e12" : ORANGE}`,
+    border: `1px solid ${active ? "var(--aion-primary-hover)" : ORANGE}`,
     borderRadius: 3,
     padding: "6px 10px",
     fontSize: 12,

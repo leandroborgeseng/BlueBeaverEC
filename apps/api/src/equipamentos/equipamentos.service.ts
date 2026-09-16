@@ -84,6 +84,7 @@ export type CreateEquipamentoInput = {
   registroAnvisa?: string;
   validadeAnvisa?: string;
   observacao?: string;
+  valorSubstituicao?: number;
   situacao?: SituacaoEquipamento;
   condicaoUso?: CondicaoUsoEquipamento;
   criticidadeEquipamento?: Criticidade;
@@ -659,6 +660,7 @@ export class EquipamentosService {
         dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
         dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null,
         valorAquisicao: data.valorAquisicao,
+        valorSubstituicao: data.valorSubstituicao,
         garantiaInicio: data.garantiaInicio ? new Date(data.garantiaInicio) : null,
         garantiaFim: data.garantiaFim ? new Date(data.garantiaFim) : null,
         registroAnvisa: data.registroAnvisa,
@@ -677,6 +679,33 @@ export class EquipamentosService {
     } catch (e) {
       this.rethrowIdentDuplicado(e, tag);
     }
+  }
+
+  async createLote(
+    user: AuthUser,
+    comum: CreateEquipamentoInput,
+    itens: Array<{ tag?: string; nSerie?: string; patrimonio?: string }>,
+  ) {
+    const ok: string[] = [];
+    const erros: Array<{ tag: string; erro: string }> = [];
+    for (const item of itens) {
+      const tag = item.tag?.trim() || "";
+      try {
+        const created = await this.create(user, {
+          ...comum,
+          tag: tag || undefined,
+          nSerie: item.nSerie,
+          patrimonio: item.patrimonio,
+        });
+        ok.push(created.tag);
+      } catch (e) {
+        erros.push({
+          tag: tag || "(automática)",
+          erro: e instanceof Error ? e.message : "Erro ao cadastrar",
+        });
+      }
+    }
+    return { total: itens.length, ok: ok.length, tags: ok, erros };
   }
 
   async update(user: AuthUser, tag: string, data: UpdateEquipamentoInput) {

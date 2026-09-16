@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import {
   IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
   IsBoolean,
   IsEnum,
   IsNumber,
@@ -101,6 +103,7 @@ class CreateEquipamentoDto {
   dataAquisicao?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   valorAquisicao?: number;
 
@@ -111,6 +114,27 @@ class CreateEquipamentoDto {
   @IsOptional()
   @IsString()
   garantiaFim?: string;
+
+  @IsOptional()
+  @IsString()
+  dataInstalacao?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  valorSubstituicao?: number;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+
+  @IsOptional()
+  @IsString()
+  registroAnvisa?: string;
+
+  @IsOptional()
+  @IsString()
+  validadeAnvisa?: string;
 
   @IsOptional()
   @IsEnum(SituacaoEquipamento)
@@ -131,6 +155,29 @@ class CreateEquipamentoDto {
   @IsOptional()
   @IsString()
   criticidadeResponsavelId?: string;
+}
+
+class LoteItemDto {
+  @IsOptional()
+  @IsString()
+  tag?: string;
+
+  @IsOptional()
+  @IsString()
+  nSerie?: string;
+
+  @IsOptional()
+  @IsString()
+  patrimonio?: string;
+}
+
+class CreateLoteDto extends CreateEquipamentoDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(40)
+  @ValidateNested({ each: true })
+  @Type(() => LoteItemDto)
+  itens!: LoteItemDto[];
 }
 
 class UpdateEquipamentoDto {
@@ -591,6 +638,13 @@ export class EquipamentosController {
   @Post("import")
   importRows(@CurrentUser() user: AuthUser, @Body() body: ImportDto) {
     return this.equipamentos.importRows(user, body.rows ?? []);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("lote")
+  createLote(@CurrentUser() user: AuthUser, @Body() body: CreateLoteDto) {
+    const { itens, ...comum } = body;
+    return this.equipamentos.createLote(user, comum, itens);
   }
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)

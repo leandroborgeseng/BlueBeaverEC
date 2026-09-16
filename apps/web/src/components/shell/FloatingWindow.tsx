@@ -95,7 +95,7 @@ function WindowFrame({
         {win.kind === "os" ? (
           <span
             style={{
-              background: "#f58220",
+              background: "var(--aion-primary)",
               color: "white",
               fontSize: 12,
               fontWeight: 700,
