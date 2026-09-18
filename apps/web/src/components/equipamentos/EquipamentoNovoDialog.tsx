@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { api } from "@/lib/api";
+import { useSession } from "@/lib/session";
 import { LABEL_PROPRIEDADE, type PropriedadeEquipamento } from "@aion/shared";
 import { Overlay, WinForm, Linha, fld, YELLOW, disabledFld } from "@/components/os/os-win-ui";
 
@@ -61,6 +62,7 @@ export function EquipamentoNovoDialog({
   onClose: () => void;
   onCreated: (tag: string, continuar: boolean) => void;
 }) {
+  const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
   const [tab, setTab] = useState<"geral" | "obs">("geral");
   const [setores, setSetores] = useState<Lookup[]>([]);
   const [planos, setPlanos] = useState<Lookup[]>([]);
@@ -163,8 +165,8 @@ export function EquipamentoNovoDialog({
       propriedadeOutra: propriedade === "OUTRO" ? propriedadeOutra.trim() || undefined : undefined,
       dataAquisicao: dataAquisicao || undefined,
       dataInstalacao: dataInstalacao || undefined,
-      valorAquisicao: money(valorAq),
-      valorSubstituicao: money(valorSubst),
+      valorAquisicao: verValores ? money(valorAq) : undefined,
+      valorSubstituicao: verValores ? money(valorSubst) : undefined,
       garantiaInicio: garantiaInicio || undefined,
       garantiaFim: garantiaFim || undefined,
       registroAnvisa: registroAnvisa.trim() || undefined,
@@ -357,9 +359,11 @@ export function EquipamentoNovoDialog({
             <span style={{ fontSize: 12, marginLeft: 8 }}>Fabricante:</span>
             <input value={fabricanteNome} readOnly style={{ ...disabledFld, width: 200 }} />
           </Linha>
-          <Linha label="Valor de Substituição:">
-            <input value={valorSubst} onChange={(e) => setValorSubst(e.target.value)} style={{ ...fld, width: 120 }} />
-            <span style={{ fontSize: 12, marginLeft: 12 }}>Reg. ANVISA:</span>
+          <Linha label={verValores ? "Valor de Substituição:" : "Reg. ANVISA:"}>
+            {verValores && (
+              <input value={valorSubst} onChange={(e) => setValorSubst(e.target.value)} style={{ ...fld, width: 120 }} />
+            )}
+            {verValores && <span style={{ fontSize: 12, marginLeft: 12 }}>Reg. ANVISA:</span>}
             <input value={registroAnvisa} onChange={(e) => setRegistroAnvisa(e.target.value)} style={{ ...fld, width: 140 }} />
             <span style={{ fontSize: 12, marginLeft: 12 }}>Validade:</span>
             <input type="date" value={validadeAnvisa} onChange={(e) => setValidadeAnvisa(e.target.value)} style={{ ...fld, width: 140 }} />
@@ -424,9 +428,11 @@ export function EquipamentoNovoDialog({
               ))}
             </select>
           </Linha>
-          <Linha label="Valor de Aquisição:">
-            <input value={valorAq} onChange={(e) => setValorAq(e.target.value)} style={{ ...fld, width: 120 }} />
-            <span style={{ fontSize: 12, marginLeft: 12 }}>Aquisição:</span>
+          <Linha label={verValores ? "Valor de Aquisição:" : "Datas:"}>
+            {verValores && (
+              <input value={valorAq} onChange={(e) => setValorAq(e.target.value)} style={{ ...fld, width: 120 }} />
+            )}
+            <span style={{ fontSize: 12, marginLeft: verValores ? 12 : 0 }}>Aquisição:</span>
             <input type="date" value={dataAquisicao} onChange={(e) => setDataAquisicao(e.target.value)} style={{ ...fld, width: 140 }} />
             <span style={{ fontSize: 12, marginLeft: 12 }}>Instalação:</span>
             <input type="date" value={dataInstalacao} onChange={(e) => setDataInstalacao(e.target.value)} style={{ ...fld, width: 140 }} />

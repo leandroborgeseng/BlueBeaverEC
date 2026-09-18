@@ -23,7 +23,7 @@ import {
   TipoMovimentacaoEquipamento,
 } from "@prisma/client";
 import type { Response } from "express";
-import { PERMISSAO_NIVEL } from "@aion/shared";
+import { PERMISSAO_NIVEL, podeVerFinanceiro } from "@aion/shared";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RequirePermission } from "../auth/permissions.guard";
 import { CurrentUser, type AuthUser } from "../auth/current-user.decorator";
@@ -251,10 +251,12 @@ class UpdateEquipamentoDto {
   condicaoUso?: CondicaoUsoEquipamento;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   valorAquisicao?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   valorSubstituicao?: number;
 
@@ -660,7 +662,7 @@ export class EquipamentosController {
 
   @Get(":tag/pagina")
   pagina(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
-    const verValores = ["ENGENHEIRO", "GESTOR", "ADMIN"].includes(user.perfil);
+    const verValores = podeVerFinanceiro(user.perfil, user.permissoesModulos);
     return this.equipamentos.pagina(user, tag, verValores);
   }
 
@@ -702,7 +704,7 @@ export class EquipamentosController {
 
   @Get(":tag")
   byTag(@CurrentUser() user: AuthUser, @Param("tag") tag: string) {
-    const verValores = ["ENGENHEIRO", "GESTOR", "ADMIN"].includes(user.perfil);
+    const verValores = podeVerFinanceiro(user.perfil, user.permissoesModulos);
     return this.equipamentos.byTag(user.estabelecimentoId, tag, verValores);
   }
 

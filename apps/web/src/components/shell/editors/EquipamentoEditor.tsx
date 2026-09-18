@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
 import { api } from "@/lib/api";
+import { useSession } from "@/lib/session";
 import { useWindowStore } from "@/store/windows";
+import { LABEL_PROPRIEDADE, type PropriedadeEquipamento } from "@aion/shared";
 
 interface Lookup {
   id: string;
   nome: string;
+  codigo?: string;
   fabricanteId?: string;
 }
 
@@ -31,15 +34,27 @@ interface EquipDetail {
   validadeAnvisa?: string | null;
   dataEndOfService?: string | null;
   dataEndOfLife?: string | null;
+  dataAquisicao?: string | null;
+  dataInstalacao?: string | null;
+  garantiaInicio?: string | null;
+  garantiaFim?: string | null;
+  valorAquisicao?: number | string | null;
+  valorSubstituicao?: number | string | null;
+  localizacaoFisica?: string | null;
+  propriedade?: PropriedadeEquipamento;
+  propriedadeOutra?: string | null;
+  criticidadeEquipamento?: string | null;
   checklistRecebimentoPendente?: boolean;
   setorId?: string;
   fabricanteId?: string;
   modeloId?: string;
   fornecedorId?: string | null;
+  centroCustoId?: string | null;
   setor?: { id: string; nome: string };
   fabricante?: { id: string; nome: string };
   modelo?: { id: string; nome: string };
   fornecedor?: { id: string; nome: string } | null;
+  centroCusto?: { id: string; nome: string; codigo?: string } | null;
   descricao?: { nome: string; criticidade: string };
   planoMatchTipo?: string | null;
   planoMatchObs?: string | null;
@@ -80,12 +95,14 @@ export function EquipamentoEditor({
 }) {
   const updateWindow = useWindowStore((s) => s.update);
   const open = useWindowStore((s) => s.open);
+  const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
   const [tab, setTab] = useState<Tab>("geral");
   const [data, setData] = useState<EquipDetail | null>(null);
   const [setores, setSetores] = useState<Lookup[]>([]);
   const [fabricantes, setFabricantes] = useState<Lookup[]>([]);
   const [modelos, setModelos] = useState<Lookup[]>([]);
   const [fornecedores, setFornecedores] = useState<Lookup[]>([]);
+  const [centros, setCentros] = useState<Lookup[]>([]);
 
   const [nome, setNome] = useState("");
   const [tagEdit, setTagEdit] = useState("");
@@ -93,9 +110,21 @@ export function EquipamentoEditor({
   const [patrimonio, setPatrimonio] = useState("");
   const [nSerie, setNSerie] = useState("");
   const [setorId, setSetorId] = useState("");
+  const [setorInicial, setSetorInicial] = useState("");
   const [fabricanteId, setFabricanteId] = useState("");
   const [modeloId, setModeloId] = useState("");
   const [fornecedorId, setFornecedorId] = useState("");
+  const [centroCustoId, setCentroCustoId] = useState("");
+  const [localizacao, setLocalizacao] = useState("");
+  const [propriedade, setPropriedade] = useState<PropriedadeEquipamento>("PROPRIO");
+  const [propriedadeOutra, setPropriedadeOutra] = useState("");
+  const [criticidade, setCriticidade] = useState("");
+  const [valorAq, setValorAq] = useState("");
+  const [valorSubst, setValorSubst] = useState("");
+  const [dataAquisicao, setDataAquisicao] = useState("");
+  const [dataInstalacao, setDataInstalacao] = useState("");
+  const [garantiaInicio, setGarantiaInicio] = useState("");
+  const [garantiaFim, setGarantiaFim] = useState("");
   const [registroAnvisa, setRegistroAnvisa] = useState("");
   const [validadeAnvisa, setValidadeAnvisa] = useState("");
   const [dataEndOfService, setDataEndOfService] = useState("");
@@ -111,6 +140,17 @@ export function EquipamentoEditor({
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
+  function iso(v?: string | null) {
+    return v ? String(v).slice(0, 10) : "";
+  }
+
+  function moneyOut(v: string) {
+    const t = v.replace(/\./g, "").replace(",", ".").trim();
+    if (!t) return undefined;
+    const n = Number(t);
+    return Number.isFinite(n) ? n : undefined;
+  }
+
   function applyForm(eq: EquipDetail) {
     setData(eq);
     setNome(eq.nome ?? "");
@@ -118,14 +158,27 @@ export function EquipamentoEditor({
     setObservacao(eq.observacao ?? "");
     setPatrimonio(eq.patrimonio ?? "");
     setNSerie(eq.nSerie ?? "");
-    setSetorId(eq.setorId ?? eq.setor?.id ?? "");
+    const setor = eq.setorId ?? eq.setor?.id ?? "";
+    setSetorId(setor);
+    setSetorInicial(setor);
     setFabricanteId(eq.fabricanteId ?? eq.fabricante?.id ?? "");
     setModeloId(eq.modeloId ?? eq.modelo?.id ?? "");
     setFornecedorId(eq.fornecedorId ?? eq.fornecedor?.id ?? "");
+    setCentroCustoId(eq.centroCustoId ?? eq.centroCusto?.id ?? "");
+    setLocalizacao(eq.localizacaoFisica ?? "");
+    setPropriedade(eq.propriedade ?? "PROPRIO");
+    setPropriedadeOutra(eq.propriedadeOutra ?? "");
+    setCriticidade(eq.criticidadeEquipamento ?? "");
+    setValorAq(eq.valorAquisicao != null ? String(eq.valorAquisicao) : "");
+    setValorSubst(eq.valorSubstituicao != null ? String(eq.valorSubstituicao) : "");
+    setDataAquisicao(iso(eq.dataAquisicao));
+    setDataInstalacao(iso(eq.dataInstalacao));
+    setGarantiaInicio(iso(eq.garantiaInicio));
+    setGarantiaFim(iso(eq.garantiaFim));
     setRegistroAnvisa(eq.registroAnvisa ?? "");
-    setValidadeAnvisa(eq.validadeAnvisa ? String(eq.validadeAnvisa).slice(0, 10) : "");
-    setDataEndOfService(eq.dataEndOfService ? String(eq.dataEndOfService).slice(0, 10) : "");
-    setDataEndOfLife(eq.dataEndOfLife ? String(eq.dataEndOfLife).slice(0, 10) : "");
+    setValidadeAnvisa(iso(eq.validadeAnvisa));
+    setDataEndOfService(iso(eq.dataEndOfService));
+    setDataEndOfLife(iso(eq.dataEndOfLife));
     setTipoPlanoId(eq.tipoEquipamentoPlano?.id ?? "");
   }
 
@@ -135,13 +188,15 @@ export function EquipamentoEditor({
       api<Lookup[]>("/setores"),
       api<Lookup[]>("/fabricantes"),
       api<Lookup[]>("/fornecedores"),
+      api<Lookup[]>("/centros-custo"),
       api<Lookup[]>("/planos/tipos-equipamento"),
     ])
-      .then(([eq, st, fb, fn, tipos]) => {
+      .then(([eq, st, fb, fn, cc, tipos]) => {
         applyForm(eq);
         setSetores(st);
         setFabricantes(fb);
         setFornecedores(fn);
+        setCentros(cc);
         setTiposPlano(tipos);
         const fabId = eq.fabricanteId ?? eq.fabricante?.id;
         if (fabId) {
@@ -184,6 +239,16 @@ export function EquipamentoEditor({
           fabricanteId: fabricanteId || undefined,
           modeloId: modeloId || undefined,
           fornecedorId: fornecedorId || null,
+          centroCustoId: centroCustoId || null,
+          localizacaoFisica: localizacao,
+          propriedade,
+          propriedadeOutra: propriedade === "OUTRO" ? propriedadeOutra : null,
+          criticidadeEquipamento: criticidade || null,
+          dataAquisicao: dataAquisicao || null,
+          dataInstalacao: dataInstalacao || null,
+          garantiaInicio: garantiaInicio || null,
+          garantiaFim: garantiaFim || null,
+          ...(verValores ? { valorAquisicao: moneyOut(valorAq), valorSubstituicao: moneyOut(valorSubst) } : {}),
           registroAnvisa: registroAnvisa || null,
           validadeAnvisa: validadeAnvisa || null,
           dataEndOfService: dataEndOfService || null,
@@ -351,6 +416,40 @@ export function EquipamentoEditor({
                   </option>
                 ))}
               </select>
+              {setorId && setorInicial && setorId !== setorInicial && (
+                <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.45 0.12 75)" }}>
+                  Salvar registra uma transferência de setor no transporte.
+                </div>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Localização</FieldLabel>
+              <input
+                value={localizacao}
+                disabled={readonly}
+                onChange={(e) => setLocalizacao(e.target.value)}
+                placeholder="Sala, leito…"
+                style={fieldStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Centro de custo</FieldLabel>
+              <select
+                value={centroCustoId}
+                disabled={readonly}
+                onChange={(e) => setCentroCustoId(e.target.value)}
+                style={fieldStyle}
+              >
+                <option value="">Nenhum</option>
+                {centros.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.codigo ? `${c.codigo} — ${c.nome}` : c.nome}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <FieldLabel>Fornecedor</FieldLabel>
@@ -407,6 +506,86 @@ export function EquipamentoEditor({
               </select>
             </div>
           </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Situação (propriedade)</FieldLabel>
+              <select
+                value={propriedade}
+                disabled={readonly}
+                onChange={(e) => setPropriedade(e.target.value as PropriedadeEquipamento)}
+                style={fieldStyle}
+              >
+                {(Object.keys(LABEL_PROPRIEDADE) as PropriedadeEquipamento[]).map((k) => (
+                  <option key={k} value={k}>
+                    {LABEL_PROPRIEDADE[k]}
+                  </option>
+                ))}
+              </select>
+              {propriedade === "OUTRO" && (
+                <input
+                  value={propriedadeOutra}
+                  disabled={readonly}
+                  onChange={(e) => setPropriedadeOutra(e.target.value)}
+                  placeholder="Qual?"
+                  style={{ ...fieldStyle, marginTop: 8 }}
+                />
+              )}
+            </div>
+            <div>
+              <FieldLabel>Criticidade</FieldLabel>
+              <select
+                value={criticidade}
+                disabled={readonly}
+                onChange={(e) => setCriticidade(e.target.value)}
+                style={fieldStyle}
+              >
+                <option value="">Herdar do tipo</option>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Aquisição</FieldLabel>
+              <input type="date" value={dataAquisicao} disabled={readonly} onChange={(e) => setDataAquisicao(e.target.value)} style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Instalação</FieldLabel>
+              <input type="date" value={dataInstalacao} disabled={readonly} onChange={(e) => setDataInstalacao(e.target.value)} style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>ANVISA</FieldLabel>
+              <input value={registroAnvisa} disabled={readonly} onChange={(e) => setRegistroAnvisa(e.target.value)} style={fieldStyle} />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <FieldLabel>Garantia início</FieldLabel>
+              <input type="date" value={garantiaInicio} disabled={readonly} onChange={(e) => setGarantiaInicio(e.target.value)} style={fieldStyle} />
+            </div>
+            <div>
+              <FieldLabel>Garantia fim</FieldLabel>
+              <input type="date" value={garantiaFim} disabled={readonly} onChange={(e) => setGarantiaFim(e.target.value)} style={fieldStyle} />
+            </div>
+          </div>
+
+          {verValores && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <FieldLabel>Valor de aquisição</FieldLabel>
+                <input value={valorAq} disabled={readonly} onChange={(e) => setValorAq(e.target.value)} style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Valor de substituição</FieldLabel>
+                <input value={valorSubst} disabled={readonly} onChange={(e) => setValorSubst(e.target.value)} style={fieldStyle} />
+              </div>
+            </div>
+          )}
 
           <div>
             <FieldLabel>Observação</FieldLabel>

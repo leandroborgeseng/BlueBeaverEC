@@ -579,6 +579,55 @@ export class EquipamentosService {
     throw e;
   }
 
+  private chavePlano(s: string) {
+    return s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  private casarPlano(
+    tipos: Array<{ id: string; nome: string }>,
+    nomes: Array<string | null | undefined>,
+  ): { id: string | null; tipo: string; obs: string } {
+    const candidatos = nomes.map((n) => n?.trim()).filter((n): n is string => Boolean(n));
+    for (const nome of candidatos) {
+      const ck = this.chavePlano(nome);
+      if (!ck) continue;
+      const exato = tipos.find((t) => this.chavePlano(t.nome) === ck);
+      if (exato) return { id: exato.id, tipo: "exato", obs: `Igual a ${exato.nome}` };
+    }
+    for (const nome of candidatos) {
+      const ck = this.chavePlano(nome);
+      if (ck.length < 3) continue;
+      const aprox = tipos.find((t) => {
+        const tk = this.chavePlano(t.nome);
+        return tk.includes(ck) || ck.includes(tk);
+      });
+      if (aprox) return { id: aprox.id, tipo: "aproximado", obs: `${nome} ≈ ${aprox.nome}` };
+    }
+    return { id: null, tipo: "sem_correspondencia", obs: "Sem plano correspondente no catálogo" };
+  }
+
+  private async resolverPlanoManutencao(
+    estabelecimentoId: string,
+    descricaoId: string,
+    modeloId: string,
+    nomeEquipamento: string,
+  ) {
+    const [desc, modelo, tipos] = await Promise.all([
+      this.prisma.planoDescricao.findUnique({ where: { id: descricaoId }, select: { nome: true } }),
+      this.prisma.modelo.findUnique({ where: { id: modeloId }, select: { nome: true } }),
+      this.prisma.tipoEquipamentoPlano.findMany({
+        where: { estabelecimentoId, ativo: true },
+        select: { id: true, nome: true },
+      }),
+    ]);
+    return this.casarPlano(tipos, [desc?.nome, modelo?.nome, nomeEquipamento]);
+  }
+
   private async resolverDefaults(
     estabelecimentoId: string,
     data: { descricaoId?: string; fabricanteId?: string; modeloId?: string },
@@ -635,8 +684,16 @@ export class EquipamentosService {
     });
     if (!setor) throw new BadRequestException("Setor inválido");
 
+    const verFinanceiro = podeVerFinanceiro(user.perfil, user.permissoesModulos);
+    const plano = await this.resolverPlanoManutencao(
+      user.estabelecimentoId,
+      ids.descricaoId,
+      ids.modeloId,
+      nome,
+    );
+
     try {
-      return await this.prisma.equipamento.create({
+      const created = await this.prisma.equipamento.create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
         tag,
@@ -659,8 +716,8 @@ export class EquipamentosService {
             : null,
         dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null,
         dataInstalacao: data.dataInstalacao ? new Date(data.dataInstalacao) : null,
-        valorAquisicao: data.valorAquisicao,
-        valorSubstituicao: data.valorSubstituicao,
+        valorAquisicao: verFinanceiro ? data.valorAquisicao : undefined,
+        valorSubstituicao: verFinanceiro ? data.valorSubstituicao : undefined,
         garantiaInicio: data.garantiaInicio ? new Date(data.garantiaInicio) : null,
         garantiaFim: data.garantiaFim ? new Date(data.garantiaFim) : null,
         registroAnvisa: data.registroAnvisa,
@@ -671,11 +728,21 @@ export class EquipamentosService {
         criticidadeEquipamento: data.criticidadeEquipamento,
         criticidadeJustificativa: data.criticidadeJustificativa,
         criticidadeResponsavelId: data.criticidadeResponsavelId,
+        tipoEquipamentoPlanoId: plano.id,
+        planoMatchTipo: plano.tipo,
+        planoMatchObs: plano.obs,
         qrToken: randomBytes(8).toString("hex"),
         checklistRecebimentoPendente: true,
       },
       include: INCLUDE_FICHA,
     });
+      if (plano.id) {
+        await sincronizarInstanciasCatalogo(this.prisma, user.estabelecimentoId, {
+          equipamentoId: created.id,
+          usuarioId: user.userId,
+        });
+      }
+      return created;
     } catch (e) {
       this.rethrowIdentDuplicado(e, tag);
     }
@@ -747,9 +814,41 @@ export class EquipamentosService {
       eq.id,
     );
 
+    const verFinanceiro = podeVerFinanceiro(user.perfil, user.permissoesModulos);
+    const setorMudou = Boolean(data.setorId && data.setorId !== eq.setorId);
+    if (setorMudou) {
+      const destino = await this.prisma.setor.findFirst({
+        where: { id: data.setorId, estabelecimentoId: user.estabelecimentoId },
+      });
+      if (!destino) throw new BadRequestException("Setor inválido");
+    }
+    const ator = await this.prisma.usuario.findUnique({
+      where: { id: user.userId },
+      select: { nome: true },
+    });
+
     let updated;
     try {
       updated = await this.prisma.$transaction(async (tx) => {
+      if (setorMudou) {
+        await tx.equipamentoMovimentacao.create({
+          data: {
+            equipamentoId: eq.id,
+            tipo: TipoMovimentacaoEquipamento.TRANSFERENCIA_SETOR,
+            origemSetorId: eq.setorId,
+            destinoSetorId: data.setorId!,
+            origemLocalizacao: eq.localizacaoFisica,
+            destinoLocalizacao:
+              data.localizacaoFisica !== undefined
+                ? normalizarIdent(data.localizacaoFisica) || eq.localizacaoFisica
+                : eq.localizacaoFisica,
+            data: new Date(),
+            responsavelNome: ator?.nome || user.email,
+            usuarioId: user.userId,
+            motivo: "Alteração de setor no cadastro",
+          },
+        });
+      }
       if (tagNova !== eq.tag) {
         await tx.historicoTag.create({
           data: {
@@ -790,8 +889,8 @@ export class EquipamentosService {
         ...(data.observacao != null ? { observacao: data.observacao } : {}),
         ...(data.situacao != null ? { situacao: data.situacao } : {}),
         ...(data.condicaoUso != null ? { condicaoUso: data.condicaoUso } : {}),
-        ...(data.valorAquisicao != null ? { valorAquisicao: data.valorAquisicao } : {}),
-        ...(data.valorSubstituicao != null ? { valorSubstituicao: data.valorSubstituicao } : {}),
+        ...(verFinanceiro && data.valorAquisicao != null ? { valorAquisicao: data.valorAquisicao } : {}),
+        ...(verFinanceiro && data.valorSubstituicao != null ? { valorSubstituicao: data.valorSubstituicao } : {}),
         ...(data.dataAquisicao !== undefined
           ? { dataAquisicao: data.dataAquisicao ? new Date(data.dataAquisicao) : null }
           : {}),

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api, downloadApi } from "@/lib/api";
-import { useCan } from "@/lib/session";
+import { useCan, useSession } from "@/lib/session";
 import {
   LABEL_CONDICAO_USO,
   LABEL_MOVIMENTACAO,
@@ -57,12 +57,18 @@ interface Pagina {
   propriedadeOutra?: string | null;
   observacao?: string | null;
   valorAquisicao?: number | string | null;
+  valorSubstituicao?: number | string | null;
   dataAquisicao?: string | null;
+  dataInstalacao?: string | null;
   garantiaInicio?: string | null;
   garantiaFim?: string | null;
   garantiaVigente?: boolean;
   criticidade?: string;
   criticidadeJustificativa?: string | null;
+  registroAnvisa?: string | null;
+  validadeAnvisa?: string | null;
+  centroCustoId?: string | null;
+  centroCusto?: { id: string; nome: string; codigo?: string } | null;
   dataRecebimento?: string | null;
   dataEntradaOperacao?: string | null;
   dataDesativacao?: string | null;
@@ -73,7 +79,7 @@ interface Pagina {
   modelo?: { id: string; nome: string };
   descricao?: { nome: string; criticidade: string };
   fornecedor?: { nome: string } | null;
-  criticidadeResponsavel?: { nome: string } | null;
+  criticidadeResponsavel?: { id: string; nome: string } | null;
   osAbertas: Array<{ numero: number; codigo?: string | null; tipo: string; status: string; prioridade: string; abertura: string }>;
   osHistorico: Array<{
     numero: number;
@@ -151,10 +157,12 @@ export default function EquipamentoPagina() {
   const tag = decodeURIComponent(params.tag);
   const podeEditar = useCan("equipamentos", 3);
   const podeOs = useCan("os", 3);
+  const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
   const [tab, setTab] = useState<Tab>("resumo");
   const [data, setData] = useState<Pagina | null>(null);
   const [setores, setSetores] = useState<Lookup[]>([]);
   const [cols, setCols] = useState<Lookup[]>([]);
+  const [centros, setCentros] = useState<Array<Lookup & { codigo?: string }>>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -165,10 +173,11 @@ export default function EquipamentoPagina() {
 
   useEffect(() => {
     void load().catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
-    void Promise.all([api<Lookup[]>("/setores"), api<Lookup[]>("/colaboradores")])
-      .then(([s, c]) => {
+    void Promise.all([api<Lookup[]>("/setores"), api<Lookup[]>("/colaboradores"), api<(Lookup & { codigo?: string })[]>("/centros-custo")])
+      .then(([s, c, cc]) => {
         setSetores(s);
         setCols(c);
+        setCentros(cc);
       })
       .catch(() => undefined);
   }, [load]);
@@ -200,9 +209,14 @@ export default function EquipamentoPagina() {
           condicaoUso: String(fd.get("condicaoUso")),
           situacao: String(fd.get("situacao")),
           dataAquisicao: String(fd.get("dataAquisicao") || "") || null,
-          valorAquisicao: fd.get("valorAquisicao") ? Number(fd.get("valorAquisicao")) : undefined,
+          dataInstalacao: String(fd.get("dataInstalacao") || "") || null,
+          valorAquisicao: verValores && fd.get("valorAquisicao") ? Number(fd.get("valorAquisicao")) : undefined,
+          valorSubstituicao: verValores && fd.get("valorSubstituicao") ? Number(fd.get("valorSubstituicao")) : undefined,
           garantiaInicio: String(fd.get("garantiaInicio") || "") || null,
           garantiaFim: String(fd.get("garantiaFim") || "") || null,
+          registroAnvisa: String(fd.get("registroAnvisa") ?? ""),
+          validadeAnvisa: String(fd.get("validadeAnvisa") || "") || null,
+          centroCustoId: String(fd.get("centroCustoId") || "") || null,
           criticidadeEquipamento: String(fd.get("criticidadeEquipamento") || "") || null,
           criticidadeJustificativa: String(fd.get("criticidadeJustificativa") ?? ""),
           criticidadeResponsavelId: String(fd.get("criticidadeResponsavelId") || "") || null,
@@ -459,6 +473,37 @@ export default function EquipamentoPagina() {
                 <strong>Fornecedor</strong>
                 <div>{data.fornecedor?.nome || "—"}</div>
               </div>
+              <div>
+                <strong>Centro de custo</strong>
+                <div>
+                  {data.centroCusto
+                    ? data.centroCusto.codigo
+                      ? `${data.centroCusto.codigo} — ${data.centroCusto.nome}`
+                      : data.centroCusto.nome
+                    : "—"}
+                </div>
+              </div>
+              <div>
+                <strong>ANVISA</strong>
+                <div>
+                  {data.registroAnvisa || "—"}
+                  {data.validadeAnvisa ? ` · val. ${new Date(data.validadeAnvisa).toLocaleDateString("pt-BR")}` : ""}
+                </div>
+              </div>
+              <div>
+                <strong>Instalação</strong>
+                <div>{data.dataInstalacao ? new Date(data.dataInstalacao).toLocaleDateString("pt-BR") : "—"}</div>
+              </div>
+              {verValores && (
+                <div>
+                  <strong>Substituição</strong>
+                  <div>
+                    {data.valorSubstituicao != null
+                      ? Number(data.valorSubstituicao).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                      : "—"}
+                  </div>
+                </div>
+              )}
             </div>
           </Panel>
           <Panel title={`OS abertas (${data.osAbertas.length})`}>
@@ -539,6 +584,9 @@ export default function EquipamentoPagina() {
                     </option>
                   ))}
                 </select>
+                <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                  Trocar o setor grava uma transferência no transporte.
+                </div>
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
@@ -586,15 +634,8 @@ export default function EquipamentoPagina() {
                 <input name="dataAquisicao" type="date" defaultValue={iso(data.dataAquisicao)} disabled={readonly} style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Valor</FieldLabel>
-                <input
-                  name="valorAquisicao"
-                  type="number"
-                  step="0.01"
-                  defaultValue={data.valorAquisicao != null ? String(data.valorAquisicao) : ""}
-                  disabled={readonly}
-                  style={fieldStyle}
-                />
+                <FieldLabel>Instalação</FieldLabel>
+                <input name="dataInstalacao" type="date" defaultValue={iso(data.dataInstalacao)} disabled={readonly} style={fieldStyle} />
               </div>
               <div>
                 <FieldLabel>Criticidade</FieldLabel>
@@ -604,6 +645,53 @@ export default function EquipamentoPagina() {
                   <option value="MEDIA">Média</option>
                   <option value="ALTA">Alta</option>
                 </select>
+              </div>
+            </div>
+            {verValores && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <FieldLabel>Valor de aquisição</FieldLabel>
+                  <input
+                    name="valorAquisicao"
+                    type="number"
+                    step="0.01"
+                    defaultValue={data.valorAquisicao != null ? String(data.valorAquisicao) : ""}
+                    disabled={readonly}
+                    style={fieldStyle}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>Valor de substituição</FieldLabel>
+                  <input
+                    name="valorSubstituicao"
+                    type="number"
+                    step="0.01"
+                    defaultValue={data.valorSubstituicao != null ? String(data.valorSubstituicao) : ""}
+                    disabled={readonly}
+                    style={fieldStyle}
+                  />
+                </div>
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <div>
+                <FieldLabel>Centro de custo</FieldLabel>
+                <select name="centroCustoId" defaultValue={data.centroCustoId ?? data.centroCusto?.id ?? ""} disabled={readonly} style={fieldStyle}>
+                  <option value="">Nenhum</option>
+                  {centros.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.codigo ? `${c.codigo} — ${c.nome}` : c.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <FieldLabel>Reg. ANVISA</FieldLabel>
+                <input name="registroAnvisa" defaultValue={data.registroAnvisa ?? ""} disabled={readonly} style={fieldStyle} />
+              </div>
+              <div>
+                <FieldLabel>Validade ANVISA</FieldLabel>
+                <input name="validadeAnvisa" type="date" defaultValue={iso(data.validadeAnvisa)} disabled={readonly} style={fieldStyle} />
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -628,7 +716,7 @@ export default function EquipamentoPagina() {
             </div>
             <div>
               <FieldLabel>Responsável pela criticidade</FieldLabel>
-              <select name="criticidadeResponsavelId" defaultValue="" disabled={readonly} style={fieldStyle}>
+              <select name="criticidadeResponsavelId" defaultValue={data.criticidadeResponsavel?.id ?? ""} disabled={readonly} style={fieldStyle}>
                 <option value="">—</option>
                 {cols.map((c) => (
                   <option key={c.id} value={c.id}>

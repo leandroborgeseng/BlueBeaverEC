@@ -47,6 +47,37 @@ interface Inst {
   nome: string;
   nSerie: string;
   selecionavel: boolean;
+  tipoAnalisador?: string | null;
+}
+
+interface Pref {
+  tipo: string;
+  instrumentoId: string;
+}
+
+function chaveTipo(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function escolherPreferencial(tipoLaudo: string, prefs: Pref[], insts: Inst[], nomesEq: Array<string | null | undefined>) {
+  if (!prefs.length) return "";
+  const vivos = prefs.filter((p) => insts.some((i) => i.id === p.instrumentoId));
+  const nomes = nomesEq.map((n) => (n ? chaveTipo(n) : "")).filter(Boolean);
+  for (const p of vivos) {
+    const pk = chaveTipo(p.tipo);
+    if (nomes.some((n) => n === pk || n.includes(pk) || pk.includes(n))) return p.instrumentoId;
+  }
+  if (tipoLaudo === "TSE") {
+    const tse = vivos.find((p) => /tse|seguranca|eletr/.test(chaveTipo(p.tipo)));
+    if (tse) return tse.instrumentoId;
+  }
+  if (vivos.length === 1) return vivos[0].instrumentoId;
+  return "";
 }
 
 type RespostaItem = RespostaChecklist;
@@ -138,6 +169,7 @@ export function LaudoEditor({
   const [procs, setProcs] = useState<Proc[]>([]);
   const [cols, setCols] = useState<Colaborador[]>([]);
   const [insts, setInsts] = useState<Inst[]>([]);
+  const [prefs, setPrefs] = useState<Pref[]>([]);
   const [procId, setProcId] = useState("");
   const [respostas, setRespostas] = useState<RespostaItem[]>([]);
   const [responsavelTecnicoId, setResponsavelTecnicoId] = useState("");
@@ -182,15 +214,30 @@ export function LaudoEditor({
       api<Proc[]>(`/procedimentos-laudo?tipo=${tipo}`),
       api<Colaborador[]>("/colaboradores"),
       api<Inst[]>("/instrumentos-padroes"),
+      api<{ preferenciais: Pref[] }>("/instrumentos-padroes/preferenciais").catch(() => ({ preferenciais: [] as Pref[] })),
+      equipamentoTag
+        ? api<{ nome?: string; descricao?: { nome: string }; modelo?: { nome: string } }>(
+            `/equipamentos/${encodeURIComponent(equipamentoTag)}`,
+          ).catch(() => null)
+        : Promise.resolve(null),
     ])
-      .then(([p, c, i]) => {
+      .then(([p, c, i, pref, eq]) => {
+        const selecionaveis = i.filter((x) => x.selecionavel);
         setProcs(p);
         setCols(c);
-        setInsts(i.filter((x) => x.selecionavel));
+        setInsts(selecionaveis);
+        setPrefs(pref.preferenciais);
         setProcId(p[0]?.id ?? "");
+        setInstrumentoId(
+          escolherPreferencial(tipo, pref.preferenciais, selecionaveis, [
+            eq?.descricao?.nome,
+            eq?.modelo?.nome,
+            eq?.nome,
+          ]),
+        );
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
-  }, [tipo, viewMode]);
+  }, [tipo, viewMode, equipamentoTag]);
 
   useEffect(() => {
     if (viewMode || !instrumentoId || tipo !== "CALIBRACAO") {
@@ -239,6 +286,11 @@ export function LaudoEditor({
 
   const snapshotItens = useMemo(() => laudo?.procedimentoSnapshot?.itens ?? [], [laudo]);
   const congelado = Boolean(viewMode && laudo && laudo.statusDocumento === "FINAL");
+  const prefIds = useMemo(() => new Set(prefs.map((p) => p.instrumentoId)), [prefs]);
+  const instsOrdenados = useMemo(
+    () => [...insts].sort((a, b) => Number(prefIds.has(b.id)) - Number(prefIds.has(a.id))),
+    [insts, prefIds],
+  );
 
   const computedRespostas = useMemo(() => {
     if (congelado) return respostas;
@@ -496,14 +548,22 @@ export function LaudoEditor({
                     )}
                   </div>
                 ) : (
+                  <>
                   <select value={instrumentoId} onChange={(e) => setInstrumentoId(e.target.value)} style={fieldStyle}>
                     <option value="">Instrumento padrão</option>
-                    {insts.map((i) => (
+                    {instsOrdenados.map((i) => (
                       <option key={i.id} value={i.id}>
                         {i.nome} · {i.nSerie}
+                        {prefIds.has(i.id) ? " · preferencial" : ""}
                       </option>
                     ))}
                   </select>
+                  {instrumentoId && prefIds.has(instrumentoId) && (
+                    <div style={{ fontSize: 12, color: "oklch(0.45 0.03 250)", marginTop: 4 }}>
+                      Pré-selecionado pelo padrão preferencial. Pode trocar se o serviço exigir outro.
+                    </div>
+                  )}
+                  </>
                 )}
                 {!viewMode && instrumentoId && pontosCertificado.length === 0 && displayTipo === "CALIBRACAO" && (
                   <div style={{ fontSize: 12, color: "oklch(0.55 0.14 85)", marginTop: 4 }}>
