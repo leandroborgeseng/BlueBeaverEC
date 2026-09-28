@@ -22,6 +22,7 @@ import {
 interface Named {
   id: string;
   nome: string;
+  sigla?: string | null;
   setorAreaId?: string | null;
   setorArea?: { id: string; nome: string } | null;
   _count?: { equipamentos?: number; modelos?: number; localizacoes?: number };
@@ -115,7 +116,7 @@ function CadastrosInner() {
       !termo || nome.toLowerCase().includes(termo) || (extra ?? "").toLowerCase().includes(termo);
     if (tab === "fabricantes") return fabricantes.filter((x) => match(x.nome));
     if (tab === "modelos") return modelos.filter((x) => match(x.nome, x.fabricante.nome));
-    if (tab === "setores") return setores.filter((x) => match(x.nome));
+    if (tab === "setores") return setores.filter((x) => match(x.nome, x.sigla ?? ""));
     if (tab === "localizacoes") {
       return localizacoes.filter((x) => match(x.nome, x.setorArea?.nome));
     }
@@ -167,6 +168,11 @@ function CadastrosInner() {
             {tab === "localizacoes" && podeEditar && (
               <ToolBtn disabled={!selectedId} onClick={() => selectedId && setDialog("alterar")}>
                 Alterar setor
+              </ToolBtn>
+            )}
+            {tab === "setores" && podeEditar && (
+              <ToolBtn disabled={!selectedId} onClick={() => selectedId && setDialog("alterar")}>
+                Alterar sigla
               </ToolBtn>
             )}
             {tab === "setores" && podeEditar && (
@@ -308,12 +314,19 @@ function CadastrosInner() {
           <ZebraTable
             columns={[
               { key: "nome", label: "Setor" },
+              { key: "sigla", label: "Sigla", width: 80 },
               { key: "loc", label: "Localizações", width: 120 },
             ]}
           >
             {(lista as Named[]).map((s, i) => (
-              <tr key={s.id} style={zebraRow(i, s.id === selectedId)} onClick={() => setSelectedId(s.id)}>
+              <tr
+                key={s.id}
+                style={zebraRow(i, s.id === selectedId)}
+                onClick={() => setSelectedId(s.id)}
+                onDoubleClick={() => podeEditar && setDialog("alterar")}
+              >
                 <td style={td}>{s.nome}</td>
+                <td style={td}>{s.sigla ?? "—"}</td>
                 <td style={td}>{s._count?.localizacoes ?? s.localizacoes?.length ?? ""}</td>
               </tr>
             ))}
@@ -392,6 +405,7 @@ function CadastrosInner() {
             {tab === "setores" && (
               <form onSubmit={(e) => void createNamed("/setor-areas", {}, e)}>
                 <Campo nome="Setor" name="nome" placeholder="Centro Cirúrgico…" />
+                <Campo nome="Sigla (TAG)" name="sigla" placeholder="CCI" required={false} />
                 <button type="submit" style={saveBtn}>Adicionar setor</button>
               </form>
             )}
@@ -475,6 +489,46 @@ function CadastrosInner() {
             void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
           }}
         />
+      )}
+      {dialog === "alterar" && tab === "setores" && selectedId && (
+        <Overlay onClose={() => setDialog(null)} fixed>
+          <WinForm
+            title="Alterar sigla do setor"
+            width="min(420px, 96vw)"
+            onCancel={() => setDialog(null)}
+            showContinuar={false}
+            hideSubmit
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                void api(`/setor-areas/${selectedId}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ sigla: String(fd.get("sigla") || "").trim() || null }),
+                })
+                  .then(() => {
+                    setDialog(null);
+                    setMsg("Sigla atualizada");
+                    return reload();
+                  })
+                  .catch((err) => setMsg(err instanceof Error ? err.message : "Erro"));
+              }}
+            >
+              <p style={{ fontSize: 13, margin: "0 0 10px" }}>
+                {setores.find((s) => s.id === selectedId)?.nome}
+              </p>
+              <Campo
+                nome="Sigla (TAG)"
+                name="sigla"
+                placeholder="CCI"
+                required={false}
+                defaultValue={setores.find((s) => s.id === selectedId)?.sigla ?? ""}
+              />
+              <button type="submit" style={saveBtn}>Salvar</button>
+            </form>
+          </WinForm>
+        </Overlay>
       )}
       {dialog === "alterar" && tab === "localizacoes" && selectedId && (
         <Overlay onClose={() => setDialog(null)} fixed>

@@ -9,7 +9,8 @@ import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
-import { MAPEAMENTO_LOCALIZACAO_SETOR } from "./setor-area-mapeamento";
+import { MAPEAMENTO_LOCALIZACAO_SETOR, SIGLAS_SETORES } from "./setor-area-mapeamento";
+import { normalizarSigla } from "../equipamentos/equipamento-regras";
 
 /** HP-30, hp 30 e HP_30 viram a mesma chave. */
 export function chaveModelo(nome: string) {
@@ -535,16 +536,53 @@ export class CadastrosService {
     });
   }
 
-  async createSetorArea(user: AuthUser, nome: string) {
+  async createSetorArea(user: AuthUser, nome: string, sigla?: string) {
     this.assertEdit(user);
     const n = nome.trim();
+    const s = normalizarSigla(sigla) || SIGLAS_SETORES[n] || null;
     const existente = await this.prisma.setorArea.findUnique({
       where: { estabelecimentoId_nome: { estabelecimentoId: user.estabelecimentoId, nome: n } },
     });
-    if (existente) return existente;
-    return this.prisma.setorArea.create({
-      data: { estabelecimentoId: user.estabelecimentoId, nome: n },
+    if (existente) {
+      if (s && !existente.sigla) {
+        return this.prisma.setorArea.update({ where: { id: existente.id }, data: { sigla: s } });
+      }
+      return existente;
+    }
+    try {
+      return await this.prisma.setorArea.create({
+        data: { estabelecimentoId: user.estabelecimentoId, nome: n, sigla: s },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        throw new BadRequestException("Já existe um setor com esse nome ou essa sigla");
+      }
+      throw e;
+    }
+  }
+
+  async updateSetorArea(user: AuthUser, id: string, data: { nome?: string; sigla?: string | null }) {
+    this.assertEdit(user);
+    const area = await this.prisma.setorArea.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
     });
+    if (!area) throw new NotFoundException("Setor não encontrado");
+    const nome = data.nome?.trim();
+    const sigla = data.sigla === undefined ? undefined : normalizarSigla(data.sigla) || null;
+    try {
+      return await this.prisma.setorArea.update({
+        where: { id: area.id },
+        data: {
+          ...(nome ? { nome } : {}),
+          ...(sigla !== undefined ? { sigla } : {}),
+        },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        throw new BadRequestException("Já existe um setor com esse nome ou essa sigla");
+      }
+      throw e;
+    }
   }
 
   async aplicarMapeamentoSetores(user: AuthUser) {
@@ -553,11 +591,15 @@ export class CadastrosService {
     const nomesSetor = [...new Set(MAPEAMENTO_LOCALIZACAO_SETOR.map((m) => m.setor))];
     const areas = new Map<string, string>();
     for (const nome of nomesSetor) {
+      const sigla = SIGLAS_SETORES[nome] ?? null;
       const row = await this.prisma.setorArea.upsert({
         where: { estabelecimentoId_nome: { estabelecimentoId: eid, nome } },
         update: {},
-        create: { estabelecimentoId: eid, nome },
+        create: { estabelecimentoId: eid, nome, sigla },
       });
+      if (sigla && !row.sigla) {
+        await this.prisma.setorArea.update({ where: { id: row.id }, data: { sigla } });
+      }
       areas.set(nome, row.id);
     }
 

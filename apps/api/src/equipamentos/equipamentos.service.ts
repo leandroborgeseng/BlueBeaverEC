@@ -27,6 +27,7 @@ import {
   normalizarIdent,
   payloadQrAutenticado,
   proximaTagHef,
+  proximaTagSetor,
   serieContaComoDuplicata,
   validarLoteImportacao,
   type ImportRowIn,
@@ -527,7 +528,21 @@ export class EquipamentosService {
     return this.ocultarValores(eq, false);
   }
 
-  async proximaTag(estabelecimentoId: string) {
+  async proximaTag(estabelecimentoId: string, setorId?: string) {
+    if (setorId) {
+      const loc = await this.prisma.setor.findFirst({
+        where: { id: setorId, estabelecimentoId },
+        select: { setorArea: { select: { sigla: true } } },
+      });
+      const sigla = loc?.setorArea?.sigla;
+      if (sigla) {
+        const rows = await this.prisma.equipamento.findMany({
+          where: { estabelecimentoId, tag: { startsWith: `HEF-${sigla}-`, mode: "insensitive" } },
+          select: { tag: true },
+        });
+        return proximaTagSetor(sigla, rows.map((r) => r.tag));
+      }
+    }
     const rows = await this.prisma.equipamento.findMany({
       where: { estabelecimentoId, tag: { startsWith: "HEF-" } },
       select: { tag: true },
@@ -680,7 +695,7 @@ export class EquipamentosService {
     if (!nome) throw new BadRequestException("Nome obrigatório");
     if (!data.setorId) throw new BadRequestException("Setor obrigatório");
 
-    const tag = normalizarIdent(data.tag) || (await this.proximaTag(user.estabelecimentoId));
+    const tag = normalizarIdent(data.tag) || (await this.proximaTag(user.estabelecimentoId, data.setorId));
     await this.assertIdentificadoresUnicos(user.estabelecimentoId, {
       tag,
       patrimonio: data.patrimonio,

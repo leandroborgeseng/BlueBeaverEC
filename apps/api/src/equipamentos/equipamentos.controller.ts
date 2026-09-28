@@ -562,8 +562,8 @@ export class EquipamentosController {
   }
 
   @Get("proxima-tag")
-  proximaTag(@CurrentUser() user: AuthUser) {
-    return this.equipamentos.proximaTag(user.estabelecimentoId).then((tag) => ({ tag }));
+  proximaTag(@CurrentUser() user: AuthUser, @Query("setorId") setorId?: string) {
+    return this.equipamentos.proximaTag(user.estabelecimentoId, setorId).then((tag) => ({ tag }));
   }
 
   @Get("custos-substituicao")

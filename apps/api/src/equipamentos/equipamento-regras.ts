@@ -18,6 +18,29 @@ export function proximaTagHef(tags: string[]): string {
   return `HEF-${String(max + 1).padStart(4, "0")}`;
 }
 
+export function normalizarSigla(v?: string | null): string {
+  return String(v ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 6);
+}
+
+/** Próxima TAG no setor: HEF-CME-001, HEF-CME-002… Sem sigla, cai no HEF-NNNN institucional. */
+export function proximaTagSetor(sigla: string | null | undefined, tags: string[]): string {
+  const s = normalizarSigla(sigla);
+  if (!s) return proximaTagHef(tags);
+  const re = new RegExp(`^HEF-${s}-(\\d+)$`, "i");
+  let max = 0;
+  for (const t of tags) {
+    const m = re.exec(t.trim());
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  const next = max + 1;
+  const width = Math.max(3, String(next).length);
+  return `HEF-${s}-${String(next).padStart(width, "0")}`;
+}
+
 export function payloadQrAutenticado(token: string): string {
   return `aion:eq:${token}`;
 }

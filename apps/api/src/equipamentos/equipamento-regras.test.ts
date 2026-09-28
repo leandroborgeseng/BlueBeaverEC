@@ -5,6 +5,7 @@ import {
   garantiaVigente,
   payloadQrAutenticado,
   proximaTagHef,
+  proximaTagSetor,
   serieContaComoDuplicata,
   validarLoteImportacao,
 } from "./equipamento-regras";
@@ -20,6 +21,13 @@ describe("inventário — regras", () => {
   it("gera próxima TAG HEF-NNNN a partir do inventário oficial", () => {
     assert.equal(proximaTagHef([]), "HEF-0001");
     assert.equal(proximaTagHef(["HEF-0001", "HEF-0404", "EQ-9"]), "HEF-0405");
+  });
+
+  it("gera TAG por sigla do setor, sem misturar com HEF-NNNN", () => {
+    assert.equal(proximaTagSetor("CME", []), "HEF-CME-001");
+    assert.equal(proximaTagSetor("cme", ["HEF-0009", "HEF-CME-001", "HEF-CME-012", "HEF-CCI-099"]), "HEF-CME-013");
+    assert.equal(proximaTagSetor("I3A", ["HEF-I3A-099"]), "HEF-I3A-100");
+    assert.equal(proximaTagSetor("", ["HEF-0001"]), "HEF-0002");
   });
 
   it("QR autenticado não embute URL pública", () => {

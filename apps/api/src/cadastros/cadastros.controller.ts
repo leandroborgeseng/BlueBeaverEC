@@ -14,6 +14,27 @@ class NomeDto {
   nome!: string;
 }
 
+class CreateSetorAreaDto {
+  @IsString()
+  @MinLength(2)
+  nome!: string;
+
+  @IsOptional()
+  @IsString()
+  sigla?: string;
+}
+
+class UpdateSetorAreaDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  nome?: string;
+
+  @IsOptional()
+  @IsString()
+  sigla?: string | null;
+}
+
 class CreateLocalizacaoDto {
   @IsString()
   @MinLength(2)
@@ -176,8 +197,14 @@ export class CadastrosController {
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("setor-areas")
-  createSetorArea(@CurrentUser() user: AuthUser, @Body() body: NomeDto) {
-    return this.cadastros.createSetorArea(user, body.nome);
+  createSetorArea(@CurrentUser() user: AuthUser, @Body() body: CreateSetorAreaDto) {
+    return this.cadastros.createSetorArea(user, body.nome, body.sigla);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Patch("setor-areas/:id")
+  updateSetorArea(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: UpdateSetorAreaDto) {
+    return this.cadastros.updateSetorArea(user, id, body);
   }
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)

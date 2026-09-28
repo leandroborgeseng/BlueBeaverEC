@@ -131,21 +131,28 @@ export function EquipamentoNovoDialog({
       api<Lookup[]>("/planos-descricao"),
       api<Modelo[]>("/modelos"),
       api<Lookup[]>("/fornecedores"),
-      api<Centro[]>("/centros-custo"),
-      api<{ tag: string }>("/equipamentos/proxima-tag"),
+      api<Lookup[]>("/centros-custo"),
     ])
-      .then(([s, a, p, m, fo, c, t]) => {
+      .then(([s, a, p, m, fo, c]) => {
         setSetores(s);
         setSetorAreas(a);
         setPlanos(p);
         setModelos(m);
         setFornecedores(fo);
         setCentros(c);
-        setProxima(t.tag);
-        setTag((atual) => atual || t.tag);
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Não foi possível carregar os cadastros"));
   }, []);
+
+  useEffect(() => {
+    if (!setorId) return;
+    void api<{ tag: string }>(`/equipamentos/proxima-tag?setorId=${encodeURIComponent(setorId)}`)
+      .then((t) => {
+        setProxima(t.tag);
+        setTag(t.tag);
+      })
+      .catch(() => undefined);
+  }, [setorId]);
 
   function aplicarDescricao(id: string) {
     setDescricaoId(id);
@@ -250,7 +257,9 @@ export function EquipamentoNovoDialog({
     setPatrimonio("");
     setObservacao("");
     setGrade([]);
-    void api<{ tag: string }>("/equipamentos/proxima-tag").then((t) => {
+    void api<{ tag: string }>(
+      `/equipamentos/proxima-tag${setorId ? `?setorId=${encodeURIComponent(setorId)}` : ""}`,
+    ).then((t) => {
       setProxima(t.tag);
       setTag(t.tag);
     });
@@ -429,7 +438,12 @@ export function EquipamentoNovoDialog({
           </Linha>
           {!multiplos && (
             <Linha label="TAG:">
-              <input value={tag} onChange={(e) => setTag(e.target.value)} style={{ ...fld, width: 180, fontWeight: 700 }} />
+              <input
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                placeholder="Selecione a localização"
+                style={{ ...fld, width: 180, fontWeight: 700 }}
+              />
               <span style={{ fontSize: 12, marginLeft: 12 }}>Nº Série:</span>
               <input value={nSerie} onChange={(e) => setNSerie(e.target.value)} style={{ ...fld, width: 160 }} />
               <span style={{ fontSize: 12, marginLeft: 12 }}>Patrimônio:</span>

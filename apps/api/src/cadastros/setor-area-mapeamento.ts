@@ -67,3 +67,25 @@ export const MAPEAMENTO_LOCALIZACAO_SETOR: Array<{ localizacao: string; setor: s
 ];
 
 export const NOMES_SETORES_FUNCIONAIS = [...new Set(MAPEAMENTO_LOCALIZACAO_SETOR.map((m) => m.setor))];
+
+/** Sigla de 3 caracteres usada na TAG HEF-{sigla}-{seq}. */
+export const SIGLAS_SETORES: Record<string, string> = {
+  "Internação - 3º Andar": "I3A",
+  "Internação - 4º Andar": "I4A",
+  Ambulatório: "AMB",
+  "Centro Cirúrgico Ambulatorial": "CCA",
+  "Centro Cirúrgico": "CCI",
+  CME: "CME",
+  Endoscopia: "END",
+  "Engenharia Clínica": "ECL",
+  "Emergência Adulto": "EAD",
+  "Emergência Infantil": "EIN",
+  Farmácia: "FAR",
+  "Hospital Dia": "HDI",
+  Laboratório: "LAB",
+  Nutrição: "NUT",
+  "Diagnóstico por Imagem": "DIM",
+  Hemodinâmica: "HEM",
+  Térreo: "TER",
+  UTI: "UTI",
+};
