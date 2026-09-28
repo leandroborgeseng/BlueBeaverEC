@@ -23,6 +23,8 @@ interface EquipRow {
   nome: string;
   situacao: string;
   setor?: { nome: string } | null;
+  fabricante?: { nome: string } | null;
+  modelo?: { nome: string } | null;
   patrimonio?: string | null;
 }
 
@@ -136,40 +138,37 @@ export default function MobileInventarioPage() {
           <div style={{ display: "grid", gap: 10 }}>
             {items.map((eq) => (
               <div key={eq.id} style={cardStyle}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <div>
-                    <div style={{ fontWeight: 800 }}>{eq.tag}</div>
-                    <div style={{ fontSize: 13, color: "oklch(0.45 0.02 250)" }}>{eq.nome}</div>
-                    <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
-                      {eq.setor?.nome ?? "—"} · {eq.situacao}
-                    </div>
+                <Link
+                  href={`/mobile/equipamento/${encodeURIComponent(eq.tag)}`}
+                  style={{ display: "block", textDecoration: "none", color: "inherit" }}
+                >
+                  <div style={{ fontWeight: 800 }}>{eq.nome}</div>
+                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
+                    Setor: {eq.setor?.nome ?? "—"}
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                    <Link
-                      href={`/mobile/qr?codigo=${encodeURIComponent(eq.tag)}`}
-                      style={{ fontSize: 12, fontWeight: 700, color: "oklch(0.45 0.14 255)", textDecoration: "none" }}
-                    >
-                      QR / OS
-                    </Link>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        onClick={() => openEdit(eq)}
-                        style={{
-                          border: "none",
-                          background: "oklch(0.95 0.02 255)",
-                          color: "oklch(0.4 0.12 255)",
-                          borderRadius: 8,
-                          padding: "6px 10px",
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}
-                      >
-                        Editar
-                      </button>
-                    )}
+                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                    Fabricante: {eq.fabricante?.nome ?? "—"} · Modelo: {eq.modelo?.nome ?? "—"}
                   </div>
-                </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>TAG: {eq.tag}</div>
+                </Link>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => openEdit(eq)}
+                    style={{
+                      marginTop: 8,
+                      border: "none",
+                      background: "oklch(0.95 0.02 255)",
+                      color: "oklch(0.4 0.12 255)",
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Editar
+                  </button>
+                )}
               </div>
             ))}
             {items.length === 0 && !erro && (

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, type ReactNode } from "react";
+import { useCampoCache } from "@/lib/mobile-cache";
 import { useOfflineQueue } from "@/lib/offline-queue";
-import { irParaDesktop, useMobilePersona, useSession } from "@/lib/session";
-import { IconBox, IconCalendar, IconHome, IconList, IconPlus, IconQr } from "./icons";
+import { useMobilePersona } from "@/lib/session";
+import { IconBox, IconCloud, IconGear, IconHome, IconList, IconPlus, IconQr } from "./icons";
 import { ImpersonationBanner } from "@/components/shell/ImpersonationBanner";
 import { M } from "./ui";
 
@@ -33,40 +34,46 @@ export function MobileFrame({
 }) {
   const pathname = usePathname();
   const { lastSyncMsg, clearSyncMsg, hydrate } = useOfflineQueue();
+  const { lastPullMsg, clearPullMsg, hydrate: hydrateCache, offlineMode } = useCampoCache();
   const { canInventario, isEnfermeiro, isTecnico } = useMobilePersona();
-  const me = useSession();
-  const podeAtribuir = Boolean(me?.permissoes?.alterarStatusOS);
+  const efetivoOnline = online && !offlineMode;
 
   useEffect(() => {
     void hydrate();
-  }, [hydrate]);
+    void hydrateCache();
+  }, [hydrate, hydrateCache]);
 
   useEffect(() => {
-    if (!lastSyncMsg) return;
-    const t = setTimeout(() => clearSyncMsg(), 4000);
+    if (!lastSyncMsg && !lastPullMsg) return;
+    const t = setTimeout(() => {
+      clearSyncMsg();
+      clearPullMsg();
+    }, 4000);
     return () => clearTimeout(t);
-  }, [lastSyncMsg, clearSyncMsg]);
+  }, [lastSyncMsg, lastPullMsg, clearSyncMsg, clearPullMsg]);
 
   const nav = useMemo(() => {
     const items: NavItem[] = [{ href: "/mobile", label: "Início", icon: (p) => <IconHome {...p} /> }];
     if (isTecnico) {
-      if (podeAtribuir) {
-        items.push({
-          href: "/mobile/atribuir",
-          label: "Atribuir",
-          icon: (p) => <IconPlus {...p} />,
-        });
-      }
       items.push({
         href: "/mobile/os",
         label: "OS",
         icon: (p) => <IconList {...p} />,
         match: (p) => p === "/mobile/os" || p.startsWith("/mobile/os/"),
       });
+      if (canInventario) {
+        items.push({
+          href: "/mobile/inventario",
+          label: "Inventário",
+          icon: (p) => <IconBox {...p} />,
+          match: (p) => p.startsWith("/mobile/inventario") || p.startsWith("/mobile/equipamento"),
+        });
+      }
+      items.push({ href: "/mobile/qr", label: "QR", icon: (p) => <IconQr {...p} /> });
       items.push({
-        href: "/mobile/cronograma",
-        label: "Manut.",
-        icon: (p) => <IconCalendar {...p} />,
+        href: "/mobile/sync",
+        label: "Sync",
+        icon: (p) => <IconCloud {...p} />,
       });
     }
     if (isEnfermeiro) {
@@ -74,11 +81,7 @@ export function MobileFrame({
         href: "/mobile/abrir",
         label: "Abrir",
         icon: (p) => <IconPlus {...p} />,
-      });
-      items.push({
-        href: "/mobile/cronograma",
-        label: "Manut.",
-        icon: (p) => <IconCalendar {...p} />,
+        match: (p) => p === "/mobile/abrir" || p.startsWith("/mobile/solicitar") || p.startsWith("/mobile/qr"),
       });
       items.push({
         href: "/mobile/pedidos",
@@ -89,16 +92,18 @@ export function MobileFrame({
         href: "/mobile/inventario-setor",
         label: "Inventário",
         icon: (p) => <IconBox {...p} />,
+        match: (p) => p.startsWith("/mobile/inventario") || p.startsWith("/mobile/equipamento"),
+      });
+      items.push({
+        href: "/mobile/sync",
+        label: "Sync",
+        icon: (p) => <IconCloud {...p} />,
       });
     }
-    if (isTecnico && canInventario) {
-      items.push({ href: "/mobile/inventario", label: "Inventário", icon: (p) => <IconBox {...p} /> });
-    }
-    if (isTecnico) {
-      items.push({ href: "/mobile/qr", label: "QR", icon: (p) => <IconQr {...p} /> });
-    }
     return items;
-  }, [canInventario, isEnfermeiro, isTecnico, podeAtribuir]);
+  }, [canInventario, isEnfermeiro, isTecnico]);
+
+  const flash = lastPullMsg || lastSyncMsg;
 
   return (
     <div
@@ -112,7 +117,63 @@ export function MobileFrame({
         color: "oklch(0.22 0.02 250)",
       }}
     >
-      {!online && (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          marginBottom: 10,
+        }}
+      >
+        <div style={{ fontSize: 13, fontWeight: 800, minWidth: 0 }}>{title}</div>
+        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+          <Link
+            href="/mobile/sync"
+            aria-label="Sincronização"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              display: "grid",
+              placeItems: "center",
+              position: "relative",
+              color: "oklch(0.4 0.08 255)",
+            }}
+          >
+            <IconCloud size={20} color="oklch(0.4 0.08 255)" />
+            {pending > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  background: "oklch(0.55 0.18 25)",
+                }}
+              />
+            )}
+          </Link>
+          <Link
+            href="/mobile/config"
+            aria-label="Configurações"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              display: "grid",
+              placeItems: "center",
+              color: "oklch(0.4 0.08 255)",
+            }}
+          >
+            <IconGear size={20} color="oklch(0.4 0.08 255)" />
+          </Link>
+        </div>
+      </div>
+
+      {!efetivoOnline && (
         <button
           type="button"
           onClick={() => onSync && void onSync()}
@@ -141,13 +202,12 @@ export function MobileFrame({
               borderRadius: "50%",
               background: "white",
               flexShrink: 0,
-              animation: "pulse-dot 1.5s infinite",
             }}
           />
-          Sem conexão · {pending > 0 ? `${pending} na fila` : "fila vazia"}
+          {offlineMode ? "Modo offline" : "Sem conexão"} · {pending > 0 ? `${pending} na fila` : "fila vazia"}
         </button>
       )}
-      {online && pending > 0 && (
+      {efetivoOnline && pending > 0 && (
         <div
           style={{
             background: "oklch(0.93 0.09 150)",
@@ -178,13 +238,13 @@ export function MobileFrame({
                 fontWeight: 700,
               }}
             >
-              Sync
+              Enviar
             </button>
           )}
         </div>
       )}
 
-      {lastSyncMsg && (
+      {flash && (
         <div
           style={{
             marginBottom: 12,
@@ -196,31 +256,12 @@ export function MobileFrame({
             fontWeight: 700,
           }}
         >
-          {lastSyncMsg}
+          {flash}
         </div>
       )}
 
       <span className="sr-only">{title}</span>
       <ImpersonationBanner />
-      <button
-        type="button"
-        onClick={() => irParaDesktop(me?.perfil)}
-        style={{
-          width: "100%",
-          border: `1px solid ${M.border}`,
-          background: "white",
-          borderRadius: 12,
-          padding: "8px 12px",
-          marginBottom: 12,
-          fontSize: 12,
-          fontWeight: 700,
-          color: "oklch(0.4 0.08 255)",
-          cursor: "pointer",
-          fontFamily: "inherit",
-        }}
-      >
-        Abrir versão desktop
-      </button>
       {children}
 
       <nav
@@ -234,9 +275,8 @@ export function MobileFrame({
           border: `1px solid ${M.border}`,
           borderRadius: 18,
           display: "grid",
-          gridTemplateColumns: `repeat(${nav.length}, 1fr)`,
+          gridTemplateColumns: `repeat(${Math.max(nav.length, 1)}, 1fr)`,
           padding: 6,
-          boxShadow: "0 12px 30px -18px rgba(0,0,0,.4)",
           zIndex: 30,
         }}
       >
@@ -248,6 +288,7 @@ export function MobileFrame({
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const color = active ? M.primary : "oklch(0.55 0.02 250)";
           const showBadge = item.href === "/mobile/os" && (badgeOs ?? 0) > 0;
+          const showPending = item.href === "/mobile/sync" && pending > 0;
           return (
             <Link
               key={item.href}
@@ -270,7 +311,7 @@ export function MobileFrame({
             >
               <span style={{ position: "relative", display: "inline-flex" }}>
                 {item.icon({ color, stroke: active ? 2.3 : 1.8 })}
-                {showBadge && (
+                {(showBadge || showPending) && (
                   <span
                     style={{
                       position: "absolute",
@@ -288,7 +329,7 @@ export function MobileFrame({
                       padding: "0 3px",
                     }}
                   >
-                    {badgeOs! > 9 ? "9+" : badgeOs}
+                    {showPending ? (pending > 9 ? "9+" : pending) : badgeOs! > 9 ? "9+" : badgeOs}
                   </span>
                 )}
               </span>

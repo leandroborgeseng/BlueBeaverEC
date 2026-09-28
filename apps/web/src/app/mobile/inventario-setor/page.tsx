@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
+import { useCampoCache } from "@/lib/mobile-cache";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useSession } from "@/lib/session";
 import { IconSearch } from "@/components/mobile/icons";
@@ -31,6 +33,7 @@ interface EquipRow {
 export default function MobileInventarioSetorPage() {
   const me = useSession();
   const { pending, online, flush } = useOfflineQueue();
+  const cachedEq = useCampoCache((s) => s.equipamentos);
   const [q, setQ] = useState("");
   const [items, setItems] = useState<EquipRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +42,23 @@ export default function MobileInventarioSetorPage() {
   useEffect(() => {
     api<EquipRow[]>("/portal/inventario-setor")
       .then(setItems)
-      .catch((e) => setErro(e instanceof Error ? e.message : "Erro ao carregar inventário"))
+      .catch((e) => {
+        if (cachedEq.length) {
+          setItems(
+            cachedEq.map((eq) => ({
+              tag: eq.tag,
+              nome: eq.nome,
+              situacao: eq.situacao ?? "",
+              setor: eq.localizacao || eq.setor || "",
+              fabricante: eq.fabricante ?? "",
+              modelo: eq.modelo ?? "",
+              tipo: eq.planoDescricao ?? "",
+              criticidade: "",
+            })),
+          );
+        }
+        setErro(e instanceof Error ? e.message : "Erro ao carregar inventário");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -88,18 +107,23 @@ export default function MobileInventarioSetorPage() {
       ) : (
         <div style={{ display: "grid", gap: 8 }}>
           {filtered.map((eq) => (
-            <div key={eq.tag} style={cardStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                <div>
-                  <div style={{ fontWeight: 800 }}>{eq.tag}</div>
-                  <div style={{ fontSize: 13, color: "oklch(0.4 0.02 250)" }}>{eq.nome}</div>
-                  <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
-                    {eq.setor} · {eq.fabricante} {eq.modelo}
-                  </div>
-                </div>
+            <Link
+              key={eq.tag}
+              href={`/mobile/equipamento/${encodeURIComponent(eq.tag)}`}
+              style={{ ...cardStyle, display: "block", textDecoration: "none", color: "inherit" }}
+            >
+              <div style={{ fontWeight: 800 }}>{eq.nome}</div>
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 4 }}>
+                Setor: {eq.setor}
+              </div>
+              <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
+                Fabricante: {eq.fabricante} · Modelo: {eq.modelo}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, alignItems: "center" }}>
+                <span style={{ fontSize: 12, fontWeight: 700 }}>TAG: {eq.tag}</span>
                 <StatusChip value={eq.situacao} />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

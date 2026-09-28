@@ -280,6 +280,14 @@ export default function ExecucaoOsPage() {
           </div>
           {os?.prioridade && <PrioChip value={os.prioridade} />}
         </div>
+        {os?.equipamento?.tag && os.equipamento.tag !== "—" && (
+          <Link
+            href={`/mobile/equipamento/${encodeURIComponent(os.equipamento.tag)}`}
+            style={{ fontSize: 12.5, fontWeight: 700, color: "oklch(0.45 0.14 255)", textDecoration: "none" }}
+          >
+            Ficha {os.equipamento.tag} →
+          </Link>
+        )}
         <div style={{ fontSize: 12.5, color: "oklch(0.5 0.02 250)" }}>
           {os?.codigo ?? `OS-${numero}`}
           {os?.equipamento?.setor?.nome ? ` · ${os.equipamento.setor.nome}` : ""}

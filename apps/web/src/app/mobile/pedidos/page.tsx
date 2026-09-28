@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
+import { useCampoCache } from "@/lib/mobile-cache";
+import { labelDiasAberta } from "@/lib/mobile-ficha";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona, useSession } from "@/lib/session";
+import { IconSearch } from "@/components/mobile/icons";
 import {
   EmptyState,
   FilterPills,
@@ -14,6 +17,7 @@ import {
   Skeleton,
   StatusChip,
   cardStyle,
+  fieldStyle,
 } from "@/components/mobile/ui";
 
 interface Pedido {
@@ -47,6 +51,7 @@ export default function MobilePedidosPage() {
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState<"OS" | "MEUS">("OS");
   const [filtro, setFiltro] = useState<"TODAS" | "PENDENTE" | "CONVERTIDA">("TODAS");
+  const [q, setQ] = useState("");
   const { pending, online, flush } = useOfflineQueue();
 
   useEffect(() => {
@@ -56,16 +61,58 @@ export default function MobilePedidosPage() {
     ])
       .then(([p, os]) => {
         setPedidos(p);
-        setOsSetor(os);
+        if (os.length) {
+          setOsSetor(os);
+          return;
+        }
+        const local = useCampoCache.getState().os;
+        if (local.length) {
+          setOsSetor(
+            local.map((o) => ({
+              id: o.id,
+              numero: o.numero,
+              codigo: o.codigo,
+              tipo: "CORRETIVA",
+              status: o.status,
+              prioridade: o.prioridade,
+              abertura: typeof o.abertura === "string" ? o.abertura : "",
+              equipamento: {
+                tag: o.equipamento.tag,
+                nome: o.equipamento.nome,
+                setor: o.equipamento.setor || o.equipamento.localizacao || "—",
+              },
+            })),
+          );
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
   const meusFiltrados = useMemo(() => {
-    if (filtro === "PENDENTE") return pedidos.filter((p) => p.status === "PENDENTE");
-    if (filtro === "CONVERTIDA") return pedidos.filter((p) => p.status === "CONVERTIDA");
-    return pedidos;
-  }, [pedidos, filtro]);
+    const s = q.trim().toLowerCase();
+    let rows = pedidos;
+    if (filtro === "PENDENTE") rows = pedidos.filter((p) => p.status === "PENDENTE");
+    if (filtro === "CONVERTIDA") rows = pedidos.filter((p) => p.status === "CONVERTIDA");
+    if (!s) return rows;
+    return rows.filter((p) =>
+      [p.protocolo, p.descricao, p.setorNome, p.equipamento?.tag, p.equipamento?.nome]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(s),
+    );
+  }, [pedidos, filtro, q]);
+
+  const osFiltradas = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return osSetor;
+    return osSetor.filter((os) =>
+      [os.codigo, os.equipamento.tag, os.equipamento.nome, os.equipamento.setor]
+        .join(" ")
+        .toLowerCase()
+        .includes(s),
+    );
+  }, [osSetor, q]);
 
   const pendentes = pedidos.filter((p) => p.status === "PENDENTE").length;
   const setorLabel = me?.setores?.map((s) => s.nome).join(" · ") || "setor não vinculado";
@@ -76,6 +123,18 @@ export default function MobilePedidosPage() {
         title="Ordens em andamento"
         subtitle={isEnfermeiro ? `OS abertas de ${setorLabel}` : "Solicitações recentes"}
       />
+
+      <div style={{ position: "relative", marginBottom: 12 }}>
+        <span style={{ position: "absolute", left: 12, top: 13, pointerEvents: "none" }}>
+          <IconSearch size={16} color="oklch(0.55 0.02 250)" />
+        </span>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Pesquisar…"
+          style={{ ...fieldStyle, paddingLeft: 36 }}
+        />
+      </div>
 
       <FilterPills
         value={aba}
@@ -89,7 +148,7 @@ export default function MobilePedidosPage() {
       {loading ? (
         <Skeleton rows={4} />
       ) : aba === "OS" ? (
-        osSetor.length === 0 ? (
+        osFiltradas.length === 0 ? (
           <EmptyState
             title="Nenhuma OS aberta no setor"
             hint="Quando a engenharia clínica estiver atendendo um equipamento daqui, a OS aparece nesta lista."
@@ -97,7 +156,7 @@ export default function MobilePedidosPage() {
           />
         ) : (
           <div style={{ display: "grid", gap: 10 }}>
-            {osSetor.map((os) => (
+            {osFiltradas.map((os) => (
               <div key={os.id} style={cardStyle}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
                   <strong style={{ fontSize: 14.5 }}>{os.codigo}</strong>
@@ -106,6 +165,7 @@ export default function MobilePedidosPage() {
                 <div style={{ fontSize: 13.5, fontWeight: 650 }}>{os.equipamento.nome}</div>
                 <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)", marginTop: 6 }}>
                   {os.equipamento.tag} · {os.equipamento.setor} · {os.tipo.replace(/_/g, " ")}
+                  {labelDiasAberta(os.abertura) ? ` · ${labelDiasAberta(os.abertura)}` : ""}
                 </div>
                 <div style={{ marginTop: 8 }}>
                   <StatusChip value={os.status} />

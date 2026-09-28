@@ -294,7 +294,7 @@ export class PortalController {
         ...(setorFilter ? { setorId: { in: setorFilter } } : {}),
       },
       include: {
-        setor: true,
+        setor: { include: { setorArea: { select: { nome: true, sigla: true } } } },
         fabricante: true,
         modelo: true,
         descricao: true,
@@ -308,11 +308,48 @@ export class PortalController {
       nome: e.nome,
       situacao: e.situacao,
       setor: e.setor.nome,
+      setorArea: e.setor.setorArea?.nome ?? e.setor.nome,
+      sigla: e.setor.setorArea?.sigla ?? null,
       fabricante: e.fabricante.nome,
       modelo: e.modelo.nome,
       tipo: e.descricao.nome,
       criticidade: e.descricao.criticidade,
+      nSerie: e.nSerie,
+      patrimonio: e.patrimonio,
+      localizacaoFisica: e.localizacaoFisica,
+      validadeAnvisa: e.validadeAnvisa,
+      dataEndOfLife: e.dataEndOfLife,
+      dataEndOfService: e.dataEndOfService,
+      planoDescricao: e.descricao.nome,
     }));
+  }
+
+  @Get("snapshot-campo")
+  @RequirePermission("portal", PERMISSAO_NIVEL.LEITURA)
+  async snapshotCampo(@CurrentUser() user: AuthUser) {
+    const [equipamentos, os] = await Promise.all([this.inventario(user), this.minhasOs(user)]);
+    return {
+      baixadoEm: new Date().toISOString(),
+      os,
+      equipamentos: equipamentos.map((e) => ({
+        tag: e.tag,
+        nome: e.nome,
+        situacao: e.situacao,
+        patrimonio: e.patrimonio ?? null,
+        nSerie: e.nSerie ?? null,
+        planoDescricao: e.planoDescricao ?? e.tipo,
+        fabricante: e.fabricante,
+        modelo: e.modelo,
+        localizacao: e.setor,
+        setor: e.setorArea ?? e.setor,
+        sigla: e.sigla ?? null,
+        localizacaoFisica: e.localizacaoFisica ?? null,
+        validadeAnvisa: e.validadeAnvisa ?? null,
+        dataEndOfLife: e.dataEndOfLife ?? null,
+        dataEndOfService: e.dataEndOfService ?? null,
+        fotoDocumentoId: null,
+      })),
+    };
   }
 
   @Get("equipamento/:tag")
@@ -328,9 +365,10 @@ export class PortalController {
         ...(setorFilter ? { setorId: { in: setorFilter } } : {}),
       },
       include: {
-        setor: true,
+        setor: { include: { setorArea: { select: { nome: true, sigla: true } } } },
         fabricante: true,
         modelo: true,
+        descricao: { select: { nome: true } },
       },
     });
     if (!eq) throw new NotFoundException("Equipamento não encontrado no seu setor");
@@ -351,9 +389,33 @@ export class PortalController {
         nome: eq.nome,
         situacao: eq.situacao,
         patrimonio: eq.patrimonio,
+        nSerie: eq.nSerie,
+        planoDescricao: eq.descricao?.nome ?? null,
+        localizacaoFisica: eq.localizacaoFisica,
+        validadeAnvisa: eq.validadeAnvisa,
+        dataEndOfLife: eq.dataEndOfLife,
+        dataEndOfService: eq.dataEndOfService,
         setor: eq.setor,
         fabricante: eq.fabricante,
         modelo: eq.modelo,
+      },
+      ficha: {
+        tag: eq.tag,
+        nome: eq.nome,
+        situacao: eq.situacao,
+        patrimonio: eq.patrimonio,
+        nSerie: eq.nSerie,
+        planoDescricao: eq.descricao?.nome ?? null,
+        fabricante: eq.fabricante.nome,
+        modelo: eq.modelo.nome,
+        localizacao: eq.setor.nome,
+        setor: eq.setor.setorArea?.nome ?? eq.setor.nome,
+        sigla: eq.setor.setorArea?.sigla ?? null,
+        localizacaoFisica: eq.localizacaoFisica,
+        validadeAnvisa: eq.validadeAnvisa,
+        dataEndOfLife: eq.dataEndOfLife,
+        dataEndOfService: eq.dataEndOfService,
+        fotoDocumentoId: null,
       },
       osAbertas: osAbertas.map((o) => ({
         numero: o.numero,

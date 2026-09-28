@@ -130,6 +130,11 @@ export class MobileController {
     return this.mobile.equipamentoQr(user, codigo);
   }
 
+  @Get("snapshot")
+  snapshot(@CurrentUser() user: AuthUser) {
+    return this.mobile.snapshot(user);
+  }
+
   @Get("inventario")
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.LEITURA)
   inventario(

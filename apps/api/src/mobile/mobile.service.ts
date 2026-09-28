@@ -85,6 +85,7 @@ export class MobileService {
   async equipamentoQr(user: AuthUser, codigo: string) {
     const equipamento = await this.equipamentos.byQr(user.estabelecimentoId, codigo);
     const osAbertas = await this.os.ativasDoEquipamento(user.estabelecimentoId, equipamento.tag);
+    const ficha = await this.fichaDe(equipamento);
 
     await this.prisma.logAcesso.create({
       data: {
@@ -96,12 +97,42 @@ export class MobileService {
 
     return {
       equipamento,
+      ficha,
       osAbertas: osAbertas.map((o) => ({
         numero: o.numero,
         status: o.status,
         prioridade: o.prioridade,
         codigo: `OS-${String(o.numero).padStart(5, "0")}`,
       })),
+    };
+  }
+
+  async snapshot(user: AuthUser) {
+    const os = await this.minhasOs(user);
+    const tags = [
+      ...new Set(
+        os
+          .map((o) => (o as { equipamento?: { tag?: string } }).equipamento?.tag)
+          .filter((t): t is string => Boolean(t) && t !== "—"),
+      ),
+    ];
+    const eqs = tags.length
+      ? await this.prisma.equipamento.findMany({
+          where: { estabelecimentoId: user.estabelecimentoId, tag: { in: tags } },
+          include: {
+            setor: { include: { setorArea: { select: { nome: true, sigla: true } } } },
+            fabricante: { select: { nome: true } },
+            modelo: { select: { nome: true } },
+            descricao: { select: { nome: true } },
+          },
+        })
+      : [];
+    const fichas = await this.fichasDe(eqs);
+    const osCampo = os.map((row) => this.osParaCampo(row as unknown as Record<string, unknown>));
+    return {
+      baixadoEm: new Date().toISOString(),
+      os: osCampo,
+      equipamentos: fichas,
     };
   }
 
@@ -454,6 +485,108 @@ export class MobileService {
       default:
         throw new BadRequestException(`Tipo de sync desconhecido: ${type}`);
     }
+  }
+
+  private osParaCampo(row: Record<string, unknown>) {
+    const eq = (row.equipamento ?? {}) as {
+      tag?: string;
+      nome?: string;
+      fabricante?: { nome?: string } | null;
+      modelo?: { nome?: string } | null;
+      setor?: { nome?: string; setorArea?: { nome?: string; sigla?: string | null } | null } | null;
+    };
+    const setorOs = row.setor as { nome?: string } | null | undefined;
+    return {
+      id: String(row.id ?? ""),
+      numero: Number(row.numero ?? 0),
+      codigo: String(row.codigo ?? `OS-${row.numero}`),
+      prioridade: String(row.prioridade ?? "MEDIA"),
+      status: String(row.status ?? ""),
+      abertura: row.abertura instanceof Date ? row.abertura.toISOString() : String(row.abertura ?? ""),
+      atrasada: Boolean(row.atrasada),
+      slaLimite: row.slaLimite ?? null,
+      slaEstourado: Boolean(row.slaEstourado),
+      atribuicaoVersao: row.atribuicaoVersao ?? null,
+      equipamento: {
+        tag: eq.tag ?? "—",
+        nome: eq.nome ?? "—",
+        fabricante: eq.fabricante?.nome ?? null,
+        modelo: eq.modelo?.nome ?? null,
+        localizacao: eq.setor?.nome ?? setorOs?.nome ?? null,
+        setor: eq.setor?.setorArea?.nome ?? eq.setor?.nome ?? setorOs?.nome ?? null,
+        sigla: eq.setor?.setorArea?.sigla ?? null,
+      },
+    };
+  }
+
+  private async fichaDe(eq: {
+    id: string;
+    tag: string;
+    nome: string;
+    situacao?: string;
+    patrimonio?: string | null;
+    nSerie?: string | null;
+    localizacaoFisica?: string | null;
+    validadeAnvisa?: Date | null;
+    dataEndOfLife?: Date | null;
+    dataEndOfService?: Date | null;
+    descricao?: { nome?: string } | null;
+    fabricante?: { nome?: string } | null;
+    modelo?: { nome?: string } | null;
+    setor?: { nome?: string; setorArea?: { nome?: string; sigla?: string | null } | null } | null;
+  }) {
+    const [ficha] = await this.fichasDe([eq]);
+    return ficha;
+  }
+
+  private async fichasDe(
+    eqs: Array<{
+      id: string;
+      tag: string;
+      nome: string;
+      situacao?: string;
+      patrimonio?: string | null;
+      nSerie?: string | null;
+      localizacaoFisica?: string | null;
+      validadeAnvisa?: Date | null;
+      dataEndOfLife?: Date | null;
+      dataEndOfService?: Date | null;
+      descricao?: { nome?: string } | null;
+      fabricante?: { nome?: string } | null;
+      modelo?: { nome?: string } | null;
+      setor?: { nome?: string; setorArea?: { nome?: string; sigla?: string | null } | null } | null;
+    }>,
+  ) {
+    const ids = eqs.map((e) => e.id);
+    const fotos = ids.length
+      ? await this.prisma.equipamentoDocumento.findMany({
+          where: { equipamentoId: { in: ids }, mimeType: { startsWith: "image/" } },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, equipamentoId: true },
+        })
+      : [];
+    const fotoPorEq = new Map<string, string>();
+    for (const f of fotos) {
+      if (!fotoPorEq.has(f.equipamentoId)) fotoPorEq.set(f.equipamentoId, f.id);
+    }
+    return eqs.map((eq) => ({
+      tag: eq.tag,
+      nome: eq.nome,
+      situacao: eq.situacao ?? null,
+      patrimonio: eq.patrimonio ?? null,
+      nSerie: eq.nSerie ?? null,
+      planoDescricao: eq.descricao?.nome ?? null,
+      fabricante: eq.fabricante?.nome ?? null,
+      modelo: eq.modelo?.nome ?? null,
+      localizacao: eq.setor?.nome ?? null,
+      setor: eq.setor?.setorArea?.nome ?? eq.setor?.nome ?? null,
+      sigla: eq.setor?.setorArea?.sigla ?? null,
+      localizacaoFisica: eq.localizacaoFisica ?? null,
+      validadeAnvisa: eq.validadeAnvisa ? eq.validadeAnvisa.toISOString() : null,
+      dataEndOfLife: eq.dataEndOfLife ? eq.dataEndOfLife.toISOString() : null,
+      dataEndOfService: eq.dataEndOfService ? eq.dataEndOfService.toISOString() : null,
+      fotoDocumentoId: fotoPorEq.get(eq.id) ?? null,
+    }));
   }
 
   private colaborador(user: AuthUser) {

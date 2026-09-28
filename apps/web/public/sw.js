@@ -1,5 +1,5 @@
 /* Aion Campo — Service Worker mínimo (shell mobile) */
-const CACHE = "aion-mobile-v3";
+const CACHE = "aion-mobile-v4";
 const PRECACHE = [
   "/mobile",
   "/mobile/abrir",
@@ -9,6 +9,9 @@ const PRECACHE = [
   "/mobile/qr",
   "/mobile/solicitar",
   "/mobile/inventario",
+  "/mobile/inventario-setor",
+  "/mobile/sync",
+  "/mobile/config",
   "/manifest.webmanifest",
 ];
 

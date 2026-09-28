@@ -907,7 +907,17 @@ export class OsService {
         responsavelId: tecnicoColaboradorId,
         status: { in: STATUS_ATIVAS },
       },
-      include: { equipamento: { include: { setor: true, descricao: true } } },
+      include: {
+        equipamento: {
+          include: {
+            setor: { include: { setorArea: { select: { nome: true, sigla: true } } } },
+            fabricante: { select: { nome: true } },
+            modelo: { select: { nome: true } },
+            descricao: true,
+          },
+        },
+        setor: { select: { nome: true } },
+      },
       orderBy: [{ prioridade: "desc" }, { abertura: "asc" }],
     });
     return rows.map((os) => this.decorateListItem(os));

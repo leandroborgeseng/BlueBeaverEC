@@ -136,6 +136,11 @@ export const useOfflineQueue = create<OfflineState>((set, get) => ({
     set({ queue, pending: queue.length });
   },
   flush: async () => {
+    const { useCampoCache } = await import("./mobile-cache");
+    if (useCampoCache.getState().offlineMode) {
+      set({ lastSyncMsg: "Modo offline ligado — envio pausado" });
+      return 0;
+    }
     const items = get().queue;
     if (items.length === 0) return 0;
     const res = await api<{
@@ -167,7 +172,12 @@ if (typeof window !== "undefined") {
   void useOfflineQueue.getState().hydrate();
   window.addEventListener("online", () => {
     useOfflineQueue.getState().setOnline(true);
-    void useOfflineQueue.getState().flush();
+    void import("./mobile-cache").then(({ useCampoCache }) => {
+      const prefs = useCampoCache.getState();
+      if (prefs.autoSync && !prefs.offlineMode) {
+        void useOfflineQueue.getState().flush();
+      }
+    });
   });
   window.addEventListener("offline", () => useOfflineQueue.getState().setOnline(false));
 }

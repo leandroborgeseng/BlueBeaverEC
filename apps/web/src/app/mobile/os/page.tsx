@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
+import { useCampoCache } from "@/lib/mobile-cache";
+import { labelDiasAberta } from "@/lib/mobile-ficha";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
-import { IconWrench } from "@/components/mobile/icons";
+import { IconSearch, IconWrench } from "@/components/mobile/icons";
 import { SlaChip } from "@/components/os/SlaChip";
 import {
   EmptyState,
@@ -16,6 +18,7 @@ import {
   PrioChip,
   Skeleton,
   StatusChip,
+  fieldStyle,
   tonePrio,
 } from "@/components/mobile/ui";
 
@@ -25,12 +28,34 @@ interface OsRow {
   codigo: string;
   prioridade: string;
   status: string;
+  abertura?: string | null;
   atrasada: boolean;
   slaLimite?: string | null;
   slaEstourado?: boolean;
   atribuicaoVersao?: number;
-  equipamento: { tag: string; nome: string; setor: { nome: string } };
+  equipamento: {
+    tag: string;
+    nome: string;
+    setor?: { nome: string; setorArea?: { nome?: string } | null } | null;
+    fabricante?: { nome?: string } | null;
+    modelo?: { nome?: string } | null;
+  };
   responsavel?: { id: string } | null;
+}
+
+function textoBusca(os: OsRow) {
+  return [
+    os.codigo,
+    os.equipamento?.tag,
+    os.equipamento?.nome,
+    os.equipamento?.setor?.nome,
+    os.equipamento?.setor?.setorArea?.nome,
+    os.equipamento?.fabricante?.nome,
+    os.equipamento?.modelo?.nome,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 }
 
 export default function MobileOsPage() {
@@ -40,6 +65,7 @@ export default function MobileOsPage() {
   const [livres, setLivres] = useState<OsRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<"TODAS" | "URGENTES" | "ABERTAS" | "LIVRES">("TODAS");
+  const [q, setQ] = useState("");
   const [busy, setBusy] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const { pending, online, flush } = useOfflineQueue();
@@ -60,7 +86,29 @@ export default function MobileOsPage() {
     }
     void load()
       .catch(() => {
-        setItems([]);
+        const local = useCampoCache.getState().os;
+        if (local.length) {
+          setItems(
+            local.map((o) => ({
+              id: o.id,
+              numero: o.numero,
+              codigo: o.codigo,
+              prioridade: o.prioridade,
+              status: o.status,
+              abertura: typeof o.abertura === "string" ? o.abertura : o.abertura ? String(o.abertura) : null,
+              atrasada: Boolean(o.atrasada),
+              slaLimite: o.slaLimite,
+              slaEstourado: o.slaEstourado,
+              equipamento: {
+                tag: o.equipamento.tag,
+                nome: o.equipamento.nome,
+                setor: { nome: o.equipamento.localizacao || o.equipamento.setor || "—" },
+              },
+            })),
+          );
+        } else {
+          setItems([]);
+        }
         setLivres([]);
       })
       .finally(() => setLoading(false));
@@ -87,15 +135,18 @@ export default function MobileOsPage() {
   }
 
   const filtered = useMemo(() => {
-    if (filtro === "LIVRES") return livres;
-    if (filtro === "URGENTES") return items.filter((o) => o.prioridade === "URGENTE" || o.prioridade === "ALTA");
-    if (filtro === "ABERTAS") {
-      return items.filter((o) =>
+    let base = items;
+    if (filtro === "LIVRES") base = livres;
+    else if (filtro === "URGENTES") base = items.filter((o) => o.prioridade === "URGENTE" || o.prioridade === "ALTA");
+    else if (filtro === "ABERTAS") {
+      base = items.filter((o) =>
         ["NAO_ATRIBUIDA", "ABERTA", "EM_ANDAMENTO", "AGUARDANDO"].includes(o.status),
       );
     }
-    return items;
-  }, [items, livres, filtro]);
+    const s = q.trim().toLowerCase();
+    if (!s) return base;
+    return base.filter((o) => textoBusca(o).includes(s));
+  }, [items, livres, filtro, q]);
 
   const urgentes = items.filter((o) => o.prioridade === "URGENTE" || o.prioridade === "ALTA").length;
 
@@ -111,9 +162,26 @@ export default function MobileOsPage() {
     <MobileFrame title="Minhas OS" online={online} pending={pending} onSync={() => void flush()} badgeOs={urgentes}>
       <PageTitle
         title="Minha fila de OS"
-        subtitle={`${items.length} atribuída(s)${livres.length ? ` · ${livres.length} livre(s)` : ""}`}
+        subtitle={
+          filtered.length === items.length
+            ? `${items.length} atribuída(s)${livres.length ? ` · ${livres.length} livre(s)` : ""}`
+            : `Exibindo ${filtered.length} de ${filtro === "LIVRES" ? livres.length : items.length}`
+        }
       />
-      {msg && <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "oklch(0.4 0.12 150)" }}>{msg}</div>}
+      {msg && (
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "oklch(0.4 0.12 150)" }}>{msg}</div>
+      )}
+      <div style={{ position: "relative", marginBottom: 12 }}>
+        <span style={{ position: "absolute", left: 12, top: 13, pointerEvents: "none" }}>
+          <IconSearch size={16} color="oklch(0.55 0.02 250)" />
+        </span>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Pesquisar TAG, OS, setor…"
+          style={{ ...fieldStyle, paddingLeft: 36 }}
+        />
+      </div>
       <FilterPills
         value={filtro}
         onChange={setFiltro}
@@ -135,12 +203,14 @@ export default function MobileOsPage() {
         <div style={{ display: "grid", gap: 10 }}>
           {filtered.map((os) => {
             const p = tonePrio(os.prioridade);
+            const setor = os.equipamento?.setor?.setorArea?.nome || os.equipamento?.setor?.nome || "Setor";
+            const dias = labelDiasAberta(os.abertura);
             return (
               <div key={os.id} style={{ display: "grid", gap: 6 }}>
                 <ListCard
                   href={`/mobile/os/${os.numero}`}
-                  title={os.equipamento?.nome || os.equipamento?.tag || os.codigo}
-                  subtitle={`${os.codigo} · ${os.equipamento?.setor?.nome ?? "Setor"}`}
+                  title={os.codigo}
+                  subtitle={`${os.equipamento?.nome || os.equipamento?.tag} · TAG ${os.equipamento?.tag ?? "—"} · ${setor}${dias ? ` · ${dias}` : ""}`}
                   icon={<IconWrench size={18} color={p.color} />}
                   iconBg={p.bg}
                   trailing={

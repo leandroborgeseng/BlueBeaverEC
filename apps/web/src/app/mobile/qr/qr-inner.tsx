@@ -5,9 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { MobileFrame } from "@/components/mobile/MobileFrame";
+import { useCampoCache } from "@/lib/mobile-cache";
+import { barcodeDetectorDisponivel, criarBarcodeDetector } from "@/lib/barcode-scan";
+import { fromEquipamentoApi, type FichaCampo } from "@/lib/mobile-ficha";
 import { useOfflineQueue } from "@/lib/offline-queue";
 import { useMobilePersona } from "@/lib/session";
-import { IconQr } from "@/components/mobile/icons";
+import { EquipamentoFicha } from "@/components/mobile/EquipamentoFicha";
 import {
   Banner,
   FieldLabel,
@@ -33,16 +36,19 @@ interface QrResult {
     nome: string;
     situacao?: string;
     patrimonio?: string | null;
-    setor?: { nome: string } | null;
+    nSerie?: string | null;
+    setor?: { nome: string; setorArea?: { nome?: string } | null } | null;
     fabricante?: { nome: string } | null;
     modelo?: { nome: string } | null;
   };
+  ficha?: FichaCampo;
   osAbertas: OsAberta[];
 }
 
 export default function MobileQrInner() {
   const sp = useSearchParams();
-  const { canSolicitar, isTecnico } = useMobilePersona();
+  const { canSolicitar, isTecnico, canInventario } = useMobilePersona();
+  const cached = useCampoCache((s) => s.getEquipamento);
   const [codigo, setCodigo] = useState(sp.get("codigo") ?? "");
   const [result, setResult] = useState<QrResult | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -79,6 +85,25 @@ export default function MobileQrInner() {
       );
       setResult(data);
     } catch (e) {
+      const hit = cached(code);
+      if (hit) {
+        setResult({
+          equipamento: {
+            tag: hit.tag,
+            nome: hit.nome,
+            situacao: hit.situacao ?? undefined,
+            patrimonio: hit.patrimonio,
+            nSerie: hit.nSerie,
+            setor: hit.localizacao ? { nome: hit.localizacao } : null,
+            fabricante: hit.fabricante ? { nome: hit.fabricante } : null,
+            modelo: hit.modelo ? { nome: hit.modelo } : null,
+          },
+          ficha: hit,
+          osAbertas: [],
+        });
+        setErro("Sem rede — ficha do aparelho.");
+        return;
+      }
       setResult(null);
       setErro(e instanceof Error ? e.message : "Erro");
     }
@@ -86,15 +111,13 @@ export default function MobileQrInner() {
 
   async function startCamera() {
     setErro(null);
-    const Detector = (
-      window as unknown as {
-        BarcodeDetector?: new (o: { formats: string[] }) => {
-          detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string }>>;
-        };
-      }
-    ).BarcodeDetector;
-    if (!Detector || !navigator.mediaDevices?.getUserMedia) {
-      setErro("Câmera/QR não disponível neste navegador — digite a TAG do equipamento.");
+    if (!barcodeDetectorDisponivel()) {
+      setErro("Câmera não disponível neste navegador — digite a TAG do equipamento.");
+      return;
+    }
+    const detector = await criarBarcodeDetector();
+    if (!detector) {
+      setErro("Leitura de código não disponível — digite a TAG.");
       return;
     }
     try {
@@ -109,7 +132,6 @@ export default function MobileQrInner() {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
-      const detector = new Detector({ formats: ["qr_code"] });
       const tick = async () => {
         if (!videoRef.current || !streamRef.current) return;
         try {
@@ -135,7 +157,6 @@ export default function MobileQrInner() {
 
   const eq = result?.equipamento;
   const osAbertas = result?.osAbertas ?? [];
-  const fabMod = [eq?.fabricante?.nome, eq?.modelo?.nome].filter(Boolean).join(" · ");
 
   return (
     <MobileFrame title="Ler QR" online={online} pending={pending} onSync={() => void flush()}>
@@ -218,7 +239,7 @@ export default function MobileQrInner() {
               textShadow: "0 1px 4px rgba(0,0,0,.6)",
             }}
           >
-            Alinhe o QR na moldura
+            Alinhe o QR ou o código de barras
           </div>
         </div>
       )}
@@ -230,44 +251,12 @@ export default function MobileQrInner() {
       )}
 
       {eq && (
-        <div style={{ ...cardStyle, marginBottom: 12 }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background: "oklch(0.95 0.02 255)",
-                display: "grid",
-                placeItems: "center",
-                flexShrink: 0,
-              }}
-            >
-              <IconQr size={22} color="oklch(0.45 0.14 255)" />
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ fontSize: 18, fontWeight: 800 }}>{eq.tag}</div>
-              <div style={{ fontSize: 14, color: "oklch(0.45 0.02 250)", marginTop: 2 }}>{eq.nome}</div>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14, fontSize: 12.5 }}>
-            <div>
-              <div style={{ color: "oklch(0.55 0.02 250)", fontWeight: 700 }}>Setor</div>
-              <div style={{ fontWeight: 700 }}>{eq.setor?.nome ?? "—"}</div>
-            </div>
-            <div>
-              <div style={{ color: "oklch(0.55 0.02 250)", fontWeight: 700 }}>Situação</div>
-              <div style={{ fontWeight: 700 }}>{eq.situacao ?? "—"}</div>
-            </div>
-            <div>
-              <div style={{ color: "oklch(0.55 0.02 250)", fontWeight: 700 }}>Fabricante</div>
-              <div style={{ fontWeight: 700 }}>{fabMod || "—"}</div>
-            </div>
-            <div>
-              <div style={{ color: "oklch(0.55 0.02 250)", fontWeight: 700 }}>Patrimônio</div>
-              <div style={{ fontWeight: 700 }}>{eq.patrimonio || "—"}</div>
-            </div>
-          </div>
+        <div style={{ marginBottom: 14 }}>
+          <EquipamentoFicha
+            ficha={result?.ficha ?? fromEquipamentoApi(eq)}
+            podeFoto={canInventario && Boolean(result?.ficha?.fotoDocumentoId)}
+            mostrarLinkOs={false}
+          />
         </div>
       )}
 
