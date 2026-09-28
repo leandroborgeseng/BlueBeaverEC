@@ -13,6 +13,8 @@ interface Lookup {
   nome: string;
   codigo?: string;
   fabricanteId?: string;
+  setorAreaId?: string | null;
+  setorArea?: { id: string; nome: string } | null;
 }
 
 interface HistoricoTag {
@@ -50,7 +52,7 @@ interface EquipDetail {
   modeloId?: string;
   fornecedorId?: string | null;
   centroCustoId?: string | null;
-  setor?: { id: string; nome: string };
+  setor?: { id: string; nome: string; setorArea?: { id: string; nome: string } | null };
   fabricante?: { id: string; nome: string };
   modelo?: { id: string; nome: string };
   fornecedor?: { id: string; nome: string } | null;
@@ -99,6 +101,7 @@ export function EquipamentoEditor({
   const [tab, setTab] = useState<Tab>("geral");
   const [data, setData] = useState<EquipDetail | null>(null);
   const [setores, setSetores] = useState<Lookup[]>([]);
+  const [setorAreas, setSetorAreas] = useState<Lookup[]>([]);
   const [fabricantes, setFabricantes] = useState<Lookup[]>([]);
   const [modelos, setModelos] = useState<Lookup[]>([]);
   const [fornecedores, setFornecedores] = useState<Lookup[]>([]);
@@ -110,6 +113,7 @@ export function EquipamentoEditor({
   const [patrimonio, setPatrimonio] = useState("");
   const [nSerie, setNSerie] = useState("");
   const [setorId, setSetorId] = useState("");
+  const [setorAreaId, setSetorAreaId] = useState("");
   const [setorInicial, setSetorInicial] = useState("");
   const [fabricanteId, setFabricanteId] = useState("");
   const [modeloId, setModeloId] = useState("");
@@ -161,6 +165,7 @@ export function EquipamentoEditor({
     const setor = eq.setorId ?? eq.setor?.id ?? "";
     setSetorId(setor);
     setSetorInicial(setor);
+    setSetorAreaId(eq.setor?.setorArea?.id ?? "");
     setFabricanteId(eq.fabricanteId ?? eq.fabricante?.id ?? "");
     setModeloId(eq.modeloId ?? eq.modelo?.id ?? "");
     setFornecedorId(eq.fornecedorId ?? eq.fornecedor?.id ?? "");
@@ -186,14 +191,16 @@ export function EquipamentoEditor({
     Promise.all([
       api<EquipDetail>(`/equipamentos/${encodeURIComponent(tag)}`),
       api<Lookup[]>("/setores"),
+      api<Lookup[]>("/setor-areas"),
       api<Lookup[]>("/fabricantes"),
       api<Lookup[]>("/fornecedores"),
       api<Lookup[]>("/centros-custo"),
       api<Lookup[]>("/planos/tipos-equipamento"),
     ])
-      .then(([eq, st, fb, fn, cc, tipos]) => {
+      .then(([eq, st, ar, fb, fn, cc, tipos]) => {
         applyForm(eq);
         setSetores(st);
+        setSetorAreas(ar);
         setFabricantes(fb);
         setFornecedores(fn);
         setCentros(cc);
@@ -404,34 +411,55 @@ export function EquipamentoEditor({
             <div>
               <FieldLabel>Setor</FieldLabel>
               <select
+                value={setorAreaId}
+                disabled={readonly}
+                onChange={(e) => {
+                  setSetorAreaId(e.target.value);
+                  setSetorId("");
+                }}
+                style={fieldStyle}
+              >
+                <option value="">Todos</option>
+                {setorAreas.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Localização</FieldLabel>
+              <select
                 value={setorId}
                 disabled={readonly}
                 onChange={(e) => setSetorId(e.target.value)}
                 style={fieldStyle}
               >
                 <option value="">Selecione…</option>
-                {setores.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nome}
-                  </option>
-                ))}
+                {setores
+                  .filter((s) => !setorAreaId || (s.setorAreaId ?? s.setorArea?.id) === setorAreaId)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nome}
+                    </option>
+                  ))}
               </select>
               {setorId && setorInicial && setorId !== setorInicial && (
                 <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.45 0.12 75)" }}>
-                  Salvar registra uma transferência de setor no transporte.
+                  Salvar registra uma transferência de localização no transporte.
                 </div>
               )}
             </div>
-            <div>
-              <FieldLabel>Localização</FieldLabel>
-              <input
-                value={localizacao}
-                disabled={readonly}
-                onChange={(e) => setLocalizacao(e.target.value)}
-                placeholder="Sala, leito…"
-                style={fieldStyle}
-              />
-            </div>
+          </div>
+          <div>
+            <FieldLabel>Localização física</FieldLabel>
+            <input
+              value={localizacao}
+              disabled={readonly}
+              onChange={(e) => setLocalizacao(e.target.value)}
+              placeholder="Sala, leito…"
+              style={fieldStyle}
+            />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

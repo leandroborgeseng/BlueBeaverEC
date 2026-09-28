@@ -67,7 +67,7 @@ export class RelatoriosService {
   async buildPayload(
     estabelecimentoId: string,
     template: string,
-    opts: { de?: string; ate?: string } = {},
+    opts: { de?: string; ate?: string; setorAreaId?: string; localizacaoId?: string } = {},
   ): Promise<ReportPayload> {
     switch (template) {
       case "resumo_mensal": {
@@ -119,7 +119,10 @@ export class RelatoriosService {
         };
       }
       case "inventario_equipamentos": {
-        const inv = await this.equipamentos.inventarioAtual(estabelecimentoId);
+        const inv = await this.equipamentos.inventarioAtual(estabelecimentoId, {
+          setorAreaId: opts.setorAreaId,
+          localizacaoId: opts.localizacaoId,
+        });
         return {
           template,
           geradoEm: new Date().toISOString(),
@@ -166,7 +169,7 @@ export class RelatoriosService {
     estabelecimentoId: string,
     template: string,
     formato: "pdf" | "xlsx" | "json" = "json",
-    opts: { de?: string; ate?: string } = {},
+    opts: { de?: string; ate?: string; setorAreaId?: string; localizacaoId?: string } = {},
   ) {
     const payload = await this.buildPayload(estabelecimentoId, template, opts);
 

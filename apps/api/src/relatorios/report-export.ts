@@ -299,6 +299,7 @@ type InvLinha = {
   nome?: string;
   situacao?: string;
   setor?: string;
+  localizacao?: string;
   fabricante?: string;
   modelo?: string;
   descricao?: string;
@@ -380,16 +381,17 @@ function buildInventarioPdf(payload: ReportPayload): Promise<Buffer> {
     doc.moveDown(0.35);
 
     const cols = [
-      { key: "tag" as const, label: "TAG", w: 58 },
-      { key: "nome" as const, label: "Nome", w: 120 },
-      { key: "situacao" as const, label: "Situação", w: 72 },
-      { key: "setor" as const, label: "Setor", w: 90 },
-      { key: "fabricante" as const, label: "Fabricante", w: 80 },
-      { key: "modelo" as const, label: "Modelo", w: 80 },
-      { key: "patrimonio" as const, label: "Patrimônio", w: 62 },
-      { key: "nSerie" as const, label: "Nº Série", w: 62 },
-      { key: "criticidade" as const, label: "Crit.", w: 40 },
-      { key: "plano" as const, label: "Plano", w: 70 },
+      { key: "tag" as const, label: "TAG", w: 52 },
+      { key: "nome" as const, label: "Nome", w: 100 },
+      { key: "situacao" as const, label: "Situação", w: 64 },
+      { key: "setor" as const, label: "Setor", w: 88 },
+      { key: "localizacao" as const, label: "Localização", w: 88 },
+      { key: "fabricante" as const, label: "Fabricante", w: 70 },
+      { key: "modelo" as const, label: "Modelo", w: 70 },
+      { key: "patrimonio" as const, label: "Patrimônio", w: 58 },
+      { key: "nSerie" as const, label: "Nº Série", w: 58 },
+      { key: "criticidade" as const, label: "Crit.", w: 36 },
+      { key: "plano" as const, label: "Plano", w: 58 },
     ];
 
     const drawTableHeader = () => {
@@ -421,7 +423,7 @@ function buildInventarioPdf(payload: ReportPayload): Promise<Buffer> {
         let cx = 36;
         doc.fillColor("#222").fontSize(6.5);
         for (const c of cols) {
-          const max = c.key === "nome" ? 36 : c.key === "setor" || c.key === "fabricante" ? 22 : 16;
+          const max = c.key === "nome" ? 28 : c.key === "setor" || c.key === "localizacao" || c.key === "fabricante" ? 20 : 14;
           doc.text(String(item[c.key] ?? "").slice(0, max), cx, y, { width: c.w, lineBreak: false });
           cx += c.w;
         }
@@ -633,6 +635,7 @@ async function buildInventarioXlsx(payload: ReportPayload): Promise<Buffer> {
     { header: "Nome", key: "nome", width: 28 },
     { header: "Situação", key: "situacao", width: 16 },
     { header: "Setor", key: "setor", width: 22 },
+    { header: "Localização", key: "localizacao", width: 24 },
     { header: "Fabricante", key: "fabricante", width: 18 },
     { header: "Modelo", key: "modelo", width: 18 },
     { header: "Descrição", key: "descricao", width: 22 },

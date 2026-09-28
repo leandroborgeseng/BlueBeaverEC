@@ -36,7 +36,7 @@ import { qrSvg } from "./qr-svg";
 import { sincronizarInstanciasCatalogo } from "../planos/plano-ocorrencia";
 
 const INCLUDE_FICHA = {
-  setor: true,
+  setor: { include: { setorArea: { select: { id: true, nome: true } } } },
   fabricante: true,
   modelo: true,
   descricao: true,
@@ -135,6 +135,7 @@ export class EquipamentosService {
     estabelecimentoId: string,
     query: {
       setor?: string;
+      setorArea?: string;
       fabricante?: string;
       modelo?: string;
       situacao?: SituacaoEquipamento;
@@ -196,6 +197,7 @@ export class EquipamentosService {
     const where: Prisma.EquipamentoWhereInput = {
       estabelecimentoId,
       ...(query.setor ? { setorId: query.setor } : {}),
+      ...(query.setorArea && !query.setor ? { setor: { setorAreaId: query.setorArea } } : {}),
       ...(query.fabricante ? { fabricanteId: query.fabricante } : {}),
       ...(query.modelo ? { modeloId: query.modelo } : {}),
       ...(query.situacao ? { situacao: query.situacao } : {}),
@@ -208,7 +210,7 @@ export class EquipamentosService {
       this.prisma.equipamento.findMany({
         where,
         include: {
-          setor: true,
+          setor: { include: { setorArea: { select: { id: true, nome: true } } } },
           fabricante: true,
           modelo: true,
           descricao: true,
@@ -368,14 +370,21 @@ export class EquipamentosService {
     });
   }
 
-  async inventarioAtual(estabelecimentoId: string) {
+  async inventarioAtual(
+    estabelecimentoId: string,
+    filtros: { setorAreaId?: string; localizacaoId?: string } = {},
+  ) {
     const items = await this.prisma.equipamento.findMany({
       where: {
         estabelecimentoId,
         situacao: { not: SituacaoEquipamento.ARQUIVADO },
+        ...(filtros.localizacaoId ? { setorId: filtros.localizacaoId } : {}),
+        ...(filtros.setorAreaId && !filtros.localizacaoId
+          ? { setor: { setorAreaId: filtros.setorAreaId } }
+          : {}),
       },
       include: {
-        setor: { select: { nome: true } },
+        setor: { select: { nome: true, setorArea: { select: { nome: true } } } },
         fabricante: { select: { nome: true } },
         modelo: { select: { nome: true } },
         descricao: { select: { nome: true, criticidade: true } },
@@ -389,7 +398,8 @@ export class EquipamentosService {
       nome: eq.nome,
       situacao: eq.situacao,
       condicaoUso: eq.condicaoUso,
-      setor: eq.setor.nome,
+      setor: eq.setor.setorArea?.nome ?? eq.setor.nome,
+      localizacao: eq.setor.nome,
       fabricante: eq.fabricante.nome,
       modelo: eq.modelo.nome,
       descricao: eq.descricao.nome,

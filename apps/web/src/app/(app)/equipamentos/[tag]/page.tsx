@@ -74,7 +74,7 @@ interface Pagina {
   dataDesativacao?: string | null;
   motivoDesativacao?: string | null;
   checklistRecebimentoPendente?: boolean;
-  setor?: { id: string; nome: string };
+  setor?: { id: string; nome: string; setorArea?: { id: string; nome: string } | null };
   fabricante?: { id: string; nome: string };
   modelo?: { id: string; nome: string };
   descricao?: { nome: string; criticidade: string };
@@ -455,7 +455,11 @@ export default function EquipamentoPagina() {
                 <div>{data.localizacaoFisica || "—"}</div>
               </div>
               <div>
-                <strong>Setor responsável</strong>
+                <strong>Setor</strong>
+                <div>{data.setor?.setorArea?.nome || "—"}</div>
+              </div>
+              <div>
+                <strong>Localização</strong>
                 <div>{data.setor?.nome || "—"}</div>
               </div>
               <div>
@@ -576,7 +580,7 @@ export default function EquipamentoPagina() {
                 />
               </div>
               <div>
-                <FieldLabel>Setor responsável</FieldLabel>
+                <FieldLabel>Localização</FieldLabel>
                 <select name="setorId" defaultValue={data.setor?.id} disabled={readonly} style={fieldStyle}>
                   {setores.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -585,7 +589,7 @@ export default function EquipamentoPagina() {
                   ))}
                 </select>
                 <div style={{ marginTop: 6, fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                  Trocar o setor grava uma transferência no transporte.
+                  Trocar a localização grava uma transferência no transporte.
                 </div>
               </div>
             </div>

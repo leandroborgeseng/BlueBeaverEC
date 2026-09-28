@@ -27,6 +27,8 @@ interface Lookup {
   codigo?: string;
   fabricanteId?: string;
   fabricante?: { id: string; nome: string };
+  setorAreaId?: string | null;
+  setorArea?: { id: string; nome: string } | null;
 }
 
 interface EquipamentoRow {
@@ -39,7 +41,7 @@ interface EquipamentoRow {
   nSerie?: string | null;
   criticidadeEquipamento?: string | null;
   checklistRecebimentoPendente: boolean;
-  setor: { nome: string };
+  setor: { nome: string; setorArea?: { id: string; nome: string } | null };
   fabricante: { nome: string };
   modelo: { nome: string };
   descricao: { nome: string; criticidade: string };
@@ -77,6 +79,7 @@ export default function EquipamentosPage() {
   const [situacao, setSituacao] = useState("");
   const [criticidade, setCriticidade] = useState("");
   const [setorId, setSetorId] = useState("");
+  const [setorAreaId, setSetorAreaId] = useState("");
   const [fabricanteId, setFabricanteId] = useState("");
   const [modeloId, setModeloId] = useState("");
   const [centroCustoId, setCentroCustoId] = useState("");
@@ -89,12 +92,14 @@ export default function EquipamentosPage() {
     situacao: "",
     criticidade: "",
     setorId: "",
+    setorAreaId: "",
     fabricanteId: "",
     modeloId: "",
     centroCustoId: "",
     inativos: false,
   });
   const [setores, setSetores] = useState<Lookup[]>([]);
+  const [setorAreas, setSetorAreas] = useState<Lookup[]>([]);
   const [fabricantes, setFabricantes] = useState<Lookup[]>([]);
   const [modelos, setModelos] = useState<Lookup[]>([]);
   const [centros, setCentros] = useState<CentroCusto[]>([]);
@@ -127,12 +132,14 @@ export default function EquipamentosPage() {
   useEffect(() => {
     Promise.all([
       api<Lookup[]>("/setores"),
+      api<Lookup[]>("/setor-areas"),
       api<Lookup[]>("/fabricantes"),
       api<Lookup[]>("/modelos"),
       api<CentroCusto[]>("/centros-custo"),
     ])
-      .then(([s, f, m, c]) => {
+      .then(([s, a, f, m, c]) => {
         setSetores(s);
+        setSetorAreas(a);
         setFabricantes(f);
         setModelos(m);
         setCentros(c);
@@ -148,6 +155,14 @@ export default function EquipamentosPage() {
     [modelos, fabricanteId],
   );
 
+  const localizacoesFiltradas = useMemo(
+    () =>
+      setorAreaId
+        ? setores.filter((s) => (s.setorAreaId ?? s.setorArea?.id) === setorAreaId)
+        : setores,
+    [setores, setorAreaId],
+  );
+
   const load = useCallback(
     async (pageOverride?: number) => {
       const currentPage = pageOverride ?? page;
@@ -158,6 +173,7 @@ export default function EquipamentosPage() {
       if (applied.nSerie.trim()) params.set("nSerie", applied.nSerie.trim());
       if (applied.situacao) params.set("situacao", applied.situacao);
       if (applied.criticidade) params.set("criticidade", applied.criticidade);
+      if (applied.setorAreaId) params.set("setorArea", applied.setorAreaId);
       if (applied.setorId) params.set("setor", applied.setorId);
       if (applied.fabricanteId) params.set("fabricante", applied.fabricanteId);
       if (applied.modeloId) params.set("modelo", applied.modeloId);
@@ -194,6 +210,7 @@ export default function EquipamentosPage() {
       situacao,
       criticidade,
       setorId,
+      setorAreaId,
       fabricanteId,
       modeloId,
       centroCustoId,
@@ -442,9 +459,26 @@ export default function EquipamentosPage() {
             </FRow>
             <FRow>
               <FItem label="Setor:" grow>
+                <select
+                  value={setorAreaId}
+                  onChange={(e) => {
+                    setSetorAreaId(e.target.value);
+                    setSetorId("");
+                  }}
+                  style={{ ...winFld, flex: 1 }}
+                >
+                  <option value="" />
+                  {setorAreas.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nome}
+                    </option>
+                  ))}
+                </select>
+              </FItem>
+              <FItem label="Localização:" grow>
                 <select value={setorId} onChange={(e) => setSetorId(e.target.value)} style={{ ...winFld, flex: 1 }}>
                   <option value="" />
-                  {setores.map((s) => (
+                  {localizacoesFiltradas.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.nome}
                     </option>
@@ -549,6 +583,7 @@ export default function EquipamentosPage() {
             { key: "tag", label: "TAG", width: 110 },
             { key: "nome", label: "Equipamento" },
             { key: "setor", label: "Setor" },
+            { key: "loc", label: "Localização" },
             { key: "fab", label: "Fabricante" },
             { key: "mod", label: "Modelo" },
             { key: "pat", label: "Patrimônio", width: 110 },
@@ -582,6 +617,7 @@ export default function EquipamentosPage() {
                   <strong>{eq.tag}</strong>
                 </td>
                 <td style={td}>{eq.nome}</td>
+                <td style={td}>{eq.setor.setorArea?.nome ?? "—"}</td>
                 <td style={td}>{eq.setor.nome}</td>
                 <td style={td}>{eq.fabricante.nome}</td>
                 <td style={td}>{eq.modelo.nome}</td>
@@ -596,7 +632,7 @@ export default function EquipamentosPage() {
           })}
           {items.length === 0 && (
             <tr>
-              <td colSpan={9} style={{ ...td, textAlign: "center", color: "#777", padding: 24 }}>
+              <td colSpan={10} style={{ ...td, textAlign: "center", color: "#777", padding: 24 }}>
                 Nenhum equipamento encontrado
               </td>
             </tr>

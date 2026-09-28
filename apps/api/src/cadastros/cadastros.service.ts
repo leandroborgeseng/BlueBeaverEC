@@ -9,6 +9,7 @@ import { podeEditarCadastros } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { listarResponsaveisAtribuiveis } from "../pessoas/responsaveis-os";
+import { MAPEAMENTO_LOCALIZACAO_SETOR } from "./setor-area-mapeamento";
 
 /** HP-30, hp 30 e HP_30 viram a mesma chave. */
 export function chaveModelo(nome: string) {
@@ -462,15 +463,165 @@ export class CadastrosService {
         ativo: true,
         ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
       },
+      include: {
+        setorArea: { select: { id: true, nome: true } },
+        _count: { select: { equipamentos: true } },
+      },
+      orderBy: [{ setorArea: { nome: "asc" } }, { nome: "asc" }],
+    });
+  }
+
+  async createSetor(user: AuthUser, nome: string, setorAreaId?: string) {
+    this.assertEdit(user);
+    const areaId = setorAreaId?.trim() || undefined;
+    if (areaId) {
+      const area = await this.prisma.setorArea.findFirst({
+        where: { id: areaId, estabelecimentoId: user.estabelecimentoId },
+      });
+      if (!area) throw new BadRequestException("Setor inválido");
+    }
+    return this.prisma.setor.create({
+      data: {
+        estabelecimentoId: user.estabelecimentoId,
+        nome: nome.trim(),
+        setorAreaId: areaId ?? null,
+      },
+      include: { setorArea: { select: { id: true, nome: true } } },
+    });
+  }
+
+  async updateSetor(user: AuthUser, id: string, data: { setorAreaId?: string | null }) {
+    this.assertEdit(user);
+    const loc = await this.prisma.setor.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+    });
+    if (!loc) throw new NotFoundException("Localização não encontrada");
+    let setorAreaId = loc.setorAreaId;
+    if (data.setorAreaId !== undefined) {
+      const raw = data.setorAreaId?.trim() || null;
+      if (raw) {
+        const area = await this.prisma.setorArea.findFirst({
+          where: { id: raw, estabelecimentoId: user.estabelecimentoId },
+        });
+        if (!area) throw new BadRequestException("Setor inválido");
+        setorAreaId = raw;
+      } else {
+        setorAreaId = null;
+      }
+    }
+    return this.prisma.setor.update({
+      where: { id: loc.id },
+      data: { setorAreaId },
+      include: { setorArea: { select: { id: true, nome: true } } },
+    });
+  }
+
+  setorAreas(estabelecimentoId: string, q?: string) {
+    return this.prisma.setorArea.findMany({
+      where: {
+        estabelecimentoId,
+        ativo: true,
+        ...(q ? { nome: { contains: q, mode: "insensitive" } } : {}),
+      },
+      include: {
+        _count: { select: { localizacoes: true } },
+        localizacoes: {
+          where: { ativo: true },
+          select: { id: true, nome: true, _count: { select: { equipamentos: true } } },
+          orderBy: { nome: "asc" },
+        },
+      },
       orderBy: { nome: "asc" },
     });
   }
 
-  async createSetor(user: AuthUser, nome: string) {
+  async createSetorArea(user: AuthUser, nome: string) {
     this.assertEdit(user);
-    return this.prisma.setor.create({
-      data: { estabelecimentoId: user.estabelecimentoId, nome: nome.trim() },
+    const n = nome.trim();
+    const existente = await this.prisma.setorArea.findUnique({
+      where: { estabelecimentoId_nome: { estabelecimentoId: user.estabelecimentoId, nome: n } },
     });
+    if (existente) return existente;
+    return this.prisma.setorArea.create({
+      data: { estabelecimentoId: user.estabelecimentoId, nome: n },
+    });
+  }
+
+  async aplicarMapeamentoSetores(user: AuthUser) {
+    this.assertEdit(user);
+    const eid = user.estabelecimentoId;
+    const nomesSetor = [...new Set(MAPEAMENTO_LOCALIZACAO_SETOR.map((m) => m.setor))];
+    const areas = new Map<string, string>();
+    for (const nome of nomesSetor) {
+      const row = await this.prisma.setorArea.upsert({
+        where: { estabelecimentoId_nome: { estabelecimentoId: eid, nome } },
+        update: {},
+        create: { estabelecimentoId: eid, nome },
+      });
+      areas.set(nome, row.id);
+    }
+
+    const localizacoes = await this.prisma.setor.findMany({
+      where: { estabelecimentoId: eid },
+      select: { id: true, nome: true, setorAreaId: true },
+    });
+    const porNome = new Map(localizacoes.map((l) => [l.nome, l]));
+    let atualizadas = 0;
+    const mapeamentoSemLocalizacao: string[] = [];
+
+    for (const m of MAPEAMENTO_LOCALIZACAO_SETOR) {
+      const loc = porNome.get(m.localizacao);
+      if (!loc) {
+        mapeamentoSemLocalizacao.push(m.localizacao);
+        continue;
+      }
+      const areaId = areas.get(m.setor);
+      if (!areaId) continue;
+      if (loc.setorAreaId !== areaId) {
+        await this.prisma.setor.update({ where: { id: loc.id }, data: { setorAreaId: areaId } });
+        loc.setorAreaId = areaId;
+        atualizadas += 1;
+      }
+    }
+
+    const depois = await this.prisma.setor.findMany({
+      where: { estabelecimentoId: eid },
+      select: { id: true, nome: true, setorAreaId: true },
+      orderBy: { nome: "asc" },
+    });
+    const semSetor = depois.filter((l) => !l.setorAreaId).map((l) => ({ id: l.id, nome: l.nome }));
+    const equipamentos = await this.prisma.equipamento.count({ where: { estabelecimentoId: eid } });
+
+    return {
+      setores: nomesSetor.length,
+      localizacoes: depois.length,
+      localizacoesAtualizadas: atualizadas,
+      semSetor,
+      mapeamentoSemLocalizacao,
+      equipamentos,
+      equipamentosSemLocalizacao: 0,
+    };
+  }
+
+  async statusMapeamentoSetores(estabelecimentoId: string) {
+    const [localizacoes, setores, equipamentos] = await Promise.all([
+      this.prisma.setor.findMany({
+        where: { estabelecimentoId },
+        select: { id: true, nome: true, setorAreaId: true, setorArea: { select: { nome: true } } },
+        orderBy: { nome: "asc" },
+      }),
+      this.prisma.setorArea.count({ where: { estabelecimentoId } }),
+      this.prisma.equipamento.count({ where: { estabelecimentoId } }),
+    ]);
+    const semSetor = localizacoes.filter((l) => !l.setorAreaId).map((l) => ({ id: l.id, nome: l.nome }));
+    return {
+      setores,
+      localizacoes: localizacoes.length,
+      localizacoesComSetor: localizacoes.length - semSetor.length,
+      semSetor,
+      equipamentos,
+      equipamentosSemLocalizacao: 0,
+    };
   }
 
   fornecedores(estabelecimentoId: string, q?: string) {

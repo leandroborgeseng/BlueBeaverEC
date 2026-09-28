@@ -9,6 +9,8 @@ import { Overlay, WinForm, Linha, fld, YELLOW, disabledFld } from "@/components/
 interface Lookup {
   id: string;
   nome: string;
+  setorAreaId?: string | null;
+  setorArea?: { id: string; nome: string } | null;
 }
 
 interface Centro extends Lookup {
@@ -65,6 +67,7 @@ export function EquipamentoNovoDialog({
   const verValores = Boolean(useSession()?.permissoes?.verValoresFinanceiros);
   const [tab, setTab] = useState<"geral" | "obs">("geral");
   const [setores, setSetores] = useState<Lookup[]>([]);
+  const [setorAreas, setSetorAreas] = useState<Lookup[]>([]);
   const [planos, setPlanos] = useState<Lookup[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [fornecedores, setFornecedores] = useState<Lookup[]>([]);
@@ -76,6 +79,7 @@ export function EquipamentoNovoDialog({
   const [descricaoId, setDescricaoId] = useState("");
   const [modeloId, setModeloId] = useState("");
   const [setorId, setSetorId] = useState("");
+  const [setorAreaId, setSetorAreaId] = useState("");
   const [fornecedorId, setFornecedorId] = useState("");
   const [centroCustoId, setCentroCustoId] = useState("");
   const [nome, setNome] = useState("");
@@ -113,19 +117,26 @@ export function EquipamentoNovoDialog({
       (m) => m.nome.toLowerCase().includes(t) || m.fabricante.nome.toLowerCase().includes(t),
     );
   }, [modelos, filtroModelo]);
-  const setoresVis = useMemo(() => filtra(setores, filtroSetor), [setores, filtroSetor]);
+  const setoresVis = useMemo(() => {
+    const base = setorAreaId
+      ? setores.filter((s) => (s.setorAreaId ?? s.setorArea?.id) === setorAreaId)
+      : setores;
+    return filtra(base, filtroSetor);
+  }, [setores, setorAreaId, filtroSetor]);
 
   useEffect(() => {
     void Promise.all([
       api<Lookup[]>("/setores"),
+      api<Lookup[]>("/setor-areas"),
       api<Lookup[]>("/planos-descricao"),
       api<Modelo[]>("/modelos"),
       api<Lookup[]>("/fornecedores"),
       api<Centro[]>("/centros-custo"),
       api<{ tag: string }>("/equipamentos/proxima-tag"),
     ])
-      .then(([s, p, m, fo, c, t]) => {
+      .then(([s, a, p, m, fo, c, t]) => {
         setSetores(s);
+        setSetorAreas(a);
         setPlanos(p);
         setModelos(m);
         setFornecedores(fo);
@@ -180,7 +191,7 @@ export function EquipamentoNovoDialog({
     if (!nome.trim()) return "Informe o nome / descrição";
     if (!descricaoId) return "Informe a descrição";
     if (!modeloId) return "Informe o modelo";
-    if (!setorId) return "Informe o setor";
+    if (!setorId) return "Informe a localização";
     if (propriedade === "OUTRO" && !propriedadeOutra.trim()) return "Informe a situação (outra)";
     if (!multiplos && !tag.trim()) return "Informe a TAG";
     return null;
@@ -378,6 +389,23 @@ export function EquipamentoNovoDialog({
             </select>
           </Linha>
           <Linha label="Setor:">
+            <select
+              value={setorAreaId}
+              onChange={(e) => {
+                setSetorAreaId(e.target.value);
+                setSetorId("");
+              }}
+              style={{ ...fld, flex: 1 }}
+            >
+              <option value="">Todos</option>
+              {setorAreas.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
+          </Linha>
+          <Linha label="Localização:">
             <input
               value={filtroSetor}
               onChange={(e) => setFiltroSetor(e.target.value)}
@@ -396,7 +424,7 @@ export function EquipamentoNovoDialog({
               )}
             </select>
           </Linha>
-          <Linha label="Localização:">
+          <Linha label="Loc. física:">
             <input value={localizacao} onChange={(e) => setLocalizacao(e.target.value)} placeholder="Sala, leito…" style={{ ...fld, flex: 1 }} />
           </Linha>
           {!multiplos && (

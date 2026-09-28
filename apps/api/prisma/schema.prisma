@@ -126,6 +126,7 @@ model Estabelecimento {
 
   usuarios               UsuarioEstabelecimento[]
   setores                Setor[]
+  setorAreas             SetorArea[]
   fabricantes            Fabricante[]
   fornecedores           Fornecedor[]
   planosDescricao        PlanoDescricao[]
@@ -230,13 +231,16 @@ model LogAcesso {
   usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 }
 
+/// Localização física (quarto, sala, depósito). IDs e nomes não mudam.
 model Setor {
   id                 String @id @default(cuid())
   estabelecimentoId  String
   nome               String
   ativo              Boolean @default(true)
+  setorAreaId        String?
 
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  setorArea       SetorArea?     @relation(fields: [setorAreaId], references: [id], onDelete: SetNull)
   equipamentos    Equipamento[]
   ordensServico   OrdemServico[]
   movimentacoesOrigem  EquipamentoMovimentacao[] @relation("MovOrigemSetor")
@@ -245,6 +249,23 @@ model Setor {
   ocorrenciasSeguranca OcorrenciaSeguranca[]
 
   @@unique([estabelecimentoId, nome])
+  @@index([setorAreaId])
+}
+
+/// Área funcional que agrupa várias localizações. Equipamentos continuam na localização.
+model SetorArea {
+  id                 String   @id @default(cuid())
+  estabelecimentoId  String
+  nome               String
+  ativo              Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
+  localizacoes    Setor[]
+
+  @@unique([estabelecimentoId, nome])
+  @@index([estabelecimentoId])
 }
 
 model Fabricante {

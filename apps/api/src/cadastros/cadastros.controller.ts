@@ -14,6 +14,22 @@ class NomeDto {
   nome!: string;
 }
 
+class CreateLocalizacaoDto {
+  @IsString()
+  @MinLength(2)
+  nome!: string;
+
+  @IsOptional()
+  @IsString()
+  setorAreaId?: string;
+}
+
+class UpdateLocalizacaoDto {
+  @IsOptional()
+  @IsString()
+  setorAreaId?: string | null;
+}
+
 class ModeloDto {
   @IsString()
   fabricanteId!: string;
@@ -148,6 +164,28 @@ export class CadastrosController {
     return this.cadastros.createModelo(user, body.fabricanteId, body.nome);
   }
 
+  @Get("setor-areas")
+  setorAreas(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
+    return this.cadastros.setorAreas(user.estabelecimentoId, q);
+  }
+
+  @Get("setor-areas/status")
+  statusMapeamento(@CurrentUser() user: AuthUser) {
+    return this.cadastros.statusMapeamentoSetores(user.estabelecimentoId);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("setor-areas")
+  createSetorArea(@CurrentUser() user: AuthUser, @Body() body: NomeDto) {
+    return this.cadastros.createSetorArea(user, body.nome);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Post("setor-areas/aplicar-mapeamento")
+  aplicarMapeamento(@CurrentUser() user: AuthUser) {
+    return this.cadastros.aplicarMapeamentoSetores(user);
+  }
+
   @Get("setores")
   setores(@CurrentUser() user: AuthUser, @Query("q") q?: string) {
     return this.cadastros.setores(user.estabelecimentoId, q);
@@ -155,8 +193,14 @@ export class CadastrosController {
 
   @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
   @Post("setores")
-  createSetor(@CurrentUser() user: AuthUser, @Body() body: NomeDto) {
-    return this.cadastros.createSetor(user, body.nome);
+  createSetor(@CurrentUser() user: AuthUser, @Body() body: CreateLocalizacaoDto) {
+    return this.cadastros.createSetor(user, body.nome, body.setorAreaId);
+  }
+
+  @RequirePermission("equipamentos", PERMISSAO_NIVEL.EDICAO)
+  @Patch("setores/:id")
+  updateSetor(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: UpdateLocalizacaoDto) {
+    return this.cadastros.updateSetor(user, id, body);
   }
 
   @Get("planos-descricao")

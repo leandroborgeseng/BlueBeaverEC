@@ -23,6 +23,14 @@ class GerarDto {
   @IsOptional()
   @IsString()
   ate?: string;
+
+  @IsOptional()
+  @IsString()
+  setorAreaId?: string;
+
+  @IsOptional()
+  @IsString()
+  localizacaoId?: string;
 }
 
 class AgendamentoDto {
@@ -61,6 +69,8 @@ export class RelatoriosController {
     const out = await this.relatorios.gerar(user.estabelecimentoId, body.template, formato, {
       de: body.de,
       ate: body.ate,
+      setorAreaId: body.setorAreaId,
+      localizacaoId: body.localizacaoId,
     });
 
     if (out.formato === "json") {

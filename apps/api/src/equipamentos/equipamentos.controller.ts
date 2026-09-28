@@ -527,6 +527,7 @@ export class EquipamentosController {
   list(
     @CurrentUser() user: AuthUser,
     @Query("setor") setor?: string,
+    @Query("setorArea") setorArea?: string,
     @Query("fabricante") fabricante?: string,
     @Query("modelo") modelo?: string,
     @Query("situacao") situacao?: SituacaoEquipamento,
@@ -543,6 +544,7 @@ export class EquipamentosController {
   ) {
     return this.equipamentos.list(user.estabelecimentoId, {
       setor,
+      setorArea,
       fabricante,
       modelo,
       situacao,

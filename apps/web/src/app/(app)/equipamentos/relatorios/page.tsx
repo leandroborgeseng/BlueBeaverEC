@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, downloadApi } from "@/lib/api";
-import { ToolBtn, WinScreen, zebraRow } from "@/components/equipamentos/eq-win-ui";
+import { FItem, FRow, ToolBtn, WinScreen, zebraRow, winFld } from "@/components/equipamentos/eq-win-ui";
 
 interface Tpl {
   codigo: string;
@@ -22,23 +22,43 @@ const ORDEM = [
 
 export default function RelatoriosEquipamentosPage() {
   const [templates, setTemplates] = useState<Tpl[]>([]);
+  const [setorAreas, setSetorAreas] = useState<Array<{ id: string; nome: string }>>([]);
+  const [localizacoes, setLocalizacoes] = useState<Array<{ id: string; nome: string; setorAreaId?: string | null }>>([]);
+  const [setorAreaId, setSetorAreaId] = useState("");
+  const [localizacaoId, setLocalizacaoId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   useEffect(() => {
-    api<Tpl[]>("/relatorios/templates")
-      .then((t) =>
+    Promise.all([
+      api<Tpl[]>("/relatorios/templates"),
+      api<Array<{ id: string; nome: string }>>("/setor-areas").catch(() => [] as Array<{ id: string; nome: string }>),
+      api<Array<{ id: string; nome: string; setorAreaId?: string | null }>>("/setores").catch(
+        () => [] as Array<{ id: string; nome: string; setorAreaId?: string | null }>,
+      ),
+    ])
+      .then(([t, a, l]) => {
         setTemplates(
-          [...t].sort((a, b) => {
-            const ia = ORDEM.indexOf(a.codigo);
-            const ib = ORDEM.indexOf(b.codigo);
+          [...t].sort((x, y) => {
+            const ia = ORDEM.indexOf(x.codigo);
+            const ib = ORDEM.indexOf(y.codigo);
             return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
           }),
-        ),
-      )
+        );
+        setSetorAreas(a);
+        setLocalizacoes(l);
+      })
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
   }, []);
+
+  const locsFiltradas = useMemo(
+    () =>
+      setorAreaId
+        ? localizacoes.filter((l) => l.setorAreaId === setorAreaId)
+        : localizacoes,
+    [localizacoes, setorAreaId],
+  );
 
   async function gerar(codigo: string, formato: "pdf" | "xlsx") {
     setBusy(`${codigo}:${formato}`);
@@ -47,7 +67,15 @@ export default function RelatoriosEquipamentosPage() {
     try {
       await downloadApi(
         "/relatorios/gerar",
-        { method: "POST", body: JSON.stringify({ template: codigo, formato }) },
+        {
+          method: "POST",
+          body: JSON.stringify({
+            template: codigo,
+            formato,
+            setorAreaId: setorAreaId || undefined,
+            localizacaoId: localizacaoId || undefined,
+          }),
+        },
         `${codigo}.${formato}`,
       );
       setMsg(`Download: ${codigo}.${formato}`);
@@ -63,6 +91,41 @@ export default function RelatoriosEquipamentosPage() {
       title="Relatórios"
       error={erro}
       toolbar={msg ? <span style={{ fontSize: 12, color: "#2a7a2a" }}>{msg}</span> : undefined}
+      filters={
+        <FRow>
+          <FItem label="Setor:" grow>
+            <select
+              value={setorAreaId}
+              onChange={(e) => {
+                setSetorAreaId(e.target.value);
+                setLocalizacaoId("");
+              }}
+              style={{ ...winFld, flex: 1 }}
+            >
+              <option value="">Todos</option>
+              {setorAreas.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
+          </FItem>
+          <FItem label="Localização:" grow>
+            <select
+              value={localizacaoId}
+              onChange={(e) => setLocalizacaoId(e.target.value)}
+              style={{ ...winFld, flex: 1 }}
+            >
+              <option value="">Todas</option>
+              {locsFiltradas.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
+          </FItem>
+        </FRow>
+      }
     >
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
         <thead>

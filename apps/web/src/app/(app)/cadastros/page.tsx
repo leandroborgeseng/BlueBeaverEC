@@ -22,7 +22,10 @@ import {
 interface Named {
   id: string;
   nome: string;
-  _count?: { equipamentos?: number; modelos?: number };
+  setorAreaId?: string | null;
+  setorArea?: { id: string; nome: string } | null;
+  _count?: { equipamentos?: number; modelos?: number; localizacoes?: number };
+  localizacoes?: Array<{ id: string; nome: string; _count?: { equipamentos?: number } }>;
 }
 
 interface Modelo extends Named {
@@ -37,14 +40,15 @@ interface Plano extends Named {
   slaConclusaoHoras?: number | null;
 }
 
-type CadastroTab = "fabricantes" | "modelos" | "setores" | "planos" | "fornecedores";
+type CadastroTab = "fabricantes" | "modelos" | "setores" | "localizacoes" | "planos" | "fornecedores";
 type DialogKind = "novo" | "alterar" | "consolidar-modelos" | "consolidar-fabricantes";
-const TAB_KEYS: CadastroTab[] = ["fabricantes", "modelos", "setores", "planos", "fornecedores"];
+const TAB_KEYS: CadastroTab[] = ["fabricantes", "modelos", "setores", "localizacoes", "planos", "fornecedores"];
 
 const TITULO: Record<CadastroTab, string> = {
   fabricantes: "Fabricantes",
   modelos: "Modelos",
   setores: "Setores",
+  localizacoes: "Localizações",
   planos: "Plano de Descrições",
   fornecedores: "Fornecedores",
 };
@@ -67,6 +71,7 @@ function CadastrosInner() {
   const [fabricantes, setFabricantes] = useState<Named[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [setores, setSetores] = useState<Named[]>([]);
+  const [localizacoes, setLocalizacoes] = useState<Named[]>([]);
   const [planos, setPlanos] = useState<Plano[]>([]);
   const [fornecedores, setFornecedores] = useState<Named[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
@@ -77,9 +82,10 @@ function CadastrosInner() {
   const [treeOpen, setTreeOpen] = useState(true);
 
   async function reload() {
-    const [f, m, s, p, fo] = await Promise.all([
+    const [f, m, s, loc, p, fo] = await Promise.all([
       api<Named[]>("/fabricantes"),
       api<Modelo[]>("/modelos"),
+      api<Named[]>("/setor-areas"),
       api<Named[]>("/setores"),
       api<Plano[]>("/planos-descricao"),
       api<Named[]>("/fornecedores"),
@@ -87,6 +93,7 @@ function CadastrosInner() {
     setFabricantes(f);
     setModelos(m);
     setSetores(s);
+    setLocalizacoes(loc);
     setPlanos(p);
     setFornecedores(fo);
   }
@@ -109,9 +116,12 @@ function CadastrosInner() {
     if (tab === "fabricantes") return fabricantes.filter((x) => match(x.nome));
     if (tab === "modelos") return modelos.filter((x) => match(x.nome, x.fabricante.nome));
     if (tab === "setores") return setores.filter((x) => match(x.nome));
+    if (tab === "localizacoes") {
+      return localizacoes.filter((x) => match(x.nome, x.setorArea?.nome));
+    }
     if (tab === "planos") return planos.filter((x) => match(x.nome, x.criticidade));
     return fornecedores.filter((x) => match(x.nome));
-  }, [tab, termo, fabricantes, modelos, setores, planos, fornecedores]);
+  }, [tab, termo, fabricantes, modelos, setores, localizacoes, planos, fornecedores]);
 
   const selectedPlano = planos.find((p) => p.id === selectedId) ?? null;
 
@@ -154,6 +164,32 @@ function CadastrosInner() {
                 Alterar
               </ToolBtn>
             )}
+            {tab === "localizacoes" && podeEditar && (
+              <ToolBtn disabled={!selectedId} onClick={() => selectedId && setDialog("alterar")}>
+                Alterar setor
+              </ToolBtn>
+            )}
+            {tab === "setores" && podeEditar && (
+              <ToolBtn
+                onClick={() => {
+                  setMsg(null);
+                  void api<{
+                    localizacoesAtualizadas: number;
+                    semSetor: Array<{ nome: string }>;
+                  }>("/setor-areas/aplicar-mapeamento", { method: "POST", body: "{}" })
+                    .then((r) => {
+                      const sem = r.semSetor.length
+                        ? ` Sem setor: ${r.semSetor.map((s) => s.nome).join(", ")}.`
+                        : "";
+                      setMsg(`${r.localizacoesAtualizadas} localização(ões) atualizada(s).${sem}`);
+                      return reload();
+                    })
+                    .catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
+                }}
+              >
+                Aplicar mapeamento
+              </ToolBtn>
+            )}
             {tab === "modelos" && podeEditar && (
               <>
                 <ToolBtn onClick={() => { setMsg(null); setDialog("consolidar-modelos"); }}>
@@ -176,6 +212,7 @@ function CadastrosInner() {
               <>
                 <span style={{ width: 12 }} />
                 <ToolBtn onClick={() => router.replace("/cadastros?tab=setores")}>Setores</ToolBtn>
+                <ToolBtn onClick={() => router.replace("/cadastros?tab=localizacoes")}>Localizações</ToolBtn>
                 <ToolBtn onClick={() => router.replace("/cadastros?tab=fornecedores")}>Fornecedores</ToolBtn>
               </>
             )}
@@ -268,10 +305,37 @@ function CadastrosInner() {
             ))}
           </ZebraTable>
         ) : tab === "setores" ? (
-          <ZebraTable columns={[{ key: "nome", label: "Setor" }]}>
+          <ZebraTable
+            columns={[
+              { key: "nome", label: "Setor" },
+              { key: "loc", label: "Localizações", width: 120 },
+            ]}
+          >
             {(lista as Named[]).map((s, i) => (
               <tr key={s.id} style={zebraRow(i, s.id === selectedId)} onClick={() => setSelectedId(s.id)}>
                 <td style={td}>{s.nome}</td>
+                <td style={td}>{s._count?.localizacoes ?? s.localizacoes?.length ?? ""}</td>
+              </tr>
+            ))}
+          </ZebraTable>
+        ) : tab === "localizacoes" ? (
+          <ZebraTable
+            columns={[
+              { key: "setor", label: "Setor", width: 220 },
+              { key: "nome", label: "Localização" },
+              { key: "eq", label: "Equipamentos", width: 110 },
+            ]}
+          >
+            {(lista as Named[]).map((s, i) => (
+              <tr
+                key={s.id}
+                style={zebraRow(i, s.id === selectedId)}
+                onClick={() => setSelectedId(s.id)}
+                onDoubleClick={() => podeEditar && setDialog("alterar")}
+              >
+                <td style={td}>{s.setorArea?.nome || "—"}</td>
+                <td style={td}>{s.nome}</td>
+                <td style={td}>{s._count?.equipamentos ?? ""}</td>
               </tr>
             ))}
           </ZebraTable>
@@ -326,9 +390,24 @@ function CadastrosInner() {
               </form>
             )}
             {tab === "setores" && (
-              <form onSubmit={(e) => void createNamed("/setores", {}, e)}>
-                <Campo nome="Setor" name="nome" placeholder="UTI Adulto…" />
+              <form onSubmit={(e) => void createNamed("/setor-areas", {}, e)}>
+                <Campo nome="Setor" name="nome" placeholder="Centro Cirúrgico…" />
                 <button type="submit" style={saveBtn}>Adicionar setor</button>
+              </form>
+            )}
+            {tab === "localizacoes" && (
+              <form onSubmit={(e) => void createNamed("/setores", {}, e)}>
+                <label style={lab}>Setor</label>
+                <select name="setorAreaId" style={{ ...fld, width: "100%", marginBottom: 10 }} defaultValue="">
+                  <option value="">Sem setor</option>
+                  {setores.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nome}
+                    </option>
+                  ))}
+                </select>
+                <Campo nome="Localização" name="nome" placeholder="Sala, quarto…" />
+                <button type="submit" style={saveBtn}>Adicionar localização</button>
               </form>
             )}
             {tab === "planos" && (
@@ -396,6 +475,52 @@ function CadastrosInner() {
             void reload().catch((e) => setMsg(e instanceof Error ? e.message : "Erro"));
           }}
         />
+      )}
+      {dialog === "alterar" && tab === "localizacoes" && selectedId && (
+        <Overlay onClose={() => setDialog(null)} fixed>
+          <WinForm
+            title="Alterar setor da localização"
+            width="min(420px, 96vw)"
+            onCancel={() => setDialog(null)}
+            showContinuar={false}
+            hideSubmit
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                void api(`/setores/${selectedId}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ setorAreaId: String(fd.get("setorAreaId") || "") || null }),
+                })
+                  .then(() => {
+                    setDialog(null);
+                    setMsg("Setor atualizado");
+                    return reload();
+                  })
+                  .catch((err) => setMsg(err instanceof Error ? err.message : "Erro"));
+              }}
+            >
+              <p style={{ fontSize: 13, margin: "0 0 10px" }}>
+                {localizacoes.find((l) => l.id === selectedId)?.nome}
+              </p>
+              <label style={lab}>Setor</label>
+              <select
+                name="setorAreaId"
+                style={{ ...fld, width: "100%", marginBottom: 10 }}
+                defaultValue={localizacoes.find((l) => l.id === selectedId)?.setorArea?.id ?? ""}
+              >
+                <option value="">Sem setor</option>
+                {setores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" style={saveBtn}>Salvar</button>
+            </form>
+          </WinForm>
+        </Overlay>
       )}
     </>
   );
