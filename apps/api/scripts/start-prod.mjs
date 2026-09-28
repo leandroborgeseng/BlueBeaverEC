@@ -12,6 +12,10 @@
  * Pedidos PENDENTE → OS: maybe-converter-solicitacoes-abertas (marcador
  * solicitacoes_abertas_viram_os_v1). Roda uma vez; não apaga inventário.
  *
+ * TAGs HEF-{sigla}-{seq}: maybe-recodificar-tags-setor (marcador
+ * tags_hef_por_setor_v1). Backup em _backup_equipamento_tag_20260928.
+ * Force: RECODE_TAGS_SETOR_ON_BOOT=1. Não apaga inventário.
+ *
  * Evita `pnpm --filter` (quebra se o host ainda aponta @nexo/*).
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -296,6 +300,18 @@ const convSol = spawnSync(process.execPath, [path.join(root, "scripts/maybe-conv
 if (convSol.status !== 0) {
   console.error(
     `[aion] conversão de solicitações abertas falhou (code=${convSol.status ?? "?"}) — API sobe mesmo assim`,
+  );
+}
+
+const recodeTags = spawnSync(process.execPath, [path.join(root, "scripts/maybe-recodificar-tags-setor.mjs")], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  shell: false,
+});
+if (recodeTags.status !== 0) {
+  console.error(
+    `[aion] recodificação de TAGs por setor falhou (code=${recodeTags.status ?? "?"}) — API sobe mesmo assim`,
   );
 }
 
