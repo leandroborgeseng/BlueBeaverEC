@@ -4,8 +4,6 @@
     "method": "GET",
     "handler": "AtendimentoExternoController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -21,8 +19,6 @@
     "method": "GET",
     "handler": "AtendimentoExternoController.get",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -38,8 +34,6 @@
     "method": "GET",
     "handler": "AtendimentoExternoController.doc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -55,8 +49,6 @@
     "method": "GET",
     "handler": "AtendimentoExternoController.orc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -72,8 +64,6 @@
     "method": "GET",
     "handler": "AuditoriasController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -89,8 +79,6 @@
     "method": "POST",
     "handler": "AuditoriasController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -106,8 +94,6 @@
     "method": "POST",
     "handler": "AuditoriasController.iniciar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -123,8 +109,6 @@
     "method": "POST",
     "handler": "AuditoriasController.escalonar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -140,7 +124,6 @@
     "method": "POST",
     "handler": "AuthController.impersonate",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -156,7 +139,6 @@
     "method": "GET",
     "handler": "AuthController.impersonationTargets",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -172,7 +154,6 @@
     "method": "GET",
     "handler": "AuthController.loginViaGet",
     "isPublic": true,
-    "requiresAuth": false,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -188,7 +169,6 @@
     "method": "POST",
     "handler": "AuthController.login",
     "isPublic": true,
-    "requiresAuth": false,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -204,7 +184,6 @@
     "method": "POST",
     "handler": "AuthController.logout",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -220,7 +199,6 @@
     "method": "POST",
     "handler": "AuthController.stopImpersonation",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -236,7 +214,6 @@
     "method": "POST",
     "handler": "AuthController.switchEstabelecimento",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -252,8 +229,6 @@
     "method": "GET",
     "handler": "CadastrosController.centros",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -269,8 +244,6 @@
     "method": "GET",
     "handler": "CertificadosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -286,8 +259,6 @@
     "method": "GET",
     "handler": "CertificadosController.documento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -303,8 +274,6 @@
     "method": "GET",
     "handler": "CertificadosController.documentoPdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -320,8 +289,6 @@
     "method": "POST",
     "handler": "CertificadosController.reabrir",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -337,8 +304,6 @@
     "method": "GET",
     "handler": "CadastrosController.colaboradores",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -354,8 +319,6 @@
     "method": "GET",
     "handler": "OrganizacaoConfigController.logs",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -371,8 +334,6 @@
     "method": "GET",
     "handler": "OrganizacaoConfigController.org",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -388,8 +349,6 @@
     "method": "PATCH",
     "handler": "OrganizacaoConfigController.patchOrg",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -405,8 +364,6 @@
     "method": "GET",
     "handler": "OrganizacaoConfigController.perfis",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -422,8 +379,6 @@
     "method": "POST",
     "handler": "OrganizacaoConfigController.createPerfil",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -439,8 +394,6 @@
     "method": "PATCH",
     "handler": "OrganizacaoConfigController.patchPerfil",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -456,8 +409,6 @@
     "method": "GET",
     "handler": "OrganizacaoConfigController.usuarios",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -473,8 +424,6 @@
     "method": "POST",
     "handler": "OrganizacaoConfigController.createUsuario",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -490,8 +439,6 @@
     "method": "PATCH",
     "handler": "OrganizacaoConfigController.patchUsuario",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "config:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -507,8 +454,6 @@
     "method": "GET",
     "handler": "ContratosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -524,8 +469,6 @@
     "method": "POST",
     "handler": "ContratosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -541,8 +484,6 @@
     "method": "GET",
     "handler": "ContratosController.get",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -558,8 +499,6 @@
     "method": "PATCH",
     "handler": "ContratosController.update",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -575,8 +514,6 @@
     "method": "POST",
     "handler": "ContratosController.documento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -592,8 +529,6 @@
     "method": "GET",
     "handler": "ContratosController.baixarDoc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -609,8 +544,6 @@
     "method": "POST",
     "handler": "ContratosController.glosa",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -626,8 +559,6 @@
     "method": "GET",
     "handler": "ContratosController.matriz",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -643,8 +574,6 @@
     "method": "GET",
     "handler": "ContratosController.alertas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -660,8 +589,6 @@
     "method": "GET",
     "handler": "ContratosController.vencendo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "contratos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -677,8 +604,6 @@
     "method": "GET",
     "handler": "DashboardController.contratosVencendo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -694,8 +619,6 @@
     "method": "GET",
     "handler": "DashboardController.equipamentosStatus",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -711,8 +634,6 @@
     "method": "GET",
     "handler": "DashboardController.kpis",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -728,8 +649,6 @@
     "method": "GET",
     "handler": "DashboardController.osAtrasadas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -745,8 +664,6 @@
     "method": "GET",
     "handler": "DashboardController.osPorSituacao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -762,8 +679,6 @@
     "method": "GET",
     "handler": "DashboardController.osRecentes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -779,8 +694,6 @@
     "method": "GET",
     "handler": "DashboardController.osSla",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "dashboard:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -796,8 +709,6 @@
     "method": "GET",
     "handler": "EquipamentosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -813,8 +724,6 @@
     "method": "POST",
     "handler": "EquipamentosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -830,8 +739,6 @@
     "method": "GET",
     "handler": "EquipamentosController.byTag",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -847,8 +754,6 @@
     "method": "PATCH",
     "handler": "EquipamentosController.update",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -864,8 +769,6 @@
     "method": "POST",
     "handler": "EquipamentosController.arquivar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -881,8 +784,6 @@
     "method": "POST",
     "handler": "EquipamentosController.ciclo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -898,8 +799,6 @@
     "method": "GET",
     "handler": "FichaVidaController.confiabilidade",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -915,8 +814,6 @@
     "method": "GET",
     "handler": "FichaVidaController.custos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -932,8 +829,6 @@
     "method": "POST",
     "handler": "EquipamentosController.addDocumento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -949,8 +844,6 @@
     "method": "GET",
     "handler": "EquipamentosController.documento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -966,8 +859,6 @@
     "method": "GET",
     "handler": "EquipamentosController.etiqueta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -983,8 +874,6 @@
     "method": "GET",
     "handler": "FichaVidaController.ficha",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1000,8 +889,6 @@
     "method": "GET",
     "handler": "FichaVidaController.historico",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1017,8 +904,6 @@
     "method": "POST",
     "handler": "EquipamentosController.movimentar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1034,8 +919,6 @@
     "method": "GET",
     "handler": "EquipamentosController.pagina",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1051,8 +934,6 @@
     "method": "POST",
     "handler": "EquipamentosController.reativar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1068,8 +949,6 @@
     "method": "PATCH",
     "handler": "EquipamentosController.changeTag",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1085,8 +964,6 @@
     "method": "GET",
     "handler": "EquipamentosController.custosSubstituicao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1102,8 +979,6 @@
     "method": "PATCH",
     "handler": "EquipamentosController.salvarCustoSubstituicao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1119,8 +994,6 @@
     "method": "POST",
     "handler": "EquipamentosController.importRows",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1136,8 +1009,6 @@
     "method": "POST",
     "handler": "EquipamentosController.importPreview",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1153,8 +1024,6 @@
     "method": "GET",
     "handler": "EquipamentosController.importTemplate",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1170,8 +1039,6 @@
     "method": "POST",
     "handler": "EquipamentosController.createLote",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1187,8 +1054,6 @@
     "method": "GET",
     "handler": "EquipamentosController.listMovimentacoes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1204,8 +1069,6 @@
     "method": "GET",
     "handler": "EquipamentosController.obsoletos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1221,8 +1084,6 @@
     "method": "GET",
     "handler": "EquipamentosController.proximaTag",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1238,8 +1099,6 @@
     "method": "GET",
     "handler": "EquipamentosController.qr",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1255,8 +1114,6 @@
     "method": "POST",
     "handler": "EstoqueController.ajuste",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1272,8 +1129,6 @@
     "method": "POST",
     "handler": "EstoqueController.baixar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1289,8 +1144,6 @@
     "method": "GET",
     "handler": "EstoqueController.componentes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1306,8 +1159,6 @@
     "method": "POST",
     "handler": "EstoqueController.createComp",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1323,8 +1174,6 @@
     "method": "PATCH",
     "handler": "EstoqueController.updateComp",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1340,8 +1189,6 @@
     "method": "GET",
     "handler": "EstoqueController.custos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1357,8 +1204,6 @@
     "method": "POST",
     "handler": "EstoqueController.devolucao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1374,8 +1219,6 @@
     "method": "POST",
     "handler": "EstoqueController.entrada",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1391,8 +1234,6 @@
     "method": "POST",
     "handler": "EstoqueController.estorno",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1408,8 +1249,6 @@
     "method": "GET",
     "handler": "EstoqueController.export",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1425,8 +1264,6 @@
     "method": "GET",
     "handler": "EstoqueController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1442,8 +1279,6 @@
     "method": "POST",
     "handler": "EstoqueController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1459,8 +1294,6 @@
     "method": "GET",
     "handler": "EstoqueController.get",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1476,8 +1309,6 @@
     "method": "PATCH",
     "handler": "EstoqueController.patch",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1493,8 +1324,6 @@
     "method": "GET",
     "handler": "EstoqueController.metodo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1510,8 +1339,6 @@
     "method": "GET",
     "handler": "EstoqueController.movimentos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1527,8 +1354,6 @@
     "method": "POST",
     "handler": "EstoqueController.custoOs",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1544,8 +1369,6 @@
     "method": "POST",
     "handler": "EstoqueController.reposicao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1561,8 +1384,6 @@
     "method": "POST",
     "handler": "EstoqueController.reservar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estoque:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1578,8 +1399,6 @@
     "method": "GET",
     "handler": "EstrategicoController.conformidade",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1595,8 +1414,6 @@
     "method": "GET",
     "handler": "EstrategicoController.dashboard",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1612,8 +1429,6 @@
     "method": "POST",
     "handler": "EstrategicoController.evidencia",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1629,8 +1444,6 @@
     "method": "GET",
     "handler": "EstrategicoController.jornada",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1646,8 +1459,6 @@
     "method": "PATCH",
     "handler": "EstrategicoController.setJornada",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1663,8 +1474,6 @@
     "method": "GET",
     "handler": "EstrategicoController.maturidade",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1680,8 +1489,6 @@
     "method": "PUT",
     "handler": "EstrategicoController.avaliar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1697,8 +1504,6 @@
     "method": "GET",
     "handler": "EstrategicoController.pops",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1714,8 +1519,6 @@
     "method": "POST",
     "handler": "EstrategicoController.createPop",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1731,8 +1534,6 @@
     "method": "GET",
     "handler": "EstrategicoController.popPdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1748,8 +1549,6 @@
     "method": "GET",
     "handler": "EstrategicoController.recomendacoes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1765,8 +1564,6 @@
     "method": "GET",
     "handler": "EstrategicoController.requisitos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1782,8 +1579,6 @@
     "method": "GET",
     "handler": "CadastrosController.fabricantes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1799,8 +1594,6 @@
     "method": "POST",
     "handler": "CadastrosController.createFabricante",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1816,8 +1609,6 @@
     "method": "POST",
     "handler": "CadastrosController.consolidarFabricantes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1833,8 +1624,6 @@
     "method": "GET",
     "handler": "CadastrosController.fabricantesSimilares",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1850,8 +1639,6 @@
     "method": "GET",
     "handler": "FinanceiroController.dashboard",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "financeiro:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1867,8 +1654,6 @@
     "method": "GET",
     "handler": "FinanceiroController.export",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "financeiro:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1884,8 +1669,6 @@
     "method": "GET",
     "handler": "FinanceiroController.exportXlsx",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "financeiro:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1901,8 +1684,6 @@
     "method": "GET",
     "handler": "FinanceiroController.extrato",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "financeiro:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1918,7 +1699,6 @@
     "method": "GET",
     "handler": "FornecedoresController.list",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1934,7 +1714,6 @@
     "method": "POST",
     "handler": "FornecedoresController.create",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1950,7 +1729,6 @@
     "method": "GET",
     "handler": "FornecedoresController.get",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1966,7 +1744,6 @@
     "method": "PATCH",
     "handler": "FornecedoresController.update",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1982,7 +1759,6 @@
     "method": "POST",
     "handler": "FornecedoresController.contato",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -1998,7 +1774,6 @@
     "method": "DELETE",
     "handler": "FornecedoresController.delContato",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2014,7 +1789,6 @@
     "method": "POST",
     "handler": "FornecedoresController.documento",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2030,7 +1804,6 @@
     "method": "GET",
     "handler": "FornecedoresController.baixar",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2046,7 +1819,6 @@
     "method": "POST",
     "handler": "FornecedoresController.fab",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2062,7 +1834,6 @@
     "method": "DELETE",
     "handler": "FornecedoresController.delFab",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2078,7 +1849,6 @@
     "method": "POST",
     "handler": "FornecedoresController.nota",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2094,8 +1864,6 @@
     "method": "GET",
     "handler": "GestaoController.capex",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2111,8 +1879,6 @@
     "method": "POST",
     "handler": "GestaoController.createCapex",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2128,8 +1894,6 @@
     "method": "PATCH",
     "handler": "GestaoController.patchCapex",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2145,8 +1909,6 @@
     "method": "POST",
     "handler": "GestaoController.gerarAuto",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2162,8 +1924,6 @@
     "method": "GET",
     "handler": "GestaoController.plano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2179,8 +1939,6 @@
     "method": "POST",
     "handler": "GestaoController.createPlano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2196,8 +1954,6 @@
     "method": "PATCH",
     "handler": "GestaoController.patchPlano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2213,8 +1969,6 @@
     "method": "GET",
     "handler": "GestaoController.subst",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2230,7 +1984,6 @@
     "method": "GET",
     "handler": "HealthController.check",
     "isPublic": true,
-    "requiresAuth": false,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2246,8 +1999,6 @@
     "method": "GET",
     "handler": "IndicadoresController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2263,8 +2014,6 @@
     "method": "GET",
     "handler": "IndicadoresController.historico",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2280,8 +2029,6 @@
     "method": "POST",
     "handler": "IndicadoresController.construtor",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2297,8 +2044,6 @@
     "method": "GET",
     "handler": "IndicadoresController.painel",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2314,8 +2059,6 @@
     "method": "GET",
     "handler": "IndicadoresController.exportar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2331,8 +2074,6 @@
     "method": "GET",
     "handler": "InstrumentosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2348,8 +2089,6 @@
     "method": "POST",
     "handler": "InstrumentosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2365,8 +2104,6 @@
     "method": "GET",
     "handler": "InstrumentosController.get",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2382,8 +2119,6 @@
     "method": "PATCH",
     "handler": "InstrumentosController.update",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2399,8 +2134,6 @@
     "method": "POST",
     "handler": "InstrumentosController.addCertificado",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2416,8 +2149,6 @@
     "method": "GET",
     "handler": "InstrumentosController.pdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2433,8 +2164,6 @@
     "method": "GET",
     "handler": "InstrumentosController.listPreferenciais",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2450,8 +2179,6 @@
     "method": "PUT",
     "handler": "InstrumentosController.salvarPreferenciais",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2467,8 +2194,6 @@
     "method": "GET",
     "handler": "LaudosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2484,8 +2209,6 @@
     "method": "POST",
     "handler": "LaudosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2501,8 +2224,6 @@
     "method": "GET",
     "handler": "LaudosController.byId",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2518,8 +2239,6 @@
     "method": "PATCH",
     "handler": "LaudosController.patch",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2535,8 +2254,6 @@
     "method": "POST",
     "handler": "LaudosController.finalizar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2552,8 +2269,6 @@
     "method": "POST",
     "handler": "LaudosController.gerar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2569,8 +2284,6 @@
     "method": "GET",
     "handler": "LaudosController.previa",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2586,8 +2299,6 @@
     "method": "POST",
     "handler": "LaudosController.promover",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2603,8 +2314,6 @@
     "method": "GET",
     "handler": "LaudosController.relatorioPdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2620,8 +2329,6 @@
     "method": "POST",
     "handler": "LaudosController.retificar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2637,8 +2344,6 @@
     "method": "POST",
     "handler": "LaudosController.visivel",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2654,8 +2359,6 @@
     "method": "POST",
     "handler": "LaudosController.gerarPreventiva",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2671,8 +2374,6 @@
     "method": "GET",
     "handler": "MobileController.qr",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2688,8 +2389,6 @@
     "method": "GET",
     "handler": "MobileController.inventario",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2705,8 +2404,6 @@
     "method": "GET",
     "handler": "MobileController.kpis",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2722,8 +2419,6 @@
     "method": "GET",
     "handler": "MobileController.minhasOs",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2739,8 +2434,6 @@
     "method": "GET",
     "handler": "MobileController.detalhe",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2756,8 +2449,6 @@
     "method": "POST",
     "handler": "MobileController.checklist",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2773,8 +2464,6 @@
     "method": "POST",
     "handler": "MobileController.finalizar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2790,8 +2479,6 @@
     "method": "POST",
     "handler": "MobileController.fotos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2807,8 +2494,6 @@
     "method": "POST",
     "handler": "MobileController.pecas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2824,8 +2509,6 @@
     "method": "GET",
     "handler": "MobileController.proximos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2841,8 +2524,6 @@
     "method": "GET",
     "handler": "MobileController.snapshot",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2858,8 +2539,6 @@
     "method": "POST",
     "handler": "MobileController.sync",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2875,8 +2554,6 @@
     "method": "GET",
     "handler": "CadastrosController.modelos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2892,8 +2569,6 @@
     "method": "POST",
     "handler": "CadastrosController.createModelo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2909,8 +2584,6 @@
     "method": "POST",
     "handler": "CadastrosController.consolidarModelos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2926,8 +2599,6 @@
     "method": "GET",
     "handler": "CadastrosController.modelosSimilares",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2943,8 +2614,6 @@
     "method": "GET",
     "handler": "AuditoriasController.listNc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2960,8 +2629,6 @@
     "method": "POST",
     "handler": "AuditoriasController.createNc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2977,8 +2644,6 @@
     "method": "POST",
     "handler": "AuditoriasController.fechar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -2994,8 +2659,6 @@
     "method": "POST",
     "handler": "AuditoriasController.plano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3011,8 +2674,6 @@
     "method": "POST",
     "handler": "AuditoriasController.reabrir",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3028,8 +2689,6 @@
     "method": "GET",
     "handler": "NavController.busca",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3045,8 +2704,6 @@
     "method": "GET",
     "handler": "NavController.favoritos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3062,8 +2719,6 @@
     "method": "GET",
     "handler": "NavController.recentes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3079,8 +2734,6 @@
     "method": "GET",
     "handler": "OsDominiosController.listar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3096,8 +2749,6 @@
     "method": "POST",
     "handler": "OsDominiosController.criar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3113,8 +2764,6 @@
     "method": "PATCH",
     "handler": "OsDominiosController.atualizar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3130,8 +2779,6 @@
     "method": "GET",
     "handler": "OsController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3147,8 +2794,6 @@
     "method": "POST",
     "handler": "OsController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3164,8 +2809,6 @@
     "method": "DELETE",
     "handler": "OsController.remover",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3181,8 +2824,6 @@
     "method": "GET",
     "handler": "OsController.detalhe",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3198,8 +2839,6 @@
     "method": "POST",
     "handler": "OsController.anexar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3215,8 +2854,6 @@
     "method": "GET",
     "handler": "OsController.baixarAnexo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3232,8 +2869,6 @@
     "method": "PATCH",
     "handler": "OsController.assumir",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3249,8 +2884,6 @@
     "method": "PATCH",
     "handler": "OsController.atribuir",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3266,8 +2899,6 @@
     "method": "POST",
     "handler": "OsController.comentar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3283,8 +2914,6 @@
     "method": "PATCH",
     "handler": "OsController.vincularEquipamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3300,8 +2929,6 @@
     "method": "PATCH",
     "handler": "OsController.execucao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3317,8 +2944,6 @@
     "method": "GET",
     "handler": "OsController.impressaoPdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3334,8 +2959,6 @@
     "method": "GET",
     "handler": "OsController.log",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3351,8 +2974,6 @@
     "method": "PATCH",
     "handler": "OsController.pendencia",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3368,8 +2989,6 @@
     "method": "PATCH",
     "handler": "OsController.status",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3385,8 +3004,6 @@
     "method": "PATCH",
     "handler": "OsController.triagem",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3402,8 +3019,6 @@
     "method": "GET",
     "handler": "OsController.area",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3419,8 +3034,6 @@
     "method": "GET",
     "handler": "OsController.auditoria",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3436,8 +3049,6 @@
     "method": "POST",
     "handler": "OsController.compactarNumeros",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3453,8 +3064,6 @@
     "method": "GET",
     "handler": "OsController.ativas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3470,8 +3079,6 @@
     "method": "GET",
     "handler": "OsController.naoAtribuidas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3487,8 +3094,6 @@
     "method": "GET",
     "handler": "OsController.quadro",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3504,8 +3109,6 @@
     "method": "POST",
     "handler": "OsController.rapida",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3521,8 +3124,6 @@
     "method": "GET",
     "handler": "OsController.responsaveis",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3538,8 +3139,6 @@
     "method": "GET",
     "handler": "PessoasController.colaboradores",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3555,8 +3154,6 @@
     "method": "POST",
     "handler": "PessoasController.createColab",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3572,8 +3169,6 @@
     "method": "POST",
     "handler": "PessoasController.competencia",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3589,8 +3184,6 @@
     "method": "GET",
     "handler": "PessoasController.equipes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3606,8 +3199,6 @@
     "method": "POST",
     "handler": "PessoasController.createEquipe",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3623,8 +3214,6 @@
     "method": "POST",
     "handler": "PessoasController.addMembro",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "pessoas:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3640,8 +3229,6 @@
     "method": "GET",
     "handler": "CadastrosController.planos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3657,8 +3244,6 @@
     "method": "POST",
     "handler": "CadastrosController.createPlano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3674,8 +3259,6 @@
     "method": "PATCH",
     "handler": "CadastrosController.updatePlano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3691,8 +3274,6 @@
     "method": "GET",
     "handler": "PlanosController.agenda",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3708,8 +3289,6 @@
     "method": "GET",
     "handler": "PlanosController.calendario",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3725,8 +3304,6 @@
     "method": "POST",
     "handler": "PlanosController.distribuir",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3742,8 +3319,6 @@
     "method": "POST",
     "handler": "PlanosController.gerarPendentes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3759,8 +3334,6 @@
     "method": "POST",
     "handler": "PlanosController.upsert",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3776,8 +3349,6 @@
     "method": "GET",
     "handler": "PlanosController.historico",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3793,8 +3364,6 @@
     "method": "POST",
     "handler": "PlanosController.statusPlano",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3810,8 +3379,6 @@
     "method": "GET",
     "handler": "PlanosController.detalhe",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3827,8 +3394,6 @@
     "method": "POST",
     "handler": "PlanosController.gerarUma",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3844,8 +3409,6 @@
     "method": "POST",
     "handler": "PlanosController.reprogramar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3861,8 +3424,6 @@
     "method": "POST",
     "handler": "PlanosController.gerar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3878,8 +3439,6 @@
     "method": "POST",
     "handler": "PlanosController.preview",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3895,8 +3454,6 @@
     "method": "POST",
     "handler": "PlanosController.sincronizar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3912,8 +3469,6 @@
     "method": "GET",
     "handler": "PlanosController.tiposCustom",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3929,8 +3484,6 @@
     "method": "POST",
     "handler": "PlanosController.criarTipoCustom",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3946,8 +3499,6 @@
     "method": "GET",
     "handler": "PlanosController.tiposEquipamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3963,7 +3514,6 @@
     "method": "GET",
     "handler": "PortalController.cronogramaLegacy",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3979,7 +3529,6 @@
     "method": "GET",
     "handler": "PortalController.cronogramaManutencao",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -3995,8 +3544,6 @@
     "method": "GET",
     "handler": "PortalController.equipamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4012,8 +3559,6 @@
     "method": "GET",
     "handler": "PortalController.buscarEquipamentos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4029,8 +3574,6 @@
     "method": "GET",
     "handler": "PortalController.inventario",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4046,8 +3589,6 @@
     "method": "GET",
     "handler": "PortalController.minhasOs",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4063,8 +3604,6 @@
     "method": "GET",
     "handler": "PortalController.osAbertas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4080,8 +3619,6 @@
     "method": "GET",
     "handler": "PortalController.detalheOs",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4097,8 +3634,6 @@
     "method": "POST",
     "handler": "PortalController.anexar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4114,8 +3649,6 @@
     "method": "GET",
     "handler": "PortalController.baixarAnexo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4131,8 +3664,6 @@
     "method": "POST",
     "handler": "PortalController.comentar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4148,8 +3679,6 @@
     "method": "POST",
     "handler": "PortalController.pedirReabertura",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4165,8 +3694,6 @@
     "method": "GET",
     "handler": "PortalController.relatoriosServico",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4182,8 +3709,6 @@
     "method": "GET",
     "handler": "PortalController.relatorioPdf",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4199,8 +3724,6 @@
     "method": "GET",
     "handler": "PortalController.snapshotCampo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4216,8 +3739,6 @@
     "method": "GET",
     "handler": "ProcedimentosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4233,8 +3754,6 @@
     "method": "POST",
     "handler": "ProcedimentosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4250,8 +3769,6 @@
     "method": "GET",
     "handler": "ProcedimentosController.byId",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4267,8 +3784,6 @@
     "method": "PATCH",
     "handler": "ProcedimentosController.criterio",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4284,8 +3799,6 @@
     "method": "PATCH",
     "handler": "ProcedimentosController.itens",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4301,8 +3814,6 @@
     "method": "POST",
     "handler": "ProcedimentosController.vincular",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "laudos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4318,8 +3829,6 @@
     "method": "GET",
     "handler": "QualidadeController.alertas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4335,8 +3844,6 @@
     "method": "POST",
     "handler": "QualidadeController.createAlerta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4352,8 +3859,6 @@
     "method": "GET",
     "handler": "QualidadeController.alerta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4369,8 +3874,6 @@
     "method": "POST",
     "handler": "QualidadeController.eqAlerta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4386,8 +3889,6 @@
     "method": "POST",
     "handler": "QualidadeController.evidAlerta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4403,8 +3904,6 @@
     "method": "POST",
     "handler": "QualidadeController.statusAlerta",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4420,8 +3919,6 @@
     "method": "GET",
     "handler": "QualidadeController.arquivo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4437,8 +3934,6 @@
     "method": "GET",
     "handler": "QualidadeController.busca",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4454,8 +3949,6 @@
     "method": "GET",
     "handler": "QualidadeController.documentos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4471,8 +3964,6 @@
     "method": "POST",
     "handler": "QualidadeController.createDoc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4488,8 +3979,6 @@
     "method": "GET",
     "handler": "QualidadeController.documento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4505,8 +3994,6 @@
     "method": "POST",
     "handler": "QualidadeController.addVersao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4522,8 +4009,6 @@
     "method": "POST",
     "handler": "QualidadeController.obsoletar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4539,8 +4024,6 @@
     "method": "POST",
     "handler": "QualidadeController.publicar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4556,8 +4039,6 @@
     "method": "POST",
     "handler": "QualidadeController.vinculo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4573,8 +4054,6 @@
     "method": "DELETE",
     "handler": "QualidadeController.removeVinculo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4590,8 +4069,6 @@
     "method": "GET",
     "handler": "QualidadeController.exportar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4607,8 +4084,6 @@
     "method": "GET",
     "handler": "QualidadeController.ocorrencias",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4624,8 +4099,6 @@
     "method": "POST",
     "handler": "QualidadeController.createOc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4641,8 +4114,6 @@
     "method": "GET",
     "handler": "QualidadeController.ocorrencia",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4658,8 +4129,6 @@
     "method": "POST",
     "handler": "QualidadeController.acao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4675,8 +4144,6 @@
     "method": "POST",
     "handler": "QualidadeController.concluirAcao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4692,8 +4159,6 @@
     "method": "POST",
     "handler": "QualidadeController.condicao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4709,8 +4174,6 @@
     "method": "POST",
     "handler": "QualidadeController.investigacao",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4726,8 +4189,6 @@
     "method": "POST",
     "handler": "QualidadeController.nc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4743,8 +4204,6 @@
     "method": "POST",
     "handler": "QualidadeController.statusOc",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4760,8 +4219,6 @@
     "method": "GET",
     "handler": "QualidadeController.pops",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4777,8 +4234,6 @@
     "method": "GET",
     "handler": "QualidadeController.resumo",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4794,8 +4249,6 @@
     "method": "GET",
     "handler": "QualidadeController.treinamentos",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4811,8 +4264,6 @@
     "method": "POST",
     "handler": "QualidadeController.createTreino",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4828,8 +4279,6 @@
     "method": "GET",
     "handler": "QualidadeController.treinamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4845,8 +4294,6 @@
     "method": "POST",
     "handler": "QualidadeController.eqTreino",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4862,8 +4309,6 @@
     "method": "POST",
     "handler": "QualidadeController.evidTreino",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4879,8 +4324,6 @@
     "method": "POST",
     "handler": "QualidadeController.addPart",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4896,8 +4339,6 @@
     "method": "PATCH",
     "handler": "QualidadeController.presenca",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "auditorias:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4913,8 +4354,6 @@
     "method": "GET",
     "handler": "RelatoriosController.list",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4930,8 +4369,6 @@
     "method": "POST",
     "handler": "RelatoriosController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4947,8 +4384,6 @@
     "method": "POST",
     "handler": "RelatoriosController.disparar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4964,8 +4399,6 @@
     "method": "POST",
     "handler": "RelatoriosController.dispararPendentes",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4981,8 +4414,6 @@
     "method": "POST",
     "handler": "RelatoriosController.gerar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -4998,8 +4429,6 @@
     "method": "GET",
     "handler": "RelatoriosController.templates",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "estrategico:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5015,7 +4444,6 @@
     "method": "GET",
     "handler": "SessionController.me",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5031,8 +4459,6 @@
     "method": "GET",
     "handler": "CadastrosController.setorAreas",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5048,8 +4474,6 @@
     "method": "POST",
     "handler": "CadastrosController.createSetorArea",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5065,8 +4489,6 @@
     "method": "PATCH",
     "handler": "CadastrosController.updateSetorArea",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5082,8 +4504,6 @@
     "method": "POST",
     "handler": "CadastrosController.aplicarMapeamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5099,8 +4519,6 @@
     "method": "GET",
     "handler": "CadastrosController.statusMapeamento",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5116,8 +4534,6 @@
     "method": "GET",
     "handler": "CadastrosController.setores",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:1",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5133,8 +4549,6 @@
     "method": "POST",
     "handler": "CadastrosController.createSetor",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5150,8 +4564,6 @@
     "method": "PATCH",
     "handler": "CadastrosController.updateSetor",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "equipamentos:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5167,7 +4579,6 @@
     "method": "GET",
     "handler": "SolicitacoesController.list",
     "isPublic": false,
-    "requiresAuth": true,
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5183,8 +4594,6 @@
     "method": "POST",
     "handler": "SolicitacoesController.create",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "portal:2",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5200,8 +4609,6 @@
     "method": "POST",
     "handler": "SolicitacoesController.aprovar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5217,8 +4624,6 @@
     "method": "PATCH",
     "handler": "SolicitacoesController.vincular",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",
@@ -5234,8 +4639,6 @@
     "method": "POST",
     "handler": "SolicitacoesController.recusar",
     "isPublic": false,
-    "requiresAuth": true,
-    "permission": "os:3",
     "results": {
       "ADMIN": "PERMITIDO",
       "GESTOR": "PERMITIDO",

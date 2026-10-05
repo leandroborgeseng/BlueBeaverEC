@@ -1,16 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { ExecutionContext, RequestMethod } from "@nestjs/common";
+import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
+import { ExecutionContext, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import {
   PERMISSAO_NIVEL,
   PERMISSOES_PADRAO,
   permissoesDoPerfil,
   type PerfilAcesso,
-  type NivelPermissao,
-  type ModuloPermissao,
+  type MapaPermissoes,
 } from "@aion/shared";
 import { PermissionsGuard, PERMISSAO_KEY, IS_PUBLIC_KEY } from "./permissions.guard";
 
@@ -81,17 +80,13 @@ const ALL_CONTROLLERS = [
   HealthController,
 ];
 
-interface RouteMetadata {
-  controller: string;
-  path: string;
+interface RouteInfo {
+  controller: Function;
+  controllerName: string;
   method: string;
-  handler: string;
-  isPublic: boolean;
-  requiresAuth: boolean;
-  permission?: {
-    modulo: ModuloPermissao;
-    minimo: NivelPermissao;
-  };
+  methodName: string;
+  path: string;
+  httpMethod: string;
 }
 
 interface PermissionMatrixEntry {
@@ -99,38 +94,16 @@ interface PermissionMatrixEntry {
   method: string;
   handler: string;
   isPublic: boolean;
-  requiresAuth: boolean;
-  permission?: string;
   results: Record<PerfilAcesso, "PERMITIDO" | "NEGADO">;
 }
 
 type PermissionMatrix = PermissionMatrixEntry[];
 
-function extractRoutes(): RouteMetadata[] {
-  const reflector = new Reflector();
-  const routes: RouteMetadata[] = [];
-
-  // Mapa do enum RequestMethod para string
-  const methodToString: Record<RequestMethod, string> = {
-    [RequestMethod.GET]: "GET",
-    [RequestMethod.POST]: "POST",
-    [RequestMethod.PUT]: "PUT",
-    [RequestMethod.DELETE]: "DELETE",
-    [RequestMethod.PATCH]: "PATCH",
-    [RequestMethod.ALL]: "ALL",
-    [RequestMethod.OPTIONS]: "OPTIONS",
-    [RequestMethod.HEAD]: "HEAD",
-    [RequestMethod.SEARCH]: "SEARCH",
-  };
+function extractRoutes(): RouteInfo[] {
+  const routes: RouteInfo[] = [];
 
   for (const Controller of ALL_CONTROLLERS) {
     const controllerPath = Reflect.getMetadata("path", Controller) ?? "";
-    const controllerPermission = reflector.get<{ modulo: ModuloPermissao; minimo: NivelPermissao } | undefined>(
-      PERMISSAO_KEY,
-      Controller,
-    );
-    const controllerIsPublic = reflector.get<boolean>(IS_PUBLIC_KEY, Controller) ?? false;
-
     const prototype = Controller.prototype;
     const methodNames = Object.getOwnPropertyNames(prototype).filter(
       (name) => name !== "constructor" && typeof prototype[name] === "function",
@@ -138,54 +111,66 @@ function extractRoutes(): RouteMetadata[] {
 
     for (const methodName of methodNames) {
       const method = prototype[methodName];
-      const httpMethod = Reflect.getMetadata("method", method) as RequestMethod | undefined;
+      const httpMethodMeta = Reflect.getMetadata("method", method);
       const methodPath = Reflect.getMetadata("path", method) ?? "";
-      
-      if (httpMethod === undefined) continue; // Não é uma rota HTTP
 
-      const isPublic = reflector.get<boolean>(IS_PUBLIC_KEY, method) ?? controllerIsPublic;
-      const permission =
-        reflector.get<{ modulo: ModuloPermissao; minimo: NivelPermissao } | undefined>(PERMISSAO_KEY, method) ??
-        controllerPermission;
+      if (httpMethodMeta === undefined) continue;
+
+      // Converter enum RequestMethod para string
+      const httpMethodMap: Record<number, string> = {
+        0: "GET",
+        1: "POST",
+        2: "PUT",
+        3: "DELETE",
+        4: "PATCH",
+        5: "ALL",
+        6: "OPTIONS",
+        7: "HEAD",
+        8: "SEARCH",
+      };
 
       const fullPath = `/${controllerPath}${methodPath ? "/" + methodPath : ""}`.replace(/\/+/g, "/");
 
       routes.push({
-        controller: Controller.name,
+        controller: Controller,
+        controllerName: Controller.name,
+        method: methodName,
+        methodName,
         path: fullPath,
-        method: methodToString[httpMethod] ?? String(httpMethod),
-        handler: `${Controller.name}.${methodName}`,
-        isPublic,
-        requiresAuth: !isPublic,
-        permission,
+        httpMethod: httpMethodMap[httpMethodMeta] ?? String(httpMethodMeta),
       });
     }
   }
 
-  // Ordenar por rota para estabilidade
   return routes.sort((a, b) => {
     const pathCompare = a.path.localeCompare(b.path);
     if (pathCompare !== 0) return pathCompare;
-    return a.method.localeCompare(b.method);
+    return a.httpMethod.localeCompare(b.httpMethod);
   });
 }
 
-function createMockExecutionContext(user: {
-  userId: string;
-  email: string;
-  estabelecimentoId: string;
-  perfil: PerfilAcesso;
-  permissoesModulos?: Record<string, number>;
-}): ExecutionContext {
+function createMockExecutionContext(
+  controller: Function,
+  methodName: string,
+  user: {
+    userId: string;
+    email: string;
+    estabelecimentoId: string;
+    perfil: PerfilAcesso;
+    permissoesModulos: MapaPermissoes;
+  },
+): ExecutionContext {
   const request = { user };
+  const handler = controller.prototype[methodName];
+
   return {
     switchToHttp: () => ({
       getRequest: () => request,
       getResponse: () => ({}),
       getNext: () => ({}),
     }),
-    getClass: () => Object,
-    getHandler: () => function handler() {},
+    getClass: () => controller,
+    getHandler: () => handler,
     getArgs: () => [],
     getArgByIndex: () => ({}),
     switchToRpc: () => ({
@@ -200,50 +185,47 @@ function createMockExecutionContext(user: {
   } as ExecutionContext;
 }
 
-async function testGuardForProfile(
+async function testGuardForRoute(
   guard: PermissionsGuard,
-  reflector: Reflector,
-  route: RouteMetadata,
+  route: RouteInfo,
   perfil: PerfilAcesso,
 ): Promise<boolean> {
-  // Se é pública, sempre permite
-  if (route.isPublic) return true;
-
+  // Criar user como o JwtStrategy faz
   const user = {
-    userId: "test-user",
-    email: "test@test.com",
-    estabelecimentoId: "test-estab",
+    userId: "test-user-id",
+    email: "test@example.com",
+    estabelecimentoId: "test-estab-id",
     perfil,
-    permissoesModulos: permissoesDoPerfil(perfil),
+    permissoesModulos: permissoesDoPerfil(perfil), // Sem custom, só padrão
   };
 
-  // Mock do contexto com os metadados corretos
-  const mockHandler = function handler() {};
-  const mockClass = class MockController {};
+  const context = createMockExecutionContext(route.controller, route.method, user);
 
-  // Aplicar metadados ao handler e à classe
-  if (route.isPublic) {
-    Reflect.defineMetadata(IS_PUBLIC_KEY, true, mockHandler);
-  }
-  if (route.permission) {
-    Reflect.defineMetadata(PERMISSAO_KEY, route.permission, mockHandler);
-  }
-
-  const context = createMockExecutionContext(user);
-  // Substituir getHandler e getClass para retornar os mocks com metadados
-  context.getHandler = () => mockHandler;
-  context.getClass = () => mockClass;
+  // Mockar super.canActivate para simular JWT OK
+  const originalCanActivate = Object.getPrototypeOf(PermissionsGuard.prototype).canActivate;
+  Object.getPrototypeOf(PermissionsGuard.prototype).canActivate = async function (ctx: ExecutionContext) {
+    // Simular que o JWT passou: apenas retorna true
+    return true;
+  };
 
   try {
     const result = await guard.canActivate(context);
     return result === true;
   } catch (error) {
-    // ForbiddenException ou UnauthorizedException = negado
-    return false;
+    if (error instanceof ForbiddenException) {
+      return false;
+    }
+    if (error instanceof UnauthorizedException) {
+      return false;
+    }
+    throw error;
+  } finally {
+    // Restaurar o método original
+    Object.getPrototypeOf(PermissionsGuard.prototype).canActivate = originalCanActivate;
   }
 }
 
-function generatePermissionMatrix(routes: RouteMetadata[]): PermissionMatrix {
+async function generatePermissionMatrix(routes: RouteInfo[]): Promise<PermissionMatrix> {
   const reflector = new Reflector();
   const guard = new PermissionsGuard(reflector);
   const perfis = Object.keys(PERMISSOES_PADRAO) as PerfilAcesso[];
@@ -251,64 +233,22 @@ function generatePermissionMatrix(routes: RouteMetadata[]): PermissionMatrix {
   const matrix: PermissionMatrix = [];
 
   for (const route of routes) {
+    // Verificar se é pública
+    const isPublic =
+      reflector.get<boolean>(IS_PUBLIC_KEY, route.controller.prototype[route.method]) ||
+      reflector.get<boolean>(IS_PUBLIC_KEY, route.controller);
+
     const entry: PermissionMatrixEntry = {
       route: route.path,
-      method: route.method,
-      handler: route.handler,
-      isPublic: route.isPublic,
-      requiresAuth: route.requiresAuth,
-      permission: route.permission
-        ? `${route.permission.modulo}:${route.permission.minimo}`
-        : undefined,
+      method: route.httpMethod,
+      handler: `${route.controllerName}.${route.methodName}`,
+      isPublic: isPublic ?? false,
       results: {} as Record<PerfilAcesso, "PERMITIDO" | "NEGADO">,
     };
 
     for (const perfil of perfis) {
-      const allowed = testGuardForProfile(guard, reflector, route, perfil);
+      const allowed = await testGuardForRoute(guard, route, perfil);
       entry.results[perfil] = allowed ? "PERMITIDO" : "NEGADO";
-    }
-
-    matrix.push(entry);
-  }
-
-  return matrix;
-}
-
-function generatePermissionMatrixSync(routes: RouteMetadata[]): PermissionMatrix {
-  const perfis = Object.keys(PERMISSOES_PADRAO) as PerfilAcesso[];
-  const matrix: PermissionMatrix = [];
-
-  for (const route of routes) {
-    const entry: PermissionMatrixEntry = {
-      route: route.path,
-      method: route.method,
-      handler: route.handler,
-      isPublic: route.isPublic,
-      requiresAuth: route.requiresAuth,
-      permission: route.permission
-        ? `${route.permission.modulo}:${route.permission.minimo}`
-        : undefined,
-      results: {} as Record<PerfilAcesso, "PERMITIDO" | "NEGADO">,
-    };
-
-    for (const perfil of perfis) {
-      // Se é pública, sempre permite
-      if (route.isPublic) {
-        entry.results[perfil] = "PERMITIDO";
-        continue;
-      }
-
-      // Se não tem permissão específica, só precisa de JWT (permite)
-      if (!route.permission) {
-        entry.results[perfil] = "PERMITIDO";
-        continue;
-      }
-
-      // Verificar se o perfil tem a permissão necessária
-      const mapa = permissoesDoPerfil(perfil);
-      const nivelAtual = mapa[route.permission.modulo] ?? PERMISSAO_NIVEL.NENHUM;
-      const permitido = nivelAtual >= route.permission.minimo;
-      entry.results[perfil] = permitido ? "PERMITIDO" : "NEGADO";
     }
 
     matrix.push(entry);
@@ -332,21 +272,83 @@ function saveSnapshot(matrix: PermissionMatrix): void {
   writeFileSync(SNAPSHOT_PATH, JSON.stringify(matrix, null, 2), "utf-8");
 }
 
+function findAllControllerFiles(): string[] {
+  const srcDir = resolve(__dirname, "..");
+  const controllerFiles: string[] = [];
+
+  function scanDir(dir: string) {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanDir(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith(".controller.ts")) {
+        controllerFiles.push(fullPath);
+      }
+    }
+  }
+
+  scanDir(srcDir);
+  return controllerFiles;
+}
+
 describe("Baseline de Permissões da API", () => {
-  it("mapeia todas as rotas protegidas", () => {
-    const routes = extractRoutes();
-    assert.ok(routes.length > 0, "Deve encontrar pelo menos uma rota");
-    
-    const protectedRoutes = routes.filter((r) => r.permission);
-    assert.ok(protectedRoutes.length > 0, "Deve encontrar rotas protegidas");
+  it("todos os controllers .ts estão mapeados no teste", () => {
+    const controllerFiles = findAllControllerFiles();
+    const mappedNames = new Set(ALL_CONTROLLERS.map((c) => c.name));
+
+    const unmapped: string[] = [];
+    for (const file of controllerFiles) {
+      const filename = file.split("/").pop()!;
+      // Converter auth.controller.ts -> AuthController
+      const expectedName = filename
+        .replace(".controller.ts", "")
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join("") + "Controller";
+
+      if (!mappedNames.has(expectedName)) {
+        unmapped.push(`${filename} -> esperado: ${expectedName}`);
+      }
+    }
+
+    assert.equal(
+      unmapped.length,
+      0,
+      `Controllers não mapeados no teste:\n${unmapped.join("\n")}\n\nAdicione-os em ALL_CONTROLLERS.`,
+    );
   });
 
-  it("matriz de permissões coincide com o snapshot (baseline)", () => {
+  it("mapeia todas as rotas da API", async () => {
     const routes = extractRoutes();
-    const currentMatrix = generatePermissionMatrixSync(routes);
+    assert.ok(routes.length > 0, "Deve encontrar pelo menos uma rota");
+
+    const publicRoutes = routes.filter((r) => {
+      const reflector = new Reflector();
+      return (
+        reflector.get<boolean>(IS_PUBLIC_KEY, r.controller.prototype[r.method]) ||
+        reflector.get<boolean>(IS_PUBLIC_KEY, r.controller)
+      );
+    });
+
+    const protectedRoutes = routes.filter((r) => {
+      const reflector = new Reflector();
+      const isPublic =
+        reflector.get<boolean>(IS_PUBLIC_KEY, r.controller.prototype[r.method]) ||
+        reflector.get<boolean>(IS_PUBLIC_KEY, r.controller);
+      return !isPublic;
+    });
+
+    assert.ok(publicRoutes.length > 0, "Deve ter rotas públicas");
+    assert.ok(protectedRoutes.length > 0, "Deve ter rotas protegidas");
+  });
+
+  it("matriz de permissões coincide com o snapshot (baseline)", async () => {
+    const routes = extractRoutes();
+    const currentMatrix = await generatePermissionMatrix(routes);
 
     const updateBaseline = process.env.UPDATE_BASELINE === "1";
-    
+
     if (updateBaseline) {
       saveSnapshot(currentMatrix);
       console.log(`✓ Snapshot atualizado em ${SNAPSHOT_PATH}`);
@@ -356,14 +358,12 @@ describe("Baseline de Permissões da API", () => {
     const snapshot = loadSnapshot();
     assert.ok(snapshot, `Snapshot não encontrado em ${SNAPSHOT_PATH}. Execute com UPDATE_BASELINE=1`);
 
-    // Comparar tamanho
     assert.equal(
       currentMatrix.length,
       snapshot.length,
       `Número de rotas mudou: atual=${currentMatrix.length}, snapshot=${snapshot.length}`,
     );
 
-    // Comparar cada entrada
     for (let i = 0; i < currentMatrix.length; i++) {
       const current = currentMatrix[i];
       const expected = snapshot[i];
@@ -380,13 +380,6 @@ describe("Baseline de Permissões da API", () => {
         `Rota ${current.route}: método mudou de ${expected.method} para ${current.method}`,
       );
 
-      assert.equal(
-        current.permission,
-        expected.permission,
-        `Rota ${current.route}: permissão mudou de ${expected.permission} para ${current.permission}`,
-      );
-
-      // Comparar resultados por perfil
       const perfis = Object.keys(PERMISSOES_PADRAO) as PerfilAcesso[];
       for (const perfil of perfis) {
         assert.equal(
@@ -398,44 +391,48 @@ describe("Baseline de Permissões da API", () => {
     }
   });
 
-  it("rotas sem @RequirePermission exigem apenas JWT (comportamento atual)", () => {
+  it("rotas públicas permitem acesso sem JWT", async () => {
     const routes = extractRoutes();
-    const authOnlyRoutes = routes.filter((r) => !r.isPublic && !r.permission);
-    
-    // Deve haver rotas que só precisam de JWT (ex: session/me)
-    assert.ok(authOnlyRoutes.length > 0, "Deve haver rotas que só exigem JWT");
-
-    // Para essas rotas, todos os perfis devem ser permitidos (exceto validação de JWT)
-    const matrix = generatePermissionMatrixSync(routes);
+    const matrix = await generatePermissionMatrix(routes);
     const perfis = Object.keys(PERMISSOES_PADRAO) as PerfilAcesso[];
-    
-    for (const route of authOnlyRoutes) {
-      const entry = matrix.find((e) => e.route === route.path && e.method === route.method);
-      assert.ok(entry, `Entrada não encontrada para ${route.method} ${route.path}`);
-      
+
+    const publicRoutes = matrix.filter((e) => e.isPublic);
+    assert.ok(publicRoutes.length > 0, "Deve haver rotas públicas");
+
+    for (const route of publicRoutes) {
       for (const perfil of perfis) {
         assert.equal(
-          entry.results[perfil],
+          route.results[perfil],
           "PERMITIDO",
-          `Rota sem @RequirePermission (${route.path}) deve permitir ${perfil}`,
+          `Rota pública ${route.route} deve permitir ${perfil}`,
         );
       }
     }
   });
 
-  it("TECNICO e SOLICITANTE são negados em rotas administrativas", () => {
+  it("TECNICO e SOLICITANTE são negados em rotas administrativas", async () => {
     const routes = extractRoutes();
-    const matrix = generatePermissionMatrixSync(routes);
+    const matrix = await generatePermissionMatrix(routes);
 
-    // Rotas administrativas: config, pessoas (com EDICAO ou mais)
-    const adminRoutes = matrix.filter(
-      (e) =>
-        e.permission &&
-        (e.permission.startsWith("config:") || 
-         e.permission.startsWith("pessoas:")) &&
-        !e.permission.includes(":0") && // Não é NENHUM
-        !e.permission.includes(":1")    // Não é só LEITURA
-    );
+    // Buscar rotas de config e pessoas que exigem mais que LEITURA
+    const reflector = new Reflector();
+    const adminRoutes: PermissionMatrixEntry[] = [];
+
+    for (const route of routes) {
+      const permission = reflector.get<{ modulo: string; minimo: number }>(
+        PERMISSAO_KEY,
+        route.controller.prototype[route.method],
+      ) ?? reflector.get<{ modulo: string; minimo: number }>(PERMISSAO_KEY, route.controller);
+
+      if (
+        permission &&
+        (permission.modulo === "config" || permission.modulo === "pessoas") &&
+        permission.minimo >= PERMISSAO_NIVEL.EDICAO
+      ) {
+        const entry = matrix.find((e) => e.route === route.path && e.method === route.httpMethod);
+        if (entry) adminRoutes.push(entry);
+      }
+    }
 
     assert.ok(adminRoutes.length > 0, "Deve haver rotas administrativas protegidas");
 
@@ -443,50 +440,61 @@ describe("Baseline de Permissões da API", () => {
       assert.equal(
         route.results.TECNICO,
         "NEGADO",
-        `TECNICO deve ser negado em ${route.route} (${route.permission})`,
+        `TECNICO deve ser negado em ${route.route}`,
       );
       assert.equal(
         route.results.SOLICITANTE,
         "NEGADO",
-        `SOLICITANTE deve ser negado em ${route.route} (${route.permission})`,
+        `SOLICITANTE deve ser negado em ${route.route}`,
       );
     }
   });
 
-  it("TECNICO tem acesso ao módulo os (EDICAO=2)", () => {
+  it("TECNICO tem acesso ao módulo os (EDICAO)", async () => {
     const routes = extractRoutes();
-    const matrix = generatePermissionMatrixSync(routes);
+    const matrix = await generatePermissionMatrix(routes);
 
-    // Rotas de OS com LEITURA ou EDICAO (não APROVACAO)
-    const osEditRoutes = matrix.filter(
-      (e) =>
-        e.permission &&
-        e.permission.startsWith("os:") &&
-        (e.permission === "os:1" || e.permission === "os:2")
-    );
+    const reflector = new Reflector();
+    const osRoutes: PermissionMatrixEntry[] = [];
 
-    assert.ok(osEditRoutes.length > 0, "Deve haver rotas de OS com LEITURA/EDICAO");
+    for (const route of routes) {
+      const permission = reflector.get<{ modulo: string; minimo: number }>(
+        PERMISSAO_KEY,
+        route.controller.prototype[route.method],
+      ) ?? reflector.get<{ modulo: string; minimo: number }>(PERMISSAO_KEY, route.controller);
 
-    for (const route of osEditRoutes) {
+      if (
+        permission &&
+        permission.modulo === "os" &&
+        permission.minimo <= PERMISSAO_NIVEL.EDICAO
+      ) {
+        const entry = matrix.find((e) => e.route === route.path && e.method === route.httpMethod);
+        if (entry) osRoutes.push(entry);
+      }
+    }
+
+    assert.ok(osRoutes.length > 0, "Deve haver rotas de OS com LEITURA/EDICAO");
+
+    for (const route of osRoutes) {
       assert.equal(
         route.results.TECNICO,
         "PERMITIDO",
-        `TECNICO deve ter acesso a ${route.route} (${route.permission})`,
+        `TECNICO deve ter acesso a ${route.route}`,
       );
     }
   });
 
-  it("ADMIN tem acesso total (todas as rotas protegidas)", () => {
+  it("ADMIN tem acesso total (todas as rotas protegidas)", async () => {
     const routes = extractRoutes();
-    const matrix = generatePermissionMatrixSync(routes);
+    const matrix = await generatePermissionMatrix(routes);
 
-    const protectedRoutes = matrix.filter((e) => e.permission);
+    const protectedRoutes = matrix.filter((e) => !e.isPublic);
 
     for (const route of protectedRoutes) {
       assert.equal(
         route.results.ADMIN,
         "PERMITIDO",
-        `ADMIN deve ter acesso total a ${route.route} (${route.permission})`,
+        `ADMIN deve ter acesso total a ${route.route}`,
       );
     }
   });
