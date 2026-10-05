@@ -12,6 +12,7 @@ import {
   type MapaPermissoes,
 } from "@aion/shared";
 import { PermissionsGuard, PERMISSAO_KEY, IS_PUBLIC_KEY } from "./permissions.guard";
+import { podePersonificar } from "./auth.service";
 
 // Controllers a serem varridos
 import { AuthController } from "./auth.controller";
@@ -78,6 +79,44 @@ const ALL_CONTROLLERS = [
   SolicitacoesController,
   MobileController,
   HealthController,
+];
+
+/**
+ * Rotas públicas esperadas (@Public() no controller ou handler).
+ * Teste falha se aparecer rota pública não listada ou se alguma desaparecer.
+ */
+const ROTAS_PUBLICAS_ESPERADAS = [
+  { method: "GET", path: "/auth/login" },
+  { method: "POST", path: "/auth/login" },
+  { method: "GET", path: "/health/" },
+];
+
+/**
+ * Rotas que exigem apenas JWT (sem @RequirePermission, sem @Public).
+ * Guard libera todos os perfis autenticados por padrão.
+ * Teste falha se aparecer rota só-JWT não listada ou se alguma desaparecer.
+ */
+const ROTAS_SO_JWT_ESPERADAS = [
+  { method: "POST", path: "/auth/impersonate" },
+  { method: "GET", path: "/auth/impersonation-targets" },
+  { method: "POST", path: "/auth/logout" },
+  { method: "POST", path: "/auth/stop-impersonation" },
+  { method: "POST", path: "/auth/switch-estabelecimento" },
+  { method: "GET", path: "/fornecedores/" },
+  { method: "POST", path: "/fornecedores/" },
+  { method: "GET", path: "/fornecedores/:id" },
+  { method: "PATCH", path: "/fornecedores/:id" },
+  { method: "POST", path: "/fornecedores/:id/contatos" },
+  { method: "DELETE", path: "/fornecedores/:id/contatos/:contatoId" },
+  { method: "POST", path: "/fornecedores/:id/documentos" },
+  { method: "GET", path: "/fornecedores/:id/documentos/:docId" },
+  { method: "POST", path: "/fornecedores/:id/fabricantes" },
+  { method: "DELETE", path: "/fornecedores/:id/fabricantes/:fabricanteId" },
+  { method: "POST", path: "/fornecedores/:id/notas" },
+  { method: "GET", path: "/portal/cronograma-calibracao" },
+  { method: "GET", path: "/portal/cronograma-manutencao" },
+  { method: "GET", path: "/session/me" },
+  { method: "GET", path: "/solicitacoes/" },
 ];
 
 interface RouteInfo {
@@ -323,8 +362,8 @@ describe("Baseline de Permissões da API", () => {
     const routes = extractRoutes();
     assert.ok(routes.length > 0, "Deve encontrar pelo menos uma rota");
 
+    const reflector = new Reflector();
     const publicRoutes = routes.filter((r) => {
-      const reflector = new Reflector();
       return (
         reflector.get<boolean>(IS_PUBLIC_KEY, r.controller.prototype[r.method]) ||
         reflector.get<boolean>(IS_PUBLIC_KEY, r.controller)
@@ -332,7 +371,6 @@ describe("Baseline de Permissões da API", () => {
     });
 
     const protectedRoutes = routes.filter((r) => {
-      const reflector = new Reflector();
       const isPublic =
         reflector.get<boolean>(IS_PUBLIC_KEY, r.controller.prototype[r.method]) ||
         reflector.get<boolean>(IS_PUBLIC_KEY, r.controller);
@@ -341,6 +379,50 @@ describe("Baseline de Permissões da API", () => {
 
     assert.ok(publicRoutes.length > 0, "Deve ter rotas públicas");
     assert.ok(protectedRoutes.length > 0, "Deve ter rotas protegidas");
+  });
+
+  it("rotas públicas coincidem com ROTAS_PUBLICAS_ESPERADAS", async () => {
+    const routes = extractRoutes();
+    const matrix = await generatePermissionMatrix(routes);
+
+    const publicasReais = matrix
+      .filter((e) => e.isPublic)
+      .map((e) => ({ method: e.method, path: e.route }))
+      .sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
+
+    const publicasEsperadas = [...ROTAS_PUBLICAS_ESPERADAS].sort(
+      (a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method),
+    );
+
+    assert.deepEqual(
+      publicasReais,
+      publicasEsperadas,
+      `Rotas públicas mudaram. Atualize ROTAS_PUBLICAS_ESPERADAS.\n` +
+        `Reais: ${JSON.stringify(publicasReais, null, 2)}\n` +
+        `Esperadas: ${JSON.stringify(publicasEsperadas, null, 2)}`,
+    );
+  });
+
+  it("rotas só-JWT coincidem com ROTAS_SO_JWT_ESPERADAS", async () => {
+    const routes = extractRoutes();
+    const matrix = await generatePermissionMatrix(routes);
+
+    const soJwtReais = matrix
+      .filter((e) => !e.isPublic && Object.values(e.results).every((v) => v === "PERMITIDO"))
+      .map((e) => ({ method: e.method, path: e.route }))
+      .sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
+
+    const soJwtEsperadas = [...ROTAS_SO_JWT_ESPERADAS].sort(
+      (a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method),
+    );
+
+    assert.deepEqual(
+      soJwtReais,
+      soJwtEsperadas,
+      `Rotas só-JWT mudaram. Atualize ROTAS_SO_JWT_ESPERADAS.\n` +
+        `Reais: ${JSON.stringify(soJwtReais, null, 2)}\n` +
+        `Esperadas: ${JSON.stringify(soJwtEsperadas, null, 2)}`,
+    );
   });
 
   it("matriz de permissões coincide com o snapshot (baseline)", async () => {
@@ -495,6 +577,22 @@ describe("Baseline de Permissões da API", () => {
         route.results.ADMIN,
         "PERMITIDO",
         `ADMIN deve ter acesso total a ${route.route}`,
+      );
+    }
+  });
+
+  it("impersonate e stop-impersonation: controle no service (ADMIN, GESTOR, ENGENHEIRO)", () => {
+    // O guard libera (só-JWT), mas o service bloqueia via podePersonificar
+    const perfis = Object.keys(PERMISSOES_PADRAO) as PerfilAcesso[];
+
+    for (const perfil of perfis) {
+      const permitido = podePersonificar(perfil);
+      const esperado = perfil === "ADMIN" || perfil === "GESTOR" || perfil === "ENGENHEIRO";
+
+      assert.equal(
+        permitido,
+        esperado,
+        `podePersonificar(${perfil}) deveria retornar ${esperado}, mas retornou ${permitido}`,
       );
     }
   });
