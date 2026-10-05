@@ -59,26 +59,23 @@ try {
     process.exit(0);
   }
 
-  const hospital = await resolveHospital();
-
   const existingUser = await prisma.usuario.findUnique({
     where: { email: ADMIN_EMAIL },
   });
 
-  let user;
   if (existingUser) {
-    user = await prisma.usuario.update({
-      where: { email: ADMIN_EMAIL },
-      update: { nome: ADMIN_NOME, ativo: true },
-    });
-    console.log(`[aion] admin já existe · ${ADMIN_EMAIL} · senha preservada`);
-  } else {
-    const senhaHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-    user = await prisma.usuario.create({
-      data: { email: ADMIN_EMAIL, nome: ADMIN_NOME, senhaHash, ativo: true },
-    });
-    console.log(`[aion] admin criado · ${ADMIN_EMAIL} · senha definida`);
+    console.log(`[aion] admin já existe · ${ADMIN_EMAIL} · nenhuma alteração (usuário real preservado)`);
+    process.exit(0);
   }
+
+  // Usuário não existe, criar
+  const hospital = await resolveHospital();
+  const senhaHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  
+  const user = await prisma.usuario.create({
+    data: { email: ADMIN_EMAIL, nome: ADMIN_NOME, senhaHash, ativo: true },
+  });
+  console.log(`[aion] admin criado · ${ADMIN_EMAIL} · senha definida`);
 
   await prisma.usuarioEstabelecimento.upsert({
     where: {

@@ -111,13 +111,14 @@ async function ensureColab(hospitalId, user, demo) {
 }
 
 try {
+  // Rebrand APENAS domínios demo (@nexo.local → @aion.local)
   const renamed = await prisma.$executeRawUnsafe(`
     UPDATE "Usuario"
     SET email = REPLACE(email, '@nexo.local', '@aion.local')
     WHERE email LIKE '%@nexo.local'
   `);
   if (renamed > 0) {
-    console.log(`[aion] rebrand e-mails: ${renamed} usuário(s) @nexo.local → @aion.local`);
+    console.log(`[aion] rebrand e-mails demo: ${renamed} usuário(s) @nexo.local → @aion.local`);
   }
 
   if (IS_PRODUCTION && !SEED_DEMO_USERS) {
@@ -137,37 +138,47 @@ try {
   });
 
   for (const demo of DEMOS) {
+    // Verificar que é realmente um domínio demo
+    if (!demo.email.endsWith("@aion.local") && !demo.email.endsWith("@nexo.local")) {
+      console.warn(`[aion] AVISO: ${demo.email} não é domínio demo, pulando`);
+      continue;
+    }
+
     const existingUser = await prisma.usuario.findUnique({
       where: { email: demo.email },
     });
 
     let user;
     if (existingUser) {
-      user = await prisma.usuario.update({
-        where: { email: demo.email },
-        data: { nome: demo.nome, ativo: true },
-      });
+      // Usuário demo já existe - não modificar
+      user = existingUser;
     } else {
+      // Criar novo usuário demo
       const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);
       user = await prisma.usuario.create({
         data: { email: demo.email, nome: demo.nome, senhaHash, ativo: true },
       });
     }
 
-    await prisma.usuarioEstabelecimento.upsert({
+    // Garantir vínculo de estabelecimento (criar se não existir)
+    const vinculoExiste = await prisma.usuarioEstabelecimento.findUnique({
       where: {
         usuarioId_estabelecimentoId: {
           usuarioId: user.id,
           estabelecimentoId: hospital.id,
         },
       },
-      update: { perfil: demo.perfil },
-      create: {
-        usuarioId: user.id,
-        estabelecimentoId: hospital.id,
-        perfil: demo.perfil,
-      },
     });
+
+    if (!vinculoExiste) {
+      await prisma.usuarioEstabelecimento.create({
+        data: {
+          usuarioId: user.id,
+          estabelecimentoId: hospital.id,
+          perfil: demo.perfil,
+        },
+      });
+    }
 
     if (demo.matricula) {
       await ensureColab(hospital.id, user, demo);
@@ -177,22 +188,32 @@ try {
   const hef = await resolveHospitalHef();
   if (hef && hef.id !== hospital.id) {
     for (const demo of DEMOS) {
+      if (!demo.email.endsWith("@aion.local") && !demo.email.endsWith("@nexo.local")) {
+        continue;
+      }
+
       const user = await prisma.usuario.findUnique({ where: { email: demo.email } });
       if (!user) continue;
-      await prisma.usuarioEstabelecimento.upsert({
+
+      const vinculoHefExiste = await prisma.usuarioEstabelecimento.findUnique({
         where: {
           usuarioId_estabelecimentoId: {
             usuarioId: user.id,
             estabelecimentoId: hef.id,
           },
         },
-        update: { perfil: demo.perfil },
-        create: {
-          usuarioId: user.id,
-          estabelecimentoId: hef.id,
-          perfil: demo.perfil,
-        },
       });
+
+      if (!vinculoHefExiste) {
+        await prisma.usuarioEstabelecimento.create({
+          data: {
+            usuarioId: user.id,
+            estabelecimentoId: hef.id,
+            perfil: demo.perfil,
+          },
+        });
+      }
+
       if (demo.matricula) {
         await ensureColab(hef.id, user, demo);
       }

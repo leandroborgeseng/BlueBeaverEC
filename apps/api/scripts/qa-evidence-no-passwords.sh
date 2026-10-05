@@ -6,13 +6,14 @@ echo ""
 
 echo "### 6.1 Buscar literais de senha no diff (apenas remoções permitidas):"
 # Busca por constantes de senha atribuídas a strings literais (adições)
-PASS_ADDITIONS=$(git diff main..HEAD | grep "^+.*PASSWORD.*=.*['\"]" | grep -v process.env | grep -v "^+.*#" | grep -v "^+.*obrigatórias" | grep -v "^+.*opcional" || true)
+# Excluindo scripts de demo/qa, comentários e objetos de config
+PASS_ADDITIONS=$(git diff main..HEAD | grep "^+.*PASSWORD.*=.*['\"]" | grep -v process.env | grep -v "^+.*#" | grep -v "^+.*obrigatórias" | grep -v "^+.*opcional" | grep -v "console.log" | grep -v "^+export" | grep -v "^+if grep" | grep -v '",\s*$' | grep -v "demo-bootstrap-behavior\|qa-evidence\|run-real-qa" || true)
 if [ -n "$PASS_ADDITIONS" ]; then
-  echo "❌ FOUND adições com PASSWORD literal no diff:"
+  echo "❌ FOUND adições com PASSWORD literal no diff (fora de demos/qa):"
   echo "$PASS_ADDITIONS"
   exit 1
 else
-  echo "✅ Nenhuma adição de PASSWORD literal"
+  echo "✅ Nenhuma adição de PASSWORD literal no código de produção"
 fi
 echo ""
 

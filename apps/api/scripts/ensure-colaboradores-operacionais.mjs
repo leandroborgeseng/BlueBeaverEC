@@ -79,27 +79,20 @@ async function ensureColaborador({ estabelecimentoId, usuarioId, nome, perfil })
   if (perfil === PerfilAcesso.SOLICITANTE) return null;
 
   const existente = await prisma.colaborador.findUnique({ where: { usuarioId } });
-  if (existente && existente.estabelecimentoId === estabelecimentoId) {
-    if (!existente.ativo) {
-      await prisma.colaborador.update({ where: { id: existente.id }, data: { ativo: true } });
-    }
+  if (existente) {
+    // Colaborador já existe - não modificar (usuário real preservado)
     return existente;
   }
 
+  // Colaborador não existe, criar
   const created = await criarComMatricula({
     estabelecimentoId,
     nome,
     cargo: CARGO_PADRAO[perfil] ?? null,
     perfil,
-    usuarioId: existente ? undefined : usuarioId,
+    usuarioId,
   });
 
-  if (existente) {
-    await prisma.$transaction([
-      prisma.colaborador.update({ where: { id: existente.id }, data: { usuarioId: null } }),
-      prisma.colaborador.update({ where: { id: created.id }, data: { usuarioId } }),
-    ]);
-  }
   return created;
 }
 

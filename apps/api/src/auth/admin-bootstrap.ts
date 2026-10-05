@@ -43,11 +43,11 @@ export function decideAdminBootstrap(
     };
   }
 
-  // Se o usuário existe, apenas atualizar nome (não senha)
+  // Se o usuário existe, skip completo (usuário real preservado)
   return {
-    shouldSkip: false,
+    shouldSkip: true,
     shouldCreate: false,
-    shouldUpdateName: true,
-    reason: "admin já existe, preservar senha",
+    shouldUpdateName: false,
+    reason: "admin já existe, nenhuma alteração (usuário real preservado)",
   };
 }

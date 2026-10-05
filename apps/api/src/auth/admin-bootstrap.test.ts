@@ -47,15 +47,15 @@ describe("Admin Bootstrap", () => {
     assert.strictEqual(decision.shouldUpdateName, false);
   });
 
-  it("deve atualizar (sem senha) quando credenciais presentes e usuário existe", () => {
+  it("deve skipar completamente quando usuário já existe (usuário real preservado)", () => {
     const decision = decideAdminBootstrap(
       { email: "admin@example.com", nome: "Admin", password: "senha123" },
       true,
     );
-    assert.strictEqual(decision.shouldSkip, false);
+    assert.strictEqual(decision.shouldSkip, true);
     assert.strictEqual(decision.shouldCreate, false);
-    assert.strictEqual(decision.shouldUpdateName, true);
-    assert.ok(decision.reason?.includes("preservar senha"));
+    assert.strictEqual(decision.shouldUpdateName, false);
+    assert.ok(decision.reason?.includes("usuário real preservado"));
   });
 
   it("deve trimmar espaços em branco nas credenciais", () => {
