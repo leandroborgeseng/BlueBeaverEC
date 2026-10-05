@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
  * Garante contas demo Aion a cada boot (mesmo com usuários já existentes).
- * Corrige banco legado: @nexo.local + senha nexo1234 → @aion.local + aion1234.
+ * Corrige banco legado: @nexo.local → @aion.local.
+ * 
+ * Contas demo são criadas apenas se:
+ * - NODE_ENV !== 'production', OU
+ * - SEED_DEMO_USERS=1 estiver definido explicitamente
+ * 
+ * Senha vem de DEMO_PASSWORD (env var). Se já existirem, a senha NÃO é alterada.
  */
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -12,7 +18,9 @@ const require = createRequire(path.join(root, "package.json"));
 const { PrismaClient, PerfilAcesso } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 
-const DEMO_PASSWORD = "aion1234";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD?.trim();
+const SEED_DEMO_USERS = process.env.SEED_DEMO_USERS === "1" || process.env.SEED_DEMO_USERS === "true";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const ESTAB_ID = "estab_modelo";
 
 const DEMOS = [
@@ -112,21 +120,40 @@ try {
     console.log(`[aion] rebrand e-mails: ${renamed} usuário(s) @nexo.local → @aion.local`);
   }
 
-  const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  if (IS_PRODUCTION && !SEED_DEMO_USERS) {
+    console.log("[aion] demo users skipped (produção sem SEED_DEMO_USERS=1)");
+    process.exit(0);
+  }
+
+  if (!DEMO_PASSWORD) {
+    console.log("[aion] demo users skipped (DEMO_PASSWORD ausente)");
+    process.exit(0);
+  }
 
   const hospital = await prisma.estabelecimento.upsert({
     where: { id: ESTAB_ID },
-    // Não regrava o nome: em produção HEF o gestor ajusta em Config e o boot não pode desfazer.
     update: {},
     create: { id: ESTAB_ID, nome: "Hospital Estadual de Formosa" },
   });
 
   for (const demo of DEMOS) {
-    const user = await prisma.usuario.upsert({
+    const existingUser = await prisma.usuario.findUnique({
       where: { email: demo.email },
-      update: { senhaHash, nome: demo.nome, ativo: true },
-      create: { email: demo.email, nome: demo.nome, senhaHash, ativo: true },
     });
+
+    let user;
+    if (existingUser) {
+      user = await prisma.usuario.update({
+        where: { email: demo.email },
+        data: { nome: demo.nome, ativo: true },
+      });
+    } else {
+      const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+      user = await prisma.usuario.create({
+        data: { email: demo.email, nome: demo.nome, senhaHash, ativo: true },
+      });
+    }
+
     await prisma.usuarioEstabelecimento.upsert({
       where: {
         usuarioId_estabelecimentoId: {
@@ -179,7 +206,7 @@ try {
   }
 
   console.log(
-    `[aion] demo users ok · senha ${DEMO_PASSWORD} · tecnico@aion.local (TECNICO) · campo@aion.local (TECNICO_RESTRITO)`,
+    `[aion] demo users ok · senha via DEMO_PASSWORD · tecnico@aion.local (TECNICO) · campo@aion.local (TECNICO_RESTRITO)`,
   );
   process.exit(0);
 } catch (e) {

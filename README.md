@@ -34,11 +34,16 @@ pnpm dev
 
 ### Usuários seed
 
+As credenciais são definidas via variáveis de ambiente:
+
 | E-mail | Senha | Perfil |
 |--------|-------|--------|
-| engenheiro@aion.local | aion1234 | Engenheiro |
-| tecnico@aion.local | aion1234 | Técnico |
-| solicitante@aion.local | aion1234 | Solicitante |
+| engenheiro@aion.local | `DEMO_PASSWORD` | Engenheiro |
+| tecnico@aion.local | `DEMO_PASSWORD` | Técnico |
+| solicitante@aion.local | `DEMO_PASSWORD` | Solicitante |
+| (via `ADMIN_EMAIL`) | `ADMIN_PASSWORD` | Administrador |
+
+**Importante:** Configure `ADMIN_EMAIL`, `ADMIN_NOME`, `ADMIN_PASSWORD` e `DEMO_PASSWORD` no `.env` antes do primeiro boot. As senhas são usadas **apenas na criação inicial**; se os usuários já existirem, suas senhas não serão alteradas.
 
 No boot da API (`scripts/start-prod.mjs`) rodam automaticamente:
 
@@ -67,6 +72,9 @@ Use **Docker Compose** apontando para `docker-compose.yml` na raiz.
    - `DATABASE_URL=postgresql://aion:<senha>@db:5432/aion?schema=public`
    - `CORS_ORIGIN` / `WEB_ORIGIN` = URL pública do front
    - `NEXT_PUBLIC_API_URL` = URL pública da API (build arg + runtime)
+   - `ADMIN_EMAIL`, `ADMIN_NOME`, `ADMIN_PASSWORD` (credenciais do super administrador)
+   - `DEMO_PASSWORD` (opcional, para contas demo)
+   - `SEED_DEMO_USERS=1` (opcional, para criar contas demo em produção)
 3. Publique as portas / domínios:
    - `web` → domínio principal
    - `api` → subdomínio `api.` (ou path proxy)

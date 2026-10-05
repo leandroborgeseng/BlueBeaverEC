@@ -3,6 +3,14 @@
  * Garante o super administrador de produção a cada boot (idempotente).
  * Hospital: o do inventário oficial HEF (TAGs HEF-*), senão o de maior
  * parque, senão estab_modelo, senão o primeiro estabelecimento.
+ * 
+ * Credenciais vêm das variáveis de ambiente:
+ * - ADMIN_EMAIL: e-mail do administrador
+ * - ADMIN_NOME: nome completo do administrador
+ * - ADMIN_PASSWORD: senha (apenas para criação inicial)
+ * 
+ * Se o usuário já existir, a senha NÃO será alterada.
+ * Se as variáveis não estiverem definidas, o script será ignorado silenciosamente.
  */
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -13,9 +21,9 @@ const require = createRequire(path.join(root, "package.json"));
 const { PrismaClient, PerfilAcesso } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 
-const ADMIN_EMAIL = "leandro.borges@aion.eng.br";
-const ADMIN_NOME = "Leandro Borges";
-const ADMIN_PASSWORD = "Lean777$";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim();
+const ADMIN_NOME = process.env.ADMIN_NOME?.trim();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD?.trim();
 const ESTAB_FALLBACK_ID = "estab_modelo";
 
 const prisma = new PrismaClient();
@@ -46,14 +54,31 @@ async function resolveHospital() {
 }
 
 try {
-  const hospital = await resolveHospital();
-  const senhaHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  if (!ADMIN_EMAIL || !ADMIN_NOME || !ADMIN_PASSWORD) {
+    console.log("[aion] admin bootstrap skipped (ADMIN_EMAIL, ADMIN_NOME ou ADMIN_PASSWORD ausente)");
+    process.exit(0);
+  }
 
-  const user = await prisma.usuario.upsert({
+  const hospital = await resolveHospital();
+
+  const existingUser = await prisma.usuario.findUnique({
     where: { email: ADMIN_EMAIL },
-    update: { senhaHash, nome: ADMIN_NOME, ativo: true },
-    create: { email: ADMIN_EMAIL, nome: ADMIN_NOME, senhaHash, ativo: true },
   });
+
+  let user;
+  if (existingUser) {
+    user = await prisma.usuario.update({
+      where: { email: ADMIN_EMAIL },
+      update: { nome: ADMIN_NOME, ativo: true },
+    });
+    console.log(`[aion] admin já existe · ${ADMIN_EMAIL} · senha preservada`);
+  } else {
+    const senhaHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+    user = await prisma.usuario.create({
+      data: { email: ADMIN_EMAIL, nome: ADMIN_NOME, senhaHash, ativo: true },
+    });
+    console.log(`[aion] admin criado · ${ADMIN_EMAIL} · senha definida`);
+  }
 
   await prisma.usuarioEstabelecimento.upsert({
     where: {
