@@ -10,7 +10,9 @@
     "db:generate": "pnpm --filter @nexo/api prisma:generate",
     "db:migrate": "pnpm --filter @nexo/api prisma:migrate",
     "db:seed": "pnpm --filter @nexo/api prisma:seed",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @nexo/api test",
+    "typecheck": "pnpm --filter @aion/shared lint && pnpm --filter @nexo/api lint"
   },
   "engines": {
     "node": ">=20"
