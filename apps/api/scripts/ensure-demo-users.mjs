@@ -122,7 +122,16 @@ try {
   }
 
   if (IS_PRODUCTION && !SEED_DEMO_USERS) {
-    console.log("[aion] demo users skipped (produção sem SEED_DEMO_USERS=1)");
+    // Em produção sem SEED_DEMO_USERS=1: desativar demos (idempotente)
+    const deactivated = await prisma.$executeRawUnsafe(`
+      UPDATE "Usuario"
+      SET ativo = false
+      WHERE (email LIKE '%@aion.local' OR email LIKE '%@nexo.local')
+        AND ativo = true
+    `);
+    console.log(
+      `[aion] demo users desativados em produção · ${deactivated} conta(s) ativo=false · domains: @aion.local, @nexo.local`,
+    );
     process.exit(0);
   }
 
@@ -150,8 +159,15 @@ try {
 
     let user;
     if (existingUser) {
-      // Usuário demo já existe - não modificar
-      user = existingUser;
+      // Usuário demo já existe - reativar se estava inativo
+      if (!existingUser.ativo) {
+        user = await prisma.usuario.update({
+          where: { email: demo.email },
+          data: { ativo: true },
+        });
+      } else {
+        user = existingUser;
+      }
     } else {
       // Criar novo usuário demo
       const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);

@@ -243,8 +243,76 @@ async function main() {
   console.log(`   Usuários demo: ${demoUsers}`);
   console.log(`   Usuários reais: ${before.count} (inalterados)\n`);
 
+  console.log("10. Teste de desativação em produção (NODE_ENV=production, sem SEED_DEMO_USERS):\n");
+  const boot3 = runScript("maybe-seed.mjs", {
+    NODE_ENV: "production",
+    ADMIN_EMAIL: "leandro.borges@aion.eng.br",
+    ADMIN_NOME: "Leandro Borges",
+    ADMIN_PASSWORD: "IgnoredInProduction",
+    // SEED_DEMO_USERS não definido → demos devem ser desativados
+  });
+  console.log(boot3.stdout.split("\n").filter(l => l.includes("[aion]")).join("\n"));
+
+  const demosAtivos = await prisma.usuario.count({
+    where: {
+      OR: [
+        { email: { endsWith: "@aion.local" } },
+        { email: { endsWith: "@nexo.local" } },
+      ],
+      ativo: true,
+    },
+  });
+  const demosInativos = await prisma.usuario.count({
+    where: {
+      OR: [
+        { email: { endsWith: "@aion.local" } },
+        { email: { endsWith: "@nexo.local" } },
+      ],
+      ativo: false,
+    },
+  });
+
+  console.log(`\n   Demos ativos após boot produção: ${demosAtivos}`);
+  console.log(`   Demos inativos após boot produção: ${demosInativos}`);
+
+  if (demosAtivos > 0) {
+    throw new Error(`❌ Demos ainda ativos em produção: ${demosAtivos}`);
+  }
+  console.log("   ✅ Todos os demos foram desativados em produção");
+
+  console.log("\n11. Idempotência da desativação (segundo boot em produção):\n");
+  const boot4 = runScript("maybe-seed.mjs", {
+    NODE_ENV: "production",
+    ADMIN_EMAIL: "leandro.borges@aion.eng.br",
+    ADMIN_NOME: "Leandro Borges",
+    ADMIN_PASSWORD: "IgnoredInProduction",
+  });
+  const boot4Output = boot4.stdout.split("\n").filter(l => l.includes("[aion]")).join("\n");
+  console.log(boot4Output);
+
+  if (!boot4Output.includes("0 conta(s)")) {
+    throw new Error("❌ Segundo boot deveria desativar 0 contas (idempotência)");
+  }
+  console.log("   ✅ Segundo boot desativou 0 contas (idempotente)");
+
+  console.log("\n12. DUMP FINAL dos usuários reais (após desativação de demos):");
+  const afterDeactivation = await dumpNonDemoUsers("after-deactivation");
+
+  console.log("\n13. COMPARAÇÃO FINAL (before vs after-deactivation):\n");
+  const beforeStr2 = JSON.stringify(before.dump, null, 2);
+  const afterDeactivationStr = JSON.stringify(afterDeactivation.dump, null, 2);
+
+  if (beforeStr2 === afterDeactivationStr) {
+    console.log("✅ DIFF VAZIO - Usuários reais inalterados após desativação de demos!\n");
+  } else {
+    console.log("❌ DIFF NÃO VAZIO após desativação!");
+    throw new Error("FALHA: Usuários reais foram modificados durante desativação");
+  }
+
   console.log("=== ✅ EVIDÊNCIA ESTRITA PASSED ===");
-  console.log("Usuários reais (admin + colaboradores) NUNCA foram modificados.");
+  console.log("✅ Usuários reais (admin + colaboradores) NUNCA foram modificados.");
+  console.log("✅ Demos desativados em produção (ativo=false).");
+  console.log("✅ Desativação é idempotente (0 no segundo boot).");
 }
 
 main()
