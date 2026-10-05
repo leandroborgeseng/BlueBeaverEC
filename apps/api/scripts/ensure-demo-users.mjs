@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
  * Garante contas demo Aion a cada boot (mesmo com usuários já existentes).
- * Corrige banco legado: @nexo.local + senha nexo1234 → @aion.local + aion1234.
+ * Corrige banco legado: @nexo.local → @aion.local.
+ * 
+ * Contas demo são criadas apenas se:
+ * - NODE_ENV !== 'production', OU
+ * - SEED_DEMO_USERS=1 estiver definido explicitamente
+ * 
+ * Senha vem de DEMO_PASSWORD (env var). Se já existirem, a senha NÃO é alterada.
  */
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -12,7 +18,9 @@ const require = createRequire(path.join(root, "package.json"));
 const { PrismaClient, PerfilAcesso } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 
-const DEMO_PASSWORD = "aion1234";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD?.trim();
+const SEED_DEMO_USERS = process.env.SEED_DEMO_USERS === "1" || process.env.SEED_DEMO_USERS === "true";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const ESTAB_ID = "estab_modelo";
 
 const DEMOS = [
@@ -103,44 +111,90 @@ async function ensureColab(hospitalId, user, demo) {
 }
 
 try {
+  // Rebrand APENAS domínios demo (@nexo.local → @aion.local)
   const renamed = await prisma.$executeRawUnsafe(`
     UPDATE "Usuario"
     SET email = REPLACE(email, '@nexo.local', '@aion.local')
     WHERE email LIKE '%@nexo.local'
   `);
   if (renamed > 0) {
-    console.log(`[aion] rebrand e-mails: ${renamed} usuário(s) @nexo.local → @aion.local`);
+    console.log(`[aion] rebrand e-mails demo: ${renamed} usuário(s) @nexo.local → @aion.local`);
   }
 
-  const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  if (IS_PRODUCTION && !SEED_DEMO_USERS) {
+    // Em produção sem SEED_DEMO_USERS=1: desativar demos (idempotente)
+    const deactivated = await prisma.$executeRawUnsafe(`
+      UPDATE "Usuario"
+      SET ativo = false
+      WHERE (email LIKE '%@aion.local' OR email LIKE '%@nexo.local')
+        AND ativo = true
+    `);
+    console.log(
+      `[aion] demo users desativados em produção · ${deactivated} conta(s) ativo=false · domains: @aion.local, @nexo.local`,
+    );
+    process.exit(0);
+  }
+
+  if (!DEMO_PASSWORD) {
+    console.log("[aion] demo users skipped (DEMO_PASSWORD ausente)");
+    process.exit(0);
+  }
 
   const hospital = await prisma.estabelecimento.upsert({
     where: { id: ESTAB_ID },
-    // Não regrava o nome: em produção HEF o gestor ajusta em Config e o boot não pode desfazer.
     update: {},
     create: { id: ESTAB_ID, nome: "Hospital Estadual de Formosa" },
   });
 
   for (const demo of DEMOS) {
-    const user = await prisma.usuario.upsert({
+    // Verificar que é realmente um domínio demo
+    if (!demo.email.endsWith("@aion.local") && !demo.email.endsWith("@nexo.local")) {
+      console.warn(`[aion] AVISO: ${demo.email} não é domínio demo, pulando`);
+      continue;
+    }
+
+    const existingUser = await prisma.usuario.findUnique({
       where: { email: demo.email },
-      update: { senhaHash, nome: demo.nome, ativo: true },
-      create: { email: demo.email, nome: demo.nome, senhaHash, ativo: true },
     });
-    await prisma.usuarioEstabelecimento.upsert({
+
+    let user;
+    if (existingUser) {
+      // Usuário demo já existe - reativar se estava inativo
+      if (!existingUser.ativo) {
+        user = await prisma.usuario.update({
+          where: { email: demo.email },
+          data: { ativo: true },
+        });
+      } else {
+        user = existingUser;
+      }
+    } else {
+      // Criar novo usuário demo
+      const senhaHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+      user = await prisma.usuario.create({
+        data: { email: demo.email, nome: demo.nome, senhaHash, ativo: true },
+      });
+    }
+
+    // Garantir vínculo de estabelecimento (criar se não existir)
+    const vinculoExiste = await prisma.usuarioEstabelecimento.findUnique({
       where: {
         usuarioId_estabelecimentoId: {
           usuarioId: user.id,
           estabelecimentoId: hospital.id,
         },
       },
-      update: { perfil: demo.perfil },
-      create: {
-        usuarioId: user.id,
-        estabelecimentoId: hospital.id,
-        perfil: demo.perfil,
-      },
     });
+
+    if (!vinculoExiste) {
+      await prisma.usuarioEstabelecimento.create({
+        data: {
+          usuarioId: user.id,
+          estabelecimentoId: hospital.id,
+          perfil: demo.perfil,
+        },
+      });
+    }
 
     if (demo.matricula) {
       await ensureColab(hospital.id, user, demo);
@@ -150,22 +204,32 @@ try {
   const hef = await resolveHospitalHef();
   if (hef && hef.id !== hospital.id) {
     for (const demo of DEMOS) {
+      if (!demo.email.endsWith("@aion.local") && !demo.email.endsWith("@nexo.local")) {
+        continue;
+      }
+
       const user = await prisma.usuario.findUnique({ where: { email: demo.email } });
       if (!user) continue;
-      await prisma.usuarioEstabelecimento.upsert({
+
+      const vinculoHefExiste = await prisma.usuarioEstabelecimento.findUnique({
         where: {
           usuarioId_estabelecimentoId: {
             usuarioId: user.id,
             estabelecimentoId: hef.id,
           },
         },
-        update: { perfil: demo.perfil },
-        create: {
-          usuarioId: user.id,
-          estabelecimentoId: hef.id,
-          perfil: demo.perfil,
-        },
       });
+
+      if (!vinculoHefExiste) {
+        await prisma.usuarioEstabelecimento.create({
+          data: {
+            usuarioId: user.id,
+            estabelecimentoId: hef.id,
+            perfil: demo.perfil,
+          },
+        });
+      }
+
       if (demo.matricula) {
         await ensureColab(hef.id, user, demo);
       }
@@ -179,7 +243,7 @@ try {
   }
 
   console.log(
-    `[aion] demo users ok · senha ${DEMO_PASSWORD} · tecnico@aion.local (TECNICO) · campo@aion.local (TECNICO_RESTRITO)`,
+    `[aion] demo users ok · senha via DEMO_PASSWORD · tecnico@aion.local (TECNICO) · campo@aion.local (TECNICO_RESTRITO)`,
   );
   process.exit(0);
 } catch (e) {

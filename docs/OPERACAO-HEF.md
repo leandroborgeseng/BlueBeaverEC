@@ -39,6 +39,11 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 | `NODE_ENV` | sim | `production` (esconde stack no cliente). |
 | `PORT` / `API_PORT` | sim | Railway injeta `PORT`. |
 | `CORS_ORIGIN` / `WEB_ORIGIN` | sim | `https://hef.aion.eng.br` |
+| **`ADMIN_EMAIL`** | **não (HEF)** | **E-mail do super administrador. Usado apenas na criação inicial em banco vazio. No HEF o admin já existe; o bootstrap pula se o usuário existir. Recomendado apenas para banco novo.** |
+| **`ADMIN_NOME`** | **não (HEF)** | **Nome do super administrador. Usado apenas na criação inicial.** |
+| **`ADMIN_PASSWORD`** | **não (HEF)** | **Senha do super administrador. Usada apenas na criação inicial. Se o usuário existir, o bootstrap pula sem alterar a senha. NÃO manter esta variável no Railway após o primeiro boot em banco novo. No HEF, não é necessário (admin já existe e senha deve ser trocada pelo owner via interface).** |
+| **`DEMO_PASSWORD`** | não (prod) | **Senha das contas demo (@aion.local). Usada apenas na criação inicial. Em produção, demos são desativados (`ativo=false`) a menos que `SEED_DEMO_USERS=1` esteja definido.** |
+| **`SEED_DEMO_USERS`** | não | **`1` para habilitar demos em produção. Padrão: desligado em `NODE_ENV=production`. Sem esta flag, as contas demo são desativadas (`ativo=false`) em produção.** |
 | `PLANOS_CRON` | não | `0` desliga o cron das preventivas. |
 | `RELATORIOS_CRON` | não | `0` desliga o cron horário de relatórios. |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | não | Sem SMTP, disparo de relatório fica stub (não finge envio). |
@@ -55,8 +60,14 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 | `API_PUBLIC_URL` | se privado morto | Mesma URL HTTPS pública da API. O proxy usa HTTPS público **antes** de `*.railway.internal`. |
 | `NEXT_PUBLIC_API_URL` | não | Vazio = same-origin `/api` (recomendado). |
 
-Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aion.local`, `campo@aion.local`, `solicitante@aion.local` / `aion1234`.  
+Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aion.local`, `campo@aion.local`, `solicitante@aion.local` (senha via `DEMO_PASSWORD`).  
 Contas reais no ar: `leandro.borges@aion.eng.br` (ADMIN), `bsnaldi@hrtc.faepa.br`, `rmjuvencio@hrtc.faepa.br`, `bcrodarte@hrtc.faepa.br`. **Não migrar, não redefinir senha, não recriar colaborador.**
+
+**IMPORTANTE — Credenciais e segurança:**
+- **No HEF:** o admin real (`leandro.borges@aion.eng.br`) já existe no banco. As variáveis `ADMIN_*` **não são necessárias** para o deploy. O bootstrap detecta que o usuário existe e pula sem alterar nada.
+- **Em banco novo:** `ADMIN_EMAIL`, `ADMIN_NOME` e `ADMIN_PASSWORD` criam o super admin na primeira execução. Após isso, **remova `ADMIN_PASSWORD`** do Railway — ela não é mais necessária e não deve permanecer em variáveis de ambiente.
+- A senha do admin deve ser **trocada pelo owner** via interface do sistema. A senha antiga no histórico do git não deve ser reutilizada.
+- As contas demo (`@aion.local`) são **desativadas** (`ativo=false`) em produção a menos que `SEED_DEMO_USERS=1` esteja definido. Tokens JWT de contas desativadas são rejeitados (401).
 
 ## 3. Migrações
 
@@ -137,7 +148,7 @@ Até isso ser ensaiado, **não há recuperação garantida**.
 - Redefinir setores de `solicitante@` se já houver vínculo.
 - Criar técnico em massa / “migrar” engenheiros reais.
 
-O boot **ainda** redefine senha das contas **demo** `@aion.local` e a senha do super admin de produção a cada start (scripts `ensure-demo-users` e `ensure-admin-user`). Trate isso como risco conhecido.
+O boot **não** redefine senhas de usuários existentes. As senhas só são aplicadas na criação inicial (scripts `ensure-demo-users` e `ensure-admin-user`).
 
 ## 7. Roteiros curtos
 

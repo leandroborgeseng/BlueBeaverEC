@@ -1,0 +1,25 @@
+# Arquivos de desenvolvimento
+node_modules
+.git
+.gitignore
+*.log
+.env
+.env.*
+
+# Scripts de QA/evidência (não devem entrar na imagem de produção)
+qa/
+**/qa-*.mjs
+**/qa-*.sh
+**/run-real-qa-*.mjs
+**/demo-bootstrap-behavior.mjs
+
+# Testes
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# Documentação de desenvolvimento
+docs/
+README.md
+*.md

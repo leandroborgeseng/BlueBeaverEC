@@ -62,7 +62,7 @@ try {
     else run("pnpm", ["exec", "tsx", "prisma/seed.ts"]);
   }
 
-  // Sempre: migra @nexo.local e redefine senha demo aion1234
+  // Sempre: migra @nexo.local; cria/atualiza contas demo conforme env
   run(process.execPath, [path.join(root, "scripts/ensure-demo-users.mjs")]);
 
   // Sempre: super admin de produção (idempotente)

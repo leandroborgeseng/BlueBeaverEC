@@ -1,11 +1,37 @@
 import { PrismaClient, PerfilAcesso, PrioridadeOS, SituacaoEquipamento, StatusOS, TipoOS } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const senhaHash = await bcrypt.hash("aion1234", 10);
-  const adminSenhaHash = await bcrypt.hash("Lean777$", 10);
+  const IS_PRODUCTION = process.env.NODE_ENV === "production";
+  const SEED_DEMO_USERS = process.env.SEED_DEMO_USERS === "1" || process.env.SEED_DEMO_USERS === "true";
+  const demoPassword = process.env.DEMO_PASSWORD?.trim();
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  const adminNome = process.env.ADMIN_NOME?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+
+  // Demos: só se não for produção OU se SEED_DEMO_USERS=1
+  const shouldSeedDemos = !IS_PRODUCTION || SEED_DEMO_USERS;
+
+  if (!shouldSeedDemos || !demoPassword) {
+    if (IS_PRODUCTION && !SEED_DEMO_USERS) {
+      console.log("[seed] demos skipped (produção sem SEED_DEMO_USERS=1)");
+    } else if (!demoPassword) {
+      console.log("[seed] demos skipped (DEMO_PASSWORD ausente)");
+    }
+  }
+
+  // Admin: só se ADMIN_EMAIL, ADMIN_NOME e ADMIN_PASSWORD estiverem presentes
+  const shouldSeedAdmin = !!(adminEmail && adminNome && adminPassword);
+
+  if (!shouldSeedAdmin) {
+    console.log("[seed] admin skipped (ADMIN_EMAIL, ADMIN_NOME ou ADMIN_PASSWORD ausente)");
+  }
+
+  const senhaHash = shouldSeedDemos && demoPassword ? await bcrypt.hash(demoPassword, 10) : null;
+  const adminSenhaHash = shouldSeedAdmin ? await bcrypt.hash(adminPassword, 10) : null;
 
   // Migra credenciais demo do rebrand Nexo → Aion (idempotente)
   await prisma.$executeRawUnsafe(`
@@ -23,46 +49,58 @@ async function main() {
     },
   });
 
-  const engenheiro = await prisma.usuario.upsert({
-    where: { email: "engenheiro@aion.local" },
-    update: { senhaHash, nome: "Ana Engenheira" },
-    create: {
-      email: "engenheiro@aion.local",
-      nome: "Ana Engenheira",
-      senhaHash,
-    },
-  });
+  let engenheiro = null;
+  let tecnico = null;
+  let solicitante = null;
 
-  const tecnico = await prisma.usuario.upsert({
-    where: { email: "tecnico@aion.local" },
-    update: { senhaHash, nome: "Carlos Técnico" },
-    create: {
-      email: "tecnico@aion.local",
-      nome: "Carlos Técnico",
-      senhaHash,
-    },
-  });
+  if (shouldSeedDemos && senhaHash) {
+    engenheiro = await prisma.usuario.upsert({
+      where: { email: "engenheiro@aion.local" },
+      update: { senhaHash, nome: "Ana Engenheira" },
+      create: {
+        email: "engenheiro@aion.local",
+        nome: "Ana Engenheira",
+        senhaHash,
+      },
+    });
 
-  const solicitante = await prisma.usuario.upsert({
-    where: { email: "solicitante@aion.local" },
-    update: { senhaHash, nome: "Maria Solicitante" },
-    create: {
-      email: "solicitante@aion.local",
-      nome: "Maria Solicitante",
-      senhaHash,
-    },
-  });
+    tecnico = await prisma.usuario.upsert({
+      where: { email: "tecnico@aion.local" },
+      update: { senhaHash, nome: "Carlos Técnico" },
+      create: {
+        email: "tecnico@aion.local",
+        nome: "Carlos Técnico",
+        senhaHash,
+      },
+    });
 
-  const admin = await prisma.usuario.upsert({
-    where: { email: "leandro.borges@aion.eng.br" },
-    update: { senhaHash: adminSenhaHash, nome: "Leandro Borges", ativo: true },
-    create: {
-      email: "leandro.borges@aion.eng.br",
-      nome: "Leandro Borges",
-      senhaHash: adminSenhaHash,
-      ativo: true,
-    },
-  });
+    solicitante = await prisma.usuario.upsert({
+      where: { email: "solicitante@aion.local" },
+      update: { senhaHash, nome: "Maria Solicitante" },
+      create: {
+        email: "solicitante@aion.local",
+        nome: "Maria Solicitante",
+        senhaHash,
+      },
+    });
+    console.log("[seed] demos criados/atualizados: engenheiro, tecnico, solicitante @aion.local");
+  }
+
+  let admin = null;
+
+  if (shouldSeedAdmin && adminEmail && adminNome && adminSenhaHash) {
+    admin = await prisma.usuario.upsert({
+      where: { email: adminEmail },
+      update: { senhaHash: adminSenhaHash, nome: adminNome, ativo: true },
+      create: {
+        email: adminEmail,
+        nome: adminNome,
+        senhaHash: adminSenhaHash,
+        ativo: true,
+      },
+    });
+    console.log(`[seed] admin criado/atualizado: ${adminEmail}`);
+  }
 
   const hospitalHef =
     (await prisma.estabelecimento.findFirst({
@@ -70,47 +108,51 @@ async function main() {
       orderBy: { createdAt: "asc" },
     })) ?? hospital;
 
-  for (const [usuarioId, perfil] of [
-    [engenheiro.id, PerfilAcesso.ENGENHEIRO],
-    [tecnico.id, PerfilAcesso.TECNICO],
-    [solicitante.id, PerfilAcesso.SOLICITANTE],
-  ] as const) {
-    for (const estabId of new Set([hospital.id, hospitalHef.id])) {
-      await prisma.usuarioEstabelecimento.upsert({
-        where: {
-          usuarioId_estabelecimentoId: {
+  if (engenheiro && tecnico && solicitante) {
+    for (const [usuarioId, perfil] of [
+      [engenheiro.id, PerfilAcesso.ENGENHEIRO],
+      [tecnico.id, PerfilAcesso.TECNICO],
+      [solicitante.id, PerfilAcesso.SOLICITANTE],
+    ] as const) {
+      for (const estabId of new Set([hospital.id, hospitalHef.id])) {
+        await prisma.usuarioEstabelecimento.upsert({
+          where: {
+            usuarioId_estabelecimentoId: {
+              usuarioId,
+              estabelecimentoId: estabId,
+            },
+          },
+          update: { perfil },
+          create: {
             usuarioId,
             estabelecimentoId: estabId,
+            perfil,
           },
-        },
-        update: { perfil },
-        create: {
-          usuarioId,
-          estabelecimentoId: estabId,
-          perfil,
-        },
-      });
+        });
+      }
     }
   }
 
-  await prisma.usuarioEstabelecimento.upsert({
-    where: {
-      usuarioId_estabelecimentoId: {
+  if (admin) {
+    await prisma.usuarioEstabelecimento.upsert({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId: admin.id,
+          estabelecimentoId: hospitalHef.id,
+        },
+      },
+      update: { perfil: PerfilAcesso.ADMIN },
+      create: {
         usuarioId: admin.id,
         estabelecimentoId: hospitalHef.id,
+        perfil: PerfilAcesso.ADMIN,
       },
-    },
-    update: { perfil: PerfilAcesso.ADMIN },
-    create: {
-      usuarioId: admin.id,
-      estabelecimentoId: hospitalHef.id,
-      perfil: PerfilAcesso.ADMIN,
-    },
-  });
-  await prisma.usuarioEstabelecimento.updateMany({
-    where: { usuarioId: admin.id },
-    data: { perfil: PerfilAcesso.ADMIN },
-  });
+    });
+    await prisma.usuarioEstabelecimento.updateMany({
+      where: { usuarioId: admin.id },
+      data: { perfil: PerfilAcesso.ADMIN },
+    });
+  }
 
   const uti = await prisma.setor.upsert({
     where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "UTI Adulto" } },
@@ -118,15 +160,17 @@ async function main() {
     create: { estabelecimentoId: hospital.id, nome: "UTI Adulto" },
   });
 
-  await prisma.usuarioEstabelecimento.update({
-    where: {
-      usuarioId_estabelecimentoId: {
-        usuarioId: solicitante.id,
-        estabelecimentoId: hospital.id,
+  if (solicitante) {
+    await prisma.usuarioEstabelecimento.update({
+      where: {
+        usuarioId_estabelecimentoId: {
+          usuarioId: solicitante.id,
+          estabelecimentoId: hospital.id,
+        },
       },
-    },
-    data: { setorIds: [uti.id] },
-  });
+      data: { setorIds: [uti.id] },
+    });
+  }
 
   const cc = await prisma.setor.upsert({
     where: { estabelecimentoId_nome: { estabelecimentoId: hospital.id, nome: "Centro Cirúrgico" } },
@@ -177,46 +221,53 @@ async function main() {
     },
   });
 
-  const colabEngEstabId = hospitalHef.id;
-  if (hospitalHef.id !== hospital.id) {
-    const colabEngModelo = await prisma.colaborador.findUnique({
-      where: { usuarioId: engenheiro.id },
-    });
-    if (colabEngModelo && colabEngModelo.estabelecimentoId !== hospitalHef.id) {
-      await prisma.colaborador.update({
-        where: { id: colabEngModelo.id },
-        data: { usuarioId: null },
-      });
-    }
-  }
-  const colabEng = await prisma.colaborador.upsert({
-    where: {
-      estabelecimentoId_matricula: { estabelecimentoId: colabEngEstabId, matricula: "ENG-001" },
-    },
-    update: { usuarioId: engenheiro.id, nome: "Ana Engenheira", cargo: "Engenheira Clínica", ativo: true },
-    create: {
-      estabelecimentoId: colabEngEstabId,
-      usuarioId: engenheiro.id,
-      matricula: "ENG-001",
-      nome: "Ana Engenheira",
-      cargo: "Engenheira Clínica",
-      registroProfissional: "CREA-12345",
-    },
-  });
+  let colabEng = null;
+  let colabTec = null;
 
-  const colabTec = await prisma.colaborador.upsert({
-    where: {
-      estabelecimentoId_matricula: { estabelecimentoId: hospital.id, matricula: "TEC-001" },
-    },
-    update: { usuarioId: tecnico.id },
-    create: {
-      estabelecimentoId: hospital.id,
-      usuarioId: tecnico.id,
-      matricula: "TEC-001",
-      nome: "Carlos Técnico",
-      cargo: "Técnico em Equipamentos",
-    },
-  });
+  if (engenheiro) {
+    const colabEngEstabId = hospitalHef.id;
+    if (hospitalHef.id !== hospital.id) {
+      const colabEngModelo = await prisma.colaborador.findUnique({
+        where: { usuarioId: engenheiro.id },
+      });
+      if (colabEngModelo && colabEngModelo.estabelecimentoId !== hospitalHef.id) {
+        await prisma.colaborador.update({
+          where: { id: colabEngModelo.id },
+          data: { usuarioId: null },
+        });
+      }
+    }
+    colabEng = await prisma.colaborador.upsert({
+      where: {
+        estabelecimentoId_matricula: { estabelecimentoId: colabEngEstabId, matricula: "ENG-001" },
+      },
+      update: { usuarioId: engenheiro.id, nome: "Ana Engenheira", cargo: "Engenheira Clínica", ativo: true },
+      create: {
+        estabelecimentoId: colabEngEstabId,
+        usuarioId: engenheiro.id,
+        matricula: "ENG-001",
+        nome: "Ana Engenheira",
+        cargo: "Engenheira Clínica",
+        registroProfissional: "CREA-12345",
+      },
+    });
+  }
+
+  if (tecnico) {
+    colabTec = await prisma.colaborador.upsert({
+      where: {
+        estabelecimentoId_matricula: { estabelecimentoId: hospital.id, matricula: "TEC-001" },
+      },
+      update: { usuarioId: tecnico.id },
+      create: {
+        estabelecimentoId: hospital.id,
+        usuarioId: tecnico.id,
+        matricula: "TEC-001",
+        nome: "Carlos Técnico",
+        cargo: "Técnico em Equipamentos",
+      },
+    });
+  }
 
   const eq1 = await prisma.equipamento.upsert({
     where: { estabelecimentoId_tag: { estabelecimentoId: hospital.id, tag: "EQ-0001" } },
@@ -265,22 +316,24 @@ async function main() {
     create: { estabelecimentoId: hospital.id, chave: "OS", valor: 2 },
   });
 
-  await prisma.ordemServico.upsert({
-    where: { estabelecimentoId_numero: { estabelecimentoId: hospital.id, numero: 1 } },
-    update: {},
-    create: {
-      estabelecimentoId: hospital.id,
-      numero: 1,
-      codigo: "OS-00001",
-      equipamentoId: eq1.id,
-      tipo: TipoOS.CORRETIVA,
-      prioridade: PrioridadeOS.URGENTE,
-      status: StatusOS.EM_ANDAMENTO,
-      responsavelId: colabTec.id,
-      observacaoRequisicao: "Alarme de pressão persistente",
-      abertura: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    },
-  });
+  if (colabTec) {
+    await prisma.ordemServico.upsert({
+      where: { estabelecimentoId_numero: { estabelecimentoId: hospital.id, numero: 1 } },
+      update: {},
+      create: {
+        estabelecimentoId: hospital.id,
+        numero: 1,
+        codigo: "OS-00001",
+        equipamentoId: eq1.id,
+        tipo: TipoOS.CORRETIVA,
+        prioridade: PrioridadeOS.URGENTE,
+        status: StatusOS.EM_ANDAMENTO,
+        responsavelId: colabTec.id,
+        observacaoRequisicao: "Alarme de pressão persistente",
+        abertura: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      },
+    });
+  }
 
   await prisma.ordemServico.upsert({
     where: { estabelecimentoId_numero: { estabelecimentoId: hospital.id, numero: 2 } },
@@ -338,23 +391,25 @@ async function main() {
     create: { estabelecimentoId: hospital.id, chave: "SOL", valor: 1 },
   });
 
-  await prisma.solicitacaoServico.upsert({
-    where: {
-      estabelecimentoId_protocolo: { estabelecimentoId: hospital.id, protocolo: "SOL-0001" },
-    },
-    update: {},
-    create: {
-      estabelecimentoId: hospital.id,
-      protocolo: "SOL-0001",
-      equipamentoId: eq1.id,
-      setorNome: "UTI Adulto",
-      descricao: "Equipamento com alarme intermitente desde o plantão da manhã",
-      urgencia: "ALTA",
-      solicitanteNome: "Maria Solicitante",
-      ramal: "2045",
-      status: "PENDENTE",
-    },
-  });
+  if (solicitante) {
+    await prisma.solicitacaoServico.upsert({
+      where: {
+        estabelecimentoId_protocolo: { estabelecimentoId: hospital.id, protocolo: "SOL-0001" },
+      },
+      update: {},
+      create: {
+        estabelecimentoId: hospital.id,
+        protocolo: "SOL-0001",
+        equipamentoId: eq1.id,
+        setorNome: "UTI Adulto",
+        descricao: "Equipamento com alarme intermitente desde o plantão da manhã",
+        urgencia: "ALTA",
+        solicitanteNome: "Maria Solicitante",
+        ramal: "2045",
+        status: "PENDENTE",
+      },
+    });
+  }
 
   const instrumento = await prisma.instrumentoPadrao.upsert({
     where: {
@@ -497,9 +552,14 @@ async function main() {
     create: { estabelecimentoId: hospital.id, etapaAtual: "DIAGNOSTICO" },
   });
 
-  console.log("Seed OK");
-  console.log("Logins: engenheiro@aion.local / tecnico@aion.local / solicitante@aion.local");
-  console.log("Senha: aion1234");
+  console.log("[seed] concluído");
+  if (shouldSeedDemos) {
+    console.log("[seed] logins demo: engenheiro@aion.local, tecnico@aion.local, solicitante@aion.local");
+    console.log("[seed] senha demo: via DEMO_PASSWORD (não logada)");
+  }
+  if (shouldSeedAdmin && adminEmail) {
+    console.log(`[seed] admin: ${adminEmail} (senha via ADMIN_PASSWORD, não logada)`);
+  }
 }
 
 main()

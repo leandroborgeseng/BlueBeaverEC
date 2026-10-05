@@ -55,24 +55,7 @@ export class AuthService {
     }
 
     const ok = await bcrypt.compare(senha, usuario.senhaHash);
-    // Compat senha demo antiga (nexo1234) → aceita e atualiza para aion1234
-    let senhaOk = ok;
-    if (!senhaOk && senha === "aion1234") {
-      const legacyPass = await bcrypt.compare("nexo1234", usuario.senhaHash);
-      if (legacyPass) {
-        senhaOk = true;
-        const senhaHash = await bcrypt.hash("aion1234", 10);
-        const emailFinal = usuario.email.includes("@nexo.local")
-          ? usuario.email.replace(/@nexo\.local$/, "@aion.local")
-          : usuario.email;
-        await this.prisma.usuario.update({
-          where: { id: usuario.id },
-          data: { senhaHash, email: emailFinal },
-        });
-        usuario = { ...usuario, email: emailFinal, senhaHash };
-      }
-    }
-    if (!senhaOk) {
+    if (!ok) {
       throw new UnauthorizedException("Credenciais inválidas");
     }
 

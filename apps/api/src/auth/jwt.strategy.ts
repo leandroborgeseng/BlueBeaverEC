@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
@@ -20,6 +20,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: AuthTokenPayload) {
+    // Verificar se o usuário ainda está ativo (rejeita tokens de contas desativadas)
+    const user = await this.prisma.usuario.findUnique({
+      where: { id: payload.sub },
+      select: { ativo: true },
+    });
+
+    if (!user || !user.ativo) {
+      throw new UnauthorizedException("Usuário inativo ou não encontrado");
+    }
+
     const perfil = payload.perfil as PerfilAcesso;
     const custom = await this.prisma.perfilCustom.findFirst({
       where: {
