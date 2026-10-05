@@ -14,13 +14,28 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "package.json"));
 
 const TEST_DB_URL = "postgresql://aion_test:test123@localhost:5432/aion_test?schema=public";
+
+// GUARD: aborta se não for ambiente de teste local
+if (process.env.NODE_ENV === "production") {
+  console.error("❌ ABORTADO: NODE_ENV=production detectado. Este script é DESTRUTIVO e só pode rodar em teste local.");
+  process.exit(1);
+}
+
+const url = new URL(TEST_DB_URL);
+if (!["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+  console.error(`❌ ABORTADO: host '${url.hostname}' não é localhost. Este script é DESTRUTIVO.`);
+  process.exit(1);
+}
+
 process.env.DATABASE_URL = TEST_DB_URL;
 
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
-console.log("=== Evidência Estrita: Usuários Reais Inalterados ===\n");
+console.log("=== Evidência Estrita: Usuários Reais Inalterados ===");
+console.log(`    DB: ${url.hostname}:${url.port}${url.pathname}`);
+console.log(`    GUARD: ✅ localhost + NODE_ENV != production\n`);
 
 function runScript(script, env = {}) {
   const result = spawnSync("node", [path.join(root, "scripts", script)], {
@@ -48,6 +63,17 @@ async function dumpNonDemoUsers(label) {
         include: {
           estabelecimento: { select: { id: true, nome: true } },
         },
+        orderBy: { estabelecimentoId: "asc" },
+      },
+      colaborador: {
+        select: {
+          id: true,
+          estabelecimentoId: true,
+          matricula: true,
+          nome: true,
+          cargo: true,
+          ativo: true,
+        },
       },
     },
     orderBy: { email: "asc" },
@@ -66,11 +92,22 @@ async function dumpNonDemoUsers(label) {
       perfil: e.perfil,
       setorIds: e.setorIds,
     })),
+    colaborador: u.colaborador
+      ? {
+          id: u.colaborador.id,
+          estabelecimentoId: u.colaborador.estabelecimentoId,
+          matricula: u.colaborador.matricula,
+          nome: u.colaborador.nome,
+          cargo: u.colaborador.cargo,
+          ativo: u.colaborador.ativo,
+        }
+      : null,
   }));
 
   const filename = `/tmp/${label}.json`;
   writeFileSync(filename, JSON.stringify(dump, null, 2));
   console.log(`\n[dump] ${label}: ${users.length} usuários não-demo salvos em ${filename}`);
+  console.log(`   Inclui: email, nome, senhaHash, ativo, updatedAt, estabelecimentos[], colaborador`);
   
   return { dump, count: users.length };
 }

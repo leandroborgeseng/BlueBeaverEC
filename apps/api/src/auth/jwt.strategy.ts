@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user || !user.ativo) {
-      throw new Error("Usuário inativo ou não encontrado");
+      throw new UnauthorizedException("Usuário inativo ou não encontrado");
     }
 
     const perfil = payload.perfil as PerfilAcesso;
