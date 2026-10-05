@@ -4,6 +4,21 @@ set -e
 # Script para executar evidências QA REAIS com Postgres
 # Valida QA 1-5 com o caminho real de boot (maybe-seed.mjs)
 
+# GUARD: aborta se produção ou host não-local (ANTES de qualquer export)
+if [ "$NODE_ENV" = "production" ]; then
+  echo "❌ ABORTADO: NODE_ENV=production detectado. Este script é DESTRUTIVO (DELETE)."
+  exit 1
+fi
+
+# Se DATABASE_URL vier do ambiente, validar antes de sobrescrever
+if [ -n "$DATABASE_URL" ]; then
+  DB_HOST=$(echo "$DATABASE_URL" | sed 's|.*@\([^:/]*\).*|\1|')
+  if [ "$DB_HOST" != "localhost" ] && [ "$DB_HOST" != "127.0.0.1" ]; then
+    echo "❌ ABORTADO: DATABASE_URL do ambiente tem host '$DB_HOST' não-localhost. Este script é DESTRUTIVO."
+    exit 1
+  fi
+fi
+
 export TEST_DATABASE_URL="postgresql://aion_test:test123@localhost:5432/aion_test?schema=public"
 export DATABASE_URL="$TEST_DATABASE_URL"
 
