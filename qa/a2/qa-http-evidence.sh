@@ -30,6 +30,14 @@ echo ""
 
 # Preparar banco: criar demo ativo e usuário real
 echo "1. Preparando banco de teste (demo ativo + usuário real)..."
+
+# Verificar host do DB_URL
+DB_HOST=$(echo "$DB_URL" | sed 's|.*@\([^:/]*\).*|\1|')
+if [ "$DB_HOST" != "localhost" ] && [ "$DB_HOST" != "127.0.0.1" ]; then
+  echo "❌ ABORTADO: host '$DB_HOST' não é localhost. Este script é destrutivo."
+  exit 1
+fi
+
 DATABASE_URL="$DB_URL" node - <<'EOFNODE'
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
@@ -94,7 +102,7 @@ fi
 
 # b) Rodar boot de produção (desativa demos)
 echo "3. Boot produção (NODE_ENV=production, sem SEED_DEMO_USERS):"
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../apps/api"
 DATABASE_URL="$DB_URL" NODE_ENV=production node scripts/maybe-seed.mjs | grep '\[aion\]'
 echo ""
 

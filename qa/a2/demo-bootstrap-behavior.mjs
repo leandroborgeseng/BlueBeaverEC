@@ -2,6 +2,7 @@
 /**
  * Demo: comportamento do bootstrap de admin/demo sem banco real.
  * Demonstra a lógica de decisão baseada em env vars e estado do usuário.
+ * NÃO é destrutivo (não faz DELETE/UPDATE no banco).
  */
 
 console.log("=== DEMO: Comportamento do Bootstrap ===\n");

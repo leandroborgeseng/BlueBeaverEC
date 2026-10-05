@@ -39,11 +39,11 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 | `NODE_ENV` | sim | `production` (esconde stack no cliente). |
 | `PORT` / `API_PORT` | sim | Railway injeta `PORT`. |
 | `CORS_ORIGIN` / `WEB_ORIGIN` | sim | `https://hef.aion.eng.br` |
-| **`ADMIN_EMAIL`** | **sim (prod)** | **E-mail do super administrador. Usado apenas na criação inicial; senha não é redefinida se o usuário já existir.** |
-| **`ADMIN_NOME`** | **sim (prod)** | **Nome do super administrador.** |
-| **`ADMIN_PASSWORD`** | **sim (prod)** | **Senha do super administrador. Usada apenas na criação inicial. NÃO é reaplicada se o usuário já existir.** |
-| **`DEMO_PASSWORD`** | não (prod) | **Senha das contas demo (@aion.local). Usada apenas na criação inicial. NÃO é reaplicada se os usuários já existirem.** |
-| **`SEED_DEMO_USERS`** | não | **`1` para criar contas demo em produção. Padrão: desligado em `NODE_ENV=production`. Sem esta flag, as contas demo não são criadas/atualizadas em produção.** |
+| **`ADMIN_EMAIL`** | **não (HEF)** | **E-mail do super administrador. Usado apenas na criação inicial em banco vazio. No HEF o admin já existe; o bootstrap pula se o usuário existir. Recomendado apenas para banco novo.** |
+| **`ADMIN_NOME`** | **não (HEF)** | **Nome do super administrador. Usado apenas na criação inicial.** |
+| **`ADMIN_PASSWORD`** | **não (HEF)** | **Senha do super administrador. Usada apenas na criação inicial. Se o usuário existir, o bootstrap pula sem alterar a senha. NÃO manter esta variável no Railway após o primeiro boot em banco novo. No HEF, não é necessário (admin já existe e senha deve ser trocada pelo owner via interface).** |
+| **`DEMO_PASSWORD`** | não (prod) | **Senha das contas demo (@aion.local). Usada apenas na criação inicial. Em produção, demos são desativados (`ativo=false`) a menos que `SEED_DEMO_USERS=1` esteja definido.** |
+| **`SEED_DEMO_USERS`** | não | **`1` para habilitar demos em produção. Padrão: desligado em `NODE_ENV=production`. Sem esta flag, as contas demo são desativadas (`ativo=false`) em produção.** |
 | `PLANOS_CRON` | não | `0` desliga o cron das preventivas. |
 | `RELATORIOS_CRON` | não | `0` desliga o cron horário de relatórios. |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | não | Sem SMTP, disparo de relatório fica stub (não finge envio). |
@@ -64,10 +64,10 @@ Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aio
 Contas reais no ar: `leandro.borges@aion.eng.br` (ADMIN), `bsnaldi@hrtc.faepa.br`, `rmjuvencio@hrtc.faepa.br`, `bcrodarte@hrtc.faepa.br`. **Não migrar, não redefinir senha, não recriar colaborador.**
 
 **IMPORTANTE — Credenciais e segurança:**
-- As variáveis `ADMIN_EMAIL`, `ADMIN_NOME`, `ADMIN_PASSWORD` e `DEMO_PASSWORD` devem ser configuradas no Railway **antes** do primeiro deploy.
-- A senha do administrador (`ADMIN_PASSWORD`) e das contas demo (`DEMO_PASSWORD`) são usadas **apenas na criação inicial** dos usuários. Se os usuários já existirem no banco, suas senhas **não serão alteradas** pelo boot.
-- A senha antiga do administrador permanece no histórico do git; ela foi rotada fora do repositório e não deve ser reutilizada.
-- Em produção (`NODE_ENV=production`), contas demo **não são criadas** a menos que `SEED_DEMO_USERS=1` esteja explicitamente definido.
+- **No HEF:** o admin real (`leandro.borges@aion.eng.br`) já existe no banco. As variáveis `ADMIN_*` **não são necessárias** para o deploy. O bootstrap detecta que o usuário existe e pula sem alterar nada.
+- **Em banco novo:** `ADMIN_EMAIL`, `ADMIN_NOME` e `ADMIN_PASSWORD` criam o super admin na primeira execução. Após isso, **remova `ADMIN_PASSWORD`** do Railway — ela não é mais necessária e não deve permanecer em variáveis de ambiente.
+- A senha do admin deve ser **trocada pelo owner** via interface do sistema. A senha antiga no histórico do git não deve ser reutilizada.
+- As contas demo (`@aion.local`) são **desativadas** (`ativo=false`) em produção a menos que `SEED_DEMO_USERS=1` esteja definido. Tokens JWT de contas desativadas são rejeitados (401).
 
 ## 3. Migrações
 

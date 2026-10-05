@@ -13,13 +13,13 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "package.json"));
 
-const TEST_DB_URL = "postgresql://aion_test:test123@localhost:5432/aion_test?schema=public";
-
-// GUARD: aborta se não for ambiente de teste local
+// GUARD: aborta se produção ou host não-local
 if (process.env.NODE_ENV === "production") {
   console.error("❌ ABORTADO: NODE_ENV=production detectado. Este script é DESTRUTIVO e só pode rodar em teste local.");
   process.exit(1);
 }
+
+const TEST_DB_URL = process.env.DATABASE_URL || "postgresql://aion_test:test123@localhost:5432/aion_test?schema=public";
 
 const url = new URL(TEST_DB_URL);
 if (!["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {

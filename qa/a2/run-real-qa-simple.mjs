@@ -7,10 +7,23 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const require = createRequire(path.join(root, "package.json"));
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const require = createRequire(path.join(root, "apps/api/package.json"));
+
+// GUARD: aborta se produção ou host não-local
+if (process.env.NODE_ENV === "production") {
+  console.error("❌ ABORTADO: NODE_ENV=production. Este script é DESTRUTIVO (DELETE FROM Usuario).");
+  process.exit(1);
+}
 
 const TEST_DB_URL = "postgresql://aion_test:test123@localhost:5432/aion_test?schema=public";
+
+const dbUrl = new URL(TEST_DB_URL);
+if (!["localhost", "127.0.0.1", "::1"].includes(dbUrl.hostname)) {
+  console.error(`❌ ABORTADO: host '${dbUrl.hostname}' não é localhost. Este script é DESTRUTIVO.`);
+  process.exit(1);
+}
+
 process.env.DATABASE_URL = TEST_DB_URL;
 process.env.TEST_DATABASE_URL = TEST_DB_URL;
 
@@ -18,7 +31,9 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
-console.log("=== QA Evidence com Postgres Real ===\n");
+console.log("=== QA Evidence com Postgres Real ===");
+console.log(`DB: ${dbUrl.hostname}:${dbUrl.port}${dbUrl.pathname}`);
+console.log(`GUARD: ✅ localhost + NODE_ENV != production\n`);
 
 async function cleanDb() {
   // Deletar em ordem de dependências
