@@ -88,6 +88,36 @@ Isso impede que mudanças acidentais em permissões passem despercebidas.
 
 ## Limitações
 
+### Escopo da matriz de permissões
+
+A matriz **só lê os decorators** (`@Public()` / `@RequirePermission()`) e exercita o `PermissionsGuard`. 
+
+**Rotas listadas como "só-JWT"** podem ter checagem de acesso **dentro do handler ou do service**, e a matriz não enxerga isso. O guard libera (retorna `true`), mas o código da aplicação pode bloquear.
+
+### Exemplos verificados de controle adicional no código
+
+**1. `/fornecedores/*` (todas as rotas):**
+- Guard: libera (só-JWT)
+- Service: `assertVer(user)` nas leituras, `assertEditar(user)` nas escritas
+- Verificam `temPermissao` para módulo `fornecedores` ou `estoque`
+
+**2. `GET /solicitacoes/`:**
+- Guard: libera (só-JWT)
+- Service: `temPermissao(user.permissoesModulos, "os", EDICAO)` para ver todas
+- Se não tiver: filtra apenas solicitações do próprio usuário
+
+**3. `GET /portal/cronograma-manutencao` e `/portal/cronograma-calibracao`:**
+- Guard: libera (só-JWT)
+- Controller: `assertCronograma(user)` verifica `temPermissao` em `"portal"` **OU** em `"os"` (LEITURA)
+- Perfis sem nenhum dos dois módulos são bloqueados
+
+**4. `POST /auth/impersonate` e `POST /auth/stop-impersonation`:**
+- Guard: libera (só-JWT)
+- Service: `assertPodePersonificar(user)` chama `podePersonificar(perfil)`
+- Apenas ADMIN, GESTOR, ENGENHEIRO permitidos
+
+### Outras limitações
+
 - Não testa perfis customizados (PerfilCustom) — apenas os perfis padrão
 - Não exercita o banco de dados
 - Foca no comportamento do `PermissionsGuard` em nível de módulo, não em regras de negócio específicas (ex: "técnico só edita OS atribuída a ele")
