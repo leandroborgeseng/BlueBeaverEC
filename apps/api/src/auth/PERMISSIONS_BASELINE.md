@@ -98,13 +98,17 @@ A matriz **só lê os decorators** (`@Public()` / `@RequirePermission()`) e exer
 
 **1. `/fornecedores/*` (todas as rotas):**
 - Guard: libera (só-JWT)
-- Service: `assertVer(user)` nas leituras, `assertEditar(user)` nas escritas
-- Verificam `temPermissao` para módulo `fornecedores` ou `estoque`
+- Service:
+  - `assertVer(user)` nas leituras: exige LEITURA em `equipamentos` **OU** `contratos` **OU** `os`
+  - `assertEditar(user)` nas escritas: exige `podeEditarCadastros(perfil, permissoesModulos)` **OU** EDICAO em `contratos`
+  - Pela matriz padrão, TECNICO e SOLICITANTE levam 403 nas escritas
 
 **2. `GET /solicitacoes/`:**
 - Guard: libera (só-JWT)
-- Service: `temPermissao(user.permissoesModulos, "os", EDICAO)` para ver todas
-- Se não tiver: filtra apenas solicitações do próprio usuário
+- Controller: exige LEITURA em `os` **OU** em `portal`; sem nenhum dos dois, retorna 403
+- Service: usa EDICAO em `os` (`podeTriagem`) para decidir:
+  - Com EDICAO: vê todas as solicitações do estabelecimento
+  - Sem EDICAO: filtra apenas solicitações do próprio usuário
 
 **3. `GET /portal/cronograma-manutencao` e `/portal/cronograma-calibracao`:**
 - Guard: libera (só-JWT)
