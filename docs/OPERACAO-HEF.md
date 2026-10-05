@@ -39,6 +39,11 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 | `NODE_ENV` | sim | `production` (esconde stack no cliente). |
 | `PORT` / `API_PORT` | sim | Railway injeta `PORT`. |
 | `CORS_ORIGIN` / `WEB_ORIGIN` | sim | `https://hef.aion.eng.br` |
+| **`ADMIN_EMAIL`** | **sim (prod)** | **E-mail do super administrador. Usado apenas na criação inicial; senha não é redefinida se o usuário já existir.** |
+| **`ADMIN_NOME`** | **sim (prod)** | **Nome do super administrador.** |
+| **`ADMIN_PASSWORD`** | **sim (prod)** | **Senha do super administrador. Usada apenas na criação inicial. NÃO é reaplicada se o usuário já existir.** |
+| **`DEMO_PASSWORD`** | não (prod) | **Senha das contas demo (@aion.local). Usada apenas na criação inicial. NÃO é reaplicada se os usuários já existirem.** |
+| **`SEED_DEMO_USERS`** | não | **`1` para criar contas demo em produção. Padrão: desligado em `NODE_ENV=production`. Sem esta flag, as contas demo não são criadas/atualizadas em produção.** |
 | `PLANOS_CRON` | não | `0` desliga o cron das preventivas. |
 | `RELATORIOS_CRON` | não | `0` desliga o cron horário de relatórios. |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | não | Sem SMTP, disparo de relatório fica stub (não finge envio). |
@@ -55,8 +60,14 @@ Definir no Railway (API e Web). Nunca commitar valores reais.
 | `API_PUBLIC_URL` | se privado morto | Mesma URL HTTPS pública da API. O proxy usa HTTPS público **antes** de `*.railway.internal`. |
 | `NEXT_PUBLIC_API_URL` | não | Vazio = same-origin `/api` (recomendado). |
 
-Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aion.local`, `campo@aion.local`, `solicitante@aion.local` / `aion1234`.  
+Logins demo (não são engenheiros reais): `engenheiro@aion.local`, `tecnico@aion.local`, `campo@aion.local`, `solicitante@aion.local` (senha via `DEMO_PASSWORD`).  
 Contas reais no ar: `leandro.borges@aion.eng.br` (ADMIN), `bsnaldi@hrtc.faepa.br`, `rmjuvencio@hrtc.faepa.br`, `bcrodarte@hrtc.faepa.br`. **Não migrar, não redefinir senha, não recriar colaborador.**
+
+**IMPORTANTE — Credenciais e segurança:**
+- As variáveis `ADMIN_EMAIL`, `ADMIN_NOME`, `ADMIN_PASSWORD` e `DEMO_PASSWORD` devem ser configuradas no Railway **antes** do primeiro deploy.
+- A senha do administrador (`ADMIN_PASSWORD`) e das contas demo (`DEMO_PASSWORD`) são usadas **apenas na criação inicial** dos usuários. Se os usuários já existirem no banco, suas senhas **não serão alteradas** pelo boot.
+- A senha antiga do administrador permanece no histórico do git; ela foi rotada fora do repositório e não deve ser reutilizada.
+- Em produção (`NODE_ENV=production`), contas demo **não são criadas** a menos que `SEED_DEMO_USERS=1` esteja explicitamente definido.
 
 ## 3. Migrações
 
@@ -137,7 +148,7 @@ Até isso ser ensaiado, **não há recuperação garantida**.
 - Redefinir setores de `solicitante@` se já houver vínculo.
 - Criar técnico em massa / “migrar” engenheiros reais.
 
-O boot **ainda** redefine senha das contas **demo** `@aion.local` e a senha do super admin de produção a cada start (scripts `ensure-demo-users` e `ensure-admin-user`). Trate isso como risco conhecido.
+O boot **não** redefine senhas de usuários existentes. As senhas só são aplicadas na criação inicial (scripts `ensure-demo-users` e `ensure-admin-user`).
 
 ## 7. Roteiros curtos
 

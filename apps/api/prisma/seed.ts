@@ -1,11 +1,25 @@
 import { PrismaClient, PerfilAcesso, PrioridadeOS, SituacaoEquipamento, StatusOS, TipoOS } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const senhaHash = await bcrypt.hash("aion1234", 10);
-  const adminSenhaHash = await bcrypt.hash("Lean777$", 10);
+  const demoPassword = process.env.DEMO_PASSWORD?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+
+  if (!demoPassword) {
+    console.warn("[seed] DEMO_PASSWORD ausente — gerando senha aleatória para demo");
+  }
+  if (!adminPassword) {
+    console.warn("[seed] ADMIN_PASSWORD ausente — gerando senha aleatória para admin");
+  }
+
+  const finalDemoPassword = demoPassword || randomBytes(16).toString("hex");
+  const finalAdminPassword = adminPassword || randomBytes(16).toString("hex");
+
+  const senhaHash = await bcrypt.hash(finalDemoPassword, 10);
+  const adminSenhaHash = await bcrypt.hash(finalAdminPassword, 10);
 
   // Migra credenciais demo do rebrand Nexo → Aion (idempotente)
   await prisma.$executeRawUnsafe(`
@@ -53,12 +67,15 @@ async function main() {
     },
   });
 
+  const adminEmail = process.env.ADMIN_EMAIL?.trim() || "admin@example.local";
+  const adminNome = process.env.ADMIN_NOME?.trim() || "Administrador";
+
   const admin = await prisma.usuario.upsert({
-    where: { email: "leandro.borges@aion.eng.br" },
-    update: { senhaHash: adminSenhaHash, nome: "Leandro Borges", ativo: true },
+    where: { email: adminEmail },
+    update: { senhaHash: adminSenhaHash, nome: adminNome, ativo: true },
     create: {
-      email: "leandro.borges@aion.eng.br",
-      nome: "Leandro Borges",
+      email: adminEmail,
+      nome: adminNome,
       senhaHash: adminSenhaHash,
       ativo: true,
     },
@@ -499,7 +516,8 @@ async function main() {
 
   console.log("Seed OK");
   console.log("Logins: engenheiro@aion.local / tecnico@aion.local / solicitante@aion.local");
-  console.log("Senha: aion1234");
+  console.log(`Senha demo: ${finalDemoPassword}`);
+  console.log(`Admin: ${adminEmail} / Senha: ${finalAdminPassword}`);
 }
 
 main()

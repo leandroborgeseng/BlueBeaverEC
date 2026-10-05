@@ -4,76 +4,57 @@
 echo "=== QA 6: Verificação de Credenciais Hardcoded ==="
 echo ""
 
-echo "### 6.1 Buscar 'Lean777\$' no diff (senha antiga do admin - apenas remoções):"
-ADDITIONS=$(git diff main..HEAD | grep "^+.*Lean777" | grep -v "^+.*A senha antiga" | grep -v "^+.*git history" || true)
-if [ -n "$ADDITIONS" ]; then
-  echo "❌ FOUND adições com Lean777\$ no diff:"
-  echo "$ADDITIONS"
+echo "### 6.1 Buscar literais de senha no diff (apenas remoções permitidas):"
+# Busca por constantes de senha atribuídas a strings literais (adições)
+PASS_ADDITIONS=$(git diff main..HEAD | grep "^+.*PASSWORD.*=.*['\"]" | grep -v process.env | grep -v "^+.*#" | grep -v "^+.*obrigatórias" | grep -v "^+.*opcional" || true)
+if [ -n "$PASS_ADDITIONS" ]; then
+  echo "❌ FOUND adições com PASSWORD literal no diff:"
+  echo "$PASS_ADDITIONS"
   exit 1
 else
-  echo "✅ Apenas remoções e documentação (nenhuma adição de código)"
+  echo "✅ Nenhuma adição de PASSWORD literal"
 fi
 echo ""
 
-echo "### 6.2 Buscar 'Lean777\$' na árvore atual:"
-if rg -i "Lean777\\\$" --type-add 'code:*.{ts,js,mjs,tsx,jsx}' -t code -g '!*.md' 2>/dev/null | grep -v "^docs/"; then
-  echo "❌ FOUND na árvore (fora de docs)"
+echo "### 6.2 Buscar bcrypt.hash com string literal em scripts de boot:"
+if rg 'bcrypt\.hash\s*\(\s*["\x27][^"'\'']*["\x27]' --type-add 'code:*.{js,mjs}' -t code \
+  apps/api/scripts/ensure-admin-user.mjs \
+  apps/api/scripts/ensure-demo-users.mjs 2>/dev/null; then
+  echo "❌ FOUND bcrypt.hash com senha literal em scripts de boot"
   exit 1
 else
-  echo "✅ Não encontrada na árvore (apenas em docs como nota)"
+  echo "✅ Nenhum bcrypt.hash com senha literal nos scripts de boot"
 fi
 echo ""
 
-echo "### 6.3 Buscar literais de senha demo no ensure-admin-user.mjs:"
-if grep -E '(const|let|var).*(PASSWORD|SENHA).*=.*["\x27]' apps/api/scripts/ensure-admin-user.mjs | grep -v process.env; then
-  echo "❌ FOUND senha literal"
-  exit 1
-else
-  echo "✅ Nenhuma senha literal (apenas process.env)"
-fi
-echo ""
-
-echo "### 6.4 Buscar literais de senha demo no ensure-demo-users.mjs:"
-if grep -E '(const|let|var).*(PASSWORD|SENHA).*=.*["\x27]' apps/api/scripts/ensure-demo-users.mjs | grep -v process.env; then
-  echo "❌ FOUND senha literal"
-  exit 1
-else
-  echo "✅ Nenhuma senha literal (apenas process.env)"
-fi
-echo ""
-
-echo "### 6.5 Buscar 'aion1234' ou 'nexo1234' em scripts de boot (exceto fallback no seed.ts):"
-if rg -i "aion1234|nexo1234" \
+echo "### 6.3 Buscar constantes PASSWORD com literais nos scripts de boot:"
+if grep -E '(const|let|var)\s+(ADMIN_|DEMO_)?PASSWORD\s*=\s*["\x27]' \
   apps/api/scripts/ensure-admin-user.mjs \
   apps/api/scripts/ensure-demo-users.mjs \
   apps/api/scripts/maybe-seed.mjs 2>/dev/null; then
-  echo "❌ FOUND senha literal em scripts de boot"
+  echo "❌ FOUND constantes PASSWORD com literais"
   exit 1
 else
-  echo "✅ Nenhuma senha literal nos scripts de boot"
+  echo "✅ Todas as constantes PASSWORD vêm de process.env"
 fi
 echo ""
 
-echo "### 6.6 Verificar seed.ts (fallback de dev é permitido):"
+echo "### 6.4 Verificar seed.ts não tem fallback para senha literal:"
+if grep -E '(DEMO_PASSWORD|ADMIN_PASSWORD).*\|\|.*["\x27][^"'\'']*["\x27]' apps/api/prisma/seed.ts 2>/dev/null; then
+  echo "❌ FOUND fallback de senha literal no seed.ts"
+  exit 1
+else
+  echo "✅ seed.ts não tem fallback para senha literal"
+fi
+echo ""
+
+echo "### 6.5 Verificar seed.ts usa process.env:"
 if grep "process.env.DEMO_PASSWORD" apps/api/prisma/seed.ts >/dev/null && \
    grep "process.env.ADMIN_PASSWORD" apps/api/prisma/seed.ts >/dev/null; then
-  echo "✅ seed.ts usa process.env (fallback OK para dev)"
+  echo "✅ seed.ts usa process.env"
 else
   echo "❌ seed.ts não está usando env vars"
   exit 1
-fi
-echo ""
-
-echo "### 6.7 Buscar bcrypt.hash com string literal (exceto seed.ts e testes):"
-if rg 'bcrypt\.hash\s*\(\s*["\x27]' --type-add 'code:*.{ts,js,mjs}' -t code \
-  -g '!prisma/seed.ts' \
-  -g '!*.test.*' \
-  -g '!qa-evidence-*' \
-  apps/api/scripts/ 2>/dev/null; then
-  echo "❌ FOUND bcrypt.hash com literal"
-  exit 1
-else
-  echo "✅ Nenhum bcrypt.hash com senha literal em scripts de boot"
 fi
 echo ""
 
