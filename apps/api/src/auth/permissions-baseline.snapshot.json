@@ -705,6 +705,21 @@
     }
   },
   {
+    "route": "/dashboard/padroes-alertas",
+    "method": "GET",
+    "handler": "DashboardController.padroesAlertas",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
     "route": "/equipamentos/",
     "method": "GET",
     "handler": "EquipamentosController.list",
@@ -2160,6 +2175,21 @@
     }
   },
   {
+    "route": "/instrumentos-padroes/alertas",
+    "method": "GET",
+    "handler": "InstrumentosController.alertas",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
     "route": "/instrumentos-padroes/preferenciais",
     "method": "GET",
     "handler": "InstrumentosController.listPreferenciais",
@@ -2187,6 +2217,21 @@
       "TECNICO_RESTRITO": "NEGADO",
       "SOLICITANTE": "NEGADO",
       "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/instrumentos-padroes/sugestao",
+    "method": "GET",
+    "handler": "InstrumentosController.sugestao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
     }
   },
   {

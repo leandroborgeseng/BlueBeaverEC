@@ -32,6 +32,20 @@ interface OsSlaRow {
   slaEstourado?: boolean;
 }
 
+interface PadroesAlertas {
+  diasAlerta: number;
+  resumo: { vencidos: number; aVencer: number; semCertificado: number; total: number };
+  itens: Array<{
+    instrumentoId: string;
+    nome: string;
+    nSerie: string;
+    certificadoNumero: string | null;
+    certificadoValidade: string | null;
+    status: "VENCIDO" | "A_VENCER" | "SEM_CERTIFICADO";
+    dias: number | null;
+  }>;
+}
+
 export default function DashboardPage() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [osSituacao, setOsSituacao] = useState<Array<{ situacao: string; total: number }>>([]);
@@ -50,6 +64,13 @@ export default function DashboardPage() {
   const [atrasadas, setAtrasadas] = useState<OsSlaRow[]>([]);
   const [slaAbertas, setSlaAbertas] = useState<OsSlaRow[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [padroes, setPadroes] = useState<PadroesAlertas | null>(null);
+
+  useEffect(() => {
+    api<PadroesAlertas>("/dashboard/padroes-alertas")
+      .then(setPadroes)
+      .catch(() => setPadroes(null));
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -306,6 +327,37 @@ export default function DashboardPage() {
                 </li>
               ))}
             </ul>
+          )}
+        </Panel>
+        <Panel title="Certificados de padrões">
+          {!padroes || padroes.itens.length === 0 ? (
+            <Empty text={`Nenhum certificado de padrão vencido ou a vencer nos próximos ${padroes?.diasAlerta ?? 60} dias.`} />
+          ) : (
+            <>
+              <div style={{ fontSize: 12, marginBottom: 8 }} data-testid="padroes-resumo">
+                {padroes.resumo.vencidos} vencido(s) · {padroes.resumo.aVencer} a vencer em {padroes.diasAlerta} dias
+                {padroes.resumo.semCertificado ? ` · ${padroes.resumo.semCertificado} sem certificado` : ""}
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                {padroes.itens.map((a) => (
+                  <li key={a.instrumentoId} style={{ padding: "10px 0", borderBottom: "1px solid oklch(0.94 0.005 255)", fontSize: 13 }}>
+                    <div style={{ fontWeight: 600 }}>
+                      <Link href={`/instrumentos/${a.instrumentoId}`}>
+                        {a.nome} — {a.nSerie}
+                      </Link>
+                    </div>
+                    <div style={{ fontSize: 12, marginTop: 2 }}>
+                      <Badge tone={a.status === "VENCIDO" ? "VENCIDO" : "A_VENCER"}>
+                        {a.status === "VENCIDO" ? "Vencido" : a.status === "A_VENCER" ? "A vencer" : "Sem certificado"}
+                      </Badge>{" "}
+                      {a.certificadoValidade
+                        ? `${a.certificadoNumero ?? ""} · validade ${new Date(a.certificadoValidade).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}`
+                        : ""}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </Panel>
       </div>

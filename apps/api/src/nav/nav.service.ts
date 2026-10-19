@@ -1,3 +1,4 @@
+import { carregarAlertasPadroes } from "../laudos/padrao-alertas";
 import { Injectable } from "@nestjs/common";
 import { StatusNC, StatusOS, TipoLaudo } from "@prisma/client";
 import { calcularSlaOs, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
@@ -188,6 +189,24 @@ export class NavService {
         href: "/certificados",
         severidade: vencido ? "danger" : "warning",
         createdAt: l.validadeAte.toISOString(),
+      });
+    }
+
+    // Certificados de padrões rastreáveis (laudos v2 E1, crit. 3)
+    const padroes = await carregarAlertasPadroes(this.prisma, estabId).catch(() => null);
+    for (const a of padroes?.itens ?? []) {
+      if (a.status === "SEM_CERTIFICADO") continue;
+      const vencido = a.status === "VENCIDO";
+      items.push({
+        id: `padrao-${a.instrumentoId}`,
+        tipo: vencido ? "PADRAO_CERTIFICADO_VENCIDO" : "PADRAO_CERTIFICADO_A_VENCER",
+        titulo: vencido
+          ? `Certificado do padrão vencido · ${a.nome} (${a.nSerie})`
+          : `Certificado do padrão a vencer (${a.dias}d) · ${a.nome} (${a.nSerie})`,
+        detalhe: a.certificadoNumero ?? "",
+        href: `/instrumentos/${a.instrumentoId}`,
+        severidade: vencido ? "danger" : "warning",
+        createdAt: a.certificadoValidade ?? new Date().toISOString(),
       });
     }
 
