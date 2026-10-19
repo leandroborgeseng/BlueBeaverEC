@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -8,6 +9,13 @@ import { podeEditarModulo } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 import { statusCertificadoNaData } from "./laudo-regras";
+import {
+  janelaAlerta,
+  normalizarNSerie,
+  sugerirPadrao,
+  validarCertificadoPadrao,
+} from "./padrao-regras";
+import { carregarAlertasPadroes } from "./padrao-alertas";
 
 export type PontoInput = {
   ordem?: number;
@@ -69,7 +77,46 @@ function statusCert(validade: Date | null | undefined, diasAlerta = 60) {
 export class InstrumentosService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Janela de alerta configurada no estabelecimento (Organização.diasAlertaCertificado, padrão 60). */
+  async diasAlerta(estabelecimentoId: string): Promise<number> {
+    const org = await this.prisma.estabelecimento
+      .findUnique({ where: { id: estabelecimentoId }, select: { diasAlertaCertificado: true } })
+      .catch(() => null);
+    return janelaAlerta(org?.diasAlertaCertificado);
+  }
+
+  private async garantirNSerieLivre(estabelecimentoId: string, nSerie: string, ignorarId?: string) {
+    const dup = await this.prisma.instrumentoPadrao.findFirst({
+      where: { estabelecimentoId, nSerie: { equals: nSerie, mode: "insensitive" }, ...(ignorarId ? { NOT: { id: ignorarId } } : {}) },
+      select: { id: true, nome: true, ativo: true },
+    });
+    if (dup) {
+      throw new ConflictException(
+        `Já existe um padrão com o nº de série ${nSerie} neste estabelecimento (${dup.nome}${dup.ativo ? "" : ", inativo"})`,
+      );
+    }
+  }
+
+  /** Alertas de certificados de padrão vencidos / a vencer / ausentes (crit. 3). */
+  async alertas(estabelecimentoId: string, diasParam?: number) {
+    return carregarAlertasPadroes(this.prisma, estabelecimentoId, diasParam);
+  }
+
+  /** Padrão sugerido para o laudo pelo tipo de analisador (crit. 4). */
+  async sugestao(estabelecimentoId: string, tipo?: string) {
+    const [prefs, lista] = await Promise.all([
+      this.prisma.padraoPreferencial.findMany({
+        where: { estabelecimentoId },
+        select: { tipo: true, instrumentoId: true },
+      }),
+      this.list(estabelecimentoId),
+    ]);
+    const s = sugerirPadrao(tipo, prefs, lista);
+    return { tipo: tipo?.trim() || null, ...s, instrumento: lista.find((i) => i.id === s.instrumentoId) ?? null };
+  }
+
   async list(estabelecimentoId: string, q?: string) {
+    const dias = await this.diasAlerta(estabelecimentoId);
     const rows = await this.prisma.instrumentoPadrao.findMany({
       where: {
         estabelecimentoId,
@@ -106,7 +153,7 @@ export class InstrumentosService {
     return rows.map((r) => {
       const vigente = r.certificados[0] ?? null;
       const validade = vigente?.dataValidade ?? r.certificadoValidade;
-      const st = statusCert(validade);
+      const st = statusCert(validade, dias);
       return {
         id: r.id,
         nome: r.nome,
@@ -144,10 +191,11 @@ export class InstrumentosService {
       },
     });
     if (!row) throw new NotFoundException("Padrão não encontrado");
+    const dias = await this.diasAlerta(estabelecimentoId);
 
     const vigente = row.certificados.find((c) => c.vigente) ?? row.certificados[0] ?? null;
     const validade = vigente?.dataValidade ?? row.certificadoValidade;
-    const st = statusCert(validade);
+    const st = statusCert(validade, dias);
 
     return {
       ...row,
@@ -155,7 +203,7 @@ export class InstrumentosService {
         ...c,
         anexoConteudo: undefined,
         temAnexo: Boolean(c.anexoConteudo && c.anexoConteudo.length > 0),
-        statusCertificado: statusCert(c.dataValidade),
+        statusCertificado: statusCert(c.dataValidade, dias),
       })),
       statusCertificado: st,
       vencido: st === "VENCIDO",
@@ -170,16 +218,19 @@ export class InstrumentosService {
     if (!data.nome?.trim() || !data.nSerie?.trim()) {
       throw new BadRequestException("Nome e nº de série obrigatórios");
     }
+    const nSerie = normalizarNSerie(data.nSerie);
+    await this.garantirNSerieLivre(user.estabelecimentoId, nSerie);
 
     const grandezas = (data.grandezas ?? [])
       .map((g) => g.trim())
       .filter(Boolean);
 
-    const created = await this.prisma.instrumentoPadrao.create({
+    const created = await this.prisma.instrumentoPadrao
+      .create({
       data: {
         estabelecimentoId: user.estabelecimentoId,
         nome: data.nome.trim(),
-        nSerie: data.nSerie.trim(),
+        nSerie,
         fabricante: data.fabricante?.trim() || null,
         modelo: data.modelo?.trim() || null,
         codigoPatrimonio: data.codigoPatrimonio?.trim() || null,
@@ -198,7 +249,11 @@ export class InstrumentosService {
           : null,
         laboratorioEmissor: data.laboratorioEmissor?.trim() || null,
       },
-    });
+    })
+      .catch((e: { code?: string }) => {
+        if (e?.code === "P2002") throw new ConflictException(`Já existe um padrão com o nº de série ${nSerie} neste estabelecimento`);
+        throw e;
+      });
 
     // Se já veio validade no cadastro rápido, cria certificado vigente sem pontos
     if (data.certificadoValidade && data.certificadoNumero) {
@@ -230,6 +285,12 @@ export class InstrumentosService {
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });
     if (!existing) throw new NotFoundException("Padrão não encontrado");
+    if (data.nSerie != null) {
+      const ns = normalizarNSerie(data.nSerie);
+      if (!ns) throw new BadRequestException("Nº de série obrigatório");
+      await this.garantirNSerieLivre(user.estabelecimentoId, ns, id);
+      data = { ...data, nSerie: ns };
+    }
 
     await this.prisma.instrumentoPadrao.update({
       where: { id },
@@ -275,20 +336,15 @@ export class InstrumentosService {
     });
     if (!inst) throw new NotFoundException("Padrão não encontrado");
 
-    if (!data.numero?.trim()) throw new BadRequestException("Número do certificado obrigatório");
-    if (!data.dataEmissao || !data.dataValidade) {
-      throw new BadRequestException("Emissão e validade obrigatórias");
-    }
-
     const pontos = data.pontos ?? [];
-    for (const [i, p] of pontos.entries()) {
-      if (!p.unidade?.trim()) {
-        throw new BadRequestException(`Ponto ${i + 1}: unidade obrigatória`);
-      }
-      if (p.incertezaExpandida == null || Number.isNaN(Number(p.incertezaExpandida))) {
-        throw new BadRequestException(`Ponto ${i + 1}: incerteza expandida (U) obrigatória`);
-      }
-    }
+    const anexoMime = data.anexoDataUrl ? parseDataUrl(data.anexoDataUrl).mime : null;
+    const erros = validarCertificadoPadrao({ ...data, pontos, anexoMime });
+    if (erros.length) throw new BadRequestException(erros.join("; "));
+    const dupCert = await this.prisma.certificadoPadrao.findFirst({
+      where: { instrumentoId, numero: data.numero.trim() },
+      select: { id: true },
+    });
+    if (dupCert) throw new ConflictException(`Certificado ${data.numero.trim()} já cadastrado para este padrão`);
 
     let anexo: { nome: string; mime: string; buffer: Buffer } | null = null;
     if (data.anexoDataUrl) {
@@ -369,7 +425,7 @@ export class InstrumentosService {
       ...created,
       anexoConteudo: undefined,
       temAnexo: Boolean(anexo),
-      statusCertificado: statusCert(created.dataValidade),
+      statusCertificado: statusCert(created.dataValidade, await this.diasAlerta(user.estabelecimentoId)),
     };
   }
 

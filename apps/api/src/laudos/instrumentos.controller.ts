@@ -269,6 +269,18 @@ export class InstrumentosController {
     return this.instrumentos.salvarPreferenciais(user, body.itens ?? []);
   }
 
+  /** Certificados de padrão vencidos / a vencer (janela configurável; padrão 60 dias). */
+  @Get("alertas")
+  alertas(@CurrentUser() user: AuthUser, @Query("dias") dias?: string) {
+    return this.instrumentos.alertas(user.estabelecimentoId, dias ? Number(dias) : undefined);
+  }
+
+  /** Padrão sugerido para o laudo pelo tipo de analisador. */
+  @Get("sugestao")
+  sugestao(@CurrentUser() user: AuthUser, @Query("tipo") tipo?: string) {
+    return this.instrumentos.sugestao(user.estabelecimentoId, tipo);
+  }
+
   @Get(":id")
   get(@CurrentUser() user: AuthUser, @Param("id") id: string) {
     return this.instrumentos.get(user.estabelecimentoId, id);
