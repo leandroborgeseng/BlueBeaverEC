@@ -644,9 +644,9 @@ export default function InstrumentoDetailPage() {
                             <td style={td}>{p.indicacao ?? "—"}</td>
                             <td style={td}>
                               {p.correcao != null
-                                ? p.correcao
+                                ? fmtCorrecao(p.correcao)
                                 : p.valorConvencional != null && p.indicacao != null
-                                  ? `${Number((p.valorConvencional - p.indicacao).toFixed(6))} (calculada)`
+                                  ? `${fmtCorrecao(Number((p.valorConvencional - p.indicacao).toFixed(6)))} (calculada)`
                                   : "—"}
                             </td>
                             <td style={td}>
