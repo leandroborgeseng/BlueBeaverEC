@@ -314,7 +314,7 @@ describe("E1 crit.2 (QA) — Correção por ponto: ida e volta pela API", () => 
         { numero: "C-QA", dataEmissao: "2026-01-02", dataValidade: "2027-01-02", fatorAbrangencia: 2, pontos },
         { type: "body", metatype: CreateCertificadoDto },
       ));
-    const lerPontos = async () => (await ctrl.get(admin, "a")).certificados.find((c: Row) => c.numero === "C-QA").pontos;
+    const lerPontos = async () => (await ctrl.get(admin, "a")).certificados.find((c: Row) => c.numero === "C-QA")!.pontos;
     return { post, lerPontos };
   };
   it("correção informada (-0,1) tem prioridade sobre convencional − indicação e volta na leitura", async () => {

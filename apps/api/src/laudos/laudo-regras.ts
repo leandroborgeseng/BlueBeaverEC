@@ -104,6 +104,8 @@ export type CertificadoPadraoRef = {
   dataValidade?: string | Date | null;
   laboratorioEmissor?: string | null;
   vigente?: boolean;
+  /** número da revisão (0 = original); desempate entre certificados de mesma data */
+  revisao?: number | null;
   fatorAbrangencia?: number | null;
   probabilidadeAbrangencia?: number | null;
   pontos?: PontoPadraoCert[];
@@ -424,7 +426,13 @@ export function certificadoVigenteNaData(
     if (!val) return false;
     return (!emi || emi <= dia) && dia <= val;
   });
-  cobrindo.sort((a, b) => (asDate(b.dataEmissao)?.getTime() ?? 0) - (asDate(a.dataEmissao)?.getTime() ?? 0));
+  // Mesma emissão: prefere o vigente e, depois, a revisão mais recente.
+  cobrindo.sort(
+    (a, b) =>
+      (dataCivilDeData(b.dataEmissao) ?? "").localeCompare(dataCivilDeData(a.dataEmissao) ?? "") ||
+      Number(b.vigente === true) - Number(a.vigente === true) ||
+      (b.revisao ?? 0) - (a.revisao ?? 0),
+  );
   if (cobrindo[0]) return cobrindo[0];
   const anteriores = certificados.filter((c) => {
     const emi = dataCivilDeData(c.dataEmissao);
