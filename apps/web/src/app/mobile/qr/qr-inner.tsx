@@ -221,7 +221,7 @@ export default function MobileQrInner() {
               left: 36,
               right: 36,
               height: 2,
-              background: "oklch(0.64 0.19 38)",
+              background: "var(--aion-primary)",
               animation: "scan-line 2.2s ease-in-out infinite",
               pointerEvents: "none",
             }}

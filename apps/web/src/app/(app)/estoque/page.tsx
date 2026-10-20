@@ -63,11 +63,11 @@ type Tab = "itens" | "movimentos" | "custos" | "acoes";
 const tabStyle = (active: boolean): React.CSSProperties => ({
   padding: "8px 14px",
   border: "none",
-  borderBottom: active ? "2px solid oklch(0.64 0.19 38)" : "2px solid transparent",
+  borderBottom: active ? "2px solid var(--aion-primary)" : "2px solid transparent",
   background: "transparent",
   fontWeight: active ? 700 : 500,
   fontSize: 13,
-  color: active ? "oklch(0.64 0.19 38)" : "oklch(0.5 0.02 250)",
+  color: active ? "var(--aion-primary)" : "oklch(0.5 0.02 250)",
   cursor: "pointer",
 });
 

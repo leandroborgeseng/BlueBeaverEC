@@ -212,7 +212,7 @@ function MobileSolicitarInner() {
                     style={{
                       padding: "10px 4px",
                       borderRadius: 10,
-                      border: `1px solid ${active ? "oklch(0.55 0.16 38)" : "var(--aion-border-soft)"}`,
+                      border: `1px solid ${active ? "oklch(0.55 0.16 38)" : "var(--aion-border-control)"}`,
                       background: active ? "oklch(0.96 0.04 55)" : "white",
                       color: active ? "oklch(0.45 0.14 38)" : "oklch(0.4 0.02 250)",
                       fontWeight: 800,

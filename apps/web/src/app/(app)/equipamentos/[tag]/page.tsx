@@ -354,7 +354,7 @@ export default function EquipamentoPagina() {
             style={{
               padding: "8px 14px",
               border: "none",
-              borderBottom: tab === t.id ? "2px solid oklch(0.64 0.19 38)" : "2px solid transparent",
+              borderBottom: tab === t.id ? "2px solid var(--aion-primary)" : "2px solid transparent",
               background: "transparent",
               fontWeight: tab === t.id ? 700 : 500,
               fontSize: 13,

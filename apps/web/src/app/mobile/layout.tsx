@@ -37,7 +37,7 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
               width: 36,
               height: 36,
               borderRadius: 10,
-              background: "oklch(0.64 0.19 38)",
+              background: "var(--aion-primary)",
               margin: "0 auto 12px",
             }}
           />
