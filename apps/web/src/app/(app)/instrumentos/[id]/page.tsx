@@ -616,9 +616,9 @@ export default function InstrumentoDetailPage() {
                           </td>
                         </tr>
                       ) : (
-                        certSelecionado.pontos.map((p) => (
+                        certSelecionado.pontos.map((p, idx) => (
                           <tr key={p.id}>
-                            <td style={td}>{p.ordem}</td>
+                            <td style={td}>{idx + 1}</td>
                             <td style={td}>{p.grandeza ?? "—"}</td>
                             <td style={td}>{p.valorNominal ?? "—"}</td>
                             <td style={td}>{p.valorConvencional ?? "—"}</td>
