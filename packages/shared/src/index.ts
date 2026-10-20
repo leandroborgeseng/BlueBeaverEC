@@ -685,4 +685,5 @@ export {
 } from "./os-dominios";
 export type { OsDominioTipo } from "./os-dominios";
 export * from "./procedimento-arvore";
+export * from "./procedimento-arvore-ops";
 export { FUSO_SP, dataCivilSP, dataCivilDeData, dataCivilDeInstante, formatarDataCivil, diasCivisEntre } from "./data-civil";

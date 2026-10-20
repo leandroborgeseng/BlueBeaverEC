@@ -85,6 +85,10 @@ export type CertificadoCfg = {
   exibirDataExecucao?: { ativo: boolean; rotulo?: string };
   exibirValidade?: { ativo: boolean; rotulo?: string; formato?: "MM/AAAA" | "DD/MM/AAAA" };
   memoriaCalculo?: boolean;
+  assinaturas?: { executor?: boolean; responsavelTecnico?: boolean; aprovacaoFinal?: boolean };
+  /** abas Anexos e Bibliografia (crit. 7): referências textuais/links; upload de arquivo fica fora da E2 */
+  anexos?: Array<{ nome: string; url?: string }>;
+  bibliografia?: string[];
 };
 
 const ehNum = (v: unknown) => typeof v === "number" && Number.isFinite(v);
