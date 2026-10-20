@@ -1,3 +1,4 @@
+import { resolverProcedimentoDoPlano } from "../laudos/procedimento-resolver";
 import {
   BadRequestException,
   ConflictException,
@@ -198,7 +199,7 @@ export class MobileService {
       tipo: string;
       equipamento?: {
         tipoEquipamentoPlano?: {
-          testes: Array<{ tipoTeste: string; procedimentoCodigo: string }>;
+          testes: Array<{ tipoTeste: string; procedimentoCodigo: string; procedimentoId?: string | null }>;
         } | null;
       } | null;
     },
@@ -217,6 +218,12 @@ export class MobileService {
     const testes = os.equipamento?.tipoEquipamentoPlano?.testes ?? [];
     const match = testes.find((t) => t.tipoTeste === tipoTeste);
     if (match) codigo = match.procedimentoCodigo;
+
+    // E2 (crit. 9): dual-read — FK → código do procedimento → código do POP; depois a busca legada
+    if (match) {
+      const r = await resolverProcedimentoDoPlano(this.prisma, estabelecimentoId, match, { tipo: tipoTeste });
+      if (r.procedimento) return this.itensProcToChecklist(r.procedimento.itens);
+    }
 
     const proc = await this.prisma.procedimentoLaudo.findFirst({
       where: {

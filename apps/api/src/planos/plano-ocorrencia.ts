@@ -601,6 +601,7 @@ export async function sincronizarInstanciasCatalogo(
             chaveUnica: chave,
             planoTesteId: teste.id,
             procedimentoCodigo: teste.procedimentoCodigo,
+            procedimentoId: teste.procedimentoId ?? null,
             periodicidadeMeses: teste.periodicidadeMeses,
             fontePeriodicidade: "PROCEDIMENTO",
             origemCatalogo: true,
@@ -630,6 +631,7 @@ export async function sincronizarInstanciasCatalogo(
         data: {
           planoTesteId: teste.id,
           procedimentoCodigo: teste.procedimentoCodigo,
+          procedimentoId: teste.procedimentoId ?? null,
           periodicidadeMeses: existente.periodicidadeMeses ?? teste.periodicidadeMeses,
           fontePeriodicidade: existente.fontePeriodicidade ?? "PROCEDIMENTO",
           origemCatalogo: true,
