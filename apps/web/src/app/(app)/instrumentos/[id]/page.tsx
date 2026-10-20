@@ -109,6 +109,12 @@ function correcaoCalculada(p: PontoDraft): number | undefined {
   return conv != null && ind != null ? Number((conv - ind).toFixed(6)) : undefined;
 }
 
+/** pt-BR com vírgula e sinal de menos real (U+2212): −0,10 */
+function fmtCorrecao(n: number): string {
+  const t = Math.abs(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  return n < 0 ? `\u2212${t}` : t;
+}
+
 function numOrUndef(s: string): number | undefined {
   if (s.trim() === "") return undefined;
   const n = Number(s.replace(",", "."));
@@ -831,10 +837,9 @@ export default function InstrumentoDetailPage() {
                           type="number"
                           step="any"
                           value={p.correcao}
-                          placeholder={
-                            correcaoCalculada(p) != null
-                              ? `calculada: ${correcaoCalculada(p)!.toLocaleString("pt-BR", { maximumFractionDigits: 6 })}`
-                              : "opcional"
+                          placeholder="opcional"
+                          aria-describedby={
+                            p.correcao.trim() === "" && correcaoCalculada(p) != null ? `correcao-calc-${idx}` : undefined
                           }
                           aria-label={`Ponto ${idx + 1}: correção (vazio = convencional − indicação)`}
                           onChange={(e) =>
@@ -844,6 +849,14 @@ export default function InstrumentoDetailPage() {
                           }
                           style={fieldStyle}
                         />
+                        {p.correcao.trim() === "" && correcaoCalculada(p) != null && (
+                          <div
+                            id={`correcao-calc-${idx}`}
+                            style={{ fontSize: 12, marginTop: 2, color: "var(--aion-muted)" }}
+                          >
+                            Calculada: {fmtCorrecao(correcaoCalculada(p)!)} (convencional − indicação)
+                          </div>
+                        )}
                       </div>
                       <div>
                         {idx === 0 && <FieldLabel>U</FieldLabel>}
