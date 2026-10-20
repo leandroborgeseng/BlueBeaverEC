@@ -140,3 +140,36 @@ describe("documento e instrumento na data", () => {
     assert.equal(escolhido?.id, "antigo");
   });
 });
+
+describe("certificadoVigenteNaData — empate de data (ciclo 3)", () => {
+  const base = { dataEmissao: "2026-01-02", dataValidade: "2027-01-02" };
+  it("dois certificados com a mesma data: escolhe o vigente / revisão mais recente", () => {
+    const antigo = { ...base, id: "rev0", numero: "C-1", revisao: 0, vigente: false };
+    const novo = { ...base, id: "rev1", numero: "C-1", revisao: 1, vigente: true };
+    for (const lista of [[antigo, novo], [novo, antigo]]) {
+      assert.equal(certificadoVigenteNaData(lista, "2026-03-10T12:00:00-03:00")?.id, "rev1");
+    }
+  });
+  it("mesma data, sem flag vigente: escolhe a revisão mais alta", () => {
+    const lista = [
+      { ...base, id: "r2", revisao: 2 },
+      { ...base, id: "r0", revisao: 0 },
+      { ...base, id: "r1", revisao: 1 },
+    ];
+    assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "r2");
+  });
+  it("rev1 com emissão ANTERIOR à rev0 (sem flag vigente): escolhe rev1", () => {
+    const rev0 = { id: "rev0", revisao: 0, dataEmissao: "2026-02-01", dataValidade: "2027-02-01" };
+    const rev1 = { id: "rev1", revisao: 1, dataEmissao: "2026-01-15", dataValidade: "2027-01-15" };
+    for (const lista of [[rev0, rev1], [rev1, rev0]]) {
+      assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "rev1");
+    }
+  });
+  it("vigente com revisão menor vence não-vigente com revisão maior", () => {
+    const vig = { ...base, id: "vig-r1", revisao: 1, vigente: true };
+    const nao = { ...base, id: "nao-r3", revisao: 3, vigente: false, dataEmissao: "2026-02-01" };
+    for (const lista of [[vig, nao], [nao, vig]]) {
+      assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "vig-r1");
+    }
+  });
+});

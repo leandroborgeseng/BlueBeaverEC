@@ -1,6 +1,7 @@
 /**
  * Checklist versionado, medições sem tolerância inventada, relatório ≠ certificado.
  */
+import { dataCivilDeData, dataCivilDeInstante, diasCivisEntre } from "@aion/shared";
 
 export const TIPOS_CAMPO_CHECKLIST = [
   "texto",
@@ -77,6 +78,7 @@ export type RespostaChecklist = {
   correcaoPadrao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   pontoCertificadoRef?: string;
   origemMedicao?: "MANUAL" | "ANALISADOR";
   avaliacao?: ResultadoAvaliacao;
@@ -86,9 +88,11 @@ export type PontoPadraoCert = {
   id?: string;
   valorNominal?: number | null;
   valorConvencional?: number | null;
+  indicacao?: number | null;
   correcao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   unidade?: string | null;
   grandeza?: string | null;
 };
@@ -100,8 +104,68 @@ export type CertificadoPadraoRef = {
   dataValidade?: string | Date | null;
   laboratorioEmissor?: string | null;
   vigente?: boolean;
+  fatorAbrangencia?: number | null;
+  probabilidadeAbrangencia?: number | null;
   pontos?: PontoPadraoCert[];
 };
+
+function numOuNull(v: number | string | null | undefined): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Herança ponto → certificado para k e probabilidade de abrangência:
+ * o valor do ponto sobrescreve o do certificado; sem nenhum dos dois fica null
+ * (nunca assume k=2 nem 95%). Aplicado na leitura/cálculo; o banco guarda o ponto como veio.
+ */
+export function pontoComHeranca<T extends PontoPadraoCert>(
+  ponto: T,
+  cert: { fatorAbrangencia?: number | null; probabilidadeAbrangencia?: number | null } | null | undefined,
+): T & { fatorK: number | null; probabilidadeAbrangencia: number | null } {
+  return {
+    ...ponto,
+    fatorK: numOuNull(ponto.fatorK) ?? numOuNull(cert?.fatorAbrangencia),
+    probabilidadeAbrangencia: numOuNull(ponto.probabilidadeAbrangencia) ?? numOuNull(cert?.probabilidadeAbrangencia),
+  };
+}
+
+/**
+ * Correção do ponto do certificado: a informada; senão convencional − indicação; senão null
+ * (nunca presume 0 — sem correção, a finalização do laudo é bloqueada).
+ */
+export function correcaoDoPonto(p: PontoPadraoCert | null | undefined): number | null {
+  if (!p) return null;
+  const c = numOuNull(p.correcao);
+  if (c != null) return c;
+  const conv = numOuNull(p.valorConvencional);
+  const ind = numOuNull(p.indicacao);
+  return conv != null && ind != null ? Number((conv - ind).toFixed(6)) : null;
+}
+
+/**
+ * Bloqueios metrológicos do certificado do padrão usado no laudo (borda B16 e U > 0):
+ * k ausente (após herança) ou U ≤ 0 impedem finalizar — nunca calcula com k presumido nem u_cal = 0.
+ */
+export function bloqueiosMetrologicosPadrao(pontos: PontoPadraoCert[] | null | undefined): string[] {
+  const erros: string[] = [];
+  (pontos ?? []).forEach((p, i) => {
+    const k = numOuNull(p.fatorK);
+    if (k == null || !(k > 0)) erros.push(`Ponto ${i + 1}: k não informado no certificado do padrão`);
+    const u = numOuNull(p.incertezaExpandida);
+    if (u == null || !(u > 0)) erros.push(`Ponto ${i + 1}: U deve ser maior que zero`);
+    if (correcaoDoPonto(p) == null) erros.push(`Ponto ${i + 1}: correção não informada no certificado do padrão`);
+  });
+  return erros;
+}
+
+/** Texto da probabilidade de abrangência para laudo/PDF: "95,45%" ou "não informada". */
+export function textoProbabilidadeAbrangencia(p: number | string | null | undefined): string {
+  const n = numOuNull(p);
+  if (n == null) return "não informada";
+  return `${n.toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
+}
 
 const LABEL_TIPO: Record<string, string> = {
   RECEBIMENTO: "Recebimento",
@@ -236,7 +300,8 @@ export function avaliarPontoCalibracao(args: {
   const padrao = item?.valorPadrao ?? r.valorConfigurado ?? r.valorReferencia ?? null;
   const media = mediaLeituras(r.leituras) ?? (r.valorMedido != null ? Number(r.valorMedido) : null);
   const ponto = padrao != null ? pontoPadraoMaisProximo(padrao, args.pontosCertificado) : null;
-  const correcao = ponto?.correcao != null ? Number(ponto.correcao) : 0;
+  // sem correção a finalização é bloqueada (bloqueiosMetrologicosPadrao); 0 aqui só para a prévia
+  const correcao = correcaoDoPonto(ponto) ?? 0;
   const avaliado = avaliarMedicao({
     valorMedido: media,
     valorReferencia: padrao,
@@ -254,6 +319,8 @@ export function avaliarPontoCalibracao(args: {
     correcaoPadrao: correcao || undefined,
     incertezaExpandida: ponto?.incertezaExpandida != null ? Number(ponto.incertezaExpandida) : r.incertezaExpandida,
     fatorK: ponto?.fatorK != null ? Number(ponto.fatorK) : r.fatorK,
+    probabilidadeAbrangencia:
+      ponto?.probabilidadeAbrangencia != null ? Number(ponto.probabilidadeAbrangencia) : r.probabilidadeAbrangencia,
     pontoCertificadoRef:
       ponto?.valorNominal != null
         ? `nominal=${ponto.valorNominal}`
@@ -328,10 +395,11 @@ export function statusCertificadoNaData(
   diasAlerta = 60,
 ): StatusCertificadoNaData {
   if (!validade) return "SEM_CERTIFICADO";
-  const v = validade instanceof Date ? validade : new Date(validade);
-  const d = dataServico instanceof Date ? dataServico : new Date(dataServico);
-  if (Number.isNaN(v.getTime()) || Number.isNaN(d.getTime())) return "SEM_CERTIFICADO";
-  const dias = (v.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+  // Dia civil (America/Sao_Paulo), inclusivo: vale até o fim do dia da validade.
+  const v = dataCivilDeData(validade);
+  const d = dataCivilDeInstante(dataServico);
+  if (!v || !d) return "SEM_CERTIFICADO";
+  const dias = diasCivisEntre(d, v);
   if (dias < 0) return "VENCIDO";
   if (dias <= diasAlerta) return "A_VENCER";
   return "VALIDO";
@@ -348,18 +416,19 @@ export function certificadoVigenteNaData(
   dataServico: Date | string,
 ): CertificadoPadraoRef | null {
   if (!certificados?.length) return null;
-  const data = asDate(dataServico) ?? new Date();
+  // Comparação por dia civil (emissão ≤ execução ≤ validade, inclusivo); ver data-civil.ts.
+  const dia = dataCivilDeInstante(asDate(dataServico) ?? new Date())!;
   const cobrindo = certificados.filter((c) => {
-    const emi = asDate(c.dataEmissao);
-    const val = asDate(c.dataValidade);
+    const emi = dataCivilDeData(c.dataEmissao);
+    const val = dataCivilDeData(c.dataValidade);
     if (!val) return false;
-    return (emi ?? new Date(0)).getTime() <= data.getTime() && data.getTime() <= val.getTime();
+    return (!emi || emi <= dia) && dia <= val;
   });
   cobrindo.sort((a, b) => (asDate(b.dataEmissao)?.getTime() ?? 0) - (asDate(a.dataEmissao)?.getTime() ?? 0));
   if (cobrindo[0]) return cobrindo[0];
   const anteriores = certificados.filter((c) => {
-    const emi = asDate(c.dataEmissao);
-    return !emi || emi.getTime() <= data.getTime();
+    const emi = dataCivilDeData(c.dataEmissao);
+    return !emi || emi <= dia;
   });
   anteriores.sort((a, b) => (asDate(b.dataValidade)?.getTime() ?? 0) - (asDate(a.dataValidade)?.getTime() ?? 0));
   return anteriores[0] ?? certificados[0] ?? null;
@@ -406,7 +475,9 @@ export function snapshotInstrumentoNaData(args: {
           dataValidade: asDate(validade)?.toISOString() ?? null,
           laboratorioEmissor: cert?.laboratorioEmissor ?? args.instrumento.laboratorioEmissor ?? null,
           statusNaData,
-          pontos: (cert?.pontos ?? []).map((p) => ({ ...p })),
+          fatorAbrangencia: numOuNull(cert?.fatorAbrangencia),
+          probabilidadeAbrangencia: numOuNull(cert?.probabilidadeAbrangencia),
+          pontos: (cert?.pontos ?? []).map((p) => pontoComHeranca({ ...p }, cert)),
         }
       : null,
   };

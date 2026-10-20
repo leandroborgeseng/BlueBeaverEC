@@ -1,9 +1,11 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { camposObrigatoriosFaltando } from "@/lib/padrao-cadastro";
 import { Overlay, WinForm, fld } from "@/components/os/os-win-ui";
 import {
   FItem,
@@ -31,11 +33,12 @@ interface Inst {
   statusCertificado: string;
   vencido: boolean;
   selecionavel: boolean;
+  cadastroIncompleto?: boolean;
+  camposFaltando?: string[];
 }
 
 function fmtDate(v?: string | null) {
-  if (!v) return "";
-  return new Date(v).toLocaleDateString("pt-BR");
+  return formatarDataCivil(v, "");
 }
 
 export default function InstrumentosPage() {
@@ -78,6 +81,17 @@ export default function InstrumentosPage() {
       .split(/[,;]/)
       .map((s) => s.trim())
       .filter(Boolean);
+    const falta = camposObrigatoriosFaltando({
+      tipoAnalisador: String(fd.get("tipoAnalisador") || ""),
+      grandezas,
+      faixaMedicao: String(fd.get("faixaMedicao") || ""),
+      resolucao: String(fd.get("resolucao") || ""),
+    });
+    if (falta.length) {
+      setErro(`Preencha os campos obrigatórios: ${falta.join(", ")}`);
+      setBusy(false);
+      return;
+    }
     try {
       const created = await api<{ id: string }>("/instrumentos-padroes", {
         method: "POST",
@@ -151,6 +165,15 @@ export default function InstrumentosPage() {
                 <Link href={`/instrumentos/${i.id}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
                   {i.nome}
                 </Link>
+                {i.cadastroIncompleto && (
+                  <span
+                    data-testid="badge-cadastro-incompleto"
+                    title={`Falta: ${(i.camposFaltando ?? []).join(", ")}`}
+                    style={{ marginLeft: 8, fontSize: 11, padding: "1px 6px", borderRadius: 4, background: "#fff4d6", color: "#7a5200", border: "1px solid #e8c766" }}
+                  >
+                    Cadastro incompleto
+                  </span>
+                )}
               </td>
               <td style={td}>{i.nSerie}</td>
               <td style={td}>{fmtDate(i.certificadoValidade)}</td>
@@ -181,14 +204,14 @@ export default function InstrumentosPage() {
             <input name="fabricante" style={{ ...fld, width: "100%", marginBottom: 8 }} />
             <label style={lab}>Modelo</label>
             <input name="modelo" style={{ ...fld, width: "100%", marginBottom: 8 }} />
-            <label style={lab}>Grandezas</label>
-            <input name="grandezas" placeholder="temperatura, umidade" style={{ ...fld, width: "100%", marginBottom: 8 }} />
-            <label style={lab}>Faixa de medição</label>
-            <input name="faixaMedicao" style={{ ...fld, width: "100%", marginBottom: 8 }} />
-            <label style={lab}>Resolução</label>
-            <input name="resolucao" style={{ ...fld, width: "100%", marginBottom: 8 }} />
-            <label style={lab}>Tipo de analisador</label>
-            <input name="tipoAnalisador" placeholder="segurança elétrica, infusão" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Grandezas *</label>
+            <input name="grandezas" required placeholder="temperatura, umidade" style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Faixa de medição *</label>
+            <input name="faixaMedicao" required style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Resolução *</label>
+            <input name="resolucao" required style={{ ...fld, width: "100%", marginBottom: 8 }} />
+            <label style={lab}>Tipo de analisador *</label>
+            <input name="tipoAnalisador" required placeholder="segurança elétrica, infusão" style={{ ...fld, width: "100%", marginBottom: 8 }} />
           </WinForm>
         </Overlay>
       )}

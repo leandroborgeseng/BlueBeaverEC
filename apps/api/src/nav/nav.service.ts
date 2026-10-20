@@ -1,3 +1,4 @@
+import { carregarAlertasPadroes, notificacoesPadroes } from "../laudos/padrao-alertas";
 import { Injectable } from "@nestjs/common";
 import { StatusNC, StatusOS, TipoLaudo } from "@prisma/client";
 import { calcularSlaOs, type PrioridadeOS as PrioridadeShared } from "@aion/shared";
@@ -190,6 +191,10 @@ export class NavService {
         createdAt: l.validadeAte.toISOString(),
       });
     }
+
+    // Certificados de padrões rastreáveis (laudos v2 E1, crit. 3)
+    const padroes = await carregarAlertasPadroes(this.prisma, estabId).catch(() => null);
+    items.push(...notificacoesPadroes(padroes?.itens ?? []));
 
     const planosEscalonados = await this.prisma.planoAcao.findMany({
       where: {

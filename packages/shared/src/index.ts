@@ -665,3 +665,4 @@ export {
   ehOsDominioTipo,
 } from "./os-dominios";
 export type { OsDominioTipo } from "./os-dominios";
+export { FUSO_SP, dataCivilSP, dataCivilDeData, dataCivilDeInstante, formatarDataCivil, diasCivisEntre } from "./data-civil";

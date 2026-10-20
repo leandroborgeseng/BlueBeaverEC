@@ -45,6 +45,11 @@ export class DashboardController {
     return this.dashboard.osSla(user.estabelecimentoId);
   }
 
+  @Get("padroes-alertas")
+  padroesAlertas(@CurrentUser() user: AuthUser) {
+    return this.dashboard.padroesAlertas(user.estabelecimentoId);
+  }
+
   @Get("contratos-vencendo")
   contratosVencendo(@CurrentUser() user: AuthUser, @Query("dias") dias?: string) {
     return this.contratos.vencendo(user.estabelecimentoId, dias ?? "30");

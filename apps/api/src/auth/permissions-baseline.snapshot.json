@@ -705,6 +705,21 @@
     }
   },
   {
+    "route": "/dashboard/padroes-alertas",
+    "method": "GET",
+    "handler": "DashboardController.padroesAlertas",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
     "route": "/equipamentos/",
     "method": "GET",
     "handler": "EquipamentosController.list",
@@ -2145,9 +2160,54 @@
     }
   },
   {
+    "route": "/instrumentos-padroes/:id/certificados/:certId",
+    "method": "PATCH",
+    "handler": "InstrumentosController.updateCertificado",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
     "route": "/instrumentos-padroes/:id/certificados/:certId/pdf",
     "method": "GET",
     "handler": "InstrumentosController.pdf",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
+    "route": "/instrumentos-padroes/:id/certificados/:certId/revisoes",
+    "method": "POST",
+    "handler": "InstrumentosController.criarRevisao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/instrumentos-padroes/alertas",
+    "method": "GET",
+    "handler": "InstrumentosController.alertas",
     "isPublic": false,
     "results": {
       "ADMIN": "PERMITIDO",
@@ -2187,6 +2247,21 @@
       "TECNICO_RESTRITO": "NEGADO",
       "SOLICITANTE": "NEGADO",
       "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/instrumentos-padroes/sugestao",
+    "method": "GET",
+    "handler": "InstrumentosController.sugestao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
     }
   },
   {
@@ -2238,6 +2313,21 @@
     "route": "/laudos/:id",
     "method": "PATCH",
     "handler": "LaudosController.patch",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/laudos/:id/atualizar-padrao",
+    "method": "POST",
+    "handler": "LaudosController.atualizarPadrao",
     "isPublic": false,
     "results": {
       "ADMIN": "PERMITIDO",

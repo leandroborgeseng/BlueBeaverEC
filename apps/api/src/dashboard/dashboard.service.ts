@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CondicaoUsoEquipamento, SituacaoEquipamento, StatusOS, TipoOS } from "@prisma/client";
 import { calcularSlaOs } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { carregarAlertasPadroes } from "../laudos/padrao-alertas";
 import { mttrDeParadas, snapshotParqueEmOperacao } from "../indicadores/indicador-regras";
 
 @Injectable()
@@ -139,6 +140,12 @@ export class DashboardService {
       disponibilidadeNota: "Disponibilidade medida está no painel do gestor. Este card é snapshot do parque, não uptime.",
       atualizadoEm: new Date().toISOString(),
     };
+  }
+
+  /** Resumo e lista curta de certificados de padrão vencidos / a vencer (laudos v2 E1, crit. 3). */
+  async padroesAlertas(estabelecimentoId: string) {
+    const r = await carregarAlertasPadroes(this.prisma, estabelecimentoId);
+    return { ...r, itens: r.itens.slice(0, 10) };
   }
 
   async osPorSituacao(estabelecimentoId: string) {

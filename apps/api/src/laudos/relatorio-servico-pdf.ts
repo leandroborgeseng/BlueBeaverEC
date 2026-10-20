@@ -1,5 +1,11 @@
 import PDFDocument from "pdfkit";
-import { avisoAssinaturaNaoCertificada, labelTipoIntervencao, tituloDocumentoTecnico } from "./laudo-regras";
+import { formatarDataCivil } from "@aion/shared";
+import {
+  avisoAssinaturaNaoCertificada,
+  labelTipoIntervencao,
+  textoProbabilidadeAbrangencia,
+  tituloDocumentoTecnico,
+} from "./laudo-regras";
 
 export type RelatorioServicoPayload = {
   instituicao: { nome: string; cnpj?: string | null };
@@ -45,6 +51,16 @@ export type RelatorioServicoPayload = {
       dataValidade?: string | null;
       laboratorioEmissor?: string | null;
       statusNaData?: string | null;
+      fatorAbrangencia?: number | null;
+      probabilidadeAbrangencia?: number | null;
+      pontos?: Array<{
+        unidade?: string | null;
+        valorNominal?: number | null;
+        valorConvencional?: number | null;
+        incertezaExpandida?: number | null;
+        fatorK?: number | null;
+        probabilidadeAbrangencia?: number | null;
+      }>;
     } | null;
   } | null;
   resultado?: string | null;
@@ -56,11 +72,32 @@ export type RelatorioServicoPayload = {
   visivelPortal?: boolean;
 };
 
+/** Carimbo de tempo (criadoEm/finalizadoEm): dia em BRT. Datas só-data usam formatarDataCivil. */
 function fmtData(v?: string | Date | null): string {
   if (!v) return "—";
   const d = v instanceof Date ? v : new Date(v);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+}
+
+type CertPdf = NonNullable<NonNullable<RelatorioServicoPayload["instrumento"]>["certificado"]>;
+
+/**
+ * Linhas de k / probabilidade de abrangência / U do padrão para o PDF.
+ * Probabilidade ausente sai como "não informada" (nunca um 95% presumido).
+ */
+export function linhasIncertezaPadrao(c: CertPdf): string[] {
+  const fmtK = (k: number | null | undefined) => (k != null ? String(k) : "não informado");
+  const linhas = [
+    `Certificado do padrão: k = ${fmtK(c.fatorAbrangencia)} · probabilidade de abrangência: ${textoProbabilidadeAbrangencia(c.probabilidadeAbrangencia)}`,
+  ];
+  (c.pontos ?? []).forEach((p, i) => {
+    const ref = p.valorNominal ?? p.valorConvencional;
+    linhas.push(
+      `Ponto ${i + 1}${ref != null ? ` (${ref}${p.unidade ? ` ${p.unidade}` : ""})` : ""}: U = ${p.incertezaExpandida ?? "—"}${p.unidade ? ` ${p.unidade}` : ""} · k = ${fmtK(p.fatorK ?? c.fatorAbrangencia)} · probabilidade de abrangência: ${textoProbabilidadeAbrangencia(p.probabilidadeAbrangencia ?? c.probabilidadeAbrangencia)}`,
+    );
+  });
+  return linhas;
 }
 
 function ensureSpace(doc: PDFKit.PDFDocument, needed: number, header: () => void) {
@@ -106,7 +143,7 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       ["Setor", payload.equipamento.setor || "—"],
       ["Nº série", payload.equipamento.nSerie || "—"],
       ["OS", payload.osCodigo || (payload.osNumero != null ? String(payload.osNumero) : "—")],
-      ["Data do serviço", fmtData(payload.dataExecucao)],
+      ["Data do serviço", formatarDataCivil(payload.dataExecucao)],
       [
         "Procedimento",
         payload.procedimento?.nome
@@ -147,11 +184,12 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       const c = payload.instrumento.certificado;
       if (c) {
         doc.fontSize(8).fillColor("#444").text(
-          [c.numero ? `Cert. padrão ${c.numero}` : null, c.dataValidade ? `validade ${fmtData(c.dataValidade)}` : null, c.laboratorioEmissor, c.statusNaData ? `situação na data: ${c.statusNaData.replace(/_/g, " ")}` : null]
+          [c.numero ? `Cert. padrão ${c.numero}` : null, c.dataValidade ? `validade ${formatarDataCivil(c.dataValidade)}` : null, c.laboratorioEmissor, c.statusNaData ? `situação na data: ${c.statusNaData.replace(/_/g, " ")}` : null]
             .filter(Boolean)
             .join(" · "),
           { width: pageW },
         );
+        for (const l of linhasIncertezaPadrao(c)) doc.fontSize(8).fillColor("#444").text(l, { width: pageW });
       }
       doc.fontSize(8).fillColor("#555").text("Medições lançadas manualmente. Sem acoplamento a protocolo de analisador.");
     }

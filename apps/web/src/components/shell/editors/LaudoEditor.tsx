@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
@@ -7,6 +8,7 @@ import { api, downloadApi } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
 import {
   avaliarPontoCalibracao,
+  pontoComHeranca,
   calcularResultadoLaudo,
   tituloDocumentoTecnico,
   type RespostaChecklist,
@@ -55,30 +57,7 @@ interface Pref {
   instrumentoId: string;
 }
 
-function chaveTipo(s: string) {
-  return s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function escolherPreferencial(tipoLaudo: string, prefs: Pref[], insts: Inst[], nomesEq: Array<string | null | undefined>) {
-  if (!prefs.length) return "";
-  const vivos = prefs.filter((p) => insts.some((i) => i.id === p.instrumentoId));
-  const nomes = nomesEq.map((n) => (n ? chaveTipo(n) : "")).filter(Boolean);
-  for (const p of vivos) {
-    const pk = chaveTipo(p.tipo);
-    if (nomes.some((n) => n === pk || n.includes(pk) || pk.includes(n))) return p.instrumentoId;
-  }
-  if (tipoLaudo === "TSE") {
-    const tse = vivos.find((p) => /tse|seguranca|eletr/.test(chaveTipo(p.tipo)));
-    if (tse) return tse.instrumentoId;
-  }
-  if (vivos.length === 1) return vivos[0].instrumentoId;
-  return "";
-}
+const MSG_CERT_REVISADO = "Certificado do padrão foi revisado; atualize para a revisão vigente";
 
 type RespostaItem = RespostaChecklist;
 
@@ -89,6 +68,7 @@ type PontoCert = {
   correcao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   unidade?: string | null;
 };
 
@@ -221,19 +201,21 @@ export function LaudoEditor({
           ).catch(() => null)
         : Promise.resolve(null),
     ])
-      .then(([p, c, i, pref, eq]) => {
+      .then(async ([p, c, i, pref, eq]) => {
         const selecionaveis = i.filter((x) => x.selecionavel);
         setProcs(p);
         setCols(c);
         setInsts(selecionaveis);
         setPrefs(pref.preferenciais);
         setProcId(p[0]?.id ?? "");
+        // Regra única de sugestão na API (GET /instrumentos-padroes/sugestao)
+        const qs = new URLSearchParams({ tipoLaudo: tipo });
+        for (const n of [eq?.descricao?.nome, eq?.modelo?.nome, eq?.nome]) if (n) qs.append("nomes", n);
+        const sug = await api<{ instrumentoId: string | null; aviso: string | null }>(
+          `/instrumentos-padroes/sugestao?${qs.toString()}`,
+        ).catch(() => ({ instrumentoId: null, aviso: null }));
         setInstrumentoId(
-          escolherPreferencial(tipo, pref.preferenciais, selecionaveis, [
-            eq?.descricao?.nome,
-            eq?.modelo?.nome,
-            eq?.nome,
-          ]),
+          sug.instrumentoId && selecionaveis.some((x) => x.id === sug.instrumentoId) ? sug.instrumentoId : "",
         );
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));
@@ -245,11 +227,17 @@ export function LaudoEditor({
       return;
     }
     void api<{
-      certificados?: Array<{ vigente?: boolean; pontos?: PontoCert[] }>;
+      certificados?: Array<{
+        vigente?: boolean;
+        fatorAbrangencia?: number | null;
+        probabilidadeAbrangencia?: number | null;
+        pontos?: PontoCert[];
+      }>;
     }>(`/instrumentos-padroes/${instrumentoId}`)
       .then((d) => {
         const vigente = d.certificados?.find((c) => c.vigente) ?? d.certificados?.[0];
-        setPontosCertificado(vigente?.pontos ?? []);
+        // k / probabilidade: ponto sobrescreve, senão herda do certificado, senão null
+        setPontosCertificado((vigente?.pontos ?? []).map((p) => pontoComHeranca(p, vigente)));
       })
       .catch(() => setPontosCertificado([]));
   }, [instrumentoId, tipo, viewMode]);
@@ -411,6 +399,25 @@ export function LaudoEditor({
       </div>
 
       {erro && <Err>{erro}</Err>}
+      {erro?.includes(MSG_CERT_REVISADO) && (laudo?.id ?? laudoIdAtual) && (
+        <div style={{ marginTop: 8 }}>
+          <Btn
+            size="sm"
+            type="button"
+            onClick={() =>
+              void api(`/laudos/${laudo?.id ?? laudoIdAtual}/atualizar-padrao`, { method: "POST" })
+                .then(() => (laudo ? loadLaudo() : undefined))
+                .then(() => {
+                  setErro(null);
+                  setMsg("Padrão atualizado para a revisão vigente do certificado; valores recalculados. Confira antes de finalizar.");
+                })
+                .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+            }
+          >
+            Atualizar para a revisão vigente
+          </Btn>
+        </div>
+      )}
       {msg && <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)" }}>{msg}</div>}
 
       {tab === "geral" && (
@@ -948,7 +955,7 @@ export function LaudoEditor({
           </div>
           {viewMode && laudo?.dataExecucao && (
             <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-              Executado em {new Date(laudo.dataExecucao).toLocaleDateString("pt-BR")}
+              Executado em {formatarDataCivil(laudo.dataExecucao)}
             </div>
           )}
           <div style={{ fontSize: 13 }}>

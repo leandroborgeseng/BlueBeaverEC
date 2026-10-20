@@ -1,9 +1,11 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, downloadApi } from "@/lib/api";
+import { camposObrigatoriosFaltando } from "@/lib/padrao-cadastro";
 import {
   Badge,
   Btn,
@@ -29,6 +31,7 @@ interface Ponto {
   correcao?: number | null;
   incertezaExpandida: number;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
 }
 
 interface Cert {
@@ -38,9 +41,15 @@ interface Cert {
   dataValidade: string;
   laboratorioEmissor?: string | null;
   laboratorioAcreditacao?: string | null;
-  fatorAbrangencia: number;
+  fatorAbrangencia?: number | null;
+  probabilidadeAbrangencia?: number | null;
   vigente: boolean;
   temAnexo: boolean;
+  /** usado em laudo final: dados metrológicos e PDF só mudam por revisão */
+  usadoEmLaudoFinal?: boolean;
+  revisao?: number | null;
+  revisaoDeId?: string | null;
+  substituido?: boolean;
   statusCertificado: string;
   pontos: Ponto[];
   observacoes?: string | null;
@@ -57,6 +66,9 @@ interface Padrao {
   faixaMedicao?: string | null;
   resolucao?: string | null;
   observacoes?: string | null;
+  tipoAnalisador?: string | null;
+  cadastroIncompleto?: boolean;
+  camposFaltando?: string[];
   statusCertificado: string;
   certificados: Cert[];
 }
@@ -67,8 +79,11 @@ type PontoDraft = {
   valorNominal: string;
   valorConvencional: string;
   indicacao: string;
+  /** vazio = API calcula convencional − indicação */
+  correcao: string;
   incertezaExpandida: string;
   fatorK: string;
+  probabilidadeAbrangencia: string;
 };
 
 const emptyPonto = (): PontoDraft => ({
@@ -77,9 +92,28 @@ const emptyPonto = (): PontoDraft => ({
   valorNominal: "",
   valorConvencional: "",
   indicacao: "",
+  correcao: "",
   incertezaExpandida: "",
-  fatorK: "2",
+  fatorK: "",
+  probabilidadeAbrangencia: "",
 });
+
+function textoProb(p: number | null | undefined): string {
+  return p == null ? "não informada" : `${p.toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
+}
+
+/** Correção calculada (convencional − indicação) para exibir como dica quando o campo está vazio. */
+function correcaoCalculada(p: PontoDraft): number | undefined {
+  const conv = numOrUndef(p.valorConvencional);
+  const ind = numOrUndef(p.indicacao);
+  return conv != null && ind != null ? Number((conv - ind).toFixed(6)) : undefined;
+}
+
+/** pt-BR com vírgula e sinal de menos real (U+2212): −0,10 */
+function fmtCorrecao(n: number): string {
+  const t = Math.abs(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  return n < 0 ? `\u2212${t}` : t;
+}
 
 function numOrUndef(s: string): number | undefined {
   if (s.trim() === "") return undefined;
@@ -98,6 +132,76 @@ export default function InstrumentoDetailPage() {
   const [pontos, setPontos] = useState<PontoDraft[]>([emptyPonto()]);
   const [anexoDataUrl, setAnexoDataUrl] = useState<string | undefined>();
   const [anexoNome, setAnexoNome] = useState<string | undefined>();
+  const [modo, setModo] = useState<{ tipo: "novo" | "editar" | "revisao"; cert?: Cert }>({ tipo: "novo" });
+  const [formKey, setFormKey] = useState(0);
+  const [obsAberta, setObsAberta] = useState(false);
+  const [obsTexto, setObsTexto] = useState("");
+  const [obsErro, setObsErro] = useState<string | null>(null);
+  const [obsSalvando, setObsSalvando] = useState(false);
+
+  async function salvarObservacao(c: Cert) {
+    if (!padrao) return;
+    setObsErro(null);
+    setObsSalvando(true);
+    try {
+      // PATCH com os dados atuais + observação nova: a API só aceita mudar a observação em certificado usado
+      await api(`/instrumentos-padroes/${padrao.id}/certificados/${c.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          numero: c.numero,
+          dataEmissao: c.dataEmissao,
+          dataValidade: c.dataValidade,
+          laboratorioEmissor: c.laboratorioEmissor ?? undefined,
+          laboratorioAcreditacao: c.laboratorioAcreditacao ?? undefined,
+          fatorAbrangencia: c.fatorAbrangencia ?? undefined,
+          probabilidadeAbrangencia: c.probabilidadeAbrangencia ?? undefined,
+          observacoes: obsTexto,
+          pontos: c.pontos.map((p) => ({
+            ordem: p.ordem,
+            grandeza: p.grandeza ?? undefined,
+            unidade: p.unidade,
+            valorNominal: p.valorNominal ?? undefined,
+            valorConvencional: p.valorConvencional ?? undefined,
+            indicacao: p.indicacao ?? undefined,
+            correcao: p.correcao ?? undefined,
+            incertezaExpandida: p.incertezaExpandida,
+            fatorK: p.fatorK ?? undefined,
+            probabilidadeAbrangencia: p.probabilidadeAbrangencia ?? undefined,
+          })),
+        }),
+      });
+      setObsAberta(false);
+      setMsg("Observação atualizada. A alteração ficou registrada na auditoria.");
+      await load();
+    } catch (err) {
+      // mantém o texto digitado; erro ao lado do campo
+      setObsErro(err instanceof Error ? err.message : "Não foi possível salvar a observação");
+    } finally {
+      setObsSalvando(false);
+    }
+  }
+
+  function abrirFormulario(tipo: "novo" | "editar" | "revisao", cert?: Cert) {
+    setModo({ tipo, cert });
+    setFormKey((k) => k + 1);
+    setAnexoDataUrl(undefined);
+    setAnexoNome(undefined);
+    setPontos(
+      cert?.pontos.length
+        ? cert.pontos.map((p) => ({
+            grandeza: p.grandeza ?? "",
+            unidade: p.unidade,
+            valorNominal: p.valorNominal != null ? String(p.valorNominal) : "",
+            valorConvencional: p.valorConvencional != null ? String(p.valorConvencional) : "",
+            indicacao: p.indicacao != null ? String(p.indicacao) : "",
+            correcao: p.correcao != null ? String(p.correcao) : "",
+            incertezaExpandida: String(p.incertezaExpandida),
+            fatorK: p.fatorK != null ? String(p.fatorK) : "",
+            probabilidadeAbrangencia: p.probabilidadeAbrangencia != null ? String(p.probabilidadeAbrangencia) : "",
+          }))
+        : [emptyPonto()],
+    );
+  }
 
   const load = useCallback(async () => {
     const data = await api<Padrao>(`/instrumentos-padroes/${id}`);
@@ -125,6 +229,16 @@ export default function InstrumentoDetailPage() {
       .split(/[,;]/)
       .map((s) => s.trim())
       .filter(Boolean);
+    const falta = camposObrigatoriosFaltando({
+      tipoAnalisador: String(fd.get("tipoAnalisador") || ""),
+      grandezas,
+      faixaMedicao: String(fd.get("faixaMedicao") || ""),
+      resolucao: String(fd.get("resolucao") || ""),
+    });
+    if (falta.length) {
+      setErro(`Preencha os campos obrigatórios: ${falta.join(", ")}`);
+      return;
+    }
     try {
       const updated = await api<Padrao>(`/instrumentos-padroes/${padrao.id}`, {
         method: "PATCH",
@@ -135,6 +249,7 @@ export default function InstrumentoDetailPage() {
           modelo: String(fd.get("modelo") || "") || null,
           codigoPatrimonio: String(fd.get("codigoPatrimonio") || "") || null,
           grandezas,
+          tipoAnalisador: String(fd.get("tipoAnalisador") || "") || null,
           faixaMedicao: String(fd.get("faixaMedicao") || "") || null,
           resolucao: String(fd.get("resolucao") || "") || null,
           observacoes: String(fd.get("observacoes") || "") || null,
@@ -162,8 +277,12 @@ export default function InstrumentoDetailPage() {
         valorNominal: numOrUndef(p.valorNominal),
         valorConvencional: numOrUndef(p.valorConvencional),
         indicacao: numOrUndef(p.indicacao),
+        // informada tem prioridade; vazia = API calcula convencional − indicação
+        correcao: numOrUndef(p.correcao),
         incertezaExpandida: numOrUndef(p.incertezaExpandida),
-        fatorK: numOrUndef(p.fatorK) ?? 2,
+        // vazio = herda do certificado (não injeta 2)
+        fatorK: numOrUndef(p.fatorK),
+        probabilidadeAbrangencia: numOrUndef(p.probabilidadeAbrangencia),
       }))
       .filter((p) => p.unidade && p.incertezaExpandida != null);
 
@@ -171,17 +290,32 @@ export default function InstrumentoDetailPage() {
       setErro("Informe ao menos um ponto com unidade e incerteza expandida (U)");
       return;
     }
+    const kCert = numOrUndef(String(fd.get("fatorAbrangencia") || ""));
+    const probCert = numOrUndef(String(fd.get("probabilidadeAbrangencia") || ""));
+    const semK = pontosPayload.findIndex((p) => p.fatorK == null && kCert == null);
+    if (semK >= 0) {
+      setErro(`Ponto ${semK + 1}: informe k no ponto ou no certificado`);
+      return;
+    }
 
     try {
-      const created = await api<Cert>(`/instrumentos-padroes/${padrao.id}/certificados`, {
-        method: "POST",
+      const base = `/instrumentos-padroes/${padrao.id}/certificados`;
+      const url =
+        modo.tipo === "editar" && modo.cert
+          ? `${base}/${modo.cert.id}`
+          : modo.tipo === "revisao" && modo.cert
+            ? `${base}/${modo.cert.id}/revisoes`
+            : base;
+      const created = await api<Cert>(url, {
+        method: modo.tipo === "editar" ? "PATCH" : "POST",
         body: JSON.stringify({
           numero: String(fd.get("numero")),
           dataEmissao: String(fd.get("dataEmissao")),
           dataValidade: String(fd.get("dataValidade")),
           laboratorioEmissor: String(fd.get("laboratorioEmissor") || "") || undefined,
           laboratorioAcreditacao: String(fd.get("laboratorioAcreditacao") || "") || undefined,
-          fatorAbrangencia: numOrUndef(String(fd.get("fatorAbrangencia") || "2")) ?? 2,
+          fatorAbrangencia: kCert,
+          probabilidadeAbrangencia: probCert,
           observacoes: String(fd.get("observacoes") || "") || undefined,
           vigente: true,
           pontos: pontosPayload,
@@ -193,7 +327,15 @@ export default function InstrumentoDetailPage() {
       setPontos([emptyPonto()]);
       setAnexoDataUrl(undefined);
       setAnexoNome(undefined);
-      setMsg(`Certificado ${created.numero} cadastrado com ${pontosPayload.length} ponto(s)`);
+      setMsg(
+        modo.tipo === "editar"
+          ? `Certificado ${created.numero} atualizado`
+          : modo.tipo === "revisao"
+            ? `Revisão ${created.revisao ?? ""} do certificado ${created.numero} cadastrada; a anterior deixou de ser vigente`
+            : `Certificado ${created.numero} cadastrado com ${pontosPayload.length} ponto(s)`,
+      );
+      setModo({ tipo: "novo" });
+      setFormKey((k) => k + 1);
       await load();
       setCertId(created.id);
     } catch (err) {
@@ -249,6 +391,16 @@ export default function InstrumentoDetailPage() {
       />
 
       {erro && <Err>{erro}</Err>}
+      {padrao?.cadastroIncompleto && (
+        <div
+          data-testid="aviso-cadastro-incompleto"
+          role="status"
+          style={{ fontSize: 13, marginBottom: 12, padding: "8px 12px", borderRadius: 6, background: "#fff4d6", color: "#7a5200", border: "1px solid #e8c766" }}
+        >
+          <Badge tone="A_VENCER">Cadastro incompleto</Badge> Falta: {(padrao.camposFaltando ?? []).join(", ")}. Complete para salvar
+          alterações e usar como preferencial.
+        </div>
+      )}
       {msg && (
         <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)", marginBottom: 12 }}>
           {msg}
@@ -287,21 +439,32 @@ export default function InstrumentoDetailPage() {
                 <input name="modelo" defaultValue={padrao.modelo ?? ""} style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Grandezas</FieldLabel>
+                <FieldLabel>Tipo de analisador *</FieldLabel>
+                <input
+                  name="tipoAnalisador"
+                  required
+                  defaultValue={padrao.tipoAnalisador ?? ""}
+                  placeholder="segurança elétrica, desfibrilador"
+                  style={fieldStyle}
+                />
+              </div>
+              <div>
+                <FieldLabel>Grandezas *</FieldLabel>
                 <input
                   name="grandezas"
+                  required
                   defaultValue={padrao.grandezas.join(", ")}
                   placeholder="temperatura, umidade"
                   style={fieldStyle}
                 />
               </div>
               <div>
-                <FieldLabel>Faixa</FieldLabel>
-                <input name="faixaMedicao" defaultValue={padrao.faixaMedicao ?? ""} style={fieldStyle} />
+                <FieldLabel>Faixa *</FieldLabel>
+                <input name="faixaMedicao" required defaultValue={padrao.faixaMedicao ?? ""} style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Resolução</FieldLabel>
-                <input name="resolucao" defaultValue={padrao.resolucao ?? ""} style={fieldStyle} />
+                <FieldLabel>Resolução *</FieldLabel>
+                <input name="resolucao" required defaultValue={padrao.resolucao ?? ""} style={fieldStyle} />
               </div>
               <div>
                 <FieldLabel>Observações</FieldLabel>
@@ -339,7 +502,7 @@ export default function InstrumentoDetailPage() {
                     >
                       <div style={{ fontWeight: 700, fontSize: 13 }}>{c.numero}</div>
                       <div style={{ fontSize: 11, color: "oklch(0.5 0.02 250)" }}>
-                        válido até {new Date(c.dataValidade).toLocaleDateString("pt-BR")}
+                        válido até {formatarDataCivil(c.dataValidade)}
                         {c.vigente ? " · vigente" : ""}
                       </div>
                       <div style={{ fontSize: 11 }}>{c.pontos.length} ponto(s)</div>
@@ -358,8 +521,8 @@ export default function InstrumentoDetailPage() {
                     <div>
                       <strong>{certSelecionado.numero}</strong>
                       <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                        Emissão {new Date(certSelecionado.dataEmissao).toLocaleDateString("pt-BR")} ·
-                        Validade {new Date(certSelecionado.dataValidade).toLocaleDateString("pt-BR")}
+                        Emissão {formatarDataCivil(certSelecionado.dataEmissao)} ·
+                        Validade {formatarDataCivil(certSelecionado.dataValidade)}
                         {certSelecionado.laboratorioEmissor
                           ? ` · ${certSelecionado.laboratorioEmissor}`
                           : ""}
@@ -367,9 +530,70 @@ export default function InstrumentoDetailPage() {
                           ? ` (${certSelecionado.laboratorioAcreditacao})`
                           : ""}
                       </div>
-                      <div style={{ fontSize: 12 }}>k = {certSelecionado.fatorAbrangencia}</div>
+                      {certSelecionado.usadoEmLaudoFinal && !certSelecionado.substituido && (
+                        <div role="note" style={{ fontSize: 12, marginTop: 4 }}>
+                          <div style={{ fontWeight: 600 }}>Certificado usado em laudos emitidos; cadastre uma revisão</div>
+                          <div>Pontos, k, U, probabilidade, validade e PDF só mudam por revisão.</div>
+                          {!obsAberta ? (
+                            <button
+                              type="button"
+                             
+                              onClick={() => {
+                                setObsTexto(certSelecionado.observacoes ?? "");
+                                setObsErro(null);
+                                setObsAberta(true);
+                              }}
+                              style={{ background: "none", border: 0, padding: "10px 0", minHeight: 44, color: "inherit", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                            >
+                              Editar observação
+                            </button>
+                          ) : (
+                            <div style={{ display: "grid", gap: 6, marginTop: 6, maxWidth: 520 }}>
+                              <label htmlFor="obs-cert" style={{ fontWeight: 600 }}>Observação do certificado</label>
+                              <textarea
+                                id="obs-cert"
+                                value={obsTexto}
+                                onChange={(e) => setObsTexto(e.target.value)}
+                                aria-invalid={Boolean(obsErro)}
+                                aria-describedby={obsErro ? "obs-cert-erro" : undefined}
+                                rows={3}
+                                style={{ ...fieldStyle, minHeight: 66 }}
+                              />
+                              {obsErro && (
+                                <div id="obs-cert-erro" role="alert" style={{ color: "oklch(0.45 0.18 25)", fontWeight: 600 }}>
+                                  {obsErro}
+                                </div>
+                              )}
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <Btn type="button" size="sm" disabled={obsSalvando} onClick={() => void salvarObservacao(certSelecionado)} style={{ minHeight: 44 }}>
+                                  {obsSalvando ? "Salvando…" : "Salvar observação"}
+                                </Btn>
+                                <Btn type="button" variant="ghost" size="sm" onClick={() => setObsAberta(false)} style={{ minHeight: 44 }}>
+                                  Cancelar
+                                </Btn>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div style={{ fontSize: 12 }}>
+                        k = {certSelecionado.fatorAbrangencia ?? "não informado"} · probabilidade de abrangência:{" "}
+                        {textoProb(certSelecionado.probabilidadeAbrangencia)}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {certSelecionado.revisao != null && <Badge tone="INFO">Revisão {certSelecionado.revisao}</Badge>}
+                      {certSelecionado.substituido && <Badge tone="INFO">Substituído por revisão</Badge>}
+                      {!certSelecionado.substituido &&
+                        (certSelecionado.usadoEmLaudoFinal ? (
+                          <Btn variant="secondary" size="sm" type="button" onClick={() => abrirFormulario("revisao", certSelecionado)}>
+                            Cadastrar revisão
+                          </Btn>
+                        ) : (
+                          <Btn variant="secondary" size="sm" type="button" onClick={() => abrirFormulario("editar", certSelecionado)}>
+                            Editar certificado
+                          </Btn>
+                        ))}
                       <Badge tone={certSelecionado.statusCertificado}>{certSelecionado.statusCertificado}</Badge>
                       {certSelecionado.temAnexo && (
                         <Btn
@@ -411,17 +635,25 @@ export default function InstrumentoDetailPage() {
                           </td>
                         </tr>
                       ) : (
-                        certSelecionado.pontos.map((p) => (
+                        certSelecionado.pontos.map((p, idx) => (
                           <tr key={p.id}>
-                            <td style={td}>{p.ordem}</td>
+                            <td style={td}>{idx + 1}</td>
                             <td style={td}>{p.grandeza ?? "—"}</td>
                             <td style={td}>{p.valorNominal ?? "—"}</td>
                             <td style={td}>{p.valorConvencional ?? "—"}</td>
                             <td style={td}>{p.indicacao ?? "—"}</td>
-                            <td style={td}>{p.correcao ?? "—"}</td>
+                            <td style={td}>
+                              {p.correcao != null
+                                ? fmtCorrecao(p.correcao)
+                                : p.valorConvencional != null && p.indicacao != null
+                                  ? `${fmtCorrecao(Number((p.valorConvencional - p.indicacao).toFixed(6)))} (calculada)`
+                                  : "—"}
+                            </td>
                             <td style={td}>
                               <strong>{p.incertezaExpandida}</strong>
-                              {p.fatorK != null ? ` (k=${p.fatorK})` : ""}
+                              {` (k=${p.fatorK ?? certSelecionado.fatorAbrangencia ?? "não informado"}`}
+                              {p.fatorK == null && certSelecionado.fatorAbrangencia != null ? ", herdado" : ""}
+                              {` · p=${textoProb(p.probabilidadeAbrangencia ?? certSelecionado.probabilidadeAbrangencia)})`}
                             </td>
                             <td style={td}>{p.unidade}</td>
                           </tr>
@@ -435,36 +667,65 @@ export default function InstrumentoDetailPage() {
           </div>
 
           <Surface>
-            <div style={{ fontWeight: 700, marginBottom: 12 }}>Novo certificado de calibração do padrão</div>
-            <form onSubmit={(e) => void onAddCert(e)} style={{ display: "grid", gap: 14 }}>
+            <div style={{ fontWeight: 700, marginBottom: 12 }}>
+              {modo.tipo === "editar"
+                ? `Editar certificado ${modo.cert?.numero ?? ""}`
+                : modo.tipo === "revisao"
+                  ? `Revisão do certificado ${modo.cert?.numero ?? ""}`
+                  : "Novo certificado de calibração do padrão"}
+            </div>
+            {modo.tipo !== "novo" && (
+              <div role="status" style={{ fontSize: 13, marginBottom: 10 }}>
+                {modo.tipo === "revisao"
+                  ? "Certificado usado em laudos emitidos; cadastre uma revisão. Os laudos emitidos continuam com o certificado e o PDF originais."
+                  : "Certificado ainda não usado em laudo final: a edição é gravada no próprio cadastro e auditada."}{" "}
+                <Btn variant="ghost" size="sm" type="button" onClick={() => abrirFormulario("novo")}>
+                  Cancelar
+                </Btn>
+              </div>
+            )}
+            <form key={formKey} onSubmit={(e) => void onAddCert(e)} style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                 <div>
                   <FieldLabel>Nº certificado</FieldLabel>
-                  <input name="numero" required style={fieldStyle} />
+                  <input name="numero" required defaultValue={modo.cert?.numero ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Emissão</FieldLabel>
-                  <input name="dataEmissao" type="date" required style={fieldStyle} />
+                  <input name="dataEmissao" type="date" required defaultValue={modo.cert?.dataEmissao?.slice(0, 10) ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Validade</FieldLabel>
-                  <input name="dataValidade" type="date" required style={fieldStyle} />
+                  <input name="dataValidade" type="date" required defaultValue={modo.cert?.dataValidade?.slice(0, 10) ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Laboratório</FieldLabel>
-                  <input name="laboratorioEmissor" placeholder="Lab emissor" style={fieldStyle} />
+                  <input name="laboratorioEmissor" placeholder="Lab emissor" defaultValue={modo.cert?.laboratorioEmissor ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Acreditação (RBC)</FieldLabel>
-                  <input name="laboratorioAcreditacao" placeholder="CRL-XXXX" style={fieldStyle} />
+                  <input name="laboratorioAcreditacao" placeholder="CRL-XXXX" defaultValue={modo.cert?.laboratorioAcreditacao ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>k (abrangência)</FieldLabel>
-                  <input name="fatorAbrangencia" type="number" step="0.1" defaultValue={2} style={fieldStyle} />
+                  <input name="fatorAbrangencia" type="number" step="any" min="0" placeholder="ex.: 2" defaultValue={modo.cert?.fatorAbrangencia ?? ""} style={fieldStyle} />
+                </div>
+                <div>
+                  <FieldLabel>Probabilidade de abrangência (%)</FieldLabel>
+                  <input
+                    name="probabilidadeAbrangencia"
+                    type="number"
+                    step="any"
+                    min="0"
+                    max="100"
+                    placeholder="não informada (ex.: 95,45)"
+                    defaultValue={modo.cert?.probabilidadeAbrangencia ?? ""}
+                    style={fieldStyle}
+                  />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <FieldLabel>Observações</FieldLabel>
-                  <input name="observacoes" style={fieldStyle} />
+                  <input name="observacoes" defaultValue={modo.cert?.observacoes ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>PDF do certificado</FieldLabel>
@@ -495,9 +756,9 @@ export default function InstrumentoDetailPage() {
                       key={idx}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1.2fr 0.7fr repeat(4, 1fr) 0.6fr auto",
+                        gridTemplateColumns: "1.2fr 0.7fr repeat(5, 1fr) 0.6fr 0.8fr auto",
                         gap: 6,
-                        alignItems: "end",
+                        alignItems: "start",
                       }}
                     >
                       <div>
@@ -571,6 +832,25 @@ export default function InstrumentoDetailPage() {
                         />
                       </div>
                       <div>
+                        {idx === 0 && <FieldLabel>Correção</FieldLabel>}
+                        <input
+                          type="number"
+                          step="any"
+                          value={p.correcao}
+                          placeholder="opcional"
+                          aria-describedby={
+                            p.correcao.trim() === "" && correcaoCalculada(p) != null ? `correcao-calc-${idx}` : undefined
+                          }
+                          aria-label={`Ponto ${idx + 1}: correção (vazio = convencional − indicação)`}
+                          onChange={(e) =>
+                            setPontos((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, correcao: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      </div>
+                      <div>
                         {idx === 0 && <FieldLabel>U</FieldLabel>}
                         <input
                           type="number"
@@ -593,6 +873,9 @@ export default function InstrumentoDetailPage() {
                           type="number"
                           step="any"
                           value={p.fatorK}
+                          placeholder="herda do certificado"
+                          title="Vazio = herda do certificado"
+                          aria-label={`Ponto ${idx + 1}: k (vazio herda do certificado)`}
                           onChange={(e) =>
                             setPontos((prev) =>
                               prev.map((x, i) => (i === idx ? { ...x, fatorK: e.target.value } : x)),
@@ -601,20 +884,59 @@ export default function InstrumentoDetailPage() {
                           style={fieldStyle}
                         />
                       </div>
-                      <Btn
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setPontos((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))}
-                      >
-                        ✕
-                      </Btn>
+                      <div>
+                        {idx === 0 && <FieldLabel>Prob. (%)</FieldLabel>}
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          value={p.probabilidadeAbrangencia}
+                          placeholder="herda do certificado"
+                          title="Vazio = herda do certificado"
+                          aria-label={`Ponto ${idx + 1}: probabilidade de abrangência em % (vazio herda do certificado)`}
+                          onChange={(e) =>
+                            setPontos((prev) =>
+                              prev.map((x, i) =>
+                                i === idx ? { ...x, probabilidadeAbrangencia: e.target.value } : x,
+                              ),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      </div>
+                      <div style={{ alignSelf: "end" }}>
+                        <Btn
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setPontos((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))}
+                        >
+                          ✕
+                        </Btn>
+                      </div>
+                      {p.correcao.trim() === "" && correcaoCalculada(p) != null && (
+                        <div
+                          id={`correcao-calc-${idx}`}
+                          style={{
+                            gridColumn: "1 / -1",
+                            fontSize: 12,
+                            marginTop: -2,
+                            whiteSpace: "nowrap",
+                            color: "var(--aion-muted)",
+                          }}
+                        >
+                          Calculada: {fmtCorrecao(correcaoCalculada(p)!)} (convencional − indicação)
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <Btn type="submit">Salvar certificado vigente</Btn>
+              <Btn type="submit">
+                {modo.tipo === "editar" ? "Salvar alterações" : modo.tipo === "revisao" ? "Cadastrar revisão" : "Salvar certificado vigente"}
+              </Btn>
             </form>
           </Surface>
         </>

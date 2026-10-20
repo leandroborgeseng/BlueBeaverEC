@@ -193,6 +193,13 @@ export class LaudosController {
     });
   }
 
+  /** B17: rascunho passa a usar a revisão vigente do certificado do padrão (recalcula). */
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":id/atualizar-padrao")
+  atualizarPadrao(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.laudos.atualizarPadraoRascunho(user, id);
+  }
+
   @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
   @Post(":id/finalizar")
   finalizar(@CurrentUser() user: AuthUser, @Param("id") id: string) {

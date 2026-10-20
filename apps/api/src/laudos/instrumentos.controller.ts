@@ -63,6 +63,11 @@ class PontoDto {
   @IsNumber()
   fatorK?: number;
 
+  /** % (0 < p < 100); vazio = herda do certificado */
+  @IsOptional()
+  @IsNumber()
+  probabilidadeAbrangencia?: number;
+
   @IsOptional()
   @IsString()
   observacao?: string;
@@ -184,7 +189,7 @@ class UpdateInstrumentoDto {
   ativo?: boolean;
 }
 
-class CreateCertificadoDto {
+export class CreateCertificadoDto {
   @IsString()
   @MinLength(1)
   numero!: string;
@@ -206,6 +211,11 @@ class CreateCertificadoDto {
   @IsOptional()
   @IsNumber()
   fatorAbrangencia?: number;
+
+  /** % (0 < p < 100); vazio = não informada */
+  @IsOptional()
+  @IsNumber()
+  probabilidadeAbrangencia?: number;
 
   @IsOptional()
   @IsString()
@@ -269,6 +279,24 @@ export class InstrumentosController {
     return this.instrumentos.salvarPreferenciais(user, body.itens ?? []);
   }
 
+  /** Certificados de padrão vencidos / a vencer (janela configurável; padrão 60 dias). */
+  @Get("alertas")
+  alertas(@CurrentUser() user: AuthUser, @Query("dias") dias?: string) {
+    return this.instrumentos.alertas(user.estabelecimentoId, dias ? Number(dias) : undefined);
+  }
+
+  /** Padrão sugerido para o laudo pelo tipo de analisador. */
+  @Get("sugestao")
+  sugestao(
+    @CurrentUser() user: AuthUser,
+    @Query("tipo") tipo?: string,
+    @Query("tipoLaudo") tipoLaudo?: string,
+    @Query("nomes") nomes?: string | string[],
+  ) {
+    const lista = (Array.isArray(nomes) ? nomes : nomes ? [nomes] : []).map((n) => n.trim()).filter(Boolean);
+    return this.instrumentos.sugestao(user.estabelecimentoId, tipo, { tipoLaudo, nomesEquipamento: lista });
+  }
+
   @Get(":id")
   get(@CurrentUser() user: AuthUser, @Param("id") id: string) {
     return this.instrumentos.get(user.estabelecimentoId, id);
@@ -298,6 +326,30 @@ export class InstrumentosController {
     @Body() body: CreateCertificadoDto,
   ) {
     return this.instrumentos.addCertificado(user, id, body);
+  }
+
+  /** Edição: sem uso em laudo final grava no lugar; usado → só observações (senão 409). Não existe DELETE. */
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Patch(":id/certificados/:certId")
+  updateCertificado(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Param("certId") certId: string,
+    @Body() body: CreateCertificadoDto,
+  ) {
+    return this.instrumentos.updateCertificado(user, id, certId, body);
+  }
+
+  /** Revisão explícita de certificado (o anterior deixa de ser vigente; laudos emitidos ficam intactos). */
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":id/certificados/:certId/revisoes")
+  criarRevisao(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Param("certId") certId: string,
+    @Body() body: CreateCertificadoDto,
+  ) {
+    return this.instrumentos.criarRevisao(user, id, certId, body);
   }
 
   @Get(":id/certificados/:certId/pdf")
