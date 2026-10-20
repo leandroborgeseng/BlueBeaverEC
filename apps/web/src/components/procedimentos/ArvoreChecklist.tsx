@@ -158,6 +158,8 @@ export function ArvoreChecklist({
                 paddingLeft: 8 + (v.nivel - 1) * 20,
                 borderBottom: "1px solid oklch(0.92 0.005 250)",
                 background: selecionado === n.id ? "oklch(0.95 0.03 255)" : "white",
+                // indicador não-cromático (≥ 3:1): barra de 3px na cor da marca + título em 600
+                borderLeft: selecionado === n.id ? "3px solid var(--aion-brand)" : "3px solid transparent",
                 outlineColor: FOCO,
                 color: TEXTO,
               }}
@@ -177,7 +179,7 @@ export function ArvoreChecklist({
               )}
               <span
                 onClick={() => onSelecionar(n.id)}
-                style={{ flex: 1, cursor: "pointer", padding: "10px 0", fontWeight: ehSecao ? 700 : 500, overflowWrap: "anywhere" }}
+                style={{ flex: 1, cursor: "pointer", padding: "10px 0", fontWeight: ehSecao ? 700 : selecionado === n.id ? 600 : 500, overflowWrap: "anywhere" }}
               >
                 {v.numero} {n.titulo}
                 {ehSecao && fechados.has(n.id) ? ` (${n.filhos?.length ?? 0} itens)` : ""}
