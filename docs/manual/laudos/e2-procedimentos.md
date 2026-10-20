@@ -60,6 +60,8 @@
 
 ![Tela: rascunho de laudo com aviso de procedimento inativo](img/e2-laudo-procedimento-inativo.png)
 
+<!-- TODO Designer UX: reativação (botão "Reativar" em procedimento inativo, com confirmação). -->
+
 ## 8. Planos e modelos
 
 <!-- TODO Analista: só procedimento publicado é vinculado a modelos e planos; o plano passa a apontar o procedimento (antigos continuam pelo código). -->

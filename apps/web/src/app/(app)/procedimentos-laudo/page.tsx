@@ -165,6 +165,11 @@ export default function ProcedimentosPage() {
                       Inativar
                     </button>
                   )}
+                  {podeAprovar && !p.ativo && (
+                    <button type="button" style={botao()} onClick={() => window.confirm(`Reativar ${p.rotulo}? O procedimento volta a emitir laudos novos com a versão publicada.`) && void acao(`/procedimentos-laudo/${p.id}/reativar`)}>
+                      Reativar
+                    </button>
+                  )}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8 }}>
                   <span style={{ fontSize: 13, flex: "1 1 260px" }}>

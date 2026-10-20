@@ -155,6 +155,12 @@ export class ProcedimentosController {
     return this.procedimentos.inativar(user, id);
   }
 
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)
+  @Post(":id/reativar")
+  reativar(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.procedimentos.reativar(user, id);
+  }
+
   /** Q7 — depreciada: só leitura; some na E3. */
   @Get(":id/itens")
   @Header("Deprecation", "true")

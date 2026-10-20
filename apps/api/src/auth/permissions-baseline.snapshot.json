@@ -3990,6 +3990,21 @@
     }
   },
   {
+    "route": "/procedimentos-laudo/:id/reativar",
+    "method": "POST",
+    "handler": "ProcedimentosController.reativar",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
     "route": "/procedimentos-laudo/:id/versoes",
     "method": "GET",
     "handler": "ProcedimentosController.versoes",

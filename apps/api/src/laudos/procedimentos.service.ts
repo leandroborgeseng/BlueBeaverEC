@@ -32,7 +32,7 @@ export const MSG_ROTA_DEPRECIADA =
   "Rota depreciada (E2): itens do procedimento agora são editados no rascunho da versão (PATCH /procedimentos-laudo/:id/versoes/:vid). Será removida na E3.";
 export const MSG_SO_RASCUNHO = "Versão publicada é imutável; abra um novo rascunho para editar";
 export const MSG_CONFLITO_RASCUNHO = "O rascunho foi alterado por outra pessoa; recarregue antes de salvar";
-export const MSG_SEM_PERMISSAO_PUBLICAR = "Publicar procedimento exige a permissão especial procedimento.publicar";
+export const MSG_SEM_PERMISSAO_PUBLICAR = "Publicar exige a permissão Publicar procedimentos. Peça a um administrador.";
 
 export type CreateProcedimentoInput = {
   nome?: string;
@@ -443,6 +443,24 @@ export class ProcedimentosService {
         usuarioId: user.userId,
         acao: "PROCEDIMENTO_INATIVADO",
         detalhe: JSON.stringify({ estabelecimentoId: user.estabelecimentoId, procedimentoId: proc.id, laudos }),
+      },
+    });
+    return updated;
+  }
+
+  /** Reverso do inativar (decisão TL 20/10): mesma permissão, auditado; já ativo → 409. */
+  async reativar(user: AuthUser, id: string) {
+    if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
+      throw new ForbiddenException("Reativar procedimento exige aprovação em Laudos");
+    }
+    const proc = await this.findOwned(user.estabelecimentoId, id);
+    if (proc.ativo) throw new ConflictException("Procedimento já está ativo");
+    const updated = await this.prisma.procedimentoLaudo.update({ where: { id: proc.id }, data: { ativo: true } });
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "PROCEDIMENTO_REATIVADO",
+        detalhe: JSON.stringify({ estabelecimentoId: user.estabelecimentoId, procedimentoId: proc.id }),
       },
     });
     return updated;

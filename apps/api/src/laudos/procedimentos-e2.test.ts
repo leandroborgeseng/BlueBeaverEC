@@ -225,7 +225,7 @@ describe("Q1 — permissão especial procedimento.publicar", () => {
   it("sem a permissão → 403 (mesmo com EDIÇÃO_APROVAÇÃO); ADMIN sem atribuição também não publica", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-P", tituloLaudo: "Permissão", tipo: "CALIBRACAO" as any, tipoDocumento: "LAUDO" as any });
-    await assert.rejects(svc.publicar(semPublicar, proc.id, proc.rascunho.id, {}), (e: any) => e instanceof ForbiddenException && e.message === MSG_SEM_PERMISSAO_PUBLICAR);
+    await assert.rejects(svc.publicar(semPublicar, proc.id, proc.rascunho.id, {}), (e: any) => e instanceof ForbiddenException && e.message === MSG_SEM_PERMISSAO_PUBLICAR && e.message === "Publicar exige a permissão Publicar procedimentos. Peça a um administrador.");
     await assert.rejects(svc.publicar(user({ permissoesEspeciais: [] }), proc.id, proc.rascunho.id, {}), ForbiddenException);
   });
   it("só ADMIN concede; concede a qualquer usuário; normaliza e audita; personificação não concede", async () => {
@@ -339,6 +339,35 @@ describe("crit. 11 — sem exclusão; só inativar", () => {
     assert.equal(p.t.procedimentoLaudo.find((x: any) => x.id === proc.id).ativo, false);
     assert.equal(JSON.parse(p.t.logAcesso.at(-1).detalhe).laudos, 1);
     await assert.rejects(laudos.create(user(), { tipo: "CALIBRACAO" as any, equipamentoTag: "T-1", procedimentoId: proc.id, responsavelTecnicoId: "rt1" }), (e: any) => /inativo/.test(e.message));
+  });
+});
+
+describe("decisão TL 20/10 — reativar", () => {
+  it("reativa inativo, audita PROCEDIMENTO_REATIVADO e libera laudo novo; já ativo → 409", async () => {
+    const { p, svc, laudos } = mundo();
+    const { proc } = await publicado(svc);
+    await svc.inativar(user(), proc.id);
+    assert.equal(p.t.logAcesso.at(-1).acao, "PROCEDIMENTO_INATIVADO");
+    await svc.reativar(user(), proc.id);
+    assert.equal(p.t.procedimentoLaudo.find((x: any) => x.id === proc.id).ativo, true);
+    const log = p.t.logAcesso.at(-1);
+    assert.equal(log.acao, "PROCEDIMENTO_REATIVADO");
+    assert.equal(log.usuarioId, "u-rt");
+    assert.equal(JSON.parse(log.detalhe).procedimentoId, proc.id);
+    const l = await laudos.create(user(), { tipo: "RECEBIMENTO" as any, equipamentoTag: "T-1", procedimentoId: proc.id });
+    assert.ok(l?.id);
+    await assert.rejects(svc.reativar(user(), proc.id), (e: any) => e.getStatus() === 409 && e.message === "Procedimento já está ativo");
+  });
+  it("perfil sem aprovação em Laudos não reativa (403) e o controller exige EDICAO_APROVACAO", async () => {
+    const { p, svc } = mundo();
+    const { proc } = await publicado(svc);
+    await svc.inativar(user(), proc.id);
+    const tecnico = user({ userId: "u-tec", perfil: "TECNICO", permissoesModulos: permissoesDoPerfil("TECNICO") });
+    await assert.rejects(svc.reativar(tecnico, proc.id), (e: any) => e.getStatus() === 403);
+    assert.equal(p.t.procedimentoLaudo.find((x: any) => x.id === proc.id).ativo, false);
+    const meta = Reflect.getMetadataKeys(ProcedimentosController.prototype.reativar)
+      .map((k) => Reflect.getMetadata(k, ProcedimentosController.prototype.reativar));
+    assert.ok(JSON.stringify(meta).includes("EDICAO_APROVACAO") || JSON.stringify(meta).includes('"laudos"'));
   });
 });
 
