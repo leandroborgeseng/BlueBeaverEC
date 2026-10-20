@@ -79,7 +79,7 @@ export const cardStyle: CSSProperties = {
 
 export const fieldStyle: CSSProperties = {
   width: "100%",
-  border: "1px solid var(--aion-border)",
+  border: "1px solid var(--aion-border-control)",
   borderRadius: 12,
   padding: "12px 14px",
   background: "white",

@@ -354,7 +354,7 @@ export function Btn({
 
 export const fieldStyle: CSSProperties = {
   width: "100%",
-  border: "1px solid oklch(0.88 0.01 250)",
+  border: "1px solid var(--aion-border-control)",
   borderRadius: 8,
   padding: "8px 10px",
   fontSize: 13,

@@ -346,7 +346,7 @@ export default function ExecucaoOsPage() {
                   flex: 1,
                   padding: 8,
                   borderRadius: 8,
-                  border: step === s.id ? "2px solid var(--aion-primary)" : "1px solid var(--aion-border)",
+                  border: step === s.id ? "2px solid var(--aion-primary)" : "1px solid var(--aion-border-control)",
                   background: step === s.id ? "oklch(0.97 0.02 55)" : "white",
                   fontWeight: 700,
                   fontSize: 12,
