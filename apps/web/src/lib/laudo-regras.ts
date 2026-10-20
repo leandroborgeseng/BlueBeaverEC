@@ -88,6 +88,7 @@ export type PontoPadraoCert = {
   id?: string;
   valorNominal?: number | null;
   valorConvencional?: number | null;
+  indicacao?: number | null;
   correcao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
@@ -131,6 +132,19 @@ export function pontoComHeranca<T extends PontoPadraoCert>(
 }
 
 /**
+ * Correção do ponto do certificado: a informada; senão convencional − indicação; senão null
+ * (nunca presume 0 — sem correção, a finalização do laudo é bloqueada).
+ */
+export function correcaoDoPonto(p: PontoPadraoCert | null | undefined): number | null {
+  if (!p) return null;
+  const c = numOuNull(p.correcao);
+  if (c != null) return c;
+  const conv = numOuNull(p.valorConvencional);
+  const ind = numOuNull(p.indicacao);
+  return conv != null && ind != null ? Number((conv - ind).toFixed(6)) : null;
+}
+
+/**
  * Bloqueios metrológicos do certificado do padrão usado no laudo (borda B16 e U > 0):
  * k ausente (após herança) ou U ≤ 0 impedem finalizar — nunca calcula com k presumido nem u_cal = 0.
  */
@@ -141,6 +155,7 @@ export function bloqueiosMetrologicosPadrao(pontos: PontoPadraoCert[] | null | u
     if (k == null || !(k > 0)) erros.push(`Ponto ${i + 1}: k não informado no certificado do padrão`);
     const u = numOuNull(p.incertezaExpandida);
     if (u == null || !(u > 0)) erros.push(`Ponto ${i + 1}: U deve ser maior que zero`);
+    if (correcaoDoPonto(p) == null) erros.push(`Ponto ${i + 1}: correção não informada no certificado do padrão`);
   });
   return erros;
 }
@@ -285,7 +300,8 @@ export function avaliarPontoCalibracao(args: {
   const padrao = item?.valorPadrao ?? r.valorConfigurado ?? r.valorReferencia ?? null;
   const media = mediaLeituras(r.leituras) ?? (r.valorMedido != null ? Number(r.valorMedido) : null);
   const ponto = padrao != null ? pontoPadraoMaisProximo(padrao, args.pontosCertificado) : null;
-  const correcao = ponto?.correcao != null ? Number(ponto.correcao) : 0;
+  // sem correção a finalização é bloqueada (bloqueiosMetrologicosPadrao); 0 aqui só para a prévia
+  const correcao = correcaoDoPonto(ponto) ?? 0;
   const avaliado = avaliarMedicao({
     valorMedido: media,
     valorReferencia: padrao,

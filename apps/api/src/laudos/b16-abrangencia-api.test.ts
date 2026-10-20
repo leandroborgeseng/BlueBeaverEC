@@ -19,11 +19,11 @@ const B16 = "Ponto 1: k não informado no certificado do padrão";
 
 describe("B16 — k não informado no certificado do padrão", () => {
   it("regra pura: k ausente após herança bloqueia com a mensagem exata", () => {
-    assert.deepEqual(bloqueiosMetrologicosPadrao([{ incertezaExpandida: 0.1, fatorK: null }]), [B16]);
-    assert.deepEqual(bloqueiosMetrologicosPadrao([{ incertezaExpandida: 0.1, fatorK: 2 }]), []);
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ correcao: 0, incertezaExpandida: 0.1, fatorK: null }]), [B16]);
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ correcao: 0, incertezaExpandida: 0.1, fatorK: 2 }]), []);
   });
   it("U ≤ 0 (certificado antigo) bloqueia — nunca u_cal = 0", () => {
-    assert.deepEqual(bloqueiosMetrologicosPadrao([{ incertezaExpandida: 0.1, fatorK: 2 }, { incertezaExpandida: 0, fatorK: 2 }]), [
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ correcao: 0, incertezaExpandida: 0.1, fatorK: 2 }, { correcao: 0, incertezaExpandida: 0, fatorK: 2 }]), [
       "Ponto 2: U deve ser maior que zero",
     ]);
   });
@@ -53,6 +53,33 @@ describe("B16 — k não informado no certificado do padrão", () => {
     const { svc, atualizou } = laudosCom([{ valorNominal: 10, incertezaExpandida: 0, fatorK: 2 }]);
     await assert.rejects(svc.finalizar(rt, "l1"), (e: any) => e instanceof BadRequestException && /Ponto 1: U deve ser maior que zero/.test(e.message));
     assert.equal(atualizou(), false);
+  });
+});
+
+describe("E1 crit.2 (QA) — correção ausente bloqueia a finalização", () => {
+  const MSG = "Ponto 1: correção não informada no certificado do padrão";
+  it("regra pura: sem correção e sem convencional/indicação → bloqueio; calculável ou informada → ok", () => {
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ incertezaExpandida: 0.1, fatorK: 2 }]), [MSG]);
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ valorConvencional: 10, incertezaExpandida: 0.1, fatorK: 2 }]), [MSG]);
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ valorConvencional: 10, indicacao: 9.9, incertezaExpandida: 0.1, fatorK: 2 }]), []);
+    assert.deepEqual(bloqueiosMetrologicosPadrao([{ correcao: 0, incertezaExpandida: 0.1, fatorK: 2 }]), []);
+  });
+  it("finalizar laudo com ponto sem correção → 400 com a mensagem, sem gravar (nunca presume 0)", async () => {
+    let atualizou = false;
+    const prisma: any = {
+      laudo: {
+        findFirst: async () => ({
+          id: "l1", tipo: "CALIBRACAO", statusDocumento: "RASCUNHO", respostas: [],
+          instrumentoSnapshot: { nome: "ESA", certificado: { numero: "C-OLD", pontos: [{ valorNominal: 10, incertezaExpandida: 0.1, fatorK: 2 }] } },
+          procedimentoSnapshot: null, procedimento: null, planoTeste: null, equipamento: {},
+        }),
+        update: async () => { atualizou = true; return {}; },
+      },
+    };
+    const svc = new LaudosService(prisma, {} as any, {} as any);
+    const rt = { userId: "u1", estabelecimentoId: "e1", email: "rt@aion.local", perfil: "ADMIN", permissoesModulos: { laudos: 3 } } as any;
+    await assert.rejects(svc.finalizar(rt, "l1"), (e: any) => e instanceof BadRequestException && e.getStatus() === 400 && e.message.includes(MSG));
+    assert.equal(atualizou, false);
   });
 });
 

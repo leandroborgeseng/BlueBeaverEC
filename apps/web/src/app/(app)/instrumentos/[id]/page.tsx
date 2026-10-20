@@ -79,6 +79,8 @@ type PontoDraft = {
   valorNominal: string;
   valorConvencional: string;
   indicacao: string;
+  /** vazio = API calcula convencional − indicação */
+  correcao: string;
   incertezaExpandida: string;
   fatorK: string;
   probabilidadeAbrangencia: string;
@@ -90,6 +92,7 @@ const emptyPonto = (): PontoDraft => ({
   valorNominal: "",
   valorConvencional: "",
   indicacao: "",
+  correcao: "",
   incertezaExpandida: "",
   fatorK: "",
   probabilidadeAbrangencia: "",
@@ -97,6 +100,13 @@ const emptyPonto = (): PontoDraft => ({
 
 function textoProb(p: number | null | undefined): string {
   return p == null ? "não informada" : `${p.toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
+}
+
+/** Correção calculada (convencional − indicação) para exibir como dica quando o campo está vazio. */
+function correcaoCalculada(p: PontoDraft): number | undefined {
+  const conv = numOrUndef(p.valorConvencional);
+  const ind = numOrUndef(p.indicacao);
+  return conv != null && ind != null ? Number((conv - ind).toFixed(6)) : undefined;
 }
 
 function numOrUndef(s: string): number | undefined {
@@ -178,6 +188,7 @@ export default function InstrumentoDetailPage() {
             valorNominal: p.valorNominal != null ? String(p.valorNominal) : "",
             valorConvencional: p.valorConvencional != null ? String(p.valorConvencional) : "",
             indicacao: p.indicacao != null ? String(p.indicacao) : "",
+            correcao: p.correcao != null ? String(p.correcao) : "",
             incertezaExpandida: String(p.incertezaExpandida),
             fatorK: p.fatorK != null ? String(p.fatorK) : "",
             probabilidadeAbrangencia: p.probabilidadeAbrangencia != null ? String(p.probabilidadeAbrangencia) : "",
@@ -260,6 +271,8 @@ export default function InstrumentoDetailPage() {
         valorNominal: numOrUndef(p.valorNominal),
         valorConvencional: numOrUndef(p.valorConvencional),
         indicacao: numOrUndef(p.indicacao),
+        // informada tem prioridade; vazia = API calcula convencional − indicação
+        correcao: numOrUndef(p.correcao),
         incertezaExpandida: numOrUndef(p.incertezaExpandida),
         // vazio = herda do certificado (não injeta 2)
         fatorK: numOrUndef(p.fatorK),
@@ -623,7 +636,13 @@ export default function InstrumentoDetailPage() {
                             <td style={td}>{p.valorNominal ?? "—"}</td>
                             <td style={td}>{p.valorConvencional ?? "—"}</td>
                             <td style={td}>{p.indicacao ?? "—"}</td>
-                            <td style={td}>{p.correcao ?? "—"}</td>
+                            <td style={td}>
+                              {p.correcao != null
+                                ? p.correcao
+                                : p.valorConvencional != null && p.indicacao != null
+                                  ? `${Number((p.valorConvencional - p.indicacao).toFixed(6))} (calculada)`
+                                  : "—"}
+                            </td>
                             <td style={td}>
                               <strong>{p.incertezaExpandida}</strong>
                               {` (k=${p.fatorK ?? certSelecionado.fatorAbrangencia ?? "não informado"}`}
@@ -731,7 +750,7 @@ export default function InstrumentoDetailPage() {
                       key={idx}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1.2fr 0.7fr repeat(4, 1fr) 0.6fr 0.8fr auto",
+                        gridTemplateColumns: "1.2fr 0.7fr repeat(5, 1fr) 0.6fr 0.8fr auto",
                         gap: 6,
                         alignItems: "end",
                       }}
@@ -801,6 +820,26 @@ export default function InstrumentoDetailPage() {
                           onChange={(e) =>
                             setPontos((prev) =>
                               prev.map((x, i) => (i === idx ? { ...x, indicacao: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      </div>
+                      <div>
+                        {idx === 0 && <FieldLabel>Correção</FieldLabel>}
+                        <input
+                          type="number"
+                          step="any"
+                          value={p.correcao}
+                          placeholder={
+                            correcaoCalculada(p) != null
+                              ? `calculada: ${correcaoCalculada(p)!.toLocaleString("pt-BR", { maximumFractionDigits: 6 })}`
+                              : "opcional"
+                          }
+                          aria-label={`Ponto ${idx + 1}: correção (vazio = convencional − indicação)`}
+                          onChange={(e) =>
+                            setPontos((prev) =>
+                              prev.map((x, i) => (i === idx ? { ...x, correcao: e.target.value } : x)),
                             )
                           }
                           style={fieldStyle}

@@ -3,7 +3,9 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { BadRequestException, ConflictException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ValidationPipe } from "@nestjs/common";
+import { CreateCertificadoDto, InstrumentosController } from "./instrumentos.controller";
+import "reflect-metadata";
 import { InstrumentosService } from "./instrumentos.service";
 
 type Row = Record<string, any>;
@@ -299,5 +301,35 @@ describe("Decisão TL E1 #3 — sugestão no laudo pela API", () => {
     assert.equal(b.instrumentoId, "s");
     const c = await svc(p).sugestao("e1", undefined, { tipoLaudo: "CALIBRACAO", nomesEquipamento: ["Monitor"] });
     assert.equal(c.instrumentoId, null);
+  });
+});
+
+describe("E1 crit.2 (QA) — Correção por ponto: ida e volta pela API", () => {
+  const pipe = new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true });
+  const montar = () => {
+    const p = fakePrisma({ instrumentos: [{ id: "a", estabelecimentoId: "e1", nome: "ESA612", nSerie: "1", ativo: true, ...COMPLETO }] });
+    const ctrl = new InstrumentosController(new InstrumentosService(p as any));
+    const post = async (pontos: Row[]) =>
+      ctrl.addCertificado(admin, "a", await pipe.transform(
+        { numero: "C-QA", dataEmissao: "2026-01-02", dataValidade: "2027-01-02", fatorAbrangencia: 2, pontos },
+        { type: "body", metatype: CreateCertificadoDto },
+      ));
+    const lerPontos = async () => (await ctrl.get(admin, "a")).certificados.find((c: Row) => c.numero === "C-QA").pontos;
+    return { post, lerPontos };
+  };
+  it("correção informada (-0,1) tem prioridade sobre convencional − indicação e volta na leitura", async () => {
+    const { post, lerPontos } = montar();
+    await post([{ unidade: "V", valorNominal: 230, valorConvencional: 230, indicacao: 229.5, correcao: -0.1, incertezaExpandida: 0.5 }]);
+    assert.equal((await lerPontos())[0].correcao, -0.1);
+  });
+  it("sem correção, com convencional e indicação → API calcula convencional − indicação", async () => {
+    const { post, lerPontos } = montar();
+    await post([{ unidade: "V", valorNominal: 230, valorConvencional: 230.2, indicacao: 230, incertezaExpandida: 0.5 }]);
+    assert.equal((await lerPontos())[0].correcao, 0.2);
+  });
+  it("sem correção e sem como calcular → grava null (finalização do laudo bloqueia)", async () => {
+    const { post, lerPontos } = montar();
+    await post([{ unidade: "V", valorNominal: 230, incertezaExpandida: 0.5 }]);
+    assert.equal((await lerPontos())[0].correcao, null);
   });
 });

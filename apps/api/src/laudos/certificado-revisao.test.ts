@@ -205,6 +205,18 @@ describe("(2) revisão explícita — POST .../certificados/:certId/revisoes", (
   });
 });
 
+describe("E1 crit.2 (QA) — revisão preserva a Correção do ponto", () => {
+  it("revisão com a correção copiada do certificado anterior (-0,1) grava e devolve -0,1", async () => {
+    const p = mundo({ usado: true });
+    const s = new InstrumentosService(p as any);
+    const anterior = p.db.certificados[0].pontos[0].correcao;
+    const rev = await s.criarRevisao(rt, "a", "c1", body({ pontos: [{ unidade: "V", valorNominal: 230, correcao: anterior, incertezaExpandida: 0.4 }] }));
+    const salvo = p.db.certificados.find((c: Row) => c.id === rev.id);
+    assert.equal(salvo.pontos[0].correcao, -0.1);
+    assert.equal(p.db.certificados.find((c: Row) => c.id === "c1").pontos[0].correcao, -0.1, "anterior intacto");
+  });
+});
+
 describe("(3) laudo novo, sugestão e lista usam a revisão", () => {
   it("snapshot de laudo novo pega a revisão (o substituído fica fora)", async () => {
     const p = mundo({ usado: true });
