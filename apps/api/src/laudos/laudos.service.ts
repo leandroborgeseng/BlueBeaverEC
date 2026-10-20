@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrioridadeOS, ResultadoLaudo, StatusDocumentoLaudo, TipoLaudo, TipoOS } from "@prisma/client";
-import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
+import { PERMISSAO_NIVEL, temPermissao, tituloDocumentoEmitido, type CertificadoCfg } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { OsService } from "../os/os.service";
 import { ContratosService } from "../contratos/contratos.service";
@@ -121,13 +121,14 @@ export class LaudosService {
           where: { id: data.procedimentoId, estabelecimentoId: user.estabelecimentoId },
         })
       : null;
+    const versaoProc = procedimento ? await this.versaoParaLaudo(procedimento) : null;
 
     const dataExecucao = new Date();
     const instrumentoSnap = data.instrumentoId
       ? await this.montarInstrumentoSnapshot(user.estabelecimentoId, data.instrumentoId, dataExecucao, true)
       : null;
 
-    const modeloItens = (procedimento?.itens as ItemChecklistModelo[] | undefined) ?? [];
+    const modeloItens = ((versaoProc?.itens ?? procedimento?.itens) as ItemChecklistModelo[] | undefined) ?? [];
     const respostas = this.avaliarRespostas(data.tipo, data.respostas ?? [], modeloItens, instrumentoSnap);
     const resultadoCalc = calcularResultadoLaudo(data.tipo, respostas) as ResultadoLaudo;
     const resultado = data.resultado ?? resultadoCalc;
@@ -150,10 +151,29 @@ export class LaudosService {
         : null;
 
     const validadeMeses =
-      data.validadeMeses ?? planoTeste?.periodicidadeMeses ?? procedimento?.validadeMeses ?? 12;
+      data.validadeMeses ?? planoTeste?.periodicidadeMeses ?? versaoProc?.validadeMeses ?? procedimento?.validadeMeses ?? 12;
 
     const numero = await this.nextNumero(user.estabelecimentoId, data.tipo);
-    const procSnap = procedimento
+    // B3/B8/B9: o laudo congela a versão publicada usada (itens, regras, tipo do documento)
+    const procSnap = versaoProc
+      ? {
+          id: procedimento!.id,
+          versaoId: versaoProc.id,
+          codigo: versaoProc.codigo,
+          nome: versaoProc.tituloLaudo ?? versaoProc.nome,
+          tituloLaudo: versaoProc.tituloLaudo,
+          tipo: versaoProc.tipo,
+          tipoDocumento: versaoProc.tipoDocumento,
+          versao: versaoProc.versao,
+          publicadoEm: versaoProc.publicadoEm,
+          validadeMeses: versaoProc.validadeMeses,
+          norma: versaoProc.norma,
+          itens: versaoProc.itens,
+          certificadoCfg: versaoProc.certificadoCfg,
+          criterioReferencia: versaoProc.criterioReferencia,
+          criterioVersao: versaoProc.criterioVersao,
+        }
+      : procedimento
       ? {
           id: procedimento.id,
           nome: procedimento.nome,
@@ -186,7 +206,9 @@ export class LaudosService {
         respostas: respostas as object[],
         metadados: (data.metadados ?? {}) as object,
         statusDocumento: StatusDocumentoLaudo.RASCUNHO,
-        procedimentoVersao: procedimento?.versao ?? null,
+        procedimentoVersao: versaoProc?.versao ?? procedimento?.versao ?? null,
+        procedimentoVersaoId: versaoProc?.id ?? null,
+        tipoDocumento: versaoProc?.tipoDocumento ?? null,
         procedimentoSnapshot: procSnap as object,
         instrumentoSnapshot: instrumentoSnap as object | undefined,
       },
@@ -194,6 +216,21 @@ export class LaudosService {
     });
 
     return laudo;
+  }
+
+  /**
+   * E2: laudo novo usa a versão PUBLICADA do procedimento. Procedimento legado (versões sem status)
+   * mantém o comportamento antigo (null). Procedimento novo só em rascunho, ou inativo, bloqueia.
+   */
+  private async versaoParaLaudo(proc: { id: string; ativo: boolean; versaoPublicadaId: string | null }) {
+    if (!proc.ativo) throw new ConflictException("Procedimento inativo não emite laudos novos");
+    if (proc.versaoPublicadaId) {
+      return this.prisma.procedimentoLaudoVersao.findUnique({ where: { id: proc.versaoPublicadaId } });
+    }
+    const legado = await this.prisma.procedimentoLaudoVersao.count({ where: { procedimentoId: proc.id, status: null } });
+    const rascunho = await this.prisma.procedimentoLaudoVersao.count({ where: { procedimentoId: proc.id, status: { not: null } } });
+    if (!legado && rascunho) throw new ConflictException("Procedimento ainda não publicado; publique uma versão antes de emitir laudos");
+    return null;
   }
 
   async atualizarRascunho(
@@ -698,7 +735,13 @@ export class LaudosService {
       },
     });
     if (!l) throw new NotFoundException("Documento não encontrado");
-    const docTitle = tituloDocumentoTecnico(l.tipo);
+    const legadoTitle = tituloDocumentoTecnico(l.tipo);
+    const emitido = tituloDocumentoEmitido(
+      l.tipoDocumento ?? null,
+      l.tipo,
+      (l.procedimentoSnapshot as { certificadoCfg?: CertificadoCfg } | null)?.certificadoCfg ?? null,
+    );
+    const docTitle = emitido ? { ...legadoTitle, titulo: emitido } : legadoTitle;
     return {
       ...l,
       statusCertificado: this.statusCertificado(l.validadeAte),
@@ -834,6 +877,16 @@ export class LaudosService {
       numero: l.numero,
       tipo: l.tipo,
       statusDocumento: l.statusDocumento,
+      // E2 (B8): tipo do documento é o gravado no laudo (congelado da versão usada)
+      tipoDocumento: l.tipoDocumento ?? null,
+      tituloEmitido: tituloDocumentoEmitido(
+        l.tipoDocumento ?? null,
+        l.tipo,
+        (l.procedimentoSnapshot as { certificadoCfg?: CertificadoCfg } | null)?.certificadoCfg ?? null,
+      ),
+      certificadoCfg: l.tipoDocumento
+        ? ((l.procedimentoSnapshot as { certificadoCfg?: CertificadoCfg } | null)?.certificadoCfg ?? null)
+        : null,
       dataExecucao: l.dataExecucao,
       osNumero: l.osNumero,
       equipamento: {
