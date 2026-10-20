@@ -78,6 +78,7 @@ export type RespostaChecklist = {
   correcaoPadrao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   pontoCertificadoRef?: string;
   origemMedicao?: "MANUAL" | "ANALISADOR";
   avaliacao?: ResultadoAvaliacao;
@@ -90,6 +91,7 @@ export type PontoPadraoCert = {
   correcao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   unidade?: string | null;
   grandeza?: string | null;
 };
@@ -101,8 +103,39 @@ export type CertificadoPadraoRef = {
   dataValidade?: string | Date | null;
   laboratorioEmissor?: string | null;
   vigente?: boolean;
+  fatorAbrangencia?: number | null;
+  probabilidadeAbrangencia?: number | null;
   pontos?: PontoPadraoCert[];
 };
+
+function numOuNull(v: number | string | null | undefined): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Herança ponto → certificado para k e probabilidade de abrangência:
+ * o valor do ponto sobrescreve o do certificado; sem nenhum dos dois fica null
+ * (nunca assume k=2 nem 95%). Aplicado na leitura/cálculo; o banco guarda o ponto como veio.
+ */
+export function pontoComHeranca<T extends PontoPadraoCert>(
+  ponto: T,
+  cert: { fatorAbrangencia?: number | null; probabilidadeAbrangencia?: number | null } | null | undefined,
+): T & { fatorK: number | null; probabilidadeAbrangencia: number | null } {
+  return {
+    ...ponto,
+    fatorK: numOuNull(ponto.fatorK) ?? numOuNull(cert?.fatorAbrangencia),
+    probabilidadeAbrangencia: numOuNull(ponto.probabilidadeAbrangencia) ?? numOuNull(cert?.probabilidadeAbrangencia),
+  };
+}
+
+/** Texto da probabilidade de abrangência para laudo/PDF: "95,45%" ou "não informada". */
+export function textoProbabilidadeAbrangencia(p: number | string | null | undefined): string {
+  const n = numOuNull(p);
+  if (n == null) return "não informada";
+  return `${n.toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
+}
 
 const LABEL_TIPO: Record<string, string> = {
   RECEBIMENTO: "Recebimento",
@@ -255,6 +288,8 @@ export function avaliarPontoCalibracao(args: {
     correcaoPadrao: correcao || undefined,
     incertezaExpandida: ponto?.incertezaExpandida != null ? Number(ponto.incertezaExpandida) : r.incertezaExpandida,
     fatorK: ponto?.fatorK != null ? Number(ponto.fatorK) : r.fatorK,
+    probabilidadeAbrangencia:
+      ponto?.probabilidadeAbrangencia != null ? Number(ponto.probabilidadeAbrangencia) : r.probabilidadeAbrangencia,
     pontoCertificadoRef:
       ponto?.valorNominal != null
         ? `nominal=${ponto.valorNominal}`
@@ -409,7 +444,9 @@ export function snapshotInstrumentoNaData(args: {
           dataValidade: asDate(validade)?.toISOString() ?? null,
           laboratorioEmissor: cert?.laboratorioEmissor ?? args.instrumento.laboratorioEmissor ?? null,
           statusNaData,
-          pontos: (cert?.pontos ?? []).map((p) => ({ ...p })),
+          fatorAbrangencia: numOuNull(cert?.fatorAbrangencia),
+          probabilidadeAbrangencia: numOuNull(cert?.probabilidadeAbrangencia),
+          pontos: (cert?.pontos ?? []).map((p) => pontoComHeranca({ ...p }, cert)),
         }
       : null,
   };

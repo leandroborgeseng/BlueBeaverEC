@@ -30,6 +30,7 @@ interface Ponto {
   correcao?: number | null;
   incertezaExpandida: number;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
 }
 
 interface Cert {
@@ -39,7 +40,8 @@ interface Cert {
   dataValidade: string;
   laboratorioEmissor?: string | null;
   laboratorioAcreditacao?: string | null;
-  fatorAbrangencia: number;
+  fatorAbrangencia?: number | null;
+  probabilidadeAbrangencia?: number | null;
   vigente: boolean;
   temAnexo: boolean;
   statusCertificado: string;
@@ -73,6 +75,7 @@ type PontoDraft = {
   indicacao: string;
   incertezaExpandida: string;
   fatorK: string;
+  probabilidadeAbrangencia: string;
 };
 
 const emptyPonto = (): PontoDraft => ({
@@ -82,8 +85,13 @@ const emptyPonto = (): PontoDraft => ({
   valorConvencional: "",
   indicacao: "",
   incertezaExpandida: "",
-  fatorK: "2",
+  fatorK: "",
+  probabilidadeAbrangencia: "",
 });
+
+function textoProb(p: number | null | undefined): string {
+  return p == null ? "não informada" : `${p.toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
+}
 
 function numOrUndef(s: string): number | undefined {
   if (s.trim() === "") return undefined;
@@ -178,12 +186,21 @@ export default function InstrumentoDetailPage() {
         valorConvencional: numOrUndef(p.valorConvencional),
         indicacao: numOrUndef(p.indicacao),
         incertezaExpandida: numOrUndef(p.incertezaExpandida),
-        fatorK: numOrUndef(p.fatorK) ?? 2,
+        // vazio = herda do certificado (não injeta 2)
+        fatorK: numOrUndef(p.fatorK),
+        probabilidadeAbrangencia: numOrUndef(p.probabilidadeAbrangencia),
       }))
       .filter((p) => p.unidade && p.incertezaExpandida != null);
 
     if (pontosPayload.length === 0) {
       setErro("Informe ao menos um ponto com unidade e incerteza expandida (U)");
+      return;
+    }
+    const kCert = numOrUndef(String(fd.get("fatorAbrangencia") || ""));
+    const probCert = numOrUndef(String(fd.get("probabilidadeAbrangencia") || ""));
+    const semK = pontosPayload.findIndex((p) => p.fatorK == null && kCert == null);
+    if (semK >= 0) {
+      setErro(`Ponto ${semK + 1}: informe k no ponto ou no certificado`);
       return;
     }
 
@@ -196,7 +213,8 @@ export default function InstrumentoDetailPage() {
           dataValidade: String(fd.get("dataValidade")),
           laboratorioEmissor: String(fd.get("laboratorioEmissor") || "") || undefined,
           laboratorioAcreditacao: String(fd.get("laboratorioAcreditacao") || "") || undefined,
-          fatorAbrangencia: numOrUndef(String(fd.get("fatorAbrangencia") || "2")) ?? 2,
+          fatorAbrangencia: kCert,
+          probabilidadeAbrangencia: probCert,
           observacoes: String(fd.get("observacoes") || "") || undefined,
           vigente: true,
           pontos: pontosPayload,
@@ -403,7 +421,10 @@ export default function InstrumentoDetailPage() {
                           ? ` (${certSelecionado.laboratorioAcreditacao})`
                           : ""}
                       </div>
-                      <div style={{ fontSize: 12 }}>k = {certSelecionado.fatorAbrangencia}</div>
+                      <div style={{ fontSize: 12 }}>
+                        k = {certSelecionado.fatorAbrangencia ?? "não informado"} · probabilidade de abrangência:{" "}
+                        {textoProb(certSelecionado.probabilidadeAbrangencia)}
+                      </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <Badge tone={certSelecionado.statusCertificado}>{certSelecionado.statusCertificado}</Badge>
@@ -457,7 +478,9 @@ export default function InstrumentoDetailPage() {
                             <td style={td}>{p.correcao ?? "—"}</td>
                             <td style={td}>
                               <strong>{p.incertezaExpandida}</strong>
-                              {p.fatorK != null ? ` (k=${p.fatorK})` : ""}
+                              {` (k=${p.fatorK ?? certSelecionado.fatorAbrangencia ?? "não informado"}`}
+                              {p.fatorK == null && certSelecionado.fatorAbrangencia != null ? ", herdado" : ""}
+                              {` · p=${textoProb(p.probabilidadeAbrangencia ?? certSelecionado.probabilidadeAbrangencia)})`}
                             </td>
                             <td style={td}>{p.unidade}</td>
                           </tr>
@@ -496,7 +519,19 @@ export default function InstrumentoDetailPage() {
                 </div>
                 <div>
                   <FieldLabel>k (abrangência)</FieldLabel>
-                  <input name="fatorAbrangencia" type="number" step="0.1" defaultValue={2} style={fieldStyle} />
+                  <input name="fatorAbrangencia" type="number" step="any" min="0" placeholder="ex.: 2" style={fieldStyle} />
+                </div>
+                <div>
+                  <FieldLabel>Probabilidade de abrangência (%)</FieldLabel>
+                  <input
+                    name="probabilidadeAbrangencia"
+                    type="number"
+                    step="any"
+                    min="0"
+                    max="100"
+                    placeholder="não informada (ex.: 95,45)"
+                    style={fieldStyle}
+                  />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <FieldLabel>Observações</FieldLabel>
@@ -531,7 +566,7 @@ export default function InstrumentoDetailPage() {
                       key={idx}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1.2fr 0.7fr repeat(4, 1fr) 0.6fr auto",
+                        gridTemplateColumns: "1.2fr 0.7fr repeat(4, 1fr) 0.6fr 0.8fr auto",
                         gap: 6,
                         alignItems: "end",
                       }}
@@ -629,9 +664,33 @@ export default function InstrumentoDetailPage() {
                           type="number"
                           step="any"
                           value={p.fatorK}
+                          placeholder="herda do certificado"
+                          title="Vazio = herda do certificado"
+                          aria-label={`Ponto ${idx + 1}: k (vazio herda do certificado)`}
                           onChange={(e) =>
                             setPontos((prev) =>
                               prev.map((x, i) => (i === idx ? { ...x, fatorK: e.target.value } : x)),
+                            )
+                          }
+                          style={fieldStyle}
+                        />
+                      </div>
+                      <div>
+                        {idx === 0 && <FieldLabel>Prob. (%)</FieldLabel>}
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          value={p.probabilidadeAbrangencia}
+                          placeholder="herda do certificado"
+                          title="Vazio = herda do certificado"
+                          aria-label={`Ponto ${idx + 1}: probabilidade de abrangência em % (vazio herda do certificado)`}
+                          onChange={(e) =>
+                            setPontos((prev) =>
+                              prev.map((x, i) =>
+                                i === idx ? { ...x, probabilidadeAbrangencia: e.target.value } : x,
+                              ),
                             )
                           }
                           style={fieldStyle}

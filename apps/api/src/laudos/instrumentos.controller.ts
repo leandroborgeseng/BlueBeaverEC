@@ -63,6 +63,11 @@ class PontoDto {
   @IsNumber()
   fatorK?: number;
 
+  /** % (0 < p < 100); vazio = herda do certificado */
+  @IsOptional()
+  @IsNumber()
+  probabilidadeAbrangencia?: number;
+
   @IsOptional()
   @IsString()
   observacao?: string;
@@ -206,6 +211,11 @@ class CreateCertificadoDto {
   @IsOptional()
   @IsNumber()
   fatorAbrangencia?: number;
+
+  /** % (0 < p < 100); vazio = não informada */
+  @IsOptional()
+  @IsNumber()
+  probabilidadeAbrangencia?: number;
 
   @IsOptional()
   @IsString()

@@ -37,7 +37,7 @@ describe("E1 crit.2 — validação do certificado do padrão", () => {
   it("U ausente ou negativo e k <= 0 são rejeitados", () => {
     const e = validarCertificadoPadrao({ ...ok, fatorAbrangencia: 0, pontos: [{ unidade: "V", incertezaExpandida: -1, fatorK: 0 }, { unidade: "", incertezaExpandida: null }] });
     assert.ok(e.some((x) => /Fator de abrangência/.test(x)));
-    assert.ok(e.some((x) => /Ponto 1: incerteza.*negativa/.test(x)));
+    assert.ok(e.some((x) => x === "Ponto 1: U deve ser maior que zero"));
     assert.ok(e.some((x) => /Ponto 1: k/.test(x)));
     assert.ok(e.some((x) => /Ponto 2: unidade/.test(x)));
     assert.ok(e.some((x) => /Ponto 2: incerteza.*obrigatória/.test(x)));

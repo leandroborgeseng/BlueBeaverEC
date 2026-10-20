@@ -1260,8 +1260,10 @@ model CertificadoPadrao {
   dataValidade           DateTime
   laboratorioEmissor     String?
   laboratorioAcreditacao String?
-  /// Fator de abrangência k (tipicamente 2)
-  fatorAbrangencia       Float    @default(2)
+  /// Fator de abrangência k do certificado (sem default: vazio = não informado; o ponto pode sobrescrever)
+  fatorAbrangencia       Float?
+  /// Probabilidade de abrangência (%) do certificado; null = não informada (nunca assumir 95)
+  probabilidadeAbrangencia Float?
   observacoes            String?
   anexoNome              String?
   anexoMime              String?  @default("application/pdf")
@@ -1291,7 +1293,10 @@ model CertificadoPadraoPonto {
   indicacao            Float?
   correcao             Float?
   incertezaExpandida   Float
-  fatorK               Float?  @default(2)
+  /// k do ponto; null = herda do certificado (fatorAbrangencia)
+  fatorK               Float?
+  /// Probabilidade de abrangência (%) do ponto; null = herda do certificado
+  probabilidadeAbrangencia Float?
   observacao           String?
 
   certificado CertificadoPadrao @relation(fields: [certificadoId], references: [id], onDelete: Cascade)

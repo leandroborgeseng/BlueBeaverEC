@@ -7,6 +7,7 @@ import { api, downloadApi } from "@/lib/api";
 import { useWindowStore } from "@/store/windows";
 import {
   avaliarPontoCalibracao,
+  pontoComHeranca,
   calcularResultadoLaudo,
   tituloDocumentoTecnico,
   type RespostaChecklist,
@@ -64,6 +65,7 @@ type PontoCert = {
   correcao?: number | null;
   incertezaExpandida?: number | null;
   fatorK?: number | null;
+  probabilidadeAbrangencia?: number | null;
   unidade?: string | null;
 };
 
@@ -222,11 +224,17 @@ export function LaudoEditor({
       return;
     }
     void api<{
-      certificados?: Array<{ vigente?: boolean; pontos?: PontoCert[] }>;
+      certificados?: Array<{
+        vigente?: boolean;
+        fatorAbrangencia?: number | null;
+        probabilidadeAbrangencia?: number | null;
+        pontos?: PontoCert[];
+      }>;
     }>(`/instrumentos-padroes/${instrumentoId}`)
       .then((d) => {
         const vigente = d.certificados?.find((c) => c.vigente) ?? d.certificados?.[0];
-        setPontosCertificado(vigente?.pontos ?? []);
+        // k / probabilidade: ponto sobrescreve, senão herda do certificado, senão null
+        setPontosCertificado((vigente?.pontos ?? []).map((p) => pontoComHeranca(p, vigente)));
       })
       .catch(() => setPontosCertificado([]));
   }, [instrumentoId, tipo, viewMode]);

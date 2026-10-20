@@ -31,8 +31,14 @@ export type CertificadoPadraoValidavel = {
   dataEmissao?: string | null;
   dataValidade?: string | null;
   fatorAbrangencia?: number | null;
+  probabilidadeAbrangencia?: number | null;
   anexoMime?: string | null;
-  pontos?: Array<{ unidade?: string | null; incertezaExpandida?: number | null; fatorK?: number | null }>;
+  pontos?: Array<{
+    unidade?: string | null;
+    incertezaExpandida?: number | null;
+    fatorK?: number | null;
+    probabilidadeAbrangencia?: number | null;
+  }>;
 };
 
 /** Valida um certificado de padrão antes de gravar (crit. 2). Retorna a lista de erros (vazia = ok). */
@@ -45,13 +51,21 @@ export function validarCertificadoPadrao(c: CertificadoPadraoValidavel): string[
   else if (Number.isNaN(em.getTime()) || Number.isNaN(va.getTime())) erros.push("Data de emissão/validade inválida");
   else if (va.getTime() < em.getTime()) erros.push("Validade anterior à emissão");
   if (c.fatorAbrangencia != null && !(Number(c.fatorAbrangencia) > 0)) erros.push("Fator de abrangência k deve ser maior que zero");
+  const probInvalida = (p: number | null | undefined) =>
+    p != null && !(Number.isFinite(Number(p)) && Number(p) > 0 && Number(p) < 100);
+  if (probInvalida(c.probabilidadeAbrangencia))
+    erros.push("Probabilidade de abrangência deve estar entre 0 e 100% (exclusivo)");
   if (c.anexoMime && c.anexoMime !== "application/pdf") erros.push("Anexo do certificado deve ser PDF");
   (c.pontos ?? []).forEach((p, i) => {
     if (!p.unidade?.trim()) erros.push(`Ponto ${i + 1}: unidade obrigatória`);
     const u = p.incertezaExpandida;
     if (u == null || Number.isNaN(Number(u))) erros.push(`Ponto ${i + 1}: incerteza expandida (U) obrigatória`);
-    else if (Number(u) < 0) erros.push(`Ponto ${i + 1}: incerteza expandida (U) não pode ser negativa`);
+    else if (!(Number(u) > 0)) erros.push(`Ponto ${i + 1}: U deve ser maior que zero`);
     if (p.fatorK != null && !(Number(p.fatorK) > 0)) erros.push(`Ponto ${i + 1}: k deve ser maior que zero`);
+    else if (p.fatorK == null && c.fatorAbrangencia == null)
+      erros.push(`Ponto ${i + 1}: informe k no ponto ou no certificado`);
+    if (probInvalida(p.probabilidadeAbrangencia))
+      erros.push(`Ponto ${i + 1}: probabilidade de abrangência deve estar entre 0 e 100% (exclusivo)`);
   });
   return erros;
 }
@@ -188,6 +202,25 @@ export function camposObrigatoriosFaltando(p: CamposCadastroPadrao): string[] {
   if (!(p.grandezas ?? []).some((g) => g?.trim())) falta.push("grandezas");
   if (!p.faixaMedicao?.trim()) falta.push("faixa de medição");
   if (!p.resolucao?.trim()) falta.push("resolução");
+  return falta;
+}
+
+export type CertificadoParaCompletude = {
+  fatorAbrangencia?: number | null;
+  pontos?: Array<{ incertezaExpandida?: number | null; fatorK?: number | null }>;
+} | null | undefined;
+
+/**
+ * Problemas metrológicos do certificado vigente (registros antigos não são alterados;
+ * só entram no selo "cadastro incompleto"): k ausente no ponto e no certificado, ou U ≤ 0.
+ */
+export function problemasCertificadoVigente(cert: CertificadoParaCompletude): string[] {
+  const falta: string[] = [];
+  (cert?.pontos ?? []).forEach((p, i) => {
+    if (p.fatorK == null && cert?.fatorAbrangencia == null) falta.push(`ponto ${i + 1}: k`);
+    const u = p.incertezaExpandida;
+    if (u == null || !(Number(u) > 0)) falta.push(`ponto ${i + 1}: U > 0`);
+  });
   return falta;
 }
 

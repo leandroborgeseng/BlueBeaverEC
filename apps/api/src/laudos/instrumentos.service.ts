@@ -12,6 +12,7 @@ import { statusCertificadoNaData } from "./laudo-regras";
 import {
   janelaAlerta,
   camposObrigatoriosFaltando,
+  problemasCertificadoVigente,
   normalizarNSerie,
   preferencialCompativel,
   sugerirPadraoLaudo,
@@ -29,6 +30,7 @@ export type PontoInput = {
   correcao?: number;
   incertezaExpandida: number;
   fatorK?: number;
+  probabilidadeAbrangencia?: number;
   observacao?: string;
 };
 
@@ -57,6 +59,7 @@ export type CreateCertificadoInput = {
   laboratorioEmissor?: string;
   laboratorioAcreditacao?: string;
   fatorAbrangencia?: number;
+  probabilidadeAbrangencia?: number;
   observacoes?: string;
   vigente?: boolean;
   pontos?: PontoInput[];
@@ -148,6 +151,8 @@ export class InstrumentosService {
             numero: true,
             dataValidade: true,
             laboratorioEmissor: true,
+            fatorAbrangencia: true,
+            pontos: { select: { incertezaExpandida: true, fatorK: true }, orderBy: [{ ordem: "asc" }, { id: "asc" }] },
             _count: { select: { pontos: true } },
           },
         },
@@ -180,8 +185,9 @@ export class InstrumentosService {
         statusCertificado: st,
         vencido: st === "VENCIDO",
         selecionavel: (st === "VALIDO" || st === "A_VENCER") && (vigente?._count.pontos ?? 0) > 0,
-        camposFaltando: camposObrigatoriosFaltando(r),
-        cadastroIncompleto: camposObrigatoriosFaltando(r).length > 0,
+        camposFaltando: [...camposObrigatoriosFaltando(r), ...problemasCertificadoVigente(vigente)],
+        cadastroIncompleto:
+          camposObrigatoriosFaltando(r).length > 0 || problemasCertificadoVigente(vigente).length > 0,
       };
     });
   }
@@ -215,8 +221,9 @@ export class InstrumentosService {
       })),
       statusCertificado: st,
       vencido: st === "VENCIDO",
-      camposFaltando: camposObrigatoriosFaltando(row),
-      cadastroIncompleto: camposObrigatoriosFaltando(row).length > 0,
+      camposFaltando: [...camposObrigatoriosFaltando(row), ...problemasCertificadoVigente(vigente)],
+      cadastroIncompleto:
+        camposObrigatoriosFaltando(row).length > 0 || problemasCertificadoVigente(vigente).length > 0,
       pontosVigente: vigente?.pontos?.length ?? 0,
       selecionavel:
         (st === "VALIDO" || st === "A_VENCER") && (vigente?.pontos?.length ?? 0) > 0,
@@ -401,7 +408,9 @@ export class InstrumentosService {
           dataValidade: new Date(data.dataValidade),
           laboratorioEmissor: data.laboratorioEmissor?.trim() || null,
           laboratorioAcreditacao: data.laboratorioAcreditacao?.trim() || null,
-          fatorAbrangencia: data.fatorAbrangencia ?? 2,
+          // sem `?? 2`: vazio = não informado (o ponto precisa trazer k; validado acima)
+          fatorAbrangencia: data.fatorAbrangencia ?? null,
+          probabilidadeAbrangencia: data.probabilidadeAbrangencia ?? null,
           observacoes: data.observacoes?.trim() || null,
           vigente: marcarVigente,
           anexoNome: anexo?.nome,
@@ -421,7 +430,9 @@ export class InstrumentosService {
                   ? Number((p.valorConvencional - p.indicacao).toFixed(6))
                   : null),
               incertezaExpandida: Number(p.incertezaExpandida),
-              fatorK: p.fatorK ?? data.fatorAbrangencia ?? 2,
+              // null = herda do certificado na leitura/cálculo (pontoComHeranca); sobrescrita explícita
+              fatorK: p.fatorK ?? null,
+              probabilidadeAbrangencia: p.probabilidadeAbrangencia ?? null,
               observacao: p.observacao?.trim() || null,
             })),
           },
