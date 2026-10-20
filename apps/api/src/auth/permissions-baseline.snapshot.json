@@ -2325,6 +2325,21 @@
     }
   },
   {
+    "route": "/laudos/:id/atualizar-padrao",
+    "method": "POST",
+    "handler": "LaudosController.atualizarPadrao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
     "route": "/laudos/:id/finalizar",
     "method": "POST",
     "handler": "LaudosController.finalizar",

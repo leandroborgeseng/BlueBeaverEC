@@ -24,12 +24,15 @@
 
 ## 4. Editar certificado × cadastrar revisão
 
-<!-- TODO Analista: sem uso em laudo final edita no lugar (auditado); usado em laudo final só observações mudam;
-     demais alterações exigem "Cadastrar revisão" — o laudo emitido mantém o certificado e o PDF originais. -->
+<!-- TODO Analista: sem uso em laudo final edita no lugar (auditado); usado em laudo final só a observação muda ("Editar observação");
+     pontos, k, U, probabilidade, validade e PDF só por "Cadastrar revisão" — o laudo emitido mantém o certificado e o PDF originais.
+     Rascunho de laudo com certificado revisado: "Atualizar para a revisão vigente" antes de finalizar (B17). -->
 
 ![Tela: editar certificado sem uso](img/e1-editar-certificado.png)
 ![Tela: aviso de certificado usado e botão Cadastrar revisão](img/e1-certificado-usado.png)
 ![Tela: formulário de revisão preenchido](img/e1-revisao.png)
+![Tela: editar observação de certificado usado](img/e1-editar-observacao.png)
+![Tela: laudo em rascunho com certificado revisado](img/e1-laudo-atualizar-revisao.png)
 
 ## 5. Alertas de vencimento
 
@@ -56,6 +59,8 @@
 | e1-editar-certificado.png | /instrumentos/[id] — Editar certificado | certificado sem laudo final | formulário preenchido |
 | e1-certificado-usado.png | /instrumentos/[id] — certificado usado | certificado usado em laudo FINAL de teste | aviso + botão "Cadastrar revisão" |
 | e1-revisao.png | /instrumentos/[id] — revisão | revisão 1 pré-preenchida | antes de salvar |
+| e1-editar-observacao.png | /instrumentos/[id] — Editar observação | certificado usado em laudo FINAL de teste | campo aberto, depois toast "Observação atualizada…" |
+| e1-laudo-atualizar-revisao.png | Laudo em rascunho | rascunho criado antes da revisão 1 | erro B17 + botão "Atualizar para a revisão vigente" |
 | e1-alerta-sino.png | sino de notificações | certificado vencendo em ≤ 60 dias | sino aberto |
 | e1-alerta-dashboard.png | dashboard | 1 vencido, 1 a vencer | cartão de padrões |
 | e1-pdf-laudo.png | PDF do laudo de calibração | laudo FINAL de teste, probabilidade vazia | seção "Instrumento na data do serviço" com "não informada" |

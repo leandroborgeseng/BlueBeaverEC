@@ -41,9 +41,14 @@ function mundo(opts: { usado: boolean }) {
     db,
     estabelecimento: { findUnique: async () => ({ diasAlertaCertificado: 60, bloquearPadraoVencido: true }) },
     logAcesso: { create: async ({ data }: Row) => { db.logs.push({ ...data, createdAt: new Date() }); return data; } },
+    usuario: { findUnique: async () => ({ nome: "RT Teste" }) },
+    equipamento: { update: async () => ({}) },
     laudo: {
       findFirst: async ({ where }: Row) => db.laudos.find((l: Row) => l.estabelecimentoId === where.estabelecimentoId &&
-        l.statusDocumento === where.statusDocumento && l.instrumentoSnapshot?.certificado?.id === where.instrumentoSnapshot.equals) ?? null,
+        (where.id == null || l.id === where.id) &&
+        (where.statusDocumento == null || l.statusDocumento === where.statusDocumento) &&
+        (where.instrumentoSnapshot == null || l.instrumentoSnapshot?.certificado?.id === where.instrumentoSnapshot.equals)) ?? null,
+      update: async ({ where, data }: Row) => { const l = db.laudos.find((x: Row) => x.id === where.id); Object.assign(l, data); db.laudoUpdates = (db.laudoUpdates ?? 0) + 1; return clone(l); },
       findMany: async ({ where }: Row) => db.laudos.filter((l: Row) => l.instrumentoId === where.instrumentoId && l.statusDocumento === where.statusDocumento),
     },
     instrumentoPadrao: {
@@ -65,8 +70,17 @@ function mundo(opts: { usado: boolean }) {
         if (pontos?.create) c.pontos = pontos.create.map((p: Row) => ({ id: `p${++seq}x`, ...p }));
         return clone(c);
       },
+      updateMany: async ({ where, data }: Row) => {
+        const alvo = db.certificados.filter((c: Row) => (where.id == null || c.id === where.id) && (where.vigente == null || c.vigente === where.vigente));
+        alvo.forEach((c: Row) => Object.assign(c, data));
+        return { count: alvo.length };
+      },
       create: async ({ data }: Row) => {
         const { pontos, ...resto } = data;
+        // índice único (instrumentoId, numero, revisao) + parcial do original
+        if (db.certificados.some((c: Row) => c.instrumentoId === resto.instrumentoId && c.numero === resto.numero && (c.revisao ?? null) === (resto.revisao ?? null))) {
+          throw Object.assign(new Error("Unique constraint"), { code: "P2002" });
+        }
         const c = { id: `c${++seq}r`, ...resto, pontos: (pontos?.create ?? []).map((p: Row) => ({ id: `p${++seq}r`, ...p })) };
         db.certificados.push(c);
         return clone(c);
@@ -222,5 +236,90 @@ describe("(4) não existe DELETE de certificado", () => {
   it("controller não importa nem usa @Delete", () => {
     const src = readFileSync(resolve(__dirname, "instrumentos.controller.ts"), "utf8");
     assert.ok(!/@Delete\(|\bDelete,/.test(src));
+  });
+});
+
+describe("B17 — rascunho com certificado do padrão revisado", () => {
+  const rtLaudo = { ...rt, permissoesModulos: { laudos: 3 } };
+  async function cenario() {
+    const p = mundo({ usado: true });
+    const inst = new InstrumentosService(p as any);
+    const laudos = new LaudosService(p as any, {} as any, {} as any);
+    // rascunho criado com o certificado original (U = 0,5)
+    const snap = await (laudos as any).montarInstrumentoSnapshot("e1", "a", new Date("2026-06-01"), false);
+    p.db.laudos.push({ id: "l2", estabelecimentoId: "e1", instrumentoId: "a", tipo: "RECEBIMENTO", statusDocumento: "RASCUNHO",
+      dataExecucao: new Date("2026-06-01"), procedimentoSnapshot: null, procedimento: null, planoTeste: null, equipamento: {},
+      respostas: [{ id: "r1", tipo: "calibracao", valorConfigurado: 230, leituras: [230.2] }], instrumentoSnapshot: snap });
+    await inst.criarRevisao(rt, "a", "c1", body({ pontos: [{ unidade: "V", valorNominal: 230, correcao: -0.3, incertezaExpandida: 0.4 }] }));
+    return { p, laudos };
+  }
+  it("finalizar → 409 com a mensagem exata e nada gravado", async () => {
+    const { p, laudos } = await cenario();
+    const antes = clone(p.db.laudos.find((l: Row) => l.id === "l2"));
+    await assert.rejects(laudos.finalizar(rtLaudo, "l2"), (e: any) =>
+      e instanceof ConflictException && e.getStatus() === 409 && e.message === "Certificado do padrão foi revisado; atualize para a revisão vigente");
+    assert.deepEqual(p.db.laudos.find((l: Row) => l.id === "l2"), antes);
+    assert.equal(p.db.laudoUpdates ?? 0, 0);
+  });
+  it("atualizar para a revisão vigente recalcula e depois finaliza", async () => {
+    const { p, laudos } = await cenario();
+    const atualizado: Row = await laudos.atualizarPadraoRascunho(rtLaudo, "l2");
+    const rev = p.db.certificados.find((c: Row) => c.revisaoDeId === "c1");
+    assert.equal(atualizado.instrumentoSnapshot.certificado.id, rev.id);
+    assert.equal(atualizado.respostas[0].incertezaExpandida, 0.4, "U da revisão");
+    assert.equal(atualizado.respostas[0].correcaoPadrao, -0.3, "correção da revisão");
+    await laudos.finalizar(rtLaudo, "l2");
+    assert.equal(p.db.laudos.find((l: Row) => l.id === "l2").statusDocumento, "FINAL");
+  });
+  it("laudo final não é atualizado pela rota (400)", async () => {
+    const { laudos } = await cenario();
+    await assert.rejects(laudos.atualizarPadraoRascunho(rtLaudo, "l1"), BadRequestException);
+  });
+});
+
+describe("concorrência — duas revisões simultâneas da mesma versão", () => {
+  it("uma cria, a outra 409; nunca 500 nem dois vigentes", async () => {
+    const p = mundo({ usado: true });
+    const s = new InstrumentosService(p as any);
+    const rs = await Promise.allSettled([s.criarRevisao(rt, "a", "c1", body()), s.criarRevisao(rt, "a", "c1", body())]);
+    assert.equal(rs.filter((r) => r.status === "fulfilled").length, 1);
+    const rej = rs.filter((r) => r.status === "rejected") as PromiseRejectedResult[];
+    assert.equal(rej.length, 1);
+    assert.ok(rej[0].reason instanceof ConflictException && rej[0].reason.getStatus() === 409);
+    assert.equal(p.db.certificados.filter((c: Row) => c.vigente).length, 1);
+  });
+  it("violação de índice único (P2002) vira 409", async () => {
+    const p = mundo({ usado: true });
+    p.db.certificados.push({ ...clone(p.db.certificados[0]), id: "fantasma", revisao: 1, revisaoDeId: null, vigente: false });
+    await assert.rejects(new InstrumentosService(p as any).criarRevisao(rt, "a", "c1", body()), (e: any) => e instanceof ConflictException);
+  });
+  it("certificado não vigente não é revisado (409)", async () => {
+    const p = mundo({ usado: true });
+    p.db.certificados[0].vigente = false;
+    await assert.rejects(new InstrumentosService(p as any).criarRevisao(rt, "a", "c1", body()), ConflictException);
+  });
+});
+
+describe("auditoria da revisão (LogAcesso)", () => {
+  it("quem, quando, antes/depois completos", async () => {
+    const p = mundo({ usado: true });
+    await new InstrumentosService(p as any).criarRevisao(rt, "a", "c1", body({ fatorAbrangencia: 2.1 }));
+    const log = p.db.logs.at(-1);
+    assert.equal(log.acao, "CERTIFICADO_PADRAO_REVISAO");
+    assert.equal(log.usuarioId, "u-rt");
+    assert.ok(log.createdAt instanceof Date);
+    const d = JSON.parse(log.detalhe);
+    assert.equal(d.certificadoAnteriorId, "c1");
+    assert.equal(d.antes.fatorAbrangencia, 2);
+    assert.equal(d.depois.fatorAbrangencia, 2.1);
+    assert.equal(d.depois.revisao, 1);
+    assert.ok(!("anexoConteudo" in d.antes), "sem bytes do PDF no log");
+  });
+});
+
+describe("índice único parcial do original", () => {
+  it("está na migration da revisão", () => {
+    const sql = readFileSync(resolve(__dirname, "../../prisma/migrations/20261020120000_certificado_revisao/migration.sql"), "utf8");
+    assert.match(sql, /CREATE UNIQUE INDEX "CertificadoPadrao_instrumentoId_numero_original_key" ON "CertificadoPadrao"\("instrumentoId", "numero"\) WHERE "revisao" IS NULL;/);
   });
 });

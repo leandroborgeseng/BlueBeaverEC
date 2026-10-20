@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -26,6 +27,9 @@ import {
 import { buildRelatorioServicoPdf, type RelatorioServicoPayload } from "./relatorio-servico-pdf";
 
 type RespostaItem = RespostaChecklist;
+
+/** B17: rascunho com certificado do padrão substituído por revisão mais nova. */
+export const MSG_CERT_REVISADO = "Certificado do padrão foi revisado; atualize para a revisão vigente";
 
 @Injectable()
 export class LaudosService {
@@ -263,6 +267,8 @@ export class LaudosService {
     if (laudo.statusDocumento === StatusDocumentoLaudo.FINAL) {
       throw new BadRequestException("Relatório já está final");
     }
+
+    await this.assertCertificadoNaoRevisado(laudo.instrumentoSnapshot);
 
     const bloqueios = bloqueiosMetrologicosPadrao(
       (laudo.instrumentoSnapshot as { certificado?: { pontos?: PontoPadraoCert[] } } | null)?.certificado?.pontos,
@@ -944,6 +950,38 @@ export class LaudosService {
         return avaliado;
       }
       return { ...r, origemMedicao: r.origemMedicao ?? "MANUAL" };
+    });
+  }
+
+  private async assertCertificadoNaoRevisado(instrumentoSnap: unknown) {
+    const certId = (instrumentoSnap as { certificado?: { id?: string } } | null)?.certificado?.id;
+    if (!certId) return;
+    const rev = await this.prisma.certificadoPadrao.findFirst({ where: { revisaoDeId: certId }, select: { id: true } });
+    if (rev) throw new ConflictException(MSG_CERT_REVISADO);
+  }
+
+  /**
+   * B17: atualiza o snapshot do padrão de um rascunho para a revisão vigente do certificado e recalcula
+   * as respostas. Só rascunho; laudo final nunca muda (usar retificação).
+   */
+  async atualizarPadraoRascunho(user: AuthUser, id: string) {
+    const laudo = await this.prisma.laudo.findFirst({
+      where: { id, estabelecimentoId: user.estabelecimentoId },
+      include: { procedimento: true },
+    });
+    if (!laudo) throw new NotFoundException();
+    if (laudo.statusDocumento === StatusDocumentoLaudo.FINAL) {
+      throw new BadRequestException("Documento final não se altera em silêncio. Use retificação com justificativa.");
+    }
+    if (!laudo.instrumentoId) throw new BadRequestException("Laudo sem padrão vinculado");
+    const snap = await this.montarInstrumentoSnapshot(user.estabelecimentoId, laudo.instrumentoId, laudo.dataExecucao, true);
+    const modeloItens = this.itensDoModelo(laudo.procedimentoSnapshot, laudo.procedimento?.itens);
+    const respostas = this.avaliarRespostas(laudo.tipo, (laudo.respostas as RespostaItem[]) ?? [], modeloItens, snap);
+    const resultado = calcularResultadoLaudo(laudo.tipo, respostas) as ResultadoLaudo;
+    return this.prisma.laudo.update({
+      where: { id },
+      data: { instrumentoSnapshot: snap as object, respostas: respostas as object[], resultado },
+      include: { equipamento: true, procedimento: true },
     });
   }
 

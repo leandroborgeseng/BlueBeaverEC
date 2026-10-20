@@ -117,6 +117,52 @@ export default function InstrumentoDetailPage() {
   const [anexoNome, setAnexoNome] = useState<string | undefined>();
   const [modo, setModo] = useState<{ tipo: "novo" | "editar" | "revisao"; cert?: Cert }>({ tipo: "novo" });
   const [formKey, setFormKey] = useState(0);
+  const [obsAberta, setObsAberta] = useState(false);
+  const [obsTexto, setObsTexto] = useState("");
+  const [obsErro, setObsErro] = useState<string | null>(null);
+  const [obsSalvando, setObsSalvando] = useState(false);
+
+  async function salvarObservacao(c: Cert) {
+    if (!padrao) return;
+    setObsErro(null);
+    setObsSalvando(true);
+    try {
+      // PATCH com os dados atuais + observação nova: a API só aceita mudar a observação em certificado usado
+      await api(`/instrumentos-padroes/${padrao.id}/certificados/${c.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          numero: c.numero,
+          dataEmissao: c.dataEmissao,
+          dataValidade: c.dataValidade,
+          laboratorioEmissor: c.laboratorioEmissor ?? undefined,
+          laboratorioAcreditacao: c.laboratorioAcreditacao ?? undefined,
+          fatorAbrangencia: c.fatorAbrangencia ?? undefined,
+          probabilidadeAbrangencia: c.probabilidadeAbrangencia ?? undefined,
+          observacoes: obsTexto,
+          pontos: c.pontos.map((p) => ({
+            ordem: p.ordem,
+            grandeza: p.grandeza ?? undefined,
+            unidade: p.unidade,
+            valorNominal: p.valorNominal ?? undefined,
+            valorConvencional: p.valorConvencional ?? undefined,
+            indicacao: p.indicacao ?? undefined,
+            correcao: p.correcao ?? undefined,
+            incertezaExpandida: p.incertezaExpandida,
+            fatorK: p.fatorK ?? undefined,
+            probabilidadeAbrangencia: p.probabilidadeAbrangencia ?? undefined,
+          })),
+        }),
+      });
+      setObsAberta(false);
+      setMsg("Observação atualizada. A alteração ficou registrada na auditoria.");
+      await load();
+    } catch (err) {
+      // mantém o texto digitado; erro ao lado do campo
+      setObsErro(err instanceof Error ? err.message : "Não foi possível salvar a observação");
+    } finally {
+      setObsSalvando(false);
+    }
+  }
 
   function abrirFormulario(tipo: "novo" | "editar" | "revisao", cert?: Cert) {
     setModo({ tipo, cert });
@@ -465,8 +511,49 @@ export default function InstrumentoDetailPage() {
                           : ""}
                       </div>
                       {certSelecionado.usadoEmLaudoFinal && !certSelecionado.substituido && (
-                        <div role="note" style={{ fontSize: 12, fontWeight: 600 }}>
-                          Certificado usado em laudos emitidos; cadastre uma revisão
+                        <div role="note" style={{ fontSize: 12, marginTop: 4 }}>
+                          <div style={{ fontWeight: 600 }}>Certificado usado em laudos emitidos; cadastre uma revisão</div>
+                          <div>Pontos, k, U, probabilidade, validade e PDF só mudam por revisão.</div>
+                          {!obsAberta ? (
+                            <button
+                              type="button"
+                             
+                              onClick={() => {
+                                setObsTexto(certSelecionado.observacoes ?? "");
+                                setObsErro(null);
+                                setObsAberta(true);
+                              }}
+                              style={{ background: "none", border: 0, padding: "10px 0", minHeight: 44, color: "inherit", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                            >
+                              Editar observação
+                            </button>
+                          ) : (
+                            <div style={{ display: "grid", gap: 6, marginTop: 6, maxWidth: 520 }}>
+                              <label htmlFor="obs-cert" style={{ fontWeight: 600 }}>Observação do certificado</label>
+                              <textarea
+                                id="obs-cert"
+                                value={obsTexto}
+                                onChange={(e) => setObsTexto(e.target.value)}
+                                aria-invalid={Boolean(obsErro)}
+                                aria-describedby={obsErro ? "obs-cert-erro" : undefined}
+                                rows={3}
+                                style={{ ...fieldStyle, minHeight: 66 }}
+                              />
+                              {obsErro && (
+                                <div id="obs-cert-erro" role="alert" style={{ color: "oklch(0.45 0.18 25)", fontWeight: 600 }}>
+                                  {obsErro}
+                                </div>
+                              )}
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <Btn type="button" size="sm" disabled={obsSalvando} onClick={() => void salvarObservacao(certSelecionado)} style={{ minHeight: 44 }}>
+                                  {obsSalvando ? "Salvando…" : "Salvar observação"}
+                                </Btn>
+                                <Btn type="button" variant="ghost" size="sm" onClick={() => setObsAberta(false)} style={{ minHeight: 44 }}>
+                                  Cancelar
+                                </Btn>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       <div style={{ fontSize: 12 }}>

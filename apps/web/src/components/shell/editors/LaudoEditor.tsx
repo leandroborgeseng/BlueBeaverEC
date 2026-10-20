@@ -56,6 +56,8 @@ interface Pref {
   instrumentoId: string;
 }
 
+const MSG_CERT_REVISADO = "Certificado do padrão foi revisado; atualize para a revisão vigente";
+
 type RespostaItem = RespostaChecklist;
 
 type PontoCert = {
@@ -396,6 +398,25 @@ export function LaudoEditor({
       </div>
 
       {erro && <Err>{erro}</Err>}
+      {erro?.includes(MSG_CERT_REVISADO) && (laudo?.id ?? laudoIdAtual) && (
+        <div style={{ marginTop: 8 }}>
+          <Btn
+            size="sm"
+            type="button"
+            onClick={() =>
+              void api(`/laudos/${laudo?.id ?? laudoIdAtual}/atualizar-padrao`, { method: "POST" })
+                .then(() => (laudo ? loadLaudo() : undefined))
+                .then(() => {
+                  setErro(null);
+                  setMsg("Padrão atualizado para a revisão vigente do certificado; valores recalculados. Confira antes de finalizar.");
+                })
+                .catch((e) => setErro(e instanceof Error ? e.message : "Erro"))
+            }
+          >
+            Atualizar para a revisão vigente
+          </Btn>
+        </div>
+      )}
       {msg && <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)" }}>{msg}</div>}
 
       {tab === "geral" && (

@@ -1281,6 +1281,7 @@ model CertificadoPadrao {
   revisaoDe   CertificadoPadrao?        @relation("CertificadoRevisao", fields: [revisaoDeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   revisoes    CertificadoPadrao[]       @relation("CertificadoRevisao")
 
+  /// + índice único parcial só no SQL da migration 20261020120000: (instrumentoId, numero) WHERE revisao IS NULL
   @@unique([instrumentoId, numero, revisao])
   @@index([estabelecimentoId])
   @@index([instrumentoId, vigente])

@@ -624,8 +624,12 @@ export class InstrumentosService {
     if (ja) throw new ConflictException("Este certificado já tem revisão — revise a revisão mais recente");
     const { pontos, anexo } = this.validarEntrada(data);
     const campos = this.camposCert(data);
+    if (!atual.vigente) throw new ConflictException("Só o certificado vigente pode ser revisado");
     const salvo = await this.prisma.$transaction(async (tx) => {
-      await tx.certificadoPadrao.update({ where: { id: certificadoId }, data: { vigente: false } });
+      // update condicional: em revisões simultâneas só uma encontra vigente=true (a outra → 409);
+      // o índice único (instrumentoId, numero, revisao) é a segunda trava.
+      const r = await tx.certificadoPadrao.updateMany({ where: { id: certificadoId, vigente: true }, data: { vigente: false } });
+      if (r.count !== 1) throw new ConflictException("Este certificado já tem revisão — revise a revisão mais recente");
       return tx.certificadoPadrao.create({
         data: {
           ...campos,
@@ -641,6 +645,11 @@ export class InstrumentosService {
         },
         include: { pontos: { orderBy: { ordem: "asc" } } },
       });
+    }).catch((e: unknown) => {
+      if ((e as { code?: string })?.code === "P2002") {
+        throw new ConflictException("Este certificado já tem revisão — revise a revisão mais recente");
+      }
+      throw e;
     });
     await this.registrarAuditoria(user, "CERTIFICADO_PADRAO_REVISAO", {
       certificadoAnteriorId: certificadoId, certificadoId: salvo.id, antes: this.semAnexo(atual), depois: this.semAnexo(salvo),
