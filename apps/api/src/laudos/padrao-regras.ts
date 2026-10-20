@@ -2,10 +2,17 @@
  * Regras puras de padrões rastreáveis (E1 — laudos v2, critérios 1 a 4).
  * Sem acesso a banco: testáveis com `tsx --test`.
  */
+import { dataCivilDeData, dataCivilDeInstante, diasCivisEntre } from "@aion/shared";
 import { statusCertificadoNaData, type StatusCertificadoNaData } from "./laudo-regras";
 
 export const DIAS_ALERTA_PADRAO = 60;
-const DIA_MS = 24 * 60 * 60 * 1000;
+
+/** Dias civis (America/Sao_Paulo) de hoje até a validade; 0 = vence hoje, negativo = vencido. */
+export function diasAteValidade(validade: Date | string | null, agora: Date = new Date()): number | null {
+  const v = dataCivilDeData(validade);
+  const h = dataCivilDeInstante(agora);
+  return v && h ? diasCivisEntre(h, v) : null;
+}
 
 /** nº de série normalizado para a regra de unicidade por estabelecimento (crit. 1). */
 export function normalizarNSerie(nSerie: string | null | undefined): string {
@@ -94,7 +101,7 @@ export function montarAlertasPadroes(
       certificadoNumero: p.certificadoNumero ?? null,
       certificadoValidade: v && !Number.isNaN(v.getTime()) ? v.toISOString() : null,
       status: st,
-      dias: v && !Number.isNaN(v.getTime()) ? Math.floor((v.getTime() - agora.getTime()) / DIA_MS) : null,
+      dias: diasAteValidade(p.certificadoValidade ?? null, agora),
     });
   }
   const rank = { VENCIDO: 0, SEM_CERTIFICADO: 1, A_VENCER: 2 } as const;
@@ -155,4 +162,74 @@ export function sugerirPadrao(
     origem: "NENHUM",
     aviso: pref ? "O padrão preferencial não está disponível e não há outro válido do mesmo tipo." : null,
   };
+}
+
+/** Chave de comparação de tipo de analisador (sem acento, caixa ou pontuação). */
+export function chaveTipo(s: string | null | undefined): string {
+  return (s ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export type CamposCadastroPadrao = {
+  tipoAnalisador?: string | null;
+  grandezas?: string[] | null;
+  faixaMedicao?: string | null;
+  resolucao?: string | null;
+};
+
+/** Campos obrigatórios do cadastro (decisão TL E1 #1). Retorna os rótulos que faltam. */
+export function camposObrigatoriosFaltando(p: CamposCadastroPadrao): string[] {
+  const falta: string[] = [];
+  if (!p.tipoAnalisador?.trim()) falta.push("tipo de analisador");
+  if (!(p.grandezas ?? []).some((g) => g?.trim())) falta.push("grandezas");
+  if (!p.faixaMedicao?.trim()) falta.push("faixa de medição");
+  if (!p.resolucao?.trim()) falta.push("resolução");
+  return falta;
+}
+
+/** Preferencial só pode apontar para padrão do mesmo tipo de analisador (decisão TL E1 #2). */
+export function preferencialCompativel(tipoPreferencial: string, tipoDoPadrao: string | null | undefined): boolean {
+  const a = chaveTipo(tipoPreferencial);
+  return !!a && a === chaveTipo(tipoDoPadrao);
+}
+
+export type ContextoSugestao = {
+  /** tipo de analisador explícito */
+  tipo?: string | null;
+  /** tipo do laudo (CALIBRACAO, TSE...) */
+  tipoLaudo?: string | null;
+  /** nomes do equipamento (descrição, modelo, nome) para casar com o tipo do preferencial */
+  nomesEquipamento?: Array<string | null | undefined>;
+};
+
+/**
+ * Regra única de sugestão de padrão no laudo (decisão TL E1 #3; antes ficava no LaudoEditor).
+ * Com `tipo` explícito usa `sugerirPadrao`. Sem tipo, casa o tipo dos preferenciais com os nomes do
+ * equipamento; em TSE cai no preferencial de segurança elétrica; com um único preferencial válido, usa ele.
+ */
+export function sugerirPadraoLaudo(
+  ctx: ContextoSugestao,
+  preferenciais: Array<{ tipo: string; instrumentoId: string }>,
+  candidatos: CandidatoPadrao[],
+): SugestaoPadrao {
+  if (ctx.tipo?.trim()) return sugerirPadrao(ctx.tipo, preferenciais, candidatos);
+  const vivos = preferenciais.filter((p) => candidatos.some((c) => c.id === p.instrumentoId && c.selecionavel));
+  if (!vivos.length) return { instrumentoId: null, origem: "NENHUM", aviso: null };
+  const nomes = (ctx.nomesEquipamento ?? []).map(chaveTipo).filter(Boolean);
+  for (const p of vivos) {
+    const pk = chaveTipo(p.tipo);
+    if (nomes.some((n) => n === pk || n.includes(pk) || pk.includes(n))) {
+      return { instrumentoId: p.instrumentoId, origem: "PREFERENCIAL", aviso: null };
+    }
+  }
+  if (ctx.tipoLaudo === "TSE") {
+    const tse = vivos.find((p) => /tse|seguranca|eletr/.test(chaveTipo(p.tipo)));
+    if (tse) return { instrumentoId: tse.instrumentoId, origem: "PREFERENCIAL", aviso: null };
+  }
+  if (vivos.length === 1) return { instrumentoId: vivos[0].instrumentoId, origem: "PREFERENCIAL", aviso: null };
+  return { instrumentoId: null, origem: "NENHUM", aviso: null };
 }

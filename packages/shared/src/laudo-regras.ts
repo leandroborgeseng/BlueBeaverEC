@@ -1,6 +1,7 @@
 /**
  * Checklist versionado, medições sem tolerância inventada, relatório ≠ certificado.
  */
+import { dataCivilDeData, dataCivilDeInstante, diasCivisEntre } from "./data-civil";
 
 export const TIPOS_CAMPO_CHECKLIST = [
   "texto",
@@ -328,10 +329,11 @@ export function statusCertificadoNaData(
   diasAlerta = 60,
 ): StatusCertificadoNaData {
   if (!validade) return "SEM_CERTIFICADO";
-  const v = validade instanceof Date ? validade : new Date(validade);
-  const d = dataServico instanceof Date ? dataServico : new Date(dataServico);
-  if (Number.isNaN(v.getTime()) || Number.isNaN(d.getTime())) return "SEM_CERTIFICADO";
-  const dias = (v.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
+  // Dia civil (America/Sao_Paulo), inclusivo: vale até o fim do dia da validade.
+  const v = dataCivilDeData(validade);
+  const d = dataCivilDeInstante(dataServico);
+  if (!v || !d) return "SEM_CERTIFICADO";
+  const dias = diasCivisEntre(d, v);
   if (dias < 0) return "VENCIDO";
   if (dias <= diasAlerta) return "A_VENCER";
   return "VALIDO";
@@ -348,18 +350,19 @@ export function certificadoVigenteNaData(
   dataServico: Date | string,
 ): CertificadoPadraoRef | null {
   if (!certificados?.length) return null;
-  const data = asDate(dataServico) ?? new Date();
+  // Comparação por dia civil (emissão ≤ execução ≤ validade, inclusivo); ver data-civil.ts.
+  const dia = dataCivilDeInstante(asDate(dataServico) ?? new Date())!;
   const cobrindo = certificados.filter((c) => {
-    const emi = asDate(c.dataEmissao);
-    const val = asDate(c.dataValidade);
+    const emi = dataCivilDeData(c.dataEmissao);
+    const val = dataCivilDeData(c.dataValidade);
     if (!val) return false;
-    return (emi ?? new Date(0)).getTime() <= data.getTime() && data.getTime() <= val.getTime();
+    return (!emi || emi <= dia) && dia <= val;
   });
   cobrindo.sort((a, b) => (asDate(b.dataEmissao)?.getTime() ?? 0) - (asDate(a.dataEmissao)?.getTime() ?? 0));
   if (cobrindo[0]) return cobrindo[0];
   const anteriores = certificados.filter((c) => {
-    const emi = asDate(c.dataEmissao);
-    return !emi || emi.getTime() <= data.getTime();
+    const emi = dataCivilDeData(c.dataEmissao);
+    return !emi || emi <= dia;
   });
   anteriores.sort((a, b) => (asDate(b.dataValidade)?.getTime() ?? 0) - (asDate(a.dataValidade)?.getTime() ?? 0));
   return anteriores[0] ?? certificados[0] ?? null;

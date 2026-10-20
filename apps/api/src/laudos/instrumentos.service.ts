@@ -11,8 +11,10 @@ import type { AuthUser } from "../auth/current-user.decorator";
 import { statusCertificadoNaData } from "./laudo-regras";
 import {
   janelaAlerta,
+  camposObrigatoriosFaltando,
   normalizarNSerie,
-  sugerirPadrao,
+  preferencialCompativel,
+  sugerirPadraoLaudo,
   validarCertificadoPadrao,
 } from "./padrao-regras";
 import { carregarAlertasPadroes } from "./padrao-alertas";
@@ -103,7 +105,11 @@ export class InstrumentosService {
   }
 
   /** Padrão sugerido para o laudo pelo tipo de analisador (crit. 4). */
-  async sugestao(estabelecimentoId: string, tipo?: string) {
+  async sugestao(
+    estabelecimentoId: string,
+    tipo?: string,
+    ctx: { tipoLaudo?: string; nomesEquipamento?: string[] } = {},
+  ) {
     const [prefs, lista] = await Promise.all([
       this.prisma.padraoPreferencial.findMany({
         where: { estabelecimentoId },
@@ -111,7 +117,7 @@ export class InstrumentosService {
       }),
       this.list(estabelecimentoId),
     ]);
-    const s = sugerirPadrao(tipo, prefs, lista);
+    const s = sugerirPadraoLaudo({ tipo, ...ctx }, prefs, lista);
     return { tipo: tipo?.trim() || null, ...s, instrumento: lista.find((i) => i.id === s.instrumentoId) ?? null };
   }
 
@@ -174,6 +180,8 @@ export class InstrumentosService {
         statusCertificado: st,
         vencido: st === "VENCIDO",
         selecionavel: (st === "VALIDO" || st === "A_VENCER") && (vigente?._count.pontos ?? 0) > 0,
+        camposFaltando: camposObrigatoriosFaltando(r),
+        cadastroIncompleto: camposObrigatoriosFaltando(r).length > 0,
       };
     });
   }
@@ -207,6 +215,8 @@ export class InstrumentosService {
       })),
       statusCertificado: st,
       vencido: st === "VENCIDO",
+      camposFaltando: camposObrigatoriosFaltando(row),
+      cadastroIncompleto: camposObrigatoriosFaltando(row).length > 0,
       pontosVigente: vigente?.pontos?.length ?? 0,
       selecionavel:
         (st === "VALIDO" || st === "A_VENCER") && (vigente?.pontos?.length ?? 0) > 0,
@@ -218,6 +228,8 @@ export class InstrumentosService {
     if (!data.nome?.trim() || !data.nSerie?.trim()) {
       throw new BadRequestException("Nome e nº de série obrigatórios");
     }
+    const faltaCriar = camposObrigatoriosFaltando(data);
+    if (faltaCriar.length) throw new BadRequestException(`Preencha os campos obrigatórios: ${faltaCriar.join(", ")}`);
     const nSerie = normalizarNSerie(data.nSerie);
     await this.garantirNSerieLivre(user.estabelecimentoId, nSerie);
 
@@ -285,6 +297,17 @@ export class InstrumentosService {
       where: { id, estabelecimentoId: user.estabelecimentoId },
     });
     if (!existing) throw new NotFoundException("Padrão não encontrado");
+    // Edição de cadastro exige o registro completo; só ativar/inativar não exige (antigos seguem válidos).
+    if (Object.keys(data).some((k) => k !== "ativo" && (data as Record<string, unknown>)[k] !== undefined)) {
+      const merged = {
+        tipoAnalisador: data.tipoAnalisador !== undefined ? data.tipoAnalisador : existing.tipoAnalisador,
+        grandezas: data.grandezas !== undefined ? data.grandezas : existing.grandezas,
+        faixaMedicao: data.faixaMedicao !== undefined ? data.faixaMedicao : existing.faixaMedicao,
+        resolucao: data.resolucao !== undefined ? data.resolucao : existing.resolucao,
+      };
+      const falta = camposObrigatoriosFaltando(merged);
+      if (falta.length) throw new BadRequestException(`Preencha os campos obrigatórios: ${falta.join(", ")}`);
+    }
     if (data.nSerie != null) {
       const ns = normalizarNSerie(data.nSerie);
       if (!ns) throw new BadRequestException("Nº de série obrigatório");
@@ -495,21 +518,37 @@ export class InstrumentosService {
       throw new ForbiddenException();
     }
 
+    const ops: Array<{ tipo: string; instrumentoId: string }> = [];
     for (const item of itens) {
       const tipo = item.tipo?.trim();
       if (!tipo) continue;
       const instrumentoId = item.instrumentoId?.trim() || "";
+      if (!instrumentoId) {
+        ops.push({ tipo, instrumentoId: "" });
+        continue;
+      }
+      const inst = await this.prisma.instrumentoPadrao.findFirst({
+        where: { id: instrumentoId, estabelecimentoId: user.estabelecimentoId, ativo: true },
+        select: { id: true, nome: true, nSerie: true, tipoAnalisador: true },
+      });
+      if (!inst) throw new BadRequestException(`Padrão inválido para o tipo ${tipo}`);
+      if (!preferencialCompativel(tipo, inst.tipoAnalisador)) {
+        throw new BadRequestException(
+          inst.tipoAnalisador?.trim()
+            ? `O padrão ${inst.nome} (${inst.nSerie}) é do tipo "${inst.tipoAnalisador}" e não pode ser preferencial de "${tipo}".`
+            : `O padrão ${inst.nome} (${inst.nSerie}) não tem tipo de analisador cadastrado; complete o cadastro antes de usá-lo como preferencial de "${tipo}".`,
+        );
+      }
+      ops.push({ tipo, instrumentoId });
+    }
+
+    for (const { tipo, instrumentoId } of ops) {
       if (!instrumentoId) {
         await this.prisma.padraoPreferencial.deleteMany({
           where: { estabelecimentoId: user.estabelecimentoId, tipo },
         });
         continue;
       }
-      const inst = await this.prisma.instrumentoPadrao.findFirst({
-        where: { id: instrumentoId, estabelecimentoId: user.estabelecimentoId, ativo: true },
-        select: { id: true },
-      });
-      if (!inst) throw new BadRequestException(`Padrão inválido para o tipo ${tipo}`);
       await this.prisma.padraoPreferencial.upsert({
         where: {
           estabelecimentoId_tipo: { estabelecimentoId: user.estabelecimentoId, tipo },

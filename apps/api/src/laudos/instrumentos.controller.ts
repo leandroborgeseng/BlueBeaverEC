@@ -277,8 +277,14 @@ export class InstrumentosController {
 
   /** Padrão sugerido para o laudo pelo tipo de analisador. */
   @Get("sugestao")
-  sugestao(@CurrentUser() user: AuthUser, @Query("tipo") tipo?: string) {
-    return this.instrumentos.sugestao(user.estabelecimentoId, tipo);
+  sugestao(
+    @CurrentUser() user: AuthUser,
+    @Query("tipo") tipo?: string,
+    @Query("tipoLaudo") tipoLaudo?: string,
+    @Query("nomes") nomes?: string | string[],
+  ) {
+    const lista = (Array.isArray(nomes) ? nomes : nomes ? [nomes] : []).map((n) => n.trim()).filter(Boolean);
+    return this.instrumentos.sugestao(user.estabelecimentoId, tipo, { tipoLaudo, nomesEquipamento: lista });
   }
 
   @Get(":id")

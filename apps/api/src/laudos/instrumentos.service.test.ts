@@ -81,6 +81,7 @@ function fakePrisma(seed: { instrumentos?: Row[]; certificados?: Row[]; prefs?: 
   return prisma;
 }
 
+const COMPLETO = { tipoAnalisador: "Desfibrilador", grandezas: ["energia"], faixaMedicao: "0–360 J", resolucao: "0,1 J" };
 const admin = { id: "u1", estabelecimentoId: "e1", perfil: "ADMIN", email: "qa@aion.local" } as any;
 const svc = (p: Row) => new InstrumentosService(p as any);
 
@@ -99,17 +100,17 @@ describe("E1 crit.1 — cadastro de padrão", () => {
   });
   it("nº de série duplicado no estabelecimento → 409 (inclui inativo e maiúsculas)", async () => {
     const p = fakePrisma({ instrumentos: [{ id: "x", estabelecimentoId: "e1", nome: "Antigo", nSerie: "AB-1", ativo: false }] });
-    await assert.rejects(svc(p).create(admin, { nome: "Novo", nSerie: "ab-1" }), ConflictException);
+    await assert.rejects(svc(p).create(admin, { nome: "Novo", nSerie: "ab-1", ...COMPLETO }), ConflictException);
   });
   it("mesmo nº de série em outro estabelecimento é permitido", async () => {
     const p = fakePrisma({ instrumentos: [{ id: "x", estabelecimentoId: "e2", nome: "Outro", nSerie: "AB-1", ativo: true }] });
-    const r = await svc(p).create(admin, { nome: "Novo", nSerie: "AB-1" });
+    const r = await svc(p).create(admin, { nome: "Novo", nSerie: "AB-1", ...COMPLETO });
     assert.equal(r.nSerie, "AB-1");
   });
   it("editar para nº de série de outro padrão → 409", async () => {
     const p = fakePrisma({ instrumentos: [
-      { id: "a", estabelecimentoId: "e1", nome: "A", nSerie: "1", ativo: true },
-      { id: "b", estabelecimentoId: "e1", nome: "B", nSerie: "2", ativo: true },
+      { id: "a", estabelecimentoId: "e1", nome: "A", nSerie: "1", ativo: true, ...COMPLETO },
+      { id: "b", estabelecimentoId: "e1", nome: "B", nSerie: "2", ativo: true, ...COMPLETO },
     ] });
     await assert.rejects(svc(p).update(admin, "b", { nSerie: "1" }), ConflictException);
     const ok = await svc(p).update(admin, "b", { nSerie: "2" });
@@ -207,5 +208,96 @@ describe("E1 crit.4 — sugestão de padrão no laudo", () => {
     const s2 = await svc(p).sugestao("e1", "Desfibrilador");
     assert.equal(s2.instrumentoId, "p2");
     assert.equal(s2.origem, "MESMO_TIPO");
+  });
+});
+
+describe("Decisão TL E1 #1 — campos obrigatórios só no cadastro e na edição", () => {
+  it("criar sem tipo/grandezas/faixa/resolução → 400 com os campos listados", async () => {
+    await assert.rejects(svc(fakePrisma()).create(admin, { nome: "X", nSerie: "9" }), (e: any) => {
+      assert.ok(e instanceof BadRequestException);
+      assert.match(e.message, /tipo de analisador, grandezas, faixa de medição, resolução/);
+      return true;
+    });
+  });
+  it("registro antigo incompleto continua listado e consultável, com flag cadastroIncompleto", async () => {
+    const p = fakePrisma({ instrumentos: [{ id: "old", estabelecimentoId: "e1", nome: "Antigo", nSerie: "7", ativo: true, grandezas: [] }] });
+    const [l] = await svc(p).list("e1");
+    assert.equal(l.cadastroIncompleto, true);
+    assert.deepEqual(l.camposFaltando, ["tipo de analisador", "grandezas", "faixa de medição", "resolução"]);
+    const g = await svc(p).get("e1", "old");
+    assert.equal(g.cadastroIncompleto, true);
+  });
+  it("editar registro incompleto sem completar → 400; completando → ok e flag some", async () => {
+    const p = fakePrisma({ instrumentos: [{ id: "old", estabelecimentoId: "e1", nome: "Antigo", nSerie: "7", ativo: true, grandezas: [] }] });
+    await assert.rejects(svc(p).update(admin, "old", { nome: "Antigo 2" }), BadRequestException);
+    await assert.rejects(svc(p).update(admin, "old", { ...COMPLETO, resolucao: " " }), /resolução/);
+    const ok = await svc(p).update(admin, "old", { ...COMPLETO });
+    assert.equal(ok.cadastroIncompleto, false);
+  });
+  it("só inativar um registro incompleto não exige os campos", async () => {
+    const p = fakePrisma({ instrumentos: [{ id: "old", estabelecimentoId: "e1", nome: "Antigo", nSerie: "7", ativo: true, grandezas: [] }] });
+    await svc(p).update(admin, "old", { ativo: false }).catch((e) => {
+      if (e instanceof BadRequestException) throw e; // NotFound pós-inativação é esperado (get filtra ativos)
+    });
+    assert.equal(p.db.instrumentos[0].ativo, false);
+  });
+});
+
+describe("Decisão TL E1 #2 — preferencial compatível com o tipo do padrão", () => {
+  const seedPref = () => {
+    const p = fakePrisma({ instrumentos: [
+      { id: "d", estabelecimentoId: "e1", nome: "Impulse", nSerie: "1", ativo: true, ...COMPLETO },
+      { id: "s", estabelecimentoId: "e1", nome: "ESA612", nSerie: "2", ativo: true, ...COMPLETO, tipoAnalisador: "Segurança elétrica" },
+      { id: "n", estabelecimentoId: "e1", nome: "Sem tipo", nSerie: "3", ativo: true, grandezas: [] },
+    ] });
+    const upserts: Row[] = [];
+    p.padraoPreferencial.upsert = async (a: Row) => { upserts.push(a); return {}; };
+    p.padraoPreferencial.deleteMany = async () => ({});
+    return { p, upserts };
+  };
+  it("tipo compatível (ignora acento/caixa) é salvo", async () => {
+    const { p, upserts } = seedPref();
+    await svc(p).salvarPreferenciais(admin, [{ tipo: "seguranca ELETRICA", instrumentoId: "s" }]);
+    assert.equal(upserts.length, 1);
+  });
+  it("tipo incompatível → 400 com mensagem clara e nada é gravado (nem os itens válidos do lote)", async () => {
+    const { p, upserts } = seedPref();
+    await assert.rejects(
+      svc(p).salvarPreferenciais(admin, [{ tipo: "Desfibrilador", instrumentoId: "d" }, { tipo: "Desfibrilador", instrumentoId: "s" }]),
+      (e: any) => {
+        assert.ok(e instanceof BadRequestException);
+        assert.match(e.message, /ESA612 \(2\) é do tipo "Segurança elétrica" e não pode ser preferencial de "Desfibrilador"/);
+        return true;
+      },
+    );
+    assert.equal(upserts.length, 0);
+  });
+  it("padrão sem tipo → 400 pedindo para completar o cadastro", async () => {
+    const { p } = seedPref();
+    await assert.rejects(svc(p).salvarPreferenciais(admin, [{ tipo: "Desfibrilador", instrumentoId: "n" }]), /não tem tipo de analisador/);
+  });
+});
+
+describe("Decisão TL E1 #3 — sugestão no laudo pela API", () => {
+  it("sem tipo explícito casa o preferencial pelo nome do equipamento (regra que saiu do LaudoEditor)", async () => {
+    const ponto = [{ unidade: "J", incertezaExpandida: 1 }];
+    const fut = new Date(Date.now() + 200 * 86400000);
+    const p = fakePrisma({
+      instrumentos: [
+        { id: "d", estabelecimentoId: "e1", nome: "Impulse", nSerie: "1", ativo: true, ...COMPLETO },
+        { id: "s", estabelecimentoId: "e1", nome: "ESA612", nSerie: "2", ativo: true, ...COMPLETO, tipoAnalisador: "Segurança elétrica" },
+      ],
+      certificados: [
+        { id: "c1", instrumentoId: "d", numero: "1", vigente: true, dataValidade: fut, pontos: ponto },
+        { id: "c2", instrumentoId: "s", numero: "2", vigente: true, dataValidade: fut, pontos: ponto },
+      ],
+      prefs: [{ tipo: "Desfibrilador", instrumentoId: "d" }, { tipo: "Segurança elétrica", instrumentoId: "s" }],
+    });
+    const a = await svc(p).sugestao("e1", undefined, { tipoLaudo: "CALIBRACAO", nomesEquipamento: ["Cardioversor / Desfibrilador"] });
+    assert.equal(a.instrumentoId, "d");
+    const b = await svc(p).sugestao("e1", undefined, { tipoLaudo: "TSE", nomesEquipamento: ["Monitor"] });
+    assert.equal(b.instrumentoId, "s");
+    const c = await svc(p).sugestao("e1", undefined, { tipoLaudo: "CALIBRACAO", nomesEquipamento: ["Monitor"] });
+    assert.equal(c.instrumentoId, null);
   });
 });

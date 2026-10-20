@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, downloadApi } from "@/lib/api";
+import { camposObrigatoriosFaltando } from "@/lib/padrao-cadastro";
 import {
   Badge,
   Btn,
@@ -57,6 +58,9 @@ interface Padrao {
   faixaMedicao?: string | null;
   resolucao?: string | null;
   observacoes?: string | null;
+  tipoAnalisador?: string | null;
+  cadastroIncompleto?: boolean;
+  camposFaltando?: string[];
   statusCertificado: string;
   certificados: Cert[];
 }
@@ -125,6 +129,16 @@ export default function InstrumentoDetailPage() {
       .split(/[,;]/)
       .map((s) => s.trim())
       .filter(Boolean);
+    const falta = camposObrigatoriosFaltando({
+      tipoAnalisador: String(fd.get("tipoAnalisador") || ""),
+      grandezas,
+      faixaMedicao: String(fd.get("faixaMedicao") || ""),
+      resolucao: String(fd.get("resolucao") || ""),
+    });
+    if (falta.length) {
+      setErro(`Preencha os campos obrigatórios: ${falta.join(", ")}`);
+      return;
+    }
     try {
       const updated = await api<Padrao>(`/instrumentos-padroes/${padrao.id}`, {
         method: "PATCH",
@@ -135,6 +149,7 @@ export default function InstrumentoDetailPage() {
           modelo: String(fd.get("modelo") || "") || null,
           codigoPatrimonio: String(fd.get("codigoPatrimonio") || "") || null,
           grandezas,
+          tipoAnalisador: String(fd.get("tipoAnalisador") || "") || null,
           faixaMedicao: String(fd.get("faixaMedicao") || "") || null,
           resolucao: String(fd.get("resolucao") || "") || null,
           observacoes: String(fd.get("observacoes") || "") || null,
@@ -249,6 +264,16 @@ export default function InstrumentoDetailPage() {
       />
 
       {erro && <Err>{erro}</Err>}
+      {padrao?.cadastroIncompleto && (
+        <div
+          data-testid="aviso-cadastro-incompleto"
+          role="status"
+          style={{ fontSize: 13, marginBottom: 12, padding: "8px 12px", borderRadius: 6, background: "#fff4d6", color: "#7a5200", border: "1px solid #e8c766" }}
+        >
+          <Badge tone="A_VENCER">Cadastro incompleto</Badge> Falta: {(padrao.camposFaltando ?? []).join(", ")}. Complete para salvar
+          alterações e usar como preferencial.
+        </div>
+      )}
       {msg && (
         <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.4 0.14 150)", marginBottom: 12 }}>
           {msg}
@@ -287,21 +312,32 @@ export default function InstrumentoDetailPage() {
                 <input name="modelo" defaultValue={padrao.modelo ?? ""} style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Grandezas</FieldLabel>
+                <FieldLabel>Tipo de analisador *</FieldLabel>
+                <input
+                  name="tipoAnalisador"
+                  required
+                  defaultValue={padrao.tipoAnalisador ?? ""}
+                  placeholder="segurança elétrica, desfibrilador"
+                  style={fieldStyle}
+                />
+              </div>
+              <div>
+                <FieldLabel>Grandezas *</FieldLabel>
                 <input
                   name="grandezas"
+                  required
                   defaultValue={padrao.grandezas.join(", ")}
                   placeholder="temperatura, umidade"
                   style={fieldStyle}
                 />
               </div>
               <div>
-                <FieldLabel>Faixa</FieldLabel>
-                <input name="faixaMedicao" defaultValue={padrao.faixaMedicao ?? ""} style={fieldStyle} />
+                <FieldLabel>Faixa *</FieldLabel>
+                <input name="faixaMedicao" required defaultValue={padrao.faixaMedicao ?? ""} style={fieldStyle} />
               </div>
               <div>
-                <FieldLabel>Resolução</FieldLabel>
-                <input name="resolucao" defaultValue={padrao.resolucao ?? ""} style={fieldStyle} />
+                <FieldLabel>Resolução *</FieldLabel>
+                <input name="resolucao" required defaultValue={padrao.resolucao ?? ""} style={fieldStyle} />
               </div>
               <div>
                 <FieldLabel>Observações</FieldLabel>

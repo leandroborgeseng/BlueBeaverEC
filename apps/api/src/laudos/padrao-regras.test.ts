@@ -7,7 +7,13 @@ import {
   resumoAlertasPadroes,
   sugerirPadrao,
   validarCertificadoPadrao,
+  camposObrigatoriosFaltando,
+  preferencialCompativel,
+  sugerirPadraoLaudo,
 } from "./padrao-regras";
+import { notificacoesPadroes } from "./padrao-alertas";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 const agora = new Date("2026-10-19T12:00:00Z");
 
@@ -53,8 +59,8 @@ describe("E1 crit.3 — alertas de certificado de padrão", () => {
     assert.deepEqual(out.map((x) => [x.instrumentoId, x.status]), [
       ["c", "VENCIDO"], ["d", "SEM_CERTIFICADO"], ["b", "A_VENCER"],
     ]);
-    assert.equal(out[0].dias, -19);
-    assert.equal(out[2].dias, 21);
+    assert.equal(out[0].dias, -18); // dias civis: 01/10 → 19/10
+    assert.equal(out[2].dias, 22); // 19/10 → 10/11
   });
   it("janela configurável (90 dias) inclui o que vence em ~71 dias", () => {
     const out = montarAlertasPadroes(padroes, agora, 90);
@@ -96,4 +102,71 @@ describe("E1 crit.4 — padrão preferencial sugerido", () => {
     assert.equal(s.origem, "NENHUM");
   });
   it("sem tipo → sem sugestão", () => assert.equal(sugerirPadrao("", prefs, []).origem, "NENHUM"));
+});
+
+describe("Decisão TL E1 #1 — campos obrigatórios", () => {
+  it("lista o que falta e aceita cadastro completo", () => {
+    assert.deepEqual(camposObrigatoriosFaltando({ grandezas: [" "] }), ["tipo de analisador", "grandezas", "faixa de medição", "resolução"]);
+    assert.deepEqual(camposObrigatoriosFaltando({ tipoAnalisador: "x", grandezas: ["V"], faixaMedicao: "0-1", resolucao: "0,1" }), []);
+  });
+  it("validação do formulário (web) é idêntica à da API", async () => {
+    // import dinâmico com caminho em runtime: o arquivo web fica fora do rootDir do tsc da API
+    const webPath = resolve(__dirname, "../../../web/src/lib/padrao-cadastro.ts");
+    const { camposObrigatoriosFaltando: camposWeb } = (await import(webPath)) as {
+      camposObrigatoriosFaltando: typeof camposObrigatoriosFaltando;
+    };
+    const casos = [{}, { tipoAnalisador: "x" }, { tipoAnalisador: "x", grandezas: ["V"], faixaMedicao: "a", resolucao: "b" }, { grandezas: ["", "A"], resolucao: " " }];
+    for (const c of casos) assert.deepEqual(camposWeb(c), camposObrigatoriosFaltando(c));
+  });
+});
+
+describe("Decisão TL E1 #2 — compatibilidade de tipo", () => {
+  it("compara sem acento/caixa/pontuação; vazio nunca é compatível", () => {
+    assert.equal(preferencialCompativel("Segurança elétrica", "seguranca-ELETRICA"), true);
+    assert.equal(preferencialCompativel("Desfibrilador", "Segurança elétrica"), false);
+    assert.equal(preferencialCompativel("Desfibrilador", null), false);
+    assert.equal(preferencialCompativel("", ""), false);
+  });
+});
+
+describe("Decisão TL E1 #3 — regra única de sugestão", () => {
+  const cands = [{ id: "d", selecionavel: true }, { id: "s", selecionavel: true }, { id: "v", selecionavel: false }];
+  const prefs = [{ tipo: "Desfibrilador", instrumentoId: "d" }, { tipo: "Segurança elétrica", instrumentoId: "s" }];
+  it("casa pelo nome do equipamento, TSE cai no de segurança elétrica, único preferencial vivo é usado", () => {
+    assert.equal(sugerirPadraoLaudo({ nomesEquipamento: ["Desfibrilador externo"] }, prefs, cands).instrumentoId, "d");
+    assert.equal(sugerirPadraoLaudo({ tipoLaudo: "TSE", nomesEquipamento: ["Bomba"] }, prefs, cands).instrumentoId, "s");
+    assert.equal(sugerirPadraoLaudo({ nomesEquipamento: ["Bomba"] }, prefs, cands).instrumentoId, null);
+    assert.equal(sugerirPadraoLaudo({ nomesEquipamento: ["Bomba"] }, [prefs[0], { tipo: "PNI", instrumentoId: "v" }], cands).instrumentoId, "d");
+  });
+  it("preferencial com certificado inválido não é sugerido", () => {
+    assert.equal(sugerirPadraoLaudo({ nomesEquipamento: ["PNI"] }, [{ tipo: "PNI", instrumentoId: "v" }], cands).instrumentoId, null);
+  });
+  it("LaudoEditor não tem mais regra própria e chama /instrumentos-padroes/sugestao", () => {
+    const src = readFileSync(resolve(__dirname, "../../../web/src/components/shell/editors/LaudoEditor.tsx"), "utf8");
+    assert.doesNotMatch(src, /function escolherPreferencial/);
+    assert.match(src, /\/instrumentos-padroes\/sugestao\?/);
+  });
+});
+
+describe("Decisão TL E1 #4 — padrão sem certificado no sino", () => {
+  it("gera PADRAO_SEM_CERTIFICADO com link para o padrão, além de vencido/a vencer", () => {
+    const itens = montarAlertasPadroes(
+      [
+        { id: "s", nome: "QA-ES", nSerie: "4", certificadoValidade: null },
+        { id: "v", nome: "BP", nSerie: "3", certificadoNumero: "C3", certificadoValidade: "2026-10-01T00:00:00Z" },
+      ],
+      agora,
+    );
+    const n = notificacoesPadroes(itens, agora);
+    const sem = n.find((x) => x.tipo === "PADRAO_SEM_CERTIFICADO");
+    assert.ok(sem);
+    assert.equal(sem.href, "/instrumentos/s");
+    assert.match(sem.titulo, /sem certificado.*QA-ES \(4\)/);
+    assert.equal(n.find((x) => x.id === "padrao-v")?.tipo, "PADRAO_CERTIFICADO_VENCIDO");
+  });
+  it("o sino (nav.service) usa notificacoesPadroes sem filtrar SEM_CERTIFICADO", () => {
+    const src = readFileSync(resolve(__dirname, "../nav/nav.service.ts"), "utf8");
+    assert.match(src, /notificacoesPadroes\(/);
+    assert.doesNotMatch(src, /SEM_CERTIFICADO"\) continue/);
+  });
 });

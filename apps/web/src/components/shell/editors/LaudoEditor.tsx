@@ -55,31 +55,6 @@ interface Pref {
   instrumentoId: string;
 }
 
-function chaveTipo(s: string) {
-  return s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function escolherPreferencial(tipoLaudo: string, prefs: Pref[], insts: Inst[], nomesEq: Array<string | null | undefined>) {
-  if (!prefs.length) return "";
-  const vivos = prefs.filter((p) => insts.some((i) => i.id === p.instrumentoId));
-  const nomes = nomesEq.map((n) => (n ? chaveTipo(n) : "")).filter(Boolean);
-  for (const p of vivos) {
-    const pk = chaveTipo(p.tipo);
-    if (nomes.some((n) => n === pk || n.includes(pk) || pk.includes(n))) return p.instrumentoId;
-  }
-  if (tipoLaudo === "TSE") {
-    const tse = vivos.find((p) => /tse|seguranca|eletr/.test(chaveTipo(p.tipo)));
-    if (tse) return tse.instrumentoId;
-  }
-  if (vivos.length === 1) return vivos[0].instrumentoId;
-  return "";
-}
-
 type RespostaItem = RespostaChecklist;
 
 type PontoCert = {
@@ -221,19 +196,21 @@ export function LaudoEditor({
           ).catch(() => null)
         : Promise.resolve(null),
     ])
-      .then(([p, c, i, pref, eq]) => {
+      .then(async ([p, c, i, pref, eq]) => {
         const selecionaveis = i.filter((x) => x.selecionavel);
         setProcs(p);
         setCols(c);
         setInsts(selecionaveis);
         setPrefs(pref.preferenciais);
         setProcId(p[0]?.id ?? "");
+        // Regra única de sugestão na API (GET /instrumentos-padroes/sugestao)
+        const qs = new URLSearchParams({ tipoLaudo: tipo });
+        for (const n of [eq?.descricao?.nome, eq?.modelo?.nome, eq?.nome]) if (n) qs.append("nomes", n);
+        const sug = await api<{ instrumentoId: string | null; aviso: string | null }>(
+          `/instrumentos-padroes/sugestao?${qs.toString()}`,
+        ).catch(() => ({ instrumentoId: null, aviso: null }));
         setInstrumentoId(
-          escolherPreferencial(tipo, pref.preferenciais, selecionaveis, [
-            eq?.descricao?.nome,
-            eq?.modelo?.nome,
-            eq?.nome,
-          ]),
+          sug.instrumentoId && selecionaveis.some((x) => x.id === sug.instrumentoId) ? sug.instrumentoId : "",
         );
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Erro"));

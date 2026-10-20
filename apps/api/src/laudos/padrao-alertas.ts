@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import { janelaAlerta, montarAlertasPadroes, resumoAlertasPadroes } from "./padrao-regras";
+import { janelaAlerta, montarAlertasPadroes, resumoAlertasPadroes, type AlertaPadrao } from "./padrao-regras";
 
 type PrismaLike = Pick<PrismaClient, "instrumentoPadrao" | "estabelecimento">;
 
@@ -48,4 +48,45 @@ export async function carregarAlertasPadroes(
     dias,
   );
   return { diasAlerta: dias, resumo: resumoAlertasPadroes(itens), itens };
+}
+
+export type NotificacaoPadrao = {
+  id: string;
+  tipo: "PADRAO_CERTIFICADO_VENCIDO" | "PADRAO_CERTIFICADO_A_VENCER" | "PADRAO_SEM_CERTIFICADO";
+  titulo: string;
+  detalhe: string;
+  href: string;
+  severidade: "warning" | "danger";
+  createdAt: string;
+};
+
+/** Itens do sino para padrões (vencido, a vencer e sem certificado), com link para o padrão. */
+export function notificacoesPadroes(itens: AlertaPadrao[], agora: Date = new Date()): NotificacaoPadrao[] {
+  return itens.map((a) => {
+    const href = `/instrumentos/${a.instrumentoId}`;
+    const id = `padrao-${a.instrumentoId}`;
+    if (a.status === "SEM_CERTIFICADO") {
+      return {
+        id,
+        tipo: "PADRAO_SEM_CERTIFICADO",
+        titulo: `Padrão sem certificado · ${a.nome} (${a.nSerie})`,
+        detalhe: "Cadastre o certificado de calibração antes de usar em laudos",
+        href,
+        severidade: "warning",
+        createdAt: agora.toISOString(),
+      };
+    }
+    const vencido = a.status === "VENCIDO";
+    return {
+      id,
+      tipo: vencido ? "PADRAO_CERTIFICADO_VENCIDO" : "PADRAO_CERTIFICADO_A_VENCER",
+      titulo: vencido
+        ? `Certificado do padrão vencido · ${a.nome} (${a.nSerie})`
+        : `Certificado do padrão a vencer (${a.dias}d) · ${a.nome} (${a.nSerie})`,
+      detalhe: a.certificadoNumero ?? "",
+      href,
+      severidade: vencido ? "danger" : "warning",
+      createdAt: a.certificadoValidade ?? agora.toISOString(),
+    };
+  });
 }
