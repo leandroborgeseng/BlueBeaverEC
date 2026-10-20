@@ -433,7 +433,7 @@ export class ProcedimentosService {
   /** Crit. 11: não há exclusão; procedimento (com ou sem laudo) só pode ser inativado. */
   async inativar(user: AuthUser, id: string) {
     if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
-      throw new ForbiddenException("Inativar procedimento exige aprovação em Laudos");
+      throw new ForbiddenException("Inativar e reativar exigem aprovação em Laudos");
     }
     const proc = await this.findOwned(user.estabelecimentoId, id);
     const laudos = await this.prisma.laudo.count({ where: { procedimentoId: proc.id } });
@@ -451,7 +451,7 @@ export class ProcedimentosService {
   /** Reverso do inativar (decisão TL 20/10): mesma permissão, auditado; já ativo → 409. */
   async reativar(user: AuthUser, id: string) {
     if (!temPermissao(user.permissoesModulos, "laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO)) {
-      throw new ForbiddenException("Reativar procedimento exige aprovação em Laudos");
+      throw new ForbiddenException("Inativar e reativar exigem aprovação em Laudos");
     }
     const proc = await this.findOwned(user.estabelecimentoId, id);
     if (proc.ativo) throw new ConflictException("Procedimento já está ativo");

@@ -363,7 +363,8 @@ describe("decisão TL 20/10 — reativar", () => {
     const { proc } = await publicado(svc);
     await svc.inativar(user(), proc.id);
     const tecnico = user({ userId: "u-tec", perfil: "TECNICO", permissoesModulos: permissoesDoPerfil("TECNICO") });
-    await assert.rejects(svc.reativar(tecnico, proc.id), (e: any) => e.getStatus() === 403);
+    await assert.rejects(svc.inativar(tecnico, proc.id), (e: any) => e.getStatus() === 403 && e.message === "Inativar e reativar exigem aprovação em Laudos");
+    await assert.rejects(svc.reativar(tecnico, proc.id), (e: any) => e.getStatus() === 403 && e.message === "Inativar e reativar exigem aprovação em Laudos");
     assert.equal(p.t.procedimentoLaudo.find((x: any) => x.id === proc.id).ativo, false);
     const meta = Reflect.getMetadataKeys(ProcedimentosController.prototype.reativar)
       .map((k) => Reflect.getMetadata(k, ProcedimentosController.prototype.reativar));
