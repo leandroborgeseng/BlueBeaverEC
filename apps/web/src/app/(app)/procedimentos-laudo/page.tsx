@@ -1,299 +1,192 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+/**
+ * E2 — Procedimentos de laudo: lista "CÓDIGO – TÍTULO vX (publicação dd/mm/aaaa)" + editor estruturado.
+ * O antigo editor de JSON foi removido (itens agora só no rascunho da versão).
+ */
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { PERMISSAO_NIVEL, temPermissaoEspecial } from "@aion/shared";
 import { api } from "@/lib/api";
-import {
-  Badge,
-  Btn,
-  FieldLabel,
-  PageHeader,
-  Surface,
-  fieldStyle,
-} from "@/components/ui/aion-ui";
+import { useCan, useSession } from "@/lib/session";
+import { PageHeader, Surface } from "@/components/ui/aion-ui";
+import { ProcedimentoEditor } from "@/components/procedimentos/ProcedimentoEditor";
+import { ajuda, botao, campo, grade, rotulo, BORDA_FORTE, TEXTO } from "@/components/procedimentos/estilos";
 
 interface Proc {
   id: string;
   nome: string;
   tipo: string;
-  validadeMeses: number;
-  versao?: number;
-  criterioReferencia?: string | null;
-  criterioVersao?: string | null;
+  ativo: boolean;
+  rotulo: string;
+  versaoPublicadaId: string | null;
+  rascunhoId: string | null;
   itens: unknown[];
   modelos: Array<{ modelo: { id: string; nome: string; fabricante: { nome: string } } }>;
-  historico?: Array<{ versao: number; createdAt: string; createdByNome?: string | null }>;
 }
-
 interface Modelo {
   id: string;
   nome: string;
   fabricante: { nome: string };
 }
 
+const TIPOS = [["RECEBIMENTO", "Recebimento"], ["PREVENTIVA", "Preventiva"], ["CALIBRACAO", "Calibração"], ["TSE", "TSE"], ["QUALIFICACAO", "Qualificação"]];
+
 export default function ProcedimentosPage() {
-  const [items, setItems] = useState<Proc[]>([]);
+  const sessao = useSession();
+  const podePublicar = temPermissaoEspecial(sessao?.permissoesEspeciais, "procedimento.publicar");
+  const podeEditar = useCan("laudos", PERMISSAO_NIVEL.EDICAO);
+  const podeAprovar = useCan("laudos", PERMISSAO_NIVEL.EDICAO_APROVACAO);
+  const [items, setItems] = useState<Proc[] | null>(null);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editJson, setEditJson] = useState("");
-  const [editErro, setEditErro] = useState<string | null>(null);
-  const [criterioId, setCriterioId] = useState<string | null>(null);
-  const [criterioRef, setCriterioRef] = useState("");
-  const [criterioVer, setCriterioVer] = useState("");
+  const [aberto, setAberto] = useState<string | null>(null);
+  const [novo, setNovo] = useState(false);
+  const [inativos, setInativos] = useState(false);
 
-  async function load() {
-    const [p, m] = await Promise.all([
-      api<Proc[]>("/procedimentos-laudo"),
-      api<Modelo[]>("/modelos"),
-    ]);
+  const load = useCallback(async () => {
+    const [p, m] = await Promise.all([api<Proc[]>(`/procedimentos-laudo${inativos ? "?inativos=1" : ""}`), api<Modelo[]>("/modelos").catch(() => [])]);
     setItems(p);
     setModelos(m);
-  }
+  }, [inativos]);
 
   useEffect(() => {
     void load().catch((e) => setMsg(e.message));
-  }, []);
+  }, [load]);
 
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const tipo = String(fd.get("tipo"));
-    const defaultItens =
-      tipo === "CALIBRACAO"
-        ? [
-            { id: "p0", pergunta: "0%", tipo: "calibracao", valorPadrao: 0 },
-            { id: "p25", pergunta: "25%", tipo: "calibracao", valorPadrao: 25 },
-            { id: "p50", pergunta: "50%", tipo: "calibracao", valorPadrao: 50 },
-            { id: "p75", pergunta: "75%", tipo: "calibracao", valorPadrao: 75 },
-            { id: "p100", pergunta: "100%", tipo: "calibracao", valorPadrao: 100 },
-          ]
-        : tipo === "TSE"
-          ? [
-              { id: "aterramento", pergunta: "Aterramento", tipo: "medicao", obrigatorio: true },
-              { id: "isolamento", pergunta: "Isolamento", tipo: "medicao", obrigatorio: true },
-              { id: "fuga", pergunta: "Fuga para terra", tipo: "medicao", obrigatorio: true },
-            ]
-          : [
-              { id: "1", pergunta: "Aspecto visual adequado", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
-              { id: "2", pergunta: "Funcionamento conforme especificação", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
-              { id: "3", pergunta: "Acessórios completos", tipo: "aprovado_reprovado", obrigatorio: true, permiteNA: true },
-            ];
-
     try {
-      await api("/procedimentos-laudo", {
+      const r = await api<{ id: string }>("/procedimentos-laudo", {
         method: "POST",
         body: JSON.stringify({
-          nome: String(fd.get("nome")),
-          tipo,
+          codigo: String(fd.get("codigo") ?? "").trim(),
+          tituloLaudo: String(fd.get("tituloLaudo") ?? "").trim(),
+          tipo: String(fd.get("tipo")),
+          ...(fd.get("tipoDocumento") ? { tipoDocumento: String(fd.get("tipoDocumento")) } : {}),
           validadeMeses: Number(fd.get("validadeMeses") || 12),
-          itens: defaultItens,
+          generico: fd.get("generico") === "on",
+          norma: String(fd.get("norma") ?? "").trim() || undefined,
         }),
       });
-      e.currentTarget.reset();
-      setMsg("Procedimento criado");
+      setNovo(false);
+      setMsg(null);
+      await load();
+      setAberto(r.id);
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Erro");
+    }
+  }
+
+  async function acao(path: string, body?: unknown) {
+    try {
+      await api(path, { method: "POST", ...(body ? { body: JSON.stringify(body) } : {}) });
+      setMsg(null);
       await load();
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Erro");
     }
   }
 
-  async function vincular(procId: string, modeloId: string) {
-    if (!modeloId) return;
-    try {
-      await api(`/procedimentos-laudo/${procId}/vincular`, {
-        method: "POST",
-        body: JSON.stringify({ modeloId }),
-      });
-      setMsg("Modelo vinculado (exclusivo por tipo)");
-      await load();
-    } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Erro");
-    }
-  }
-
-  function abrirEdicaoItens(p: Proc) {
-    setEditId(p.id);
-    setEditJson(JSON.stringify(p.itens ?? [], null, 2));
-    setEditErro(null);
-  }
-
-  function abrirCriterio(p: Proc) {
-    setCriterioId(p.id);
-    setCriterioRef(p.criterioReferencia ?? "");
-    setCriterioVer(p.criterioVersao ?? "");
-  }
-
-  async function salvarCriterio() {
-    if (!criterioId) return;
-    try {
-      await api(`/procedimentos-laudo/${criterioId}/criterio`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          criterioReferencia: criterioRef.trim() || undefined,
-          criterioVersao: criterioVer.trim() || undefined,
-        }),
-      });
-      setMsg("Critério publicado (referência e versão). Sem isso, medições ficam não avaliadas.");
-      setCriterioId(null);
-      await load();
-    } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Erro");
-    }
-  }
-
-  async function salvarItens() {
-    if (!editId) return;
-    setEditErro(null);
-    let parsed: unknown[];
-    try {
-      parsed = JSON.parse(editJson) as unknown[];
-      if (!Array.isArray(parsed)) throw new Error("JSON deve ser um array");
-    } catch (err) {
-      setEditErro(err instanceof Error ? err.message : "JSON inválido");
-      return;
-    }
-    try {
-      await api(`/procedimentos-laudo/${editId}/itens`, {
-        method: "PATCH",
-        body: JSON.stringify({ itens: parsed }),
-      });
-      setMsg("Itens atualizados");
-      setEditId(null);
-      await load();
-    } catch (err) {
-      setEditErro(err instanceof Error ? err.message : "Erro");
-    }
+  if (aberto) {
+    return (
+      <div style={{ padding: "0 4px" }}>
+        <ProcedimentoEditor
+          procId={aberto}
+          podePublicar={podePublicar}
+          podeAprovar={podeAprovar}
+          onFechar={() => {
+            setAberto(null);
+            void load();
+          }}
+        />
+      </div>
+    );
   }
 
   return (
-    <div>
-      <PageHeader title="Procedimentos de Laudo" subtitle="Modelos versionados por tipo de intervenção · editar gera nova versão; atendimentos já executados não mudam" />
-      {msg && <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 600 }}>{msg}</div>}
-
-      <Surface style={{ marginBottom: 16 }}>
-        <form
-          onSubmit={(e) => void onCreate(e)}
-          style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr auto", gap: 10, alignItems: "end" }}
-        >
-          <div>
-            <FieldLabel>Nome</FieldLabel>
-            <input name="nome" placeholder="Nome do procedimento" required style={fieldStyle} />
-          </div>
-          <div>
-            <FieldLabel>Tipo</FieldLabel>
-            <select name="tipo" defaultValue="PREVENTIVA" style={fieldStyle}>
-              <option value="RECEBIMENTO">Recebimento</option>
-              <option value="PREVENTIVA">Preventiva</option>
-              <option value="CALIBRACAO">Calibração</option>
-              <option value="TSE">TSE</option>
-              <option value="QUALIFICACAO">Qualificação</option>
-            </select>
-          </div>
-          <div>
-            <FieldLabel>Validade (meses)</FieldLabel>
-            <input name="validadeMeses" type="number" defaultValue={12} min={1} style={fieldStyle} />
-          </div>
-          <Btn type="submit">+ Novo</Btn>
-        </form>
-      </Surface>
-
-      <div style={{ display: "grid", gap: 12 }}>
-        {items.map((p) => (
-          <Surface key={p.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
-              <div>
-                <strong>{p.nome}</strong>
-                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                  <Badge tone="ATIVO">{p.tipo}</Badge>
-                  <span style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                    v{p.versao ?? 1} · validade {p.validadeMeses} meses · {(p.itens as unknown[]).length} itens
-                    {p.criterioReferencia ? ` · critério ${p.criterioReferencia}${p.criterioVersao ? ` (${p.criterioVersao})` : ""}` : ""}
-                  </span>
-                </div>
-              </div>
-              <select
-                defaultValue=""
-                onChange={(e) => void vincular(p.id, e.target.value)}
-                style={{ ...fieldStyle, width: 260 }}
-              >
-                <option value="">Vincular modelo…</option>
-                {modelos.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.fabricante.nome} / {m.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={{ marginTop: 10, fontSize: 12 }}>
-              {p.modelos.length === 0
-                ? "Sem modelos vinculados"
-                : p.modelos
-                    .map((m) => `${m.modelo.fabricante.nome} / ${m.modelo.nome}`)
-                    .join(" · ")}
-            </div>
-            {p.historico && p.historico.length > 0 && (
-              <div style={{ marginTop: 8, fontSize: 11, color: "oklch(0.5 0.02 250)" }}>
-                Histórico: {p.historico.map((h) => `v${h.versao}${h.createdByNome ? ` · ${h.createdByNome}` : ""}`).join(" → ")}
-              </div>
-            )}
-            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <Btn variant="ghost" size="sm" onClick={() => abrirEdicaoItens(p)}>
-                Editar itens (nova versão)
-              </Btn>
-              <Btn variant="ghost" size="sm" onClick={() => abrirCriterio(p)}>
-                Critério de aceitação
-              </Btn>
-            </div>
-            {criterioId === p.id && (
-              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                <FieldLabel>Referência e versão publicadas — sem isto o ponto medido fica não avaliado</FieldLabel>
-                <input
-                  value={criterioRef}
-                  onChange={(e) => setCriterioRef(e.target.value)}
-                  placeholder="Ex.: POP.EC.CAL.001 · Quadro 7"
-                  style={fieldStyle}
-                />
-                <input
-                  value={criterioVer}
-                  onChange={(e) => setCriterioVer(e.target.value)}
-                  placeholder="Versão do critério (ex.: rev. 03/2026)"
-                  style={fieldStyle}
-                />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Btn size="sm" onClick={() => void salvarCriterio()}>
-                    Publicar critério
-                  </Btn>
-                  <Btn variant="ghost" size="sm" onClick={() => setCriterioId(null)}>
-                    Cancelar
-                  </Btn>
-                </div>
-              </div>
-            )}
-            {editId === p.id && (
-              <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                <FieldLabel>Itens do checklist (JSON) — salvar cria nova versão; laudos já executados permanecem com o snapshot</FieldLabel>
-                <textarea
-                  value={editJson}
-                  onChange={(e) => setEditJson(e.target.value)}
-                  rows={8}
-                  style={{ ...fieldStyle, fontFamily: "monospace", fontSize: 12 }}
-                />
-                {editErro && (
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "oklch(0.45 0.15 25)" }}>{editErro}</div>
-                )}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Btn size="sm" onClick={() => void salvarItens()}>
-                    Salvar itens
-                  </Btn>
-                  <Btn variant="ghost" size="sm" onClick={() => setEditId(null)}>
-                    Cancelar
-                  </Btn>
-                </div>
-              </div>
-            )}
-          </Surface>
-        ))}
+    <div style={{ color: TEXTO }}>
+      <PageHeader title="Procedimentos de Laudo" subtitle="Rascunho → publicação versionada · laudos já emitidos mantêm a versão usada" />
+      {msg && <p role="alert" style={{ border: "2px solid var(--aion-danger)", borderRadius: 8, padding: 10 }}>⛔ {msg}</p>}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "8px 0 16px" }}>
+        {podeEditar && <button type="button" style={botao("primario")} onClick={() => setNovo((x) => !x)} aria-expanded={novo}>Novo procedimento</button>}
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44 }}>
+          <input type="checkbox" checked={inativos} onChange={(e) => setInativos(e.target.checked)} style={{ width: 20, height: 20 }} />
+          Mostrar inativos
+        </label>
       </div>
+
+      {novo && (
+        <Surface style={{ marginBottom: 16 }}>
+          <form onSubmit={onCreate} style={{ display: "grid", gap: 12 }} aria-label="Novo procedimento">
+            <div style={grade}>
+              <div><label htmlFor="n-cod" style={rotulo}>Código*</label><input id="n-cod" name="codigo" required style={campo} /></div>
+              <div><label htmlFor="n-tit" style={rotulo}>Título do laudo*</label><input id="n-tit" name="tituloLaudo" required minLength={2} style={campo} /></div>
+              <div><label htmlFor="n-tipo" style={rotulo}>Tipo*</label><select id="n-tipo" name="tipo" style={campo}>{TIPOS.map(([k, r]) => <option key={k} value={k}>{r}</option>)}</select></div>
+              <div><label htmlFor="n-val" style={rotulo}>Validade em meses*</label><input id="n-val" name="validadeMeses" type="number" min={1} defaultValue={12} style={campo} /></div>
+              <div><label htmlFor="n-norma" style={rotulo}>Norma / referência</label><input id="n-norma" name="norma" style={campo} /></div>
+            </div>
+            <fieldset style={{ border: "none", padding: 0 }}>
+              <legend style={rotulo}>Documento emitido* (obrigatório para publicar)</legend>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, marginRight: 16 }}><input type="radio" name="tipoDocumento" value="LAUDO" style={{ width: 20, height: 20 }} />Laudo</label>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44 }}><input type="radio" name="tipoDocumento" value="CERTIFICADO" style={{ width: 20, height: 20 }} />Certificado</label>
+            </fieldset>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44 }}><input type="checkbox" name="generico" style={{ width: 20, height: 20 }} />Procedimento genérico</label>
+            <p style={ajuda}>Nasce em rascunho. Itens e limites são editados na aba Checklist.</p>
+            <div><button type="submit" style={botao("primario")}>Criar rascunho</button></div>
+          </form>
+        </Surface>
+      )}
+
+      {items === null ? (
+        <ul aria-busy="true" aria-label="Carregando procedimentos" style={{ listStyle: "none", padding: 0 }}>
+          {[0, 1, 2].map((i) => <li key={i} style={{ height: 56, margin: "8px 0", borderRadius: 8, background: "oklch(0.95 0.005 250)" }} />)}
+        </ul>
+      ) : items.length === 0 ? (
+        <Surface>
+          <p>Nenhum procedimento ainda. Crie o primeiro para padronizar os laudos.</p>
+          {podeEditar && <button type="button" style={botao("primario")} onClick={() => setNovo(true)}>Novo procedimento</button>}
+        </Surface>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 10 }}>
+          {items.map((p) => {
+            const publicado = !!p.versaoPublicadaId;
+            return (
+              <li key={p.id} style={{ border: `1px solid ${BORDA_FORTE}`, borderRadius: 10, padding: 12, background: "white" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                  <strong style={{ flex: "1 1 260px", overflowWrap: "anywhere" }}>{p.rotulo}</strong>
+                  <span style={{ fontSize: 13 }}>
+                    {!p.ativo ? "⊘ Inativo" : publicado ? "✓ Publicado" : p.rascunhoId ? "✎ Rascunho" : "◷ Legado"}
+                    {publicado && p.rascunhoId ? " · ✎ rascunho aberto" : ""}
+                  </span>
+                  <button type="button" style={botao()} onClick={() => setAberto(p.id)}>{podeEditar ? "Abrir" : "Ver"}</button>
+                  {podeAprovar && p.ativo && (
+                    <button type="button" style={botao("perigo")} onClick={() => window.confirm(`Inativar ${p.rotulo}? Laudos emitidos não mudam; o procedimento não emite laudos novos.`) && void acao(`/procedimentos-laudo/${p.id}/inativar`)}>
+                      Inativar
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8 }}>
+                  <span style={{ fontSize: 13, flex: "1 1 260px" }}>
+                    {p.modelos.length ? p.modelos.map((m) => `${m.modelo.fabricante.nome} / ${m.modelo.nome}`).join(" · ") : "Sem modelos vinculados"}
+                  </span>
+                  {podeEditar && p.ativo && (
+                    <select aria-label={`Vincular modelo a ${p.rotulo}`} style={{ ...campo, width: "auto", minWidth: 220 }} defaultValue="" disabled={!publicado && !!p.rascunhoId && !p.itens.length}
+                      onChange={(e) => e.target.value && void acao(`/procedimentos-laudo/${p.id}/vincular`, { modeloId: e.target.value })}>
+                      <option value="">Vincular modelo…</option>
+                      {modelos.map((m) => <option key={m.id} value={m.id}>{m.fabricante.nome} / {m.nome}</option>)}
+                    </select>
+                  )}
+                </div>
+                <details style={{ marginTop: 6 }}>
+                  <summary style={{ minHeight: 44, display: "flex", alignItems: "center", cursor: "pointer" }}>Ver JSON (somente leitura)</summary>
+                  <pre style={{ fontSize: 12, overflow: "auto", maxHeight: 240 }}>{JSON.stringify(p.itens, null, 2)}</pre>
+                </details>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

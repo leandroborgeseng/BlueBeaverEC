@@ -15,6 +15,8 @@ export interface SessionMe {
   setorIds?: string[];
   setores?: Array<{ id: string; nome: string }>;
   permissoesModulos?: MapaPermissoes;
+  /** E2/Q1 — ex.: ["procedimento.publicar"] */
+  permissoesEspeciais?: string[];
   permissoes?: {
     editarCadastros: boolean;
     alterarStatusOS: boolean;

@@ -18,6 +18,10 @@ interface Proc {
   id: string;
   nome: string;
   tipo: string;
+  /** E2 */
+  rotulo?: string;
+  codigo?: string | null;
+  versaoPublicadaId?: string | null;
   itens: Array<{
     id?: string;
     pergunta?: string;
@@ -487,11 +491,14 @@ export function LaudoEditor({
               <FieldLabel>Procedimento</FieldLabel>
               <select value={procId} onChange={(e) => setProcId(e.target.value)} style={fieldStyle}>
                 <option value="">Procedimento</option>
-                {procs.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome}
-                  </option>
-                ))}
+                {procs
+                  // E2: procedimento novo só em rascunho não emite laudo (legados seguem)
+                  .filter((p) => !(p.codigo && !p.versaoPublicadaId))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.rotulo ?? p.nome}
+                    </option>
+                  ))}
               </select>
             </div>
           )}
