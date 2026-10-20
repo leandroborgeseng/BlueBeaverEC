@@ -14,7 +14,7 @@ import { permissoesDoPerfil, MSG_B10, achatarParaItens, resolverHeranca } from "
 import { criarFakePrisma } from "./e2-fixtures.test";
 import { ProcedimentosService, MSG_SO_RASCUNHO, MSG_CONFLITO_RASCUNHO, MSG_SEM_PERMISSAO_PUBLICAR, MSG_ROTA_DEPRECIADA } from "./procedimentos.service";
 import { ProcedimentosController, CreateProcDto } from "./procedimentos.controller";
-import { LaudosService } from "./laudos.service";
+import { LaudosService, MSG_PROCEDIMENTO_INATIVO } from "./laudos.service";
 import { buildRelatorioServicoPdf } from "./relatorio-servico-pdf";
 import { resolverProcedimentoDoPlano } from "./procedimento-resolver";
 import { backfillPlanoProcedimento } from "./backfill-plano-procedimento";
@@ -411,5 +411,50 @@ describe("Q7 — rotas JSON antigas: leitura depreciada, escrita 410", () => {
     const h = Reflect.getMetadata("__headers__", ProcedimentosController.prototype.itensLegado) as Array<{ name: string; value: string }>;
     assert.ok(h.some((x) => x.name === "Deprecation" && x.value === "true"));
     assert.equal(Reflect.getMetadata(PATH_METADATA, ProcedimentosController.prototype.itensLegado), ":id/itens");
+  });
+});
+
+describe("revisão TL 20/10 — inativo bloqueia só laudos NOVOS", () => {
+  it("rascunho aberto antes da inativação finaliza, com aviso no detalhe e na resposta", async () => {
+    const { p, svc, laudos } = mundo();
+    const { proc } = await publicado(svc, { tipo: "RECEBIMENTO" });
+    const l = await laudos.create(user(), { tipo: "RECEBIMENTO" as any, equipamentoTag: "T-1", procedimentoId: proc.id });
+    await svc.inativar(user(), proc.id);
+    const det = await laudos.byId("e1", l.id);
+    assert.deepEqual(det.avisos, [MSG_PROCEDIMENTO_INATIVO]);
+    const fin = await laudos.finalizar(user(), l.id);
+    assert.equal(p.t.laudo.find((x: any) => x.id === l.id).statusDocumento, "FINAL");
+    assert.deepEqual(fin.avisos, [MSG_PROCEDIMENTO_INATIVO]);
+    assert.deepEqual((await laudos.byId("e1", l.id)).avisos, [], "documento final não carrega o aviso");
+    await assert.rejects(laudos.create(user(), { tipo: "RECEBIMENTO" as any, equipamentoTag: "T-1", procedimentoId: proc.id }), (e: any) => /inativo/.test(e.message));
+  });
+  it("procedimento ativo: sem aviso", async () => {
+    const { svc, laudos } = mundo();
+    const { proc } = await publicado(svc, { tipo: "RECEBIMENTO" });
+    const l = await laudos.create(user(), { tipo: "RECEBIMENTO" as any, equipamentoTag: "T-1", procedimentoId: proc.id });
+    assert.deepEqual((await laudos.byId("e1", l.id)).avisos, []);
+  });
+});
+
+describe("revisão TL 20/10 — Q7: leituras antigas seguem funcionando, só escrita dá 410", () => {
+  it("GET lista, GET :id e GET :id/itens respondem (inclusive procedimento legado e inativo)", async () => {
+    const { svc } = mundo({ procedimentoLaudo: [{ id: "leg", estabelecimentoId: "e1", nome: "Legado", tipo: "CALIBRACAO", itens: [{ id: "i1", pergunta: "Antigo" }], versao: 3, ativo: false, codigo: null, versaoPublicadaId: null }] });
+    assert.deepEqual(await svc.itensDepreciados("e1", "leg"), { id: "leg", versao: 3, itens: [{ id: "i1", pergunta: "Antigo" }] });
+    assert.equal((await svc.byId("e1", "leg")).id, "leg");
+    assert.equal((await svc.list("e1", undefined, true)).length, 1);
+    const { proc } = await publicado(svc);
+    assert.equal(((await svc.itensDepreciados("e1", proc.id)).itens as unknown[]).length, 3, "publicado expõe os itens espelhados");
+  });
+  it("só os métodos de escrita antigos são 410; o GET não chama rotaDepreciada", () => {
+    const ctl = new ProcedimentosController({ rotaDepreciada: () => { throw new GoneException(MSG_ROTA_DEPRECIADA); }, itensDepreciados: async () => ({ itens: [] }) } as any);
+    assert.throws(() => ctl.itens(), GoneException);
+    assert.throws(() => ctl.criterio(), GoneException);
+    assert.doesNotThrow(() => ctl.itensLegado(user(), "x"));
+    for (const m of ["itens", "criterio"] as const) {
+      assert.equal(Reflect.getMetadata(METHOD_METADATA, (ProcedimentosController.prototype as any)[m]), 4, "PATCH");
+      const h = Reflect.getMetadata("__headers__", (ProcedimentosController.prototype as any)[m]) as Array<{ name: string }>;
+      assert.ok(h.some((x) => x.name === "Deprecation"));
+    }
+    assert.equal(Reflect.getMetadata(METHOD_METADATA, ProcedimentosController.prototype.itensLegado), 0, "GET");
   });
 });

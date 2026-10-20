@@ -77,6 +77,8 @@ type PontoCert = {
 };
 
 interface LaudoDetail {
+  /** E2: ex.: procedimento inativado depois de aberto o rascunho (não bloqueia finalizar) */
+  avisos?: string[];
   id: string;
   numero: string;
   tipo: string;
@@ -402,6 +404,11 @@ export function LaudoEditor({
         ))}
       </div>
 
+      {laudo?.avisos?.map((a) => (
+        <p key={a} role="note" style={{ border: "1px solid var(--aion-border-control)", borderRadius: 8, padding: 10, margin: "8px 0" }}>
+          ⚠ {a}
+        </p>
+      ))}
       {erro && <Err>{erro}</Err>}
       {erro?.includes(MSG_CERT_REVISADO) && (laudo?.id ?? laudoIdAtual) && (
         <div style={{ marginTop: 8 }}>

@@ -65,6 +65,11 @@ export function criarFakePrisma(seed: Partial<Record<string, Row[]>> = {}) {
       if (include.derivados) r.derivados = clone(t.procedimentoLaudo.filter((p) => p.paiId === row.id));
       if (include.planos) r.planos = clone(t.planoTeste.filter((p) => p.procedimentoId === row.id));
     }
+    if (nome === "laudo") {
+      if (include.procedimento) r.procedimento = clone(t.procedimentoLaudo.find((p) => p.id === row.procedimentoId) ?? null);
+      if (include.equipamento) r.equipamento = clone(t.equipamento.find((e) => e.id === row.equipamentoId) ?? null);
+      if (include.planoTeste) r.planoTeste = null;
+    }
     return r;
   };
   const sel = (row: Row | null, select?: Row) => {

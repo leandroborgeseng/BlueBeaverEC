@@ -31,6 +31,14 @@ type RespostaItem = RespostaChecklist;
 /** B17: rascunho com certificado do padrão substituído por revisão mais nova. */
 export const MSG_CERT_REVISADO = "Certificado do padrão foi revisado; atualize para a revisão vigente";
 
+export const MSG_PROCEDIMENTO_INATIVO =
+  "Procedimento inativo: este rascunho pode ser finalizado com a versão já usada, mas o procedimento não emite laudos novos.";
+
+/** Aviso (não bloqueio) para laudo em rascunho cujo procedimento foi inativado depois de aberto. */
+export function avisosProcedimentoLaudo(l: { statusDocumento?: string | null; procedimento?: { ativo?: boolean } | null }): string[] {
+  return l.statusDocumento !== "FINAL" && l.procedimento && l.procedimento.ativo === false ? [MSG_PROCEDIMENTO_INATIVO] : [];
+}
+
 @Injectable()
 export class LaudosService {
   constructor(
@@ -76,7 +84,7 @@ export class LaudosService {
       },
     });
     if (!laudo) throw new NotFoundException();
-    return laudo;
+    return { ...laudo, avisos: avisosProcedimentoLaudo(laudo) };
   }
 
   async create(
@@ -387,7 +395,8 @@ export class LaudosService {
       });
     }
 
-    return updated;
+    // E2 (revisão TL): procedimento inativo não impede finalizar rascunho já aberto; só avisa
+    return { ...updated, avisos: avisosProcedimentoLaudo(laudo) };
   }
 
   async retificar(
