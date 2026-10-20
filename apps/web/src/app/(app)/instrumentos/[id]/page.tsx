@@ -758,7 +758,7 @@ export default function InstrumentoDetailPage() {
                         display: "grid",
                         gridTemplateColumns: "1.2fr 0.7fr repeat(5, 1fr) 0.6fr 0.8fr auto",
                         gap: 6,
-                        alignItems: "end",
+                        alignItems: "start",
                       }}
                     >
                       <div>
@@ -849,14 +849,6 @@ export default function InstrumentoDetailPage() {
                           }
                           style={fieldStyle}
                         />
-                        {p.correcao.trim() === "" && correcaoCalculada(p) != null && (
-                          <div
-                            id={`correcao-calc-${idx}`}
-                            style={{ fontSize: 12, marginTop: 2, color: "var(--aion-muted)" }}
-                          >
-                            Calculada: {fmtCorrecao(correcaoCalculada(p)!)} (convencional − indicação)
-                          </div>
-                        )}
                       </div>
                       <div>
                         {idx === 0 && <FieldLabel>U</FieldLabel>}
@@ -913,14 +905,30 @@ export default function InstrumentoDetailPage() {
                           style={fieldStyle}
                         />
                       </div>
-                      <Btn
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setPontos((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))}
-                      >
-                        ✕
-                      </Btn>
+                      <div style={{ alignSelf: "end" }}>
+                        <Btn
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setPontos((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)))}
+                        >
+                          ✕
+                        </Btn>
+                      </div>
+                      {p.correcao.trim() === "" && correcaoCalculada(p) != null && (
+                        <div
+                          id={`correcao-calc-${idx}`}
+                          style={{
+                            gridColumn: "1 / -1",
+                            fontSize: 12,
+                            marginTop: -2,
+                            whiteSpace: "nowrap",
+                            color: "var(--aion-muted)",
+                          }}
+                        >
+                          Calculada: {fmtCorrecao(correcaoCalculada(p)!)} (convencional − indicação)
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
