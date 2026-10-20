@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -37,8 +38,7 @@ interface Inst {
 }
 
 function fmtDate(v?: string | null) {
-  if (!v) return "";
-  return new Date(v).toLocaleDateString("pt-BR");
+  return formatarDataCivil(v, "");
 }
 
 export default function InstrumentosPage() {

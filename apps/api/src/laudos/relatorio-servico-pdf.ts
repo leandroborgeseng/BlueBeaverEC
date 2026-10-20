@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+import { formatarDataCivil } from "@aion/shared";
 import {
   avisoAssinaturaNaoCertificada,
   labelTipoIntervencao,
@@ -71,6 +72,7 @@ export type RelatorioServicoPayload = {
   visivelPortal?: boolean;
 };
 
+/** Carimbo de tempo (criadoEm/finalizadoEm): dia em BRT. Datas só-data usam formatarDataCivil. */
 function fmtData(v?: string | Date | null): string {
   if (!v) return "—";
   const d = v instanceof Date ? v : new Date(v);
@@ -141,7 +143,7 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       ["Setor", payload.equipamento.setor || "—"],
       ["Nº série", payload.equipamento.nSerie || "—"],
       ["OS", payload.osCodigo || (payload.osNumero != null ? String(payload.osNumero) : "—")],
-      ["Data do serviço", fmtData(payload.dataExecucao)],
+      ["Data do serviço", formatarDataCivil(payload.dataExecucao)],
       [
         "Procedimento",
         payload.procedimento?.nome
@@ -182,7 +184,7 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       const c = payload.instrumento.certificado;
       if (c) {
         doc.fontSize(8).fillColor("#444").text(
-          [c.numero ? `Cert. padrão ${c.numero}` : null, c.dataValidade ? `validade ${fmtData(c.dataValidade)}` : null, c.laboratorioEmissor, c.statusNaData ? `situação na data: ${c.statusNaData.replace(/_/g, " ")}` : null]
+          [c.numero ? `Cert. padrão ${c.numero}` : null, c.dataValidade ? `validade ${formatarDataCivil(c.dataValidade)}` : null, c.laboratorioEmissor, c.statusNaData ? `situação na data: ${c.statusNaData.replace(/_/g, " ")}` : null]
             .filter(Boolean)
             .join(" · "),
           { width: pageW },

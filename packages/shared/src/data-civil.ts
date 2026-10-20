@@ -44,6 +44,18 @@ export function dataCivilDeInstante(v: Date | string | null | undefined): string
   return dataCivilSP(v instanceof Date ? v : new Date(v));
 }
 
+/**
+ * Exibe uma data só-data (emissão, validade, data de execução) como "DD/MM/AAAA", independente do fuso do processo/navegador.
+ * Usa `dataCivilDeData`: meia-noite UTC = dia digitado; instante com hora = dia civil em São Paulo.
+ * Não usar em carimbos de tempo (criadoEm, publicadoEm…), que seguem em BRT com hora.
+ */
+export function formatarDataCivil(v: Date | string | null | undefined, vazio = "—"): string {
+  const d = dataCivilDeData(v);
+  if (!d) return vazio;
+  const [a, m, dia] = d.split("-");
+  return `${dia}/${m}/${a}`;
+}
+
 /** Diferença em dias civis b − a (ambos "YYYY-MM-DD"). */
 export function diasCivisEntre(a: string, b: string): number {
   const [ya, ma, da] = a.split("-").map(Number);

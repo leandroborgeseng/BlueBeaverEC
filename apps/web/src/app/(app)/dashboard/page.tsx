@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
@@ -351,7 +352,7 @@ export default function DashboardPage() {
                         {a.status === "VENCIDO" ? "Vencido" : a.status === "A_VENCER" ? "A vencer" : "Sem certificado"}
                       </Badge>{" "}
                       {a.certificadoValidade
-                        ? `${a.certificadoNumero ?? ""} · validade ${new Date(a.certificadoValidade).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}`
+                        ? `${a.certificadoNumero ?? ""} · validade ${formatarDataCivil(a.certificadoValidade)}`
                         : ""}
                     </div>
                   </li>

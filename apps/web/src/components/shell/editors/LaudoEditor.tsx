@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Badge, Btn, Err, FieldLabel, fieldStyle } from "@/components/ui/aion-ui";
@@ -954,7 +955,7 @@ export function LaudoEditor({
           </div>
           {viewMode && laudo?.dataExecucao && (
             <div style={{ fontSize: 13, color: "oklch(0.5 0.02 250)" }}>
-              Executado em {new Date(laudo.dataExecucao).toLocaleDateString("pt-BR")}
+              Executado em {formatarDataCivil(laudo.dataExecucao)}
             </div>
           )}
           <div style={{ fontSize: 13 }}>

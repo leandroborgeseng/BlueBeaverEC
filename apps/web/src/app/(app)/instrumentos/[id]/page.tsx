@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarDataCivil } from "@aion/shared";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -482,7 +483,7 @@ export default function InstrumentoDetailPage() {
                     >
                       <div style={{ fontWeight: 700, fontSize: 13 }}>{c.numero}</div>
                       <div style={{ fontSize: 11, color: "oklch(0.5 0.02 250)" }}>
-                        válido até {new Date(c.dataValidade).toLocaleDateString("pt-BR")}
+                        válido até {formatarDataCivil(c.dataValidade)}
                         {c.vigente ? " · vigente" : ""}
                       </div>
                       <div style={{ fontSize: 11 }}>{c.pontos.length} ponto(s)</div>
@@ -501,8 +502,8 @@ export default function InstrumentoDetailPage() {
                     <div>
                       <strong>{certSelecionado.numero}</strong>
                       <div style={{ fontSize: 12, color: "oklch(0.5 0.02 250)" }}>
-                        Emissão {new Date(certSelecionado.dataEmissao).toLocaleDateString("pt-BR")} ·
-                        Validade {new Date(certSelecionado.dataValidade).toLocaleDateString("pt-BR")}
+                        Emissão {formatarDataCivil(certSelecionado.dataEmissao)} ·
+                        Validade {formatarDataCivil(certSelecionado.dataValidade)}
                         {certSelecionado.laboratorioEmissor
                           ? ` · ${certSelecionado.laboratorioEmissor}`
                           : ""}
