@@ -48,7 +48,7 @@ function mundo(seed: Record<string, any[]> = {}) {
 
 async function publicado(svc: ProcedimentosService, over: Record<string, unknown> = {}, arv: unknown = arvoreOk()) {
   const proc = await svc.create(user(), { codigo: "PR-DEF", tituloLaudo: "Calibração de desfibrilador", tipo: "CALIBRACAO" as any, tipoDocumento: "CERTIFICADO" as any, ...over } as any);
-  const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: arv });
+  const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: arv });
   const r = await svc.publicar(user(), proc.id, v.id!, { confirmarAvisos: true });
   return { proc, versao: r.versao! };
 }
@@ -87,20 +87,20 @@ describe("crit. 6/6a–6d — checklist em árvore (até 3 níveis) com itens ti
   it("aceita seção > subseção > item MEDIÇÃO com pontos e limites por ponto", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-A", tituloLaudo: "Árvore ok", tipo: "CALIBRACAO" as any });
-    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: arvoreOk() });
+    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: arvoreOk() });
     assert.equal((v.arvore as any).nos[0].filhos[0].filhos[0].item.pontos.length, 2);
   });
   it("4º nível → 400 (schema do @aion/shared)", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-B", tituloLaudo: "Árvore funda", tipo: "CALIBRACAO" as any });
     const funda = { nos: [{ id: "a", titulo: "A", filhos: [{ id: "b", titulo: "B", filhos: [{ id: "c", titulo: "C", filhos: [{ id: "d", titulo: "D", item: { id: "d", tipo: "REGISTRO", titulo: "D" } }] }] }] }] };
-    await assert.rejects(svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: funda }), (e: any) => e instanceof BadRequestException && /profundidade máxima é 3/.test(e.message));
+    await assert.rejects(svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: funda }), (e: any) => e instanceof BadRequestException && /profundidade máxima é 3/.test(e.message));
   });
   it("tipo de item, limite e id inválidos → 400", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-C", tituloLaudo: "Árvore ruim", tipo: "CALIBRACAO" as any });
     const ruim = { nos: [{ id: "x", titulo: "X", item: { id: "x", tipo: "FOO", titulo: "X", pontos: [{ id: "p", nominal: 1, limite: { tipo: "BAR" } }] } }, { id: "x", titulo: "Dup" }] };
-    await assert.rejects(svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: ruim }), (e: any) =>
+    await assert.rejects(svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: ruim }), (e: any) =>
       /tipo inválido/.test(e.message) && /tipo de limite inválido/.test(e.message) && /id repetido/.test(e.message));
   });
   it("achatamento: um item por ponto, nLeituras → repetições, % e ± viram tolerância; qualitativo vira check", () => {
@@ -121,7 +121,7 @@ describe("crit. 6e + Q3/Q4 — herança do procedimento-pai", () => {
     const filho = await svc.create(user(), { codigo: "PR-FILHO", tituloLaudo: "Derivado", tipo: "CALIBRACAO" as any, tipoDocumento: "LAUDO" as any, paiId: pai.id });
     const arv = { nos: [{ id: "r1", titulo: "Rede", item: { id: "r1", tipo: "REGISTRO", titulo: "Tensão de rede", unidade: "V" } }],
       heranca: { sobrescritas: { m1: { nLeituras: 5, limites: { p50: { tipo: "MAX_LE", b: 60 } } } }, ocultos: ["q1"] } };
-    const v = await svc.salvarRascunho(user(), filho.id, filho.rascunho.id, { atualizadoEm: filho.rascunho.atualizadoEm.toISOString(), arvore: arv });
+    const v = await svc.salvarRascunho(user(), filho.id, filho.rascunho.id, { atualizadoEm: filho.rascunho.atualizadoEm!.toISOString(), arvore: arv });
     const r = await svc.publicar(user(), filho.id, v.id!, { confirmarAvisos: true });
     const res = (r.versao as any).itensResolvidos.arvore;
     const m1 = res.nos[0].filhos[0].filhos[0];
@@ -137,7 +137,7 @@ describe("crit. 6e + Q3/Q4 — herança do procedimento-pai", () => {
     const { svc } = mundo();
     const { proc: pai } = await publicado(svc);
     const filho = await svc.create(user(), { codigo: "PR-F2", tituloLaudo: "Derivado", tipo: "CALIBRACAO" as any, paiId: pai.id });
-    await assert.rejects(svc.salvarRascunho(user(), filho.id, filho.rascunho.id, { atualizadoEm: filho.rascunho.atualizadoEm.toISOString(), arvore: { nos: [], heranca: { sobrescritas: { m1: { unidade: "kJ" } } } } }),
+    await assert.rejects(svc.salvarRascunho(user(), filho.id, filho.rascunho.id, { atualizadoEm: filho.rascunho.atualizadoEm!.toISOString(), arvore: { nos: [], heranca: { sobrescritas: { m1: { unidade: "kJ" } } } } }),
       (e: any) => /campo "unidade" não pode ser sobrescrito/.test(e.message));
   });
   it("Q3: cadeia de 3 níveis ok; 4º nível e ciclo → 400", async () => {
@@ -205,7 +205,7 @@ describe("crit. 8 — publicação: versão + data, imutável, editar abre rascu
   it("concorrência no rascunho: token velho → 409", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-X", tituloLaudo: "Concorrência", tipo: "CALIBRACAO" as any });
-    const tok = proc.rascunho.atualizadoEm.toISOString();
+    const tok = proc.rascunho.atualizadoEm!.toISOString();
     await new Promise((r) => setTimeout(r, 2));
     await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: tok, tituloLaudo: "A primeira" });
     await assert.rejects(svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: tok, tituloLaudo: "A segunda" }), (e: any) => e.message === MSG_CONFLITO_RASCUNHO);
@@ -213,7 +213,7 @@ describe("crit. 8 — publicação: versão + data, imutável, editar abre rascu
   it("publicação concorrente: a segunda recebe 409 e nada fica pela metade", async () => {
     const { p, svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-Y", tituloLaudo: "Corrida", tipo: "CALIBRACAO" as any, tipoDocumento: "LAUDO" as any });
-    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: arvoreOk() });
+    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: arvoreOk() });
     const rs = await Promise.allSettled([svc.publicar(user(), proc.id, v.id!, { confirmarAvisos: true }), svc.publicar(user(), proc.id, v.id!, { confirmarAvisos: true })]);
     assert.equal(rs.filter((r) => r.status === "fulfilled").length, 1);
     assert.ok(rs.some((r) => r.status === "rejected" && r.reason instanceof ConflictException));
@@ -291,12 +291,12 @@ describe("crit. 10 / 6f / B10 / B11 — validação da publicação", () => {
   const publicarCom = async (item: Record<string, unknown>, extra: Record<string, unknown> = {}) => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-V", tituloLaudo: "Validação", tipo: "CALIBRACAO" as any, tipoDocumento: "LAUDO" as any, ...extra });
-    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: arvoreOk(item) });
+    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: arvoreOk(item) });
     return { svc, proc, v };
   };
   it("crit. 10: medição sem tolerância com referência → aviso; exige confirmação; publicada fica NÃO_AVALIADO depois", async () => {
     const { svc, proc, v } = await publicarCom({ tolerancia: null });
-    await assert.rejects(svc.publicar(user(), proc.id, v.id!, {}), (e: any) => e instanceof BadRequestException && e.getResponse().avisos.some((a: string) => /sem tolerância com referência/.test(a)));
+    await assert.rejects(svc.publicar(user(), proc.id, v.id!, {}), (e: any) => e instanceof BadRequestException && (e.getResponse() as any).avisos.some((a: string) => /sem tolerância com referência/.test(a)));
     const r = await svc.publicar(user(), proc.id, v.id!, { confirmarAvisos: true });
     assert.ok(r.avisos.some((a) => /fica NÃO AVALIADO/.test(a)));
   });
@@ -309,7 +309,7 @@ describe("crit. 10 / 6f / B10 / B11 — validação da publicação", () => {
   it("B10: 'Considerando U' sem modelo → bloqueio com a mensagem exata (422)", async () => {
     const { svc, proc, v } = await publicarCom({ regra: "CONSIDERANDO_U" });
     await assert.rejects(svc.publicar(user(), proc.id, v.id!, { confirmarAvisos: true }), (e: any) =>
-      e instanceof UnprocessableEntityException && e.getResponse().bloqueios.includes(`Energia: ${MSG_B10}`));
+      e instanceof UnprocessableEntityException && (e.getResponse() as any).bloqueios.includes(`Energia: ${MSG_B10}`));
     assert.equal(MSG_B10, "Regra 'Considerando U' exige um modelo de incerteza. Vincule um modelo ou use a regra Direta.");
   });
   it("B11: item sem regra escolhida assume Direta", () => {
@@ -346,7 +346,7 @@ describe("crit. 11a / D-L1 / B3 / B8 / B9 — tipo do documento e snapshot da ve
   it("11a: publicar sem tipo do documento → bloqueio", async () => {
     const { svc } = mundo();
     const proc = await svc.create(user(), { codigo: "PR-T", tituloLaudo: "Sem tipo", tipo: "CALIBRACAO" as any });
-    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm.toISOString(), arvore: arvoreOk() });
+    const v = await svc.salvarRascunho(user(), proc.id, proc.rascunho.id, { atualizadoEm: proc.rascunho.atualizadoEm!.toISOString(), arvore: arvoreOk() });
     const prev = await svc.previaPublicacao(user(), proc.id, v.id!);
     assert.ok(prev.bloqueios.includes("Escolha o tipo de documento emitido (Laudo ou Certificado)."));
   });
