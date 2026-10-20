@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { PerfilAcesso } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
@@ -121,6 +121,12 @@ class PatchPerfilDto {
   ativo?: boolean;
 }
 
+export class PermissoesEspeciaisDto {
+  @IsArray()
+  @IsString({ each: true })
+  permissoes!: string[];
+}
+
 @Controller("config")
 @UseGuards(JwtAuthGuard)
 @RequirePermission("config", PERMISSAO_NIVEL.LEITURA)
@@ -153,6 +159,13 @@ export class OrganizacaoConfigController {
   @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
   patchUsuario(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PatchUsuarioDto) {
     return this.config.patchUsuario(user, id, body);
+  }
+
+  /** E2/Q1 — só ADMIN (checado no serviço). */
+  @Put("usuarios/:id/permissoes-especiais")
+  @RequirePermission("config", PERMISSAO_NIVEL.EDICAO)
+  putPermissoesEspeciais(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() body: PermissoesEspeciaisDto) {
+    return this.config.setPermissoesEspeciais(user, id, body.permissoes);
   }
 
   @Get("perfis")

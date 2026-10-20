@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { PerfilAcesso } from "@prisma/client";
+import { PerfilAcesso, Prisma } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-import { PERMISSAO_NIVEL, temPermissao } from "@aion/shared";
+import { PERMISSAO_NIVEL, PERMISSOES_ESPECIAIS, normalizarPermissoesEspeciais, temPermissao } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthUser } from "../auth/current-user.decorator";
 
@@ -300,5 +300,34 @@ export class OrganizacaoConfigService {
       orderBy: { createdAt: "desc" },
       take: 200,
     });
+  }
+  /**
+   * E2/Q1 — permissões especiais por usuário (ex.: `procedimento.publicar`).
+   * Só ADMIN (sem personificação) concede ou retira, para qualquer usuário do estabelecimento. Auditado.
+   */
+  async setPermissoesEspeciais(user: AuthUser, usuarioId: string, permissoes: string[]) {
+    if (user.perfil !== PerfilAcesso.ADMIN || user.impersonatorId) {
+      throw new ForbiddenException("Só administrador concede permissões especiais");
+    }
+    const desconhecidas = (permissoes ?? []).filter((p) => !(PERMISSOES_ESPECIAIS as readonly string[]).includes(p));
+    if (desconhecidas.length) throw new BadRequestException(`Permissão especial desconhecida: ${desconhecidas.join(", ")}`);
+    const vinculo = await this.prisma.usuarioEstabelecimento.findUnique({
+      where: { usuarioId_estabelecimentoId: { usuarioId, estabelecimentoId: user.estabelecimentoId } },
+    });
+    if (!vinculo) throw new NotFoundException("Usuário não encontrado neste estabelecimento");
+    const antes = normalizarPermissoesEspeciais(vinculo.permissoesEspeciais);
+    const depois = normalizarPermissoesEspeciais(permissoes);
+    const updated = await this.prisma.usuarioEstabelecimento.update({
+      where: { id: vinculo.id },
+      data: { permissoesEspeciais: depois.length ? depois : Prisma.DbNull },
+    });
+    await this.prisma.logAcesso.create({
+      data: {
+        usuarioId: user.userId,
+        acao: "PERMISSOES_ESPECIAIS_ALTERADAS",
+        detalhe: JSON.stringify({ estabelecimentoId: user.estabelecimentoId, alvoUsuarioId: usuarioId, antes, depois }),
+      },
+    });
+    return { usuarioId, permissoesEspeciais: normalizarPermissoesEspeciais(updated.permissoesEspeciais) };
   }
 }

@@ -17,6 +17,7 @@ interface User {
 class PrismaMock {
   private users: Map<string, User>;
   public perfilCustom = { findFirst: async () => null };
+  public usuarioEstabelecimento = { findUnique: async () => null };
 
   constructor(users: Map<string, User>) {
     this.users = users;
