@@ -331,7 +331,7 @@ export default function InstrumentoDetailPage() {
                         borderRadius: 8,
                         border:
                           c.id === certId
-                            ? "1px solid oklch(0.64 0.19 38)"
+                            ? "1px solid var(--aion-primary)"
                             : "1px solid oklch(0.9 0.01 250)",
                         background: c.id === certId ? "oklch(0.97 0.02 70)" : "white",
                         cursor: "pointer",

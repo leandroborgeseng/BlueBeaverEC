@@ -5,7 +5,7 @@
   --aion-bg-mobile: oklch(0.965 0.004 255);
   --aion-surface: oklch(1 0 0);
   --aion-border: oklch(0.88 0.01 250); /* só divisórias decorativas */
-  --aion-border-control: oklch(0.64 0.01 250); /* inputs, selects, checkboxes, radios, chips (WCAG 1.4.11) */
+  --aion-border-control: oklch(0.6 0.01 250); /* inputs, selects, checkboxes, radios, chips (WCAG 1.4.11) */
   --aion-border-soft: oklch(0.91 0.006 255);
   --aion-ghost-border: oklch(0.9 0.005 250);
   --aion-text: oklch(0.25 0.02 250);

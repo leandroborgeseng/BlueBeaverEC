@@ -6,7 +6,8 @@
     "dev": "next dev -p 3000",
     "build": "pnpm --filter @aion/shared build && next build",
     "start": "node scripts/start-prod.mjs",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@aion/shared": "workspace:*",

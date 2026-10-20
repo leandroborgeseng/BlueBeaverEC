@@ -343,7 +343,7 @@ const footer: CSSProperties = {
 export const lab: CSSProperties = { width: 168, textAlign: "right", fontSize: 12, flexShrink: 0 };
 export const fld: CSSProperties = {
   height: 24,
-  border: "1px solid #aaa",
+  border: "1px solid var(--aion-border-control)",
   fontSize: 12,
   padding: "0 6px",
   background: "white",
@@ -351,7 +351,7 @@ export const fld: CSSProperties = {
 const comboBtn: CSSProperties = {
   width: 22,
   height: 24,
-  border: "1px solid #aaa",
+  border: "1px solid var(--aion-border-control)",
   background: "#f0f0f0",
   fontSize: 9,
   cursor: "default",

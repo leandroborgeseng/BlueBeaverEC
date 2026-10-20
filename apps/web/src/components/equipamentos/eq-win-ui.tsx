@@ -84,7 +84,7 @@ export function FItem({
 
 export const winFld: CSSProperties = {
   height: 22,
-  border: "1px solid #aaa",
+  border: "1px solid var(--aion-border-control)",
   fontSize: 12,
   padding: "0 6px",
   background: "white",

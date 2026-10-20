@@ -299,7 +299,7 @@ const btn: CSSProperties = {
   height: 24,
   padding: "0 12px",
   fontSize: 12,
-  border: "1px solid #aaa",
+  border: "1px solid var(--aion-border-control)",
   background: "#f7f7f7",
   cursor: "pointer",
 };

@@ -118,7 +118,7 @@ export default function LoginPage() {
             border: "none",
             borderRadius: 10,
             padding: 12,
-            background: "oklch(0.64 0.19 38)",
+            background: "var(--aion-primary)",
             color: "white",
             fontSize: 14.5,
             fontWeight: 600,
@@ -152,7 +152,7 @@ const label: React.CSSProperties = {
 
 const input: React.CSSProperties = {
   width: "100%",
-  border: "1px solid oklch(0.88 0.01 250)",
+  border: "1px solid var(--aion-border-control)",
   borderRadius: 10,
   padding: "11px 14px",
   fontSize: 14,
