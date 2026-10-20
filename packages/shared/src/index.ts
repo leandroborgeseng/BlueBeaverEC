@@ -406,6 +406,25 @@ export function temPermissao(
   return n >= minimo;
 }
 
+/**
+ * Permissões especiais por usuário (E2/Q1). Não pertencem a nenhum perfil por padrão;
+ * só ADMIN atribui, a qualquer usuário, por vínculo (UsuarioEstabelecimento.permissoesEspeciais).
+ */
+export const PERMISSOES_ESPECIAIS = ["procedimento.publicar"] as const;
+export type PermissaoEspecial = (typeof PERMISSOES_ESPECIAIS)[number];
+
+/** Normaliza o JSON gravado: só chaves conhecidas, sem duplicatas, ordenadas. */
+export function normalizarPermissoesEspeciais(v: unknown): PermissaoEspecial[] {
+  if (!Array.isArray(v)) return [];
+  const ok = new Set(v.filter((x): x is PermissaoEspecial => (PERMISSOES_ESPECIAIS as readonly string[]).includes(String(x))));
+  return [...ok].sort();
+}
+
+/** Sem herança por perfil: nem ADMIN tem `procedimento.publicar` sem atribuição explícita. */
+export function temPermissaoEspecial(lista: readonly string[] | undefined | null, p: PermissaoEspecial): boolean {
+  return !!lista?.includes(p);
+}
+
 /** Edição no módulo indicado (mapa JWT ou matriz padrão do perfil). */
 export function podeEditarModulo(
   perfil: PerfilAcesso,
@@ -665,4 +684,6 @@ export {
   ehOsDominioTipo,
 } from "./os-dominios";
 export type { OsDominioTipo } from "./os-dominios";
+export * from "./procedimento-arvore";
+export * from "./procedimento-arvore-ops";
 export { FUSO_SP, dataCivilSP, dataCivilDeData, dataCivilDeInstante, formatarDataCivil, diasCivisEntre } from "./data-civil";

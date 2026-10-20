@@ -7,6 +7,8 @@ export interface AuthUser {
   estabelecimentoId: string;
   perfil: PerfilAcesso;
   permissoesModulos?: MapaPermissoes;
+  /** E2/Q1 — por usuário/estabelecimento; vazio durante personificação */
+  permissoesEspeciais?: string[];
   impersonatorId?: string;
   impersonatorNome?: string;
   impersonatorPerfil?: PerfilAcesso;

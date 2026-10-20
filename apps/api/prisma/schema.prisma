@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum StatusProcedimentoVersao {
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
+}
+
+enum TipoDocumentoEmitido {
+  LAUDO
+  CERTIFICADO
+}
+
 enum PerfilAcesso {
   ENGENHEIRO
   GESTOR
@@ -213,6 +224,8 @@ model UsuarioEstabelecimento {
   estabelecimentoId  String
   perfil             PerfilAcesso
   setorIds           String[]     @default([])
+  /// Permissões especiais por usuário (ex.: ["procedimento.publicar"]); concedidas só por ADMIN. null = nenhuma.
+  permissoesEspeciais Json?
 
   usuario         Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
@@ -423,6 +436,8 @@ model PlanoTeste {
   tipoTeste             TipoTestePlano
   periodicidadeMeses    Int
   procedimentoCodigo    String
+  /// E2 (crit. 9): FK nova; dual-read com procedimentoCodigo (backfill por script)
+  procedimentoId        String?
   parametrosFaixa       String?
   tolerancias           String?
   classeTse             String?
@@ -433,11 +448,13 @@ model PlanoTeste {
   updatedAt             DateTime       @updatedAt
 
   tipoEquipamentoPlano TipoEquipamentoPlano @relation(fields: [tipoEquipamentoPlanoId], references: [id], onDelete: Cascade)
+  procedimento         ProcedimentoLaudo?   @relation(fields: [procedimentoId], references: [id], onDelete: SetNull)
   laudos               Laudo[]
   instancias           PlanoInstancia[]
 
   @@unique([tipoEquipamentoPlanoId, tipoTeste])
   @@index([procedimentoCodigo])
+  @@index([procedimentoId])
 }
 
 model CentroCusto {
@@ -1041,6 +1058,8 @@ model PlanoInstancia {
   chaveUnica            String
   planoTesteId          String?
   procedimentoCodigo    String?
+  /// E2 (crit. 9): FK nova (dual-read)
+  procedimentoId        String?
   periodicidadeMeses    Int?
   fontePeriodicidade    FontePeriodicidade?
   fontePeriodicidadeObs String?
@@ -1068,6 +1087,7 @@ model PlanoInstancia {
   grupo           PlanoGrupo?         @relation(fields: [grupoId], references: [id], onDelete: SetNull)
   tipoCustom      PlanoTipoCustom?    @relation(fields: [tipoCustomId], references: [id], onDelete: SetNull)
   planoTeste      PlanoTeste?         @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
+  procedimento    ProcedimentoLaudo?  @relation(fields: [procedimentoId], references: [id], onDelete: SetNull)
   responsavel     Colaborador?        @relation("PlanoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
   fornecedor      Fornecedor?         @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
   ocorrencias     PlanoOcorrencia[]
@@ -1078,6 +1098,7 @@ model PlanoInstancia {
   @@index([estabelecimentoId, tipo])
   @@index([modeloOrigemId])
   @@index([proximaData])
+  @@index([procedimentoId])
 }
 
 model PlanoOcorrencia {
@@ -1162,7 +1183,19 @@ model ProcedimentoLaudo {
   modelos         ProcedimentoModelo[]
   laudos          Laudo[]
   pop             Pop?
-  historico       ProcedimentoLaudoVersao[]
+  historico       ProcedimentoLaudoVersao[]   @relation("ProcHistorico")
+  /// E2 (crit. 5): código único por estabelecimento (índice parcial WHERE codigo IS NOT NULL, só no SQL); legado = null
+  codigo            String?
+  generico          Boolean?
+  /// E2 (6e): procedimento-pai (herança até 3 níveis, sem ciclo)
+  paiId             String?
+  /// E2 (8): versão publicada vigente (null = nunca publicado pelo fluxo novo)
+  versaoPublicadaId String?                   @unique
+  pai               ProcedimentoLaudo?        @relation("ProcPai", fields: [paiId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  derivados         ProcedimentoLaudo[]       @relation("ProcPai")
+  versaoPublicada   ProcedimentoLaudoVersao?  @relation("ProcVigente", fields: [versaoPublicadaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  planos            PlanoTeste[]
+  planoInstancias   PlanoInstancia[]
 
   @@index([estabelecimentoId, tipo])
 }
@@ -1181,9 +1214,34 @@ model ProcedimentoLaudoVersao {
   createdAt          DateTime  @default(now())
   createdById        String?
   createdByNome      String?
+  /// E2: null = versão legada (lida como PUBLICADA, é a que os laudos antigos usaram)
+  status             StatusProcedimentoVersao?
+  codigo             String?
+  tituloLaudo        String?
+  /// D-L1 / 11a: obrigatório para publicar; nomeia o documento emitido
+  tipoDocumento      TipoDocumentoEmitido?
+  norma              String?
+  generico           Boolean?
+  paiId              String?
+  /// 6e / Q4: versão do pai usada (congelada na publicação)
+  paiVersaoId        String?
+  /// Q8: árvore do checklist (até 3 níveis), validada por @aion/shared; null = legado (usa `itens`)
+  arvore             Json?
+  /// Árvore com herança resolvida, congelada na publicação
+  itensResolvidos    Json?
+  /// Aba Certificado (7a–7f)
+  certificadoCfg     Json?
+  publicadoEm        DateTime?
+  publicadoPorId     String?
+  publicadoPorNome   String?
+  /// token de concorrência do rascunho
+  atualizadoEm       DateTime?
 
-  procedimento ProcedimentoLaudo @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+  procedimento ProcedimentoLaudo  @relation("ProcHistorico", fields: [procedimentoId], references: [id], onDelete: Cascade)
+  vigenteDe    ProcedimentoLaudo? @relation("ProcVigente")
+  laudos       Laudo[]
 
+  /// + índice único parcial só no SQL: um RASCUNHO por procedimento
   @@unique([procedimentoId, versao])
   @@index([estabelecimentoId])
 }
@@ -1334,6 +1392,10 @@ model Laudo {
   metadados             Json                 @default("{}")
   statusDocumento       StatusDocumentoLaudo @default(RASCUNHO)
   procedimentoVersao    Int?
+  /// E2: versão exata usada (snapshot continua sendo a fonte do PDF); null = legado
+  procedimentoVersaoId  String?
+  /// D-L1/B8: tipo do documento copiado da versão na criação; null = legado (Relatório de serviço)
+  tipoDocumento         TipoDocumentoEmitido?
   procedimentoSnapshot  Json?
   instrumentoSnapshot   Json?
   visivelPortal         Boolean              @default(false)
@@ -1346,6 +1408,7 @@ model Laudo {
   estabelecimento    Estabelecimento    @relation(fields: [estabelecimentoId], references: [id], onDelete: Cascade)
   equipamento        Equipamento        @relation(fields: [equipamentoId], references: [id])
   procedimento       ProcedimentoLaudo? @relation(fields: [procedimentoId], references: [id])
+  procedimentoVersaoRef ProcedimentoLaudoVersao? @relation(fields: [procedimentoVersaoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   instrumento        InstrumentoPadrao? @relation(fields: [instrumentoId], references: [id])
   responsavelTecnico Colaborador?       @relation("LaudoResponsavelTecnico", fields: [responsavelTecnicoId], references: [id])
   planoTeste         PlanoTeste?        @relation(fields: [planoTesteId], references: [id], onDelete: SetNull)
@@ -1357,6 +1420,7 @@ model Laudo {
   @@index([estabelecimentoId, tipo])
   @@index([estabelecimentoId, statusDocumento])
   @@index([equipamentoId])
+  @@index([procedimentoVersaoId])
 }
 
 model LaudoRevisao {

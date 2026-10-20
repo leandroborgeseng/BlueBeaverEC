@@ -18,6 +18,10 @@ interface Proc {
   id: string;
   nome: string;
   tipo: string;
+  /** E2 */
+  rotulo?: string;
+  codigo?: string | null;
+  versaoPublicadaId?: string | null;
   itens: Array<{
     id?: string;
     pergunta?: string;
@@ -73,6 +77,8 @@ type PontoCert = {
 };
 
 interface LaudoDetail {
+  /** E2: ex.: procedimento inativado depois de aberto o rascunho (não bloqueia finalizar) */
+  avisos?: string[];
   id: string;
   numero: string;
   tipo: string;
@@ -398,6 +404,11 @@ export function LaudoEditor({
         ))}
       </div>
 
+      {laudo?.avisos?.map((a) => (
+        <p key={a} role="note" style={{ border: "1px solid var(--aion-border-control)", borderRadius: 8, padding: 10, margin: "8px 0" }}>
+          ⚠ {a}
+        </p>
+      ))}
       {erro && <Err>{erro}</Err>}
       {erro?.includes(MSG_CERT_REVISADO) && (laudo?.id ?? laudoIdAtual) && (
         <div style={{ marginTop: 8 }}>
@@ -487,11 +498,14 @@ export function LaudoEditor({
               <FieldLabel>Procedimento</FieldLabel>
               <select value={procId} onChange={(e) => setProcId(e.target.value)} style={fieldStyle}>
                 <option value="">Procedimento</option>
-                {procs.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome}
-                  </option>
-                ))}
+                {procs
+                  // E2: procedimento novo só em rascunho não emite laudo (legados seguem)
+                  .filter((p) => !(p.codigo && !p.versaoPublicadaId))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.rotulo ?? p.nome}
+                    </option>
+                  ))}
               </select>
             </div>
           )}

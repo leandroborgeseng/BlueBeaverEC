@@ -69,6 +69,8 @@ export class SessionService {
         verValoresFinanceiros: (permissoesModulos.financeiro ?? 0) >= 1,
       },
       permissoesModulos,
+      /** E2/Q1 — habilita [Publicar…] no editor de procedimento */
+      permissoesEspeciais: user.permissoesEspeciais ?? [],
       podePersonificar: podePersonificar(perfil) && !user.impersonatorId,
       impersonadoPor: user.impersonatorId
         ? {

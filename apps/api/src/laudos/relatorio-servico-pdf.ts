@@ -12,6 +12,11 @@ export type RelatorioServicoPayload = {
   numero: string;
   tipo: string;
   statusDocumento: string;
+  /** E2 (D-L1/11a/7a): título do documento emitido, vindo da versão publicada; ausente = legado */
+  tituloEmitido?: string | null;
+  tipoDocumento?: "LAUDO" | "CERTIFICADO" | null;
+  /** E2 (7b/7c): configuração da aba Certificado congelada na versão */
+  certificadoCfg?: { fraseLiberacao?: boolean; ocultarPadroes?: boolean } | null;
   dataExecucao?: string | Date | null;
   osNumero?: number | null;
   osCodigo?: string | null;
@@ -108,7 +113,8 @@ function ensureSpace(doc: PDFKit.PDFDocument, needed: number, header: () => void
 }
 
 export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Promise<Buffer> {
-  const docTitle = tituloDocumentoTecnico(payload.tipo);
+  const legado = tituloDocumentoTecnico(payload.tipo);
+  const docTitle = payload.tituloEmitido ? { ...legado, titulo: payload.tituloEmitido } : legado;
   const rascunho = payload.statusDocumento !== "FINAL";
 
   return new Promise((resolve, reject) => {
@@ -171,7 +177,7 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       doc.text(`${e.papel}: ${e.nome}${e.registro ? ` · ${e.registro}` : ""}`, { width: pageW });
     }
 
-    if (payload.instrumento) {
+    if (payload.instrumento && !payload.certificadoCfg?.ocultarPadroes) {
       ensureSpace(doc, 40, chrome);
       doc.moveDown(0.3);
       doc.fillColor("#2f4f9a").fontSize(10).font("Helvetica-Bold").text("Instrumento na data do serviço");
@@ -316,8 +322,18 @@ export function buildRelatorioServicoPdf(payload: RelatorioServicoPayload): Prom
       doc.fontSize(9).fillColor("#8a4b08").text("Documento em rascunho — ainda não finalizado.", { width: pageW });
     }
     doc.font("Helvetica").fontSize(7).fillColor("#666").text(avisoAssinaturaNaoCertificada(), { width: pageW });
+    if (payload.certificadoCfg?.fraseLiberacao) {
+      const liberado = payload.resultado === "APROVADO";
+      doc.moveDown(0.3).font("Helvetica-Bold").fontSize(10).fillColor(liberado ? "#1b5e20" : "#8a1c1c").text(
+        liberado ? "O EQUIPAMENTO ENSAIADO ESTÁ LIBERADO PARA USO." : "NÃO LIBERADO PARA USO",
+        { width: pageW },
+      );
+      doc.font("Helvetica");
+    }
     doc.fontSize(7).fillColor("#888").text(
-      `${docTitle.titulo} (${labelTipoIntervencao(payload.tipo)}). Não é certificado de calibração.`,
+      payload.tipoDocumento === "CERTIFICADO"
+        ? `${docTitle.titulo} (${labelTipoIntervencao(payload.tipo)}).`
+        : `${docTitle.titulo} (${labelTipoIntervencao(payload.tipo)}). Não é certificado de calibração.`,
       { width: pageW },
     );
 

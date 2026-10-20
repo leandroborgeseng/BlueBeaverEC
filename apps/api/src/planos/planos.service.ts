@@ -72,6 +72,8 @@ export type UpsertPlanoInput = {
   executorTipo?: ExecutorPlano;
   fornecedorId?: string | null;
   procedimentoCodigo?: string | null;
+  /** E2 (crit. 9): FK para procedimento publicado */
+  procedimentoId?: string | null;
 };
 
 function startOfDay(d: Date) {
@@ -678,6 +680,13 @@ export class PlanosService {
       alvoIds.push(...eqs.map((e) => e.id));
     }
 
+    const procVinculado = input.procedimentoId
+      ? await this.prisma.procedimentoLaudo.findFirst({
+          where: { id: input.procedimentoId, estabelecimentoId: user.estabelecimentoId, ativo: true },
+          select: { id: true, codigo: true },
+        })
+      : null;
+    if (input.procedimentoId && !procVinculado) throw new BadRequestException("Procedimento não encontrado ou inativo");
     const chave = chaveUnicaPlano(input.tipo, tipoCustomId);
     const proxima = input.proximaData ? startOfDayRegra(new Date(`${input.proximaData}T00:00:00`)) : null;
     const criados = [];
@@ -701,7 +710,8 @@ export class PlanosService {
         responsavelId: input.responsavelId ?? null,
         executorTipo: input.executorTipo ?? ExecutorPlano.INTERNO,
         fornecedorId: input.fornecedorId ?? null,
-        procedimentoCodigo: input.procedimentoCodigo?.trim() || null,
+        procedimentoCodigo: procVinculado?.codigo ?? (input.procedimentoCodigo?.trim() || null),
+        procedimentoId: procVinculado?.id ?? null,
         editadoManualmente: true,
         status: StatusPlanoInstancia.ATIVO,
         motivoSuspensao: null,

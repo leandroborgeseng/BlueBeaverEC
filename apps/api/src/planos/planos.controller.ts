@@ -118,6 +118,10 @@ class UpsertPlanoDto {
   @IsOptional()
   @IsString()
   procedimentoCodigo?: string;
+
+  @IsOptional()
+  @IsString()
+  procedimentoId?: string;
 }
 
 class ReprogramarDto {

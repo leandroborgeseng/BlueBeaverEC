@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
+import { normalizarPermissoesEspeciais, permissoesDoPerfil, type PerfilAcesso } from "@aion/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthTokenPayload } from "./auth.service";
 
@@ -43,12 +43,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       custom?.permissoes as Record<string, unknown> | null,
     );
 
+    // E2/Q1: permissões especiais vêm do vínculo; personificação não herda (publicar é ato pessoal)
+    const vinculo = payload.impersonatorId
+      ? null
+      : await this.prisma.usuarioEstabelecimento.findUnique({
+          where: { usuarioId_estabelecimentoId: { usuarioId: payload.sub, estabelecimentoId: payload.estabelecimentoId } },
+          select: { permissoesEspeciais: true },
+        });
+    const permissoesEspeciais = normalizarPermissoesEspeciais(vinculo?.permissoesEspeciais);
+
     return {
       userId: payload.sub,
       email: payload.email,
       estabelecimentoId: payload.estabelecimentoId,
       perfil,
       permissoesModulos,
+      permissoesEspeciais,
       impersonatorId: payload.impersonatorId,
       impersonatorNome: payload.impersonatorNome,
       impersonatorPerfil: payload.impersonatorPerfil,

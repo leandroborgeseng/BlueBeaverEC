@@ -450,6 +450,21 @@
     }
   },
   {
+    "route": "/config/usuarios/:id/permissoes-especiais",
+    "method": "PUT",
+    "handler": "OrganizacaoConfigController.putPermissoesEspeciais",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
     "route": "/contratos/",
     "method": "GET",
     "handler": "ContratosController.list",
@@ -3885,6 +3900,51 @@
     }
   },
   {
+    "route": "/procedimentos-laudo/:id/diff",
+    "method": "GET",
+    "handler": "ProcedimentosController.diff",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/inativar",
+    "method": "POST",
+    "handler": "ProcedimentosController.inativar",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/itens",
+    "method": "GET",
+    "handler": "ProcedimentosController.itensLegado",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
     "route": "/procedimentos-laudo/:id/itens",
     "method": "PATCH",
     "handler": "ProcedimentosController.itens",
@@ -3897,6 +3957,126 @@
       "TECNICO_RESTRITO": "NEGADO",
       "SOLICITANTE": "NEGADO",
       "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/planos",
+    "method": "POST",
+    "handler": "ProcedimentosController.vincularPlano",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/rascunho",
+    "method": "POST",
+    "handler": "ProcedimentosController.abrirRascunho",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/reativar",
+    "method": "POST",
+    "handler": "ProcedimentosController.reativar",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/versoes",
+    "method": "GET",
+    "handler": "ProcedimentosController.versoes",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/versoes/:vid",
+    "method": "GET",
+    "handler": "ProcedimentosController.versao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/versoes/:vid",
+    "method": "PATCH",
+    "handler": "ProcedimentosController.salvar",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/versoes/:vid/publicar",
+    "method": "POST",
+    "handler": "ProcedimentosController.publicar",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
+    "route": "/procedimentos-laudo/:id/versoes/:vid/validacao",
+    "method": "GET",
+    "handler": "ProcedimentosController.validacao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "PERMITIDO"
     }
   },
   {

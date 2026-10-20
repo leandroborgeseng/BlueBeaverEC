@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { MODULOS } from "@aion/shared";
+import { MODULOS, normalizarPermissoesEspeciais, temPermissaoEspecial } from "@aion/shared";
+import { useSession } from "@/lib/session";
 import { api } from "@/lib/api";
 import { FormDialog } from "@/components/ui/FormDialog";
 import {
@@ -37,6 +38,8 @@ type UsuarioRow = {
   perfil: string;
   setorIds: string[];
   setores: SetorOpt[];
+  /** E2/Q1 */
+  permissoesEspeciais?: string[] | null;
   usuario: { id: string; nome: string; email: string; ativo: boolean };
 };
 
@@ -130,6 +133,21 @@ export default function ConfigPage() {
   const [dialogBusy, setDialogBusy] = useState(false);
   const [dialogErro, setDialogErro] = useState<string | null>(null);
   const [setores, setSetores] = useState<SetorOpt[]>([]);
+  const sessao = useSession();
+  // E2/Q1: só ADMIN (sem personificação) concede "Publicar procedimentos"
+  const adminConcede = sessao?.perfil === "ADMIN" && !sessao?.impersonadoPor;
+
+  async function alternarPublicar(u: UsuarioRow, ligar: boolean) {
+    const atuais = normalizarPermissoesEspeciais(u.permissoesEspeciais);
+    const permissoes = ligar ? [...atuais, "procedimento.publicar"] : atuais.filter((x) => x !== "procedimento.publicar");
+    try {
+      await api(`/config/usuarios/${u.usuarioId}/permissoes-especiais`, { method: "PUT", body: JSON.stringify({ permissoes }) });
+      setMsg(ligar ? `${u.usuario.nome} pode publicar procedimentos` : `${u.usuario.nome} não publica mais procedimentos`);
+      await load();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro");
+    }
+  }
 
   async function load() {
     const [o, u, p, l, s] = await Promise.all([
@@ -424,13 +442,14 @@ export default function ConfigPage() {
                 <th style={th}>Perfil</th>
                 <th style={th}>Setores</th>
                 <th style={th}>Status</th>
+                <th style={th}>Publicar procedimentos</th>
                 <th style={th}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={td}>
+                  <td colSpan={7} style={td}>
                     <Empty />
                   </td>
                 </tr>
@@ -451,6 +470,22 @@ export default function ConfigPage() {
                       <Badge tone={u.usuario.ativo ? "success" : "warning"}>
                         {u.usuario.ativo ? "ativo" : "inativo"}
                       </Badge>
+                    </td>
+                    <td style={td}>
+                      <label style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, minWidth: 44 }}>
+                        <input
+                          type="checkbox"
+                          style={{ width: 20, height: 20 }}
+                          checked={temPermissaoEspecial(normalizarPermissoesEspeciais(u.permissoesEspeciais), "procedimento.publicar")}
+                          disabled={!adminConcede}
+                          aria-label={`${u.usuario.nome} pode publicar procedimentos`}
+                          title={adminConcede ? undefined : "Só administrador concede"}
+                          onChange={(e) => void alternarPublicar(u, e.target.checked)}
+                        />
+                        <span aria-hidden="true">
+                          {temPermissaoEspecial(normalizarPermissoesEspeciais(u.permissoesEspeciais), "procedimento.publicar") ? "Sim" : "Não"}
+                        </span>
+                      </label>
                     </td>
                     <td style={td}>
                       <Btn variant="ghost" size="sm" onClick={() => openEdit(u)}>

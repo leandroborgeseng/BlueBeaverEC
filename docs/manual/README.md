@@ -7,5 +7,6 @@
 | Entrega | Página | Situação |
 |---|---|---|
 | E1 — Padrões rastreáveis e certificados | [laudos/e1-padroes-certificados.md](laudos/e1-padroes-certificados.md) | esqueleto (texto pendente) |
+| E2 — Procedimentos versionados | [laudos/e2-procedimentos.md](laudos/e2-procedimentos.md) | esqueleto (texto pendente) |
 
-Imagens ficam em `docs/manual/laudos/img/` com o prefixo da entrega (`e1-*.png`).
+Imagens ficam em `docs/manual/laudos/img/` com o prefixo da entrega (`e1-*.png`, `e2-*.png`).
