@@ -130,6 +130,21 @@ export function pontoComHeranca<T extends PontoPadraoCert>(
   };
 }
 
+/**
+ * Bloqueios metrológicos do certificado do padrão usado no laudo (borda B16 e U > 0):
+ * k ausente (após herança) ou U ≤ 0 impedem finalizar — nunca calcula com k presumido nem u_cal = 0.
+ */
+export function bloqueiosMetrologicosPadrao(pontos: PontoPadraoCert[] | null | undefined): string[] {
+  const erros: string[] = [];
+  (pontos ?? []).forEach((p, i) => {
+    const k = numOuNull(p.fatorK);
+    if (k == null || !(k > 0)) erros.push(`Ponto ${i + 1}: k não informado no certificado do padrão`);
+    const u = numOuNull(p.incertezaExpandida);
+    if (u == null || !(u > 0)) erros.push(`Ponto ${i + 1}: U deve ser maior que zero`);
+  });
+  return erros;
+}
+
 /** Texto da probabilidade de abrangência para laudo/PDF: "95,45%" ou "não informada". */
 export function textoProbabilidadeAbrangencia(p: number | string | null | undefined): string {
   const n = numOuNull(p);

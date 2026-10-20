@@ -16,9 +16,11 @@ import {
   calcularResultadoLaudo,
   itensObrigatoriosPendentes,
   snapshotInstrumentoNaData,
+  bloqueiosMetrologicosPadrao,
   statusCertificadoNaData,
   tituloDocumentoTecnico,
   type ItemChecklistModelo,
+  type PontoPadraoCert,
   type RespostaChecklist,
 } from "./laudo-regras";
 import { buildRelatorioServicoPdf, type RelatorioServicoPayload } from "./relatorio-servico-pdf";
@@ -260,6 +262,13 @@ export class LaudosService {
     if (!laudo) throw new NotFoundException();
     if (laudo.statusDocumento === StatusDocumentoLaudo.FINAL) {
       throw new BadRequestException("Relatório já está final");
+    }
+
+    const bloqueios = bloqueiosMetrologicosPadrao(
+      (laudo.instrumentoSnapshot as { certificado?: { pontos?: PontoPadraoCert[] } } | null)?.certificado?.pontos,
+    );
+    if (bloqueios.length) {
+      throw new BadRequestException(`Certificado do padrão incompleto: ${bloqueios.join("; ")}`);
     }
 
     const modeloItens = this.itensDoModelo(laudo.procedimentoSnapshot, laudo.procedimento?.itens);

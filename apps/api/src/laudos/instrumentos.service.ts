@@ -408,7 +408,7 @@ export class InstrumentosService {
           dataValidade: new Date(data.dataValidade),
           laboratorioEmissor: data.laboratorioEmissor?.trim() || null,
           laboratorioAcreditacao: data.laboratorioAcreditacao?.trim() || null,
-          // sem `?? 2`: vazio = não informado (o ponto precisa trazer k; validado acima)
+          // sem default 2: vazio = não informado (o ponto precisa trazer k; validado acima)
           fatorAbrangencia: data.fatorAbrangencia ?? null,
           probabilidadeAbrangencia: data.probabilidadeAbrangencia ?? null,
           observacoes: data.observacoes?.trim() || null,

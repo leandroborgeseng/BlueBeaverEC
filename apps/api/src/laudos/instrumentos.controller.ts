@@ -189,7 +189,7 @@ class UpdateInstrumentoDto {
   ativo?: boolean;
 }
 
-class CreateCertificadoDto {
+export class CreateCertificadoDto {
   @IsString()
   @MinLength(1)
   numero!: string;
