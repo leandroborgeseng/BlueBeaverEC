@@ -1269,13 +1269,19 @@ model CertificadoPadrao {
   anexoMime              String?  @default("application/pdf")
   anexoConteudo          Bytes?
   vigente                Boolean  @default(true)
+  /// Revisão (null = original). Certificado usado em laudo final não muda no lugar:
+  /// cadastra-se revisão explícita ligada ao anterior (rastreabilidade do laudo emitido).
+  revisao                Int?
+  revisaoDeId            String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
   instrumento InstrumentoPadrao         @relation(fields: [instrumentoId], references: [id], onDelete: Cascade)
   pontos      CertificadoPadraoPonto[]
+  revisaoDe   CertificadoPadrao?        @relation("CertificadoRevisao", fields: [revisaoDeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  revisoes    CertificadoPadrao[]       @relation("CertificadoRevisao")
 
-  @@unique([instrumentoId, numero])
+  @@unique([instrumentoId, numero, revisao])
   @@index([estabelecimentoId])
   @@index([instrumentoId, vigente])
   @@index([dataValidade])

@@ -961,7 +961,12 @@ export class LaudosService {
     const inst = await this.prisma.instrumentoPadrao.findFirst({
       where: { id: instrumentoId, estabelecimentoId, ativo: true },
       include: {
-        certificados: { include: { pontos: { orderBy: { ordem: "asc" } } }, orderBy: { dataEmissao: "desc" } },
+        // revisões substituídas ficam fora: laudo novo usa sempre a revisão atual
+        certificados: {
+          where: { revisoes: { none: {} } },
+          include: { pontos: { orderBy: { ordem: "asc" } } },
+          orderBy: { dataEmissao: "desc" },
+        },
       },
     });
     if (!inst) throw new NotFoundException("Instrumento padrão não encontrado");

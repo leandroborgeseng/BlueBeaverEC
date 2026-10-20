@@ -2160,6 +2160,21 @@
     }
   },
   {
+    "route": "/instrumentos-padroes/:id/certificados/:certId",
+    "method": "PATCH",
+    "handler": "InstrumentosController.updateCertificado",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
+    }
+  },
+  {
     "route": "/instrumentos-padroes/:id/certificados/:certId/pdf",
     "method": "GET",
     "handler": "InstrumentosController.pdf",
@@ -2172,6 +2187,21 @@
       "TECNICO_RESTRITO": "NEGADO",
       "SOLICITANTE": "NEGADO",
       "AUDITORIA": "PERMITIDO"
+    }
+  },
+  {
+    "route": "/instrumentos-padroes/:id/certificados/:certId/revisoes",
+    "method": "POST",
+    "handler": "InstrumentosController.criarRevisao",
+    "isPublic": false,
+    "results": {
+      "ADMIN": "PERMITIDO",
+      "GESTOR": "PERMITIDO",
+      "ENGENHEIRO": "PERMITIDO",
+      "TECNICO": "NEGADO",
+      "TECNICO_RESTRITO": "NEGADO",
+      "SOLICITANTE": "NEGADO",
+      "AUDITORIA": "NEGADO"
     }
   },
   {

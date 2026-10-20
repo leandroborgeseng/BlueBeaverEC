@@ -44,6 +44,11 @@ interface Cert {
   probabilidadeAbrangencia?: number | null;
   vigente: boolean;
   temAnexo: boolean;
+  /** usado em laudo final: dados metrológicos e PDF só mudam por revisão */
+  usadoEmLaudoFinal?: boolean;
+  revisao?: number | null;
+  revisaoDeId?: string | null;
+  substituido?: boolean;
   statusCertificado: string;
   pontos: Ponto[];
   observacoes?: string | null;
@@ -110,6 +115,29 @@ export default function InstrumentoDetailPage() {
   const [pontos, setPontos] = useState<PontoDraft[]>([emptyPonto()]);
   const [anexoDataUrl, setAnexoDataUrl] = useState<string | undefined>();
   const [anexoNome, setAnexoNome] = useState<string | undefined>();
+  const [modo, setModo] = useState<{ tipo: "novo" | "editar" | "revisao"; cert?: Cert }>({ tipo: "novo" });
+  const [formKey, setFormKey] = useState(0);
+
+  function abrirFormulario(tipo: "novo" | "editar" | "revisao", cert?: Cert) {
+    setModo({ tipo, cert });
+    setFormKey((k) => k + 1);
+    setAnexoDataUrl(undefined);
+    setAnexoNome(undefined);
+    setPontos(
+      cert?.pontos.length
+        ? cert.pontos.map((p) => ({
+            grandeza: p.grandeza ?? "",
+            unidade: p.unidade,
+            valorNominal: p.valorNominal != null ? String(p.valorNominal) : "",
+            valorConvencional: p.valorConvencional != null ? String(p.valorConvencional) : "",
+            indicacao: p.indicacao != null ? String(p.indicacao) : "",
+            incertezaExpandida: String(p.incertezaExpandida),
+            fatorK: p.fatorK != null ? String(p.fatorK) : "",
+            probabilidadeAbrangencia: p.probabilidadeAbrangencia != null ? String(p.probabilidadeAbrangencia) : "",
+          }))
+        : [emptyPonto()],
+    );
+  }
 
   const load = useCallback(async () => {
     const data = await api<Padrao>(`/instrumentos-padroes/${id}`);
@@ -205,8 +233,15 @@ export default function InstrumentoDetailPage() {
     }
 
     try {
-      const created = await api<Cert>(`/instrumentos-padroes/${padrao.id}/certificados`, {
-        method: "POST",
+      const base = `/instrumentos-padroes/${padrao.id}/certificados`;
+      const url =
+        modo.tipo === "editar" && modo.cert
+          ? `${base}/${modo.cert.id}`
+          : modo.tipo === "revisao" && modo.cert
+            ? `${base}/${modo.cert.id}/revisoes`
+            : base;
+      const created = await api<Cert>(url, {
+        method: modo.tipo === "editar" ? "PATCH" : "POST",
         body: JSON.stringify({
           numero: String(fd.get("numero")),
           dataEmissao: String(fd.get("dataEmissao")),
@@ -226,7 +261,15 @@ export default function InstrumentoDetailPage() {
       setPontos([emptyPonto()]);
       setAnexoDataUrl(undefined);
       setAnexoNome(undefined);
-      setMsg(`Certificado ${created.numero} cadastrado com ${pontosPayload.length} ponto(s)`);
+      setMsg(
+        modo.tipo === "editar"
+          ? `Certificado ${created.numero} atualizado`
+          : modo.tipo === "revisao"
+            ? `Revisão ${created.revisao ?? ""} do certificado ${created.numero} cadastrada; a anterior deixou de ser vigente`
+            : `Certificado ${created.numero} cadastrado com ${pontosPayload.length} ponto(s)`,
+      );
+      setModo({ tipo: "novo" });
+      setFormKey((k) => k + 1);
       await load();
       setCertId(created.id);
     } catch (err) {
@@ -421,12 +464,29 @@ export default function InstrumentoDetailPage() {
                           ? ` (${certSelecionado.laboratorioAcreditacao})`
                           : ""}
                       </div>
+                      {certSelecionado.usadoEmLaudoFinal && !certSelecionado.substituido && (
+                        <div role="note" style={{ fontSize: 12, fontWeight: 600 }}>
+                          Certificado usado em laudos emitidos; cadastre uma revisão
+                        </div>
+                      )}
                       <div style={{ fontSize: 12 }}>
                         k = {certSelecionado.fatorAbrangencia ?? "não informado"} · probabilidade de abrangência:{" "}
                         {textoProb(certSelecionado.probabilidadeAbrangencia)}
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {certSelecionado.revisao != null && <Badge tone="INFO">Revisão {certSelecionado.revisao}</Badge>}
+                      {certSelecionado.substituido && <Badge tone="INFO">Substituído por revisão</Badge>}
+                      {!certSelecionado.substituido &&
+                        (certSelecionado.usadoEmLaudoFinal ? (
+                          <Btn variant="secondary" size="sm" type="button" onClick={() => abrirFormulario("revisao", certSelecionado)}>
+                            Cadastrar revisão
+                          </Btn>
+                        ) : (
+                          <Btn variant="secondary" size="sm" type="button" onClick={() => abrirFormulario("editar", certSelecionado)}>
+                            Editar certificado
+                          </Btn>
+                        ))}
                       <Badge tone={certSelecionado.statusCertificado}>{certSelecionado.statusCertificado}</Badge>
                       {certSelecionado.temAnexo && (
                         <Btn
@@ -494,32 +554,48 @@ export default function InstrumentoDetailPage() {
           </div>
 
           <Surface>
-            <div style={{ fontWeight: 700, marginBottom: 12 }}>Novo certificado de calibração do padrão</div>
-            <form onSubmit={(e) => void onAddCert(e)} style={{ display: "grid", gap: 14 }}>
+            <div style={{ fontWeight: 700, marginBottom: 12 }}>
+              {modo.tipo === "editar"
+                ? `Editar certificado ${modo.cert?.numero ?? ""}`
+                : modo.tipo === "revisao"
+                  ? `Revisão do certificado ${modo.cert?.numero ?? ""}`
+                  : "Novo certificado de calibração do padrão"}
+            </div>
+            {modo.tipo !== "novo" && (
+              <div role="status" style={{ fontSize: 13, marginBottom: 10 }}>
+                {modo.tipo === "revisao"
+                  ? "Certificado usado em laudos emitidos; cadastre uma revisão. Os laudos emitidos continuam com o certificado e o PDF originais."
+                  : "Certificado ainda não usado em laudo final: a edição é gravada no próprio cadastro e auditada."}{" "}
+                <Btn variant="ghost" size="sm" type="button" onClick={() => abrirFormulario("novo")}>
+                  Cancelar
+                </Btn>
+              </div>
+            )}
+            <form key={formKey} onSubmit={(e) => void onAddCert(e)} style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                 <div>
                   <FieldLabel>Nº certificado</FieldLabel>
-                  <input name="numero" required style={fieldStyle} />
+                  <input name="numero" required defaultValue={modo.cert?.numero ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Emissão</FieldLabel>
-                  <input name="dataEmissao" type="date" required style={fieldStyle} />
+                  <input name="dataEmissao" type="date" required defaultValue={modo.cert?.dataEmissao?.slice(0, 10) ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Validade</FieldLabel>
-                  <input name="dataValidade" type="date" required style={fieldStyle} />
+                  <input name="dataValidade" type="date" required defaultValue={modo.cert?.dataValidade?.slice(0, 10) ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Laboratório</FieldLabel>
-                  <input name="laboratorioEmissor" placeholder="Lab emissor" style={fieldStyle} />
+                  <input name="laboratorioEmissor" placeholder="Lab emissor" defaultValue={modo.cert?.laboratorioEmissor ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Acreditação (RBC)</FieldLabel>
-                  <input name="laboratorioAcreditacao" placeholder="CRL-XXXX" style={fieldStyle} />
+                  <input name="laboratorioAcreditacao" placeholder="CRL-XXXX" defaultValue={modo.cert?.laboratorioAcreditacao ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>k (abrangência)</FieldLabel>
-                  <input name="fatorAbrangencia" type="number" step="any" min="0" placeholder="ex.: 2" style={fieldStyle} />
+                  <input name="fatorAbrangencia" type="number" step="any" min="0" placeholder="ex.: 2" defaultValue={modo.cert?.fatorAbrangencia ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>Probabilidade de abrangência (%)</FieldLabel>
@@ -530,12 +606,13 @@ export default function InstrumentoDetailPage() {
                     min="0"
                     max="100"
                     placeholder="não informada (ex.: 95,45)"
+                    defaultValue={modo.cert?.probabilidadeAbrangencia ?? ""}
                     style={fieldStyle}
                   />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <FieldLabel>Observações</FieldLabel>
-                  <input name="observacoes" style={fieldStyle} />
+                  <input name="observacoes" defaultValue={modo.cert?.observacoes ?? ""} style={fieldStyle} />
                 </div>
                 <div>
                   <FieldLabel>PDF do certificado</FieldLabel>
@@ -709,7 +786,9 @@ export default function InstrumentoDetailPage() {
                 </div>
               </div>
 
-              <Btn type="submit">Salvar certificado vigente</Btn>
+              <Btn type="submit">
+                {modo.tipo === "editar" ? "Salvar alterações" : modo.tipo === "revisao" ? "Cadastrar revisão" : "Salvar certificado vigente"}
+              </Btn>
             </form>
           </Surface>
         </>

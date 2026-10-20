@@ -328,6 +328,30 @@ export class InstrumentosController {
     return this.instrumentos.addCertificado(user, id, body);
   }
 
+  /** Edição: sem uso em laudo final grava no lugar; usado → só observações (senão 409). Não existe DELETE. */
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Patch(":id/certificados/:certId")
+  updateCertificado(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Param("certId") certId: string,
+    @Body() body: CreateCertificadoDto,
+  ) {
+    return this.instrumentos.updateCertificado(user, id, certId, body);
+  }
+
+  /** Revisão explícita de certificado (o anterior deixa de ser vigente; laudos emitidos ficam intactos). */
+  @RequirePermission("laudos", PERMISSAO_NIVEL.EDICAO)
+  @Post(":id/certificados/:certId/revisoes")
+  criarRevisao(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Param("certId") certId: string,
+    @Body() body: CreateCertificadoDto,
+  ) {
+    return this.instrumentos.criarRevisao(user, id, certId, body);
+  }
+
   @Get(":id/certificados/:certId/pdf")
   async pdf(
     @CurrentUser() user: AuthUser,

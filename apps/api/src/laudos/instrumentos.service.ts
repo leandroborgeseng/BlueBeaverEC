@@ -68,6 +68,50 @@ export type CreateCertificadoInput = {
   anexoNome?: string;
 };
 
+/** Mapeia os pontos do DTO para gravação (k/probabilidade vazios ficam null: herança na leitura). */
+function pontosParaCriar(pontos: PontoInput[]) {
+  return pontos.map((p, idx) => ({
+    ordem: p.ordem ?? idx + 1,
+    grandeza: p.grandeza?.trim() || null,
+    unidade: p.unidade.trim(),
+    valorNominal: p.valorNominal ?? null,
+    valorConvencional: p.valorConvencional ?? null,
+    indicacao: p.indicacao ?? null,
+    correcao:
+      p.correcao ??
+      (p.valorConvencional != null && p.indicacao != null
+        ? Number((p.valorConvencional - p.indicacao).toFixed(6))
+        : null),
+    incertezaExpandida: Number(p.incertezaExpandida),
+    // null = herda do certificado na leitura/cálculo (pontoComHeranca); sobrescrita explícita
+    fatorK: p.fatorK ?? null,
+    probabilidadeAbrangencia: p.probabilidadeAbrangencia ?? null,
+    observacao: p.observacao?.trim() || null,
+  }));
+}
+
+/** Certificados "atuais": vigentes e sem revisão posterior. */
+export const CERT_ATUAL = { vigente: true, revisoes: { none: {} } } as const;
+
+export const MSG_CERT_USADO = "Certificado usado em laudos emitidos; cadastre uma revisão";
+
+/** Tudo que não é `observacoes` (dados metrológicos e de emissão), normalizado para comparação. */
+export function assinaturaMetrologica(c: {
+  numero: string; dataEmissao: Date | string; dataValidade: Date | string;
+  laboratorioEmissor?: string | null; laboratorioAcreditacao?: string | null;
+  fatorAbrangencia?: number | null; probabilidadeAbrangencia?: number | null;
+  pontos: Array<Record<string, unknown>>;
+}): string {
+  const d = (v: Date | string) => new Date(v).toISOString();
+  const n = (v: unknown) => (v == null ? null : v);
+  return JSON.stringify({
+    numero: c.numero, emissao: d(c.dataEmissao), validade: d(c.dataValidade),
+    lab: n(c.laboratorioEmissor), rbc: n(c.laboratorioAcreditacao),
+    k: n(c.fatorAbrangencia), p: n(c.probabilidadeAbrangencia),
+    pontos: c.pontos.map((p) => [p.grandeza ?? null, p.unidade, n(p.valorNominal), n(p.valorConvencional), n(p.indicacao), n(p.correcao), Number(p.incertezaExpandida), n(p.fatorK), n(p.probabilidadeAbrangencia), p.observacao ?? null]),
+  });
+}
+
 function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } {
   const m = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl.trim());
   if (!m) throw new BadRequestException("Anexo inválido (use data URL base64)");
@@ -143,7 +187,7 @@ export class InstrumentosService {
       },
       include: {
         certificados: {
-          where: { vigente: true },
+          where: CERT_ATUAL,
           take: 1,
           orderBy: { dataValidade: "desc" },
           select: {
@@ -207,17 +251,25 @@ export class InstrumentosService {
     if (!row) throw new NotFoundException("Padrão não encontrado");
     const dias = await this.diasAlerta(estabelecimentoId);
 
-    const vigente = row.certificados.find((c) => c.vigente) ?? row.certificados[0] ?? null;
+    const substituidos = new Set(row.certificados.map((c) => c.revisaoDeId).filter(Boolean));
+    const vigente =
+      row.certificados.find((c) => c.vigente && !substituidos.has(c.id)) ??
+      row.certificados.find((c) => !substituidos.has(c.id)) ??
+      row.certificados[0] ??
+      null;
     const validade = vigente?.dataValidade ?? row.certificadoValidade;
     const st = statusCert(validade, dias);
 
+    const usados = await this.certificadosUsados(estabelecimentoId, id);
     return {
       ...row,
       certificados: row.certificados.map((c) => ({
+        usadoEmLaudoFinal: usados.has(c.id),
         ...c,
         anexoConteudo: undefined,
         temAnexo: Boolean(c.anexoConteudo && c.anexoConteudo.length > 0),
         statusCertificado: statusCert(c.dataValidade, dias),
+        substituido: substituidos.has(c.id),
       })),
       statusCertificado: st,
       vencido: st === "VENCIDO",
@@ -416,26 +468,7 @@ export class InstrumentosService {
           anexoNome: anexo?.nome,
           anexoMime: anexo?.mime,
           anexoConteudo: anexo ? new Uint8Array(anexo.buffer) : undefined,
-          pontos: {
-            create: pontos.map((p, idx) => ({
-              ordem: p.ordem ?? idx + 1,
-              grandeza: p.grandeza?.trim() || null,
-              unidade: p.unidade.trim(),
-              valorNominal: p.valorNominal ?? null,
-              valorConvencional: p.valorConvencional ?? null,
-              indicacao: p.indicacao ?? null,
-              correcao:
-                p.correcao ??
-                (p.valorConvencional != null && p.indicacao != null
-                  ? Number((p.valorConvencional - p.indicacao).toFixed(6))
-                  : null),
-              incertezaExpandida: Number(p.incertezaExpandida),
-              // null = herda do certificado na leitura/cálculo (pontoComHeranca); sobrescrita explícita
-              fatorK: p.fatorK ?? null,
-              probabilidadeAbrangencia: p.probabilidadeAbrangencia ?? null,
-              observacao: p.observacao?.trim() || null,
-            })),
-          },
+          pontos: { create: pontosParaCriar(pontos) },
         },
         include: { pontos: { orderBy: { ordem: "asc" } } },
       });
@@ -461,6 +494,175 @@ export class InstrumentosService {
       temAnexo: Boolean(anexo),
       statusCertificado: statusCert(created.dataValidade, await this.diasAlerta(user.estabelecimentoId)),
     };
+  }
+
+  /** Ids de certificados deste padrão usados em laudo FINAL (snapshot). */
+  private async certificadosUsados(estabelecimentoId: string, instrumentoId: string): Promise<Set<string>> {
+    const ls = await this.prisma.laudo?.findMany?.({
+      where: { estabelecimentoId, instrumentoId, statusDocumento: "FINAL" },
+      select: { instrumentoSnapshot: true },
+    });
+    const ids = (ls ?? [])
+      .map((l) => (l.instrumentoSnapshot as { certificado?: { id?: string } } | null)?.certificado?.id)
+      .filter((x): x is string => Boolean(x));
+    return new Set(ids);
+  }
+
+  /** Certificado usado em laudo FINAL (snapshot do instrumento aponta para ele) — critério 2a. */
+  private async certificadoUsado(estabelecimentoId: string, certificadoId: string): Promise<boolean> {
+    const l = await this.prisma.laudo.findFirst({
+      where: {
+        estabelecimentoId,
+        statusDocumento: "FINAL",
+        instrumentoSnapshot: { path: ["certificado", "id"], equals: certificadoId },
+      },
+      select: { id: true },
+    });
+    return Boolean(l);
+  }
+
+  private async registrarAuditoria(user: AuthUser, acao: string, detalhe: Record<string, unknown>) {
+    // reaproveita o log existente (LogAcesso): quem (usuarioId), quando (createdAt), antes/depois (JSON)
+    await this.prisma.logAcesso.create({
+      data: { usuarioId: user.userId ?? null, acao, detalhe: JSON.stringify({ estabelecimentoId: user.estabelecimentoId, ...detalhe }) },
+    });
+  }
+
+  private validarEntrada(data: CreateCertificadoInput) {
+    const pontos = data.pontos ?? [];
+    const anexo = data.anexoDataUrl ? parseDataUrl(data.anexoDataUrl) : null;
+    const erros = validarCertificadoPadrao({ ...data, pontos, anexoMime: anexo?.mime ?? null });
+    if (erros.length) throw new BadRequestException(erros.join("; "));
+    if (anexo && anexo.buffer.length > 15 * 1024 * 1024) throw new BadRequestException("PDF do certificado excede 15 MB");
+    return { pontos, anexo };
+  }
+
+  private camposCert(data: CreateCertificadoInput) {
+    return {
+      numero: data.numero.trim(),
+      dataEmissao: new Date(data.dataEmissao),
+      dataValidade: new Date(data.dataValidade),
+      laboratorioEmissor: data.laboratorioEmissor?.trim() || null,
+      laboratorioAcreditacao: data.laboratorioAcreditacao?.trim() || null,
+      fatorAbrangencia: data.fatorAbrangencia ?? null,
+      probabilidadeAbrangencia: data.probabilidadeAbrangencia ?? null,
+      observacoes: data.observacoes?.trim() || null,
+    };
+  }
+
+  private async carregarCert(user: AuthUser, instrumentoId: string, certificadoId: string) {
+    if (!podeEditarModulo(user.perfil, user.permissoesModulos, "laudos")) throw new ForbiddenException();
+    const atual = await this.prisma.certificadoPadrao.findFirst({
+      where: { id: certificadoId, instrumentoId, estabelecimentoId: user.estabelecimentoId },
+      include: { pontos: { orderBy: [{ ordem: "asc" }, { id: "asc" }] } },
+    });
+    if (!atual) throw new NotFoundException("Certificado não encontrado");
+    return atual;
+  }
+
+  private semAnexo<T extends { anexoConteudo?: unknown }>(c: T) {
+    const { anexoConteudo, ...resto } = c as T & { anexoConteudo?: Uint8Array | null };
+    return { ...resto, temAnexo: Boolean(anexoConteudo && anexoConteudo.length) };
+  }
+
+  /**
+   * PATCH do certificado. Sem uso em laudo final: edita no lugar (mesmas validações) e audita.
+   * Usado em laudo final: só `observacoes` muda no lugar (auditado); qualquer outra alteração → 409.
+   */
+  async updateCertificado(user: AuthUser, instrumentoId: string, certificadoId: string, data: CreateCertificadoInput) {
+    const atual = await this.carregarCert(user, instrumentoId, certificadoId);
+    const { pontos, anexo } = this.validarEntrada(data);
+    const campos = this.camposCert(data);
+    const usado = await this.certificadoUsado(user.estabelecimentoId, certificadoId);
+    const antes = this.semAnexo(atual);
+
+    if (usado) {
+      const mudouMetrologia =
+        Boolean(anexo) ||
+        assinaturaMetrologica({ ...atual, pontos: atual.pontos }) !== assinaturaMetrologica({ ...campos, pontos: pontosParaCriar(pontos) });
+      if (mudouMetrologia) throw new ConflictException(MSG_CERT_USADO);
+      const salvo = await this.prisma.certificadoPadrao.update({
+        where: { id: certificadoId },
+        data: { observacoes: campos.observacoes },
+        include: { pontos: { orderBy: { ordem: "asc" } } },
+      });
+      await this.registrarAuditoria(user, "CERTIFICADO_PADRAO_OBSERVACOES", {
+        certificadoId, antes: { observacoes: atual.observacoes }, depois: { observacoes: salvo.observacoes },
+      });
+      return { ...this.semAnexo(salvo), modo: "observacoes" as const };
+    }
+
+    if (campos.numero !== atual.numero) {
+      const dup = await this.prisma.certificadoPadrao.findFirst({ where: { instrumentoId, numero: campos.numero }, select: { id: true } });
+      if (dup) throw new ConflictException(`Certificado ${campos.numero} já cadastrado para este padrão`);
+    }
+    const salvo = await this.prisma.$transaction(async (tx) => {
+      await tx.certificadoPadraoPonto.deleteMany({ where: { certificadoId } });
+      return tx.certificadoPadrao.update({
+        where: { id: certificadoId },
+        data: {
+          ...campos,
+          ...(anexo ? { anexoNome: data.anexoNome || `${campos.numero}.pdf`, anexoMime: anexo.mime, anexoConteudo: new Uint8Array(anexo.buffer) } : {}),
+          pontos: { create: pontosParaCriar(pontos) },
+        },
+        include: { pontos: { orderBy: { ordem: "asc" } } },
+      });
+    });
+    await this.registrarAuditoria(user, "CERTIFICADO_PADRAO_EDITADO", { certificadoId, antes, depois: this.semAnexo(salvo) });
+    await this.sincronizarSnapshotInstrumento(instrumentoId, salvo);
+    return { ...this.semAnexo(salvo), modo: "no_lugar" as const };
+  }
+
+  /**
+   * Revisão explícita (POST .../certificados/:certId/revisoes): cria certificado novo ligado ao anterior
+   * (revisao+1, revisaoDeId), vigente; o anterior só deixa de ser vigente — dados, pontos e PDF intactos,
+   * então o laudo emitido continua idêntico. PDF não enviado = herda o do anterior. Mesmas validações.
+   */
+  async criarRevisao(user: AuthUser, instrumentoId: string, certificadoId: string, data: CreateCertificadoInput) {
+    const atual = await this.carregarCert(user, instrumentoId, certificadoId);
+    const ja = await this.prisma.certificadoPadrao.findFirst({ where: { revisaoDeId: certificadoId }, select: { id: true } });
+    if (ja) throw new ConflictException("Este certificado já tem revisão — revise a revisão mais recente");
+    const { pontos, anexo } = this.validarEntrada(data);
+    const campos = this.camposCert(data);
+    const salvo = await this.prisma.$transaction(async (tx) => {
+      await tx.certificadoPadrao.update({ where: { id: certificadoId }, data: { vigente: false } });
+      return tx.certificadoPadrao.create({
+        data: {
+          ...campos,
+          estabelecimentoId: user.estabelecimentoId,
+          instrumentoId,
+          vigente: true,
+          revisao: (atual.revisao ?? 0) + 1,
+          revisaoDeId: atual.id,
+          anexoNome: anexo ? data.anexoNome || `${campos.numero}.pdf` : atual.anexoNome,
+          anexoMime: anexo ? anexo.mime : atual.anexoMime,
+          anexoConteudo: anexo ? new Uint8Array(anexo.buffer) : (atual.anexoConteudo ?? undefined),
+          pontos: { create: pontosParaCriar(pontos) },
+        },
+        include: { pontos: { orderBy: { ordem: "asc" } } },
+      });
+    });
+    await this.registrarAuditoria(user, "CERTIFICADO_PADRAO_REVISAO", {
+      certificadoAnteriorId: certificadoId, certificadoId: salvo.id, antes: this.semAnexo(atual), depois: this.semAnexo(salvo),
+    });
+    await this.sincronizarSnapshotInstrumento(instrumentoId, salvo);
+    return { ...this.semAnexo(salvo), modo: "revisao" as const };
+  }
+
+  private async sincronizarSnapshotInstrumento(
+    instrumentoId: string,
+    c: { vigente: boolean; numero: string; dataEmissao: Date; dataValidade: Date; laboratorioEmissor: string | null },
+  ) {
+    if (!c.vigente) return;
+    await this.prisma.instrumentoPadrao.update({
+      where: { id: instrumentoId },
+      data: {
+        certificadoNumero: c.numero,
+        certificadoEmissao: c.dataEmissao,
+        certificadoValidade: c.dataValidade,
+        laboratorioEmissor: c.laboratorioEmissor,
+      },
+    });
   }
 
   async certificadoPdf(estabelecimentoId: string, instrumentoId: string, certificadoId: string) {

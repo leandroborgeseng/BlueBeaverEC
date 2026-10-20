@@ -28,7 +28,7 @@ export async function carregarAlertasPadroes(
       certificadoNumero: true,
       certificadoValidade: true,
       certificados: {
-        where: { vigente: true },
+        where: { vigente: true, revisoes: { none: {} } },
         take: 1,
         orderBy: { dataValidade: "desc" },
         select: { numero: true, dataValidade: true },
