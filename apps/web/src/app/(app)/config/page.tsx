@@ -442,7 +442,7 @@ export default function ConfigPage() {
                 <th style={th}>Perfil</th>
                 <th style={th}>Setores</th>
                 <th style={th}>Status</th>
-                <th style={th}>Publica procedimentos</th>
+                <th style={th}>Publicar procedimentos</th>
                 <th style={th}>Ações</th>
               </tr>
             </thead>
