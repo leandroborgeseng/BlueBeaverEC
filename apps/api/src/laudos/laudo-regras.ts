@@ -426,12 +426,13 @@ export function certificadoVigenteNaData(
     if (!val) return false;
     return (!emi || emi <= dia) && dia <= val;
   });
-  // Mesma emissão: prefere o vigente e, depois, a revisão mais recente.
+  // Ordem: vigente primeiro, depois a maior revisão; emissão mais recente só desempata.
+  // Uma revisão mais nova nunca perde por ter emissão anterior.
   cobrindo.sort(
     (a, b) =>
-      (dataCivilDeData(b.dataEmissao) ?? "").localeCompare(dataCivilDeData(a.dataEmissao) ?? "") ||
       Number(b.vigente === true) - Number(a.vigente === true) ||
-      (b.revisao ?? 0) - (a.revisao ?? 0),
+      (b.revisao ?? 0) - (a.revisao ?? 0) ||
+      (dataCivilDeData(b.dataEmissao) ?? "").localeCompare(dataCivilDeData(a.dataEmissao) ?? ""),
   );
   if (cobrindo[0]) return cobrindo[0];
   const anteriores = certificados.filter((c) => {

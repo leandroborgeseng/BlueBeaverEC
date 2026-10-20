@@ -158,4 +158,18 @@ describe("certificadoVigenteNaData — empate de data (ciclo 3)", () => {
     ];
     assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "r2");
   });
+  it("rev1 com emissão ANTERIOR à rev0 (sem flag vigente): escolhe rev1", () => {
+    const rev0 = { id: "rev0", revisao: 0, dataEmissao: "2026-02-01", dataValidade: "2027-02-01" };
+    const rev1 = { id: "rev1", revisao: 1, dataEmissao: "2026-01-15", dataValidade: "2027-01-15" };
+    for (const lista of [[rev0, rev1], [rev1, rev0]]) {
+      assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "rev1");
+    }
+  });
+  it("vigente com revisão menor vence não-vigente com revisão maior", () => {
+    const vig = { ...base, id: "vig-r1", revisao: 1, vigente: true };
+    const nao = { ...base, id: "nao-r3", revisao: 3, vigente: false, dataEmissao: "2026-02-01" };
+    for (const lista of [[vig, nao], [nao, vig]]) {
+      assert.equal(certificadoVigenteNaData(lista, "2026-03-10")?.id, "vig-r1");
+    }
+  });
 });
