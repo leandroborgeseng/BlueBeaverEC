@@ -1,7 +1,5 @@
 # Arquivos de desenvolvimento
 node_modules
-**/node_modules
-**/.next
 .git
 .gitignore
 *.log
