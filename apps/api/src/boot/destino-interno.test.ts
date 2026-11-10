@@ -8,6 +8,7 @@ import {
   isPrivateRailwayHost,
   isPublicApiUrl,
   isSelfWebHost,
+  planejarAtalhoPrivado,
   tentativaPrivadaExplicita,
   urlPrivadaExplicita,
 } from "../../../web/src/lib/destino-interno";
@@ -149,9 +150,102 @@ describe("proxy — regressão Railway sem destino explícito Coolify", () => {
     assert.equal(helper.toLowerCase().includes("x-forwarded-host"), false);
     assert.equal(helper.includes("req.headers"), false);
     assert.equal(helper.includes("req."), false);
+    const recusa = route.indexOf('plano.acao === "recusada"');
+    const dns = route.indexOf("dns6Report(");
+    const fetchUpstream = route.indexOf("undiciFetch(");
+    assert.ok(recusa > 0);
+    assert.ok(recusa < dns);
+    assert.ok(recusa < fetchUpstream);
     assert.match(route, /API_INTERNAL_URL:\s*process\.env\.API_INTERNAL_URL/);
     assert.match(route, /API_INTERNAL_HOST:\s*process\.env\.API_INTERNAL_HOST/);
     assert.match(route, /API_INTERNAL_PORT:\s*process\.env\.API_INTERNAL_PORT/);
     assert.equal(route.includes("tentativaPrivadaExplicita(pathSuffix, req"), false);
+  });
+});
+
+describe("QA ciclo 1 — atalho recusado, ponto final, userinfo e https", () => {
+  it("M1: API_INTERNAL_HOST metadata responde 502 sem fetch e sem candidatos", () => {
+    const env = { API_INTERNAL_HOST: "169.254.169.254", API_INTERNAL_PORT: "80" };
+    assert.equal(tentativaPrivadaExplicita("/api/health", env), null);
+    let fetches = 0;
+    const buscarCandidato = () => {
+      fetches += 1;
+    };
+    const plano = planejarAtalhoPrivado(env, "/api/health");
+    if (plano.acao !== "recusada") buscarCandidato();
+    assert.equal(plano.acao, "recusada");
+    assert.equal(plano.status, 502);
+    assert.deepEqual(plano.tentativas, []);
+    assert.equal(fetches, 0);
+    const serial = JSON.stringify(plano);
+    assert.equal(serial.includes("169.254.169.254"), false);
+    assert.equal(serial.includes("127.0.0.1"), false);
+    assert.equal(serial.includes(":3001"), false);
+    assert.equal(serial.includes(":8080"), false);
+    assert.equal(serial.includes(":3000"), false);
+  });
+
+  it("M1: localhost, IP e userinfo também são 502; Railway e env vazia seguem o legado", () => {
+    for (const env of [
+      { API_INTERNAL_URL: "http://localhost:3001" },
+      { API_INTERNAL_URL: "http://10.1.2.3:8080" },
+      { API_INTERNAL_URL: "http://bbec-api:3001@evil:80" },
+      { API_INTERNAL_URL: "http://localhost.:3001" },
+    ]) {
+      const plano = planejarAtalhoPrivado(env, "/api/health");
+      assert.equal(plano.acao, "recusada");
+      if (plano.acao === "recusada") {
+        assert.equal(plano.status, 502);
+        assert.equal(plano.tentativas.length, 0);
+      }
+    }
+    assert.equal(planejarAtalhoPrivado({}, "/api/health").acao, "legado");
+    assert.equal(
+      planejarAtalhoPrivado({ API_INTERNAL_URL: "http://nexo-api.railway.internal:3001" }, "/api/health").acao,
+      "legado",
+    );
+    assert.equal(
+      planejarAtalhoPrivado(
+        { API_INTERNAL_HOST: "nexo-api.railway.internal", API_INTERNAL_PORT: "3001" },
+        "/api/health",
+      ).acao,
+      "legado",
+    );
+    assert.equal(planejarAtalhoPrivado({ API_INTERNAL_URL: "https://api.up.railway.app" }, "/api/health").acao, "legado");
+  });
+
+  it("B1: ponto final não fura localhost e não muda o host esperado", () => {
+    const localhost = { API_INTERNAL_URL: "http://localhost.:3001" };
+    assert.equal(aceitaDestinoExplicito("localhost.", "3001", localhost), false);
+    assert.equal(aceitaDestinoExplicito("localhost", "3001", localhost), false);
+    assert.equal(urlPrivadaExplicita(localhost), null);
+    assert.equal(urlPrivadaExplicita({ API_INTERNAL_URL: "http://localhost..:3001" }), null);
+
+    assert.equal(urlPrivadaExplicita({ API_INTERNAL_URL: "http://bbec-api.:8080" }), "http://bbec-api:8080");
+    assert.equal(aceitaDestinoExplicito("bbec-api.", "8080", COOLIFY), true);
+    assert.equal(aceitaDestinoExplicito("bbec-api", "8080", { API_INTERNAL_URL: "http://bbec-api.:8080" }), true);
+  });
+
+  it("B2: userinfo não vira o host da URL", () => {
+    const env = { API_INTERNAL_URL: "http://bbec-api:3001@evil:80" };
+    assert.equal(urlPrivadaExplicita(env), null);
+    assert.equal(aceitaDestinoExplicito("evil", "80", env), false);
+    assert.equal(aceitaDestinoExplicito("bbec-api", "3001", env), false);
+    assert.equal(destinoExplicito(env), null);
+    const plano = planejarAtalhoPrivado(env, "/api/health");
+    assert.equal(plano.acao, "recusada");
+    assert.equal(urlPrivadaExplicita({ API_INTERNAL_URL: "http://user:pass@bbec-api:8080" }), null);
+    assert.equal(aceitaDestinoExplicito("bbec-api", "8080", { API_INTERNAL_URL: "http://user:pass@bbec-api:8080" }), false);
+  });
+
+  it("B3: https não entra no atalho privado e não vira http:443", () => {
+    const env = { API_INTERNAL_URL: "https://bbec-api" };
+    assert.equal(urlPrivadaExplicita(env), null);
+    assert.equal(tentativaPrivadaExplicita("/api/health", env), null);
+    assert.equal(destinoExplicito(env), null);
+    assert.notEqual(urlPrivadaExplicita(env), "http://bbec-api:443");
+    assert.equal(planejarAtalhoPrivado(env, "/api/health").acao, "legado");
+    assert.equal(isPublicApiUrl(new URL("https://bbec-api")), true);
+    assert.equal(urlPrivadaExplicita({ API_INTERNAL_URL: "https://bbec-api:8443" }), null);
   });
 });

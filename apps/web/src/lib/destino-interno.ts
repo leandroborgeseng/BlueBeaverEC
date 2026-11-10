@@ -6,9 +6,16 @@
  * (sem sufixo, sem curinga). Host, X-Forwarded-Host, path e query da
  * requisição não entram aqui.
  *
- * Host Railway (*.railway.internal / *.railway.app) devolve null em
- * `urlPrivadaExplicita` para o route.ts seguir o caminho legado, idêntico
- * ao de quando essas variáveis não existem.
+ * Host Railway (*.railway.internal / *.railway.app), ou env vazia, devolve
+ * o caminho legado — o mesmo de quando essas variáveis não existem.
+ *
+ * https não entra no atalho privado: não reescrevemos `https://host` para
+ * `http://host:443`. https segue no classificador público já existente.
+ * URL com username ou password é recusada. O ponto final do host
+ * (`localhost.`) sai antes da comparação.
+ *
+ * Host que não é Railway e foi recusado (IP, localhost, metadata, userinfo)
+ * não cai no legado: `planejarAtalhoPrivado` pede HTTP 502 e zero tentativas.
  */
 
 export type DestinoEnv = {
@@ -21,6 +28,11 @@ export type DestinoExplicito = {
   hostname: string;
   port: string;
 };
+
+export type PlanoAtalhoPrivado =
+  | { acao: "legado" }
+  | { acao: "explicita"; url: string; host: string; port: string }
+  | { acao: "recusada"; status: 502; tentativas: readonly [] };
 
 const HOSTS_BLOQUEADOS = new Set([
   "localhost",
@@ -47,23 +59,32 @@ export function isPublicApiUrl(url: URL) {
 }
 
 export function destinoExplicito(env: DestinoEnv): DestinoExplicito | null {
-  const rawUrl = env.API_INTERNAL_URL?.trim();
-  if (rawUrl) {
-    const url = parseLoose(rawUrl);
-    if (!url) return null;
-    const port = portaDaUrl(url);
-    if (!port) return null;
-    return destinoAceitavel(url.hostname, port);
-  }
+  const classe = classificarDestino(env);
+  if (classe.tipo !== "explicito") return null;
+  return { hostname: classe.host, port: classe.port };
+}
 
-  const host = env.API_INTERNAL_HOST?.trim();
-  const port = env.API_INTERNAL_PORT?.trim();
-  if (!host || !port) return null;
-  const url = parseLoose(host.includes("://") ? host : `http://${host}`);
-  if (!url) return null;
-  const porta = portaTexto(port);
-  if (!porta) return null;
-  return destinoAceitavel(url.hostname, porta);
+/**
+ * legado: env vazia, host Railway, https público ou host válido sem porta.
+ * explicita: http com host:porta exatos, fora do Railway.
+ * recusada: host não-Railway bloqueado ou URL com userinfo. O proxy responde 502
+ * e não monta tentativa nenhuma (nem o legado, nem fetch).
+ */
+export function planejarAtalhoPrivado(env: DestinoEnv, pathSuffix: string): PlanoAtalhoPrivado {
+  const classe = classificarDestino(env);
+  if (classe.tipo === "recusado") {
+    return { acao: "recusada", status: 502, tentativas: [] };
+  }
+  if (classe.tipo === "explicito") {
+    const base = `http://${classe.host}:${classe.port}`;
+    return {
+      acao: "explicita",
+      url: `${base}${pathSuffix}`,
+      host: classe.host,
+      port: classe.port,
+    };
+  }
+  return { acao: "legado" };
 }
 
 /** true só se hostname e porta são exatamente o destino explícito do env. */
@@ -79,12 +100,12 @@ export function aceitaDestinoExplicito(hostname: string, port: string, env: Dest
 
 /**
  * URL http://host:porta para o atalho Coolify.
- * null mantém o proxy no comportamento legado (Railway ou env ausente).
+ * null = legado (Railway, https, env ausente) ou destino recusado.
+ * https não vira http na porta 443.
  */
 export function urlPrivadaExplicita(env: DestinoEnv): string | null {
   const dest = destinoExplicito(env);
   if (!dest) return null;
-  if (hostRailwayLegado(dest.hostname)) return null;
   return `http://${dest.hostname}:${dest.port}`;
 }
 
@@ -102,22 +123,57 @@ export function tentativaPrivadaExplicita(
   };
 }
 
-function hostRailwayLegado(hostname: string): boolean {
-  const h = hostname.toLowerCase();
+type ClasseDestino =
+  | { tipo: "legado" }
+  | { tipo: "recusado" }
+  | { tipo: "explicito"; host: string; port: string };
+
+function classificarDestino(env: DestinoEnv): ClasseDestino {
+  const rawUrl = env.API_INTERNAL_URL?.trim() ?? "";
+  const rawHost = env.API_INTERNAL_HOST?.trim() ?? "";
+  if (!rawUrl && !rawHost) return { tipo: "legado" };
+
+  const bruto = rawUrl || (rawHost.includes("://") ? rawHost : `http://${rawHost}`);
+  const url = parseLoose(bruto);
+  if (!url) return { tipo: "recusado" };
+
+  const host = normalizarHost(url.hostname);
+  const railway = hostRailway(host);
+  if (url.username !== "" || url.password !== "") {
+    return railway ? { tipo: "legado" } : { tipo: "recusado" };
+  }
+  if (railway) return { tipo: "legado" };
+  if (hostBloqueado(host)) return { tipo: "recusado" };
+  // https fica de fora do atalho privado (não reescreve para http:443).
+  if (url.protocol === "https:") return { tipo: "legado" };
+  if (url.protocol !== "http:") return { tipo: "recusado" };
+
+  if (!rawUrl) {
+    const informado = env.API_INTERNAL_PORT?.trim() ?? "";
+    if (!informado) return { tipo: "legado" };
+    const port = portaTexto(informado);
+    if (!port) return { tipo: "legado" };
+    return { tipo: "explicito", host, port };
+  }
+
+  const port = portaDaUrl(url);
+  if (!port) return { tipo: "recusado" };
+  return { tipo: "explicito", host, port };
+}
+
+function hostRailway(hostname: string): boolean {
+  const h = normalizarHost(hostname);
   return isPrivateRailwayHost(h) || h.endsWith(".up.railway.app") || h.endsWith(".railway.app");
 }
 
-function destinoAceitavel(hostname: string, port: string): DestinoExplicito | null {
-  const h = normalizarHost(hostname);
-  const p = portaTexto(port);
-  if (!h || !p) return null;
-  if (isIpLiteral(h) || HOSTS_BLOQUEADOS.has(h)) return null;
-  return { hostname: h, port: p };
+function hostBloqueado(hostname: string): boolean {
+  return !hostname || isIpLiteral(hostname) || HOSTS_BLOQUEADOS.has(hostname);
 }
 
 function normalizarHost(hostname: string): string {
   let h = hostname.trim().toLowerCase();
   if (h.startsWith("[") && h.endsWith("]")) h = h.slice(1, -1);
+  while (h.endsWith(".")) h = h.slice(0, -1);
   return h;
 }
 

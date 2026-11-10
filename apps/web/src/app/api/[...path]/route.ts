@@ -5,7 +5,7 @@ import {
   isPrivateRailwayHost,
   isPublicApiUrl,
   isSelfWebHost,
-  tentativaPrivadaExplicita,
+  planejarAtalhoPrivado,
 } from "@/lib/destino-interno";
 
 export const dynamic = "force-dynamic";
@@ -214,18 +214,23 @@ function publicAttempts(pathSuffix: string): Attempt[] {
   });
 }
 
-async function privateAttempts(pathSuffix: string): Promise<Attempt[]> {
-  const explicita = tentativaPrivadaExplicita(pathSuffix, {
+function envDestino() {
+  return {
     API_INTERNAL_URL: process.env.API_INTERNAL_URL,
     API_INTERNAL_HOST: process.env.API_INTERNAL_HOST,
     API_INTERNAL_PORT: process.env.API_INTERNAL_PORT,
-  });
-  if (explicita) {
+  };
+}
+
+async function privateAttempts(pathSuffix: string): Promise<Attempt[]> {
+  const plano = planejarAtalhoPrivado(envDestino(), pathSuffix);
+  if (plano.acao === "recusada") return [];
+  if (plano.acao === "explicita") {
     return [
       {
-        label: `${explicita.host}:${explicita.port}`,
-        url: explicita.url,
-        hostHeader: explicita.host,
+        label: `${plano.host}:${plano.port}`,
+        url: plano.url,
+        hostHeader: plano.host,
         publicHttps: false,
         timeoutMs: PRIVATE_CONNECT_MS,
       },
@@ -318,6 +323,19 @@ let lastGoodOrigin: string | null = null;
 let lastGoodHost: string | null = null;
 
 async function proxy(req: NextRequest, path: string[]) {
+  const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
+  const plano = planejarAtalhoPrivado(envDestino(), suffix);
+  if (plano.acao === "recusada") {
+    return NextResponse.json(
+      {
+        message: "Destino interno recusado.",
+        reason: "API_INTERNAL_URL ou API_INTERNAL_HOST não é um host privado permitido.",
+        tried: plano.tentativas,
+      },
+      { status: plano.status },
+    );
+  }
+
   const headers: Record<string, string> = {};
   const contentType = req.headers.get("content-type");
   const authorization = req.headers.get("authorization");
@@ -328,7 +346,6 @@ async function proxy(req: NextRequest, path: string[]) {
   const body =
     method !== "GET" && method !== "HEAD" ? Buffer.from(await req.arrayBuffer()) : undefined;
 
-  const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
   const dns6 = await dns6Report();
   const attempts = await buildAttempts(suffix);
   const ordered =
