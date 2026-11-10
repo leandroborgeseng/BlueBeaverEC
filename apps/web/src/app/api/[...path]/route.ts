@@ -1,6 +1,12 @@
 import { resolve4, resolve6 } from "node:dns/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { Agent, fetch as undiciFetch } from "undici";
+import {
+  isPrivateRailwayHost,
+  isPublicApiUrl,
+  isSelfWebHost,
+  planejarAtalhoPrivado,
+} from "@/lib/destino-interno";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -42,11 +48,6 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Pro
   }
 }
 
-function isSelfWebHost(hostname: string) {
-  const h = hostname.toLowerCase();
-  return h === "hef.aion.eng.br" || h === "localhost" || h === "127.0.0.1" || h === "::1";
-}
-
 function stripHost(raw: string) {
   return raw.replace(/^https?:\/\//, "").replace(/\/$/, "").split("/")[0].split(":")[0];
 }
@@ -61,17 +62,6 @@ function parseMaybeUrl(raw?: string | null): URL | null {
   } catch {
     return null;
   }
-}
-
-function isPrivateRailwayHost(hostname: string) {
-  return hostname.toLowerCase().endsWith(".railway.internal");
-}
-
-function isPublicApiUrl(url: URL) {
-  const h = url.hostname.toLowerCase();
-  if (isSelfWebHost(h) || isPrivateRailwayHost(h)) return false;
-  if (url.protocol === "https:") return true;
-  return h.endsWith(".up.railway.app") || h.endsWith(".railway.app");
 }
 
 function originOf(url: URL) {
@@ -224,7 +214,29 @@ function publicAttempts(pathSuffix: string): Attempt[] {
   });
 }
 
+function envDestino() {
+  return {
+    API_INTERNAL_URL: process.env.API_INTERNAL_URL,
+    API_INTERNAL_HOST: process.env.API_INTERNAL_HOST,
+    API_INTERNAL_PORT: process.env.API_INTERNAL_PORT,
+  };
+}
+
 async function privateAttempts(pathSuffix: string): Promise<Attempt[]> {
+  const plano = planejarAtalhoPrivado(envDestino(), pathSuffix);
+  if (plano.acao === "recusada") return [];
+  if (plano.acao === "explicita") {
+    return [
+      {
+        label: `${plano.host}:${plano.port}`,
+        url: plano.url,
+        hostHeader: plano.host,
+        publicHttps: false,
+        timeoutMs: PRIVATE_CONNECT_MS,
+      },
+    ];
+  }
+
   const attempts: Attempt[] = [];
   const configured = privateConfiguredUrl() ?? parseConfiguredUrl();
   if (configured && isPrivateRailwayHost(configured.hostname)) {
@@ -311,6 +323,19 @@ let lastGoodOrigin: string | null = null;
 let lastGoodHost: string | null = null;
 
 async function proxy(req: NextRequest, path: string[]) {
+  const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
+  const plano = planejarAtalhoPrivado(envDestino(), suffix);
+  if (plano.acao === "recusada") {
+    return NextResponse.json(
+      {
+        message: "Destino interno recusado.",
+        reason: "API_INTERNAL_URL ou API_INTERNAL_HOST não é um host privado permitido.",
+        tried: plano.tentativas,
+      },
+      { status: plano.status },
+    );
+  }
+
   const headers: Record<string, string> = {};
   const contentType = req.headers.get("content-type");
   const authorization = req.headers.get("authorization");
@@ -321,7 +346,6 @@ async function proxy(req: NextRequest, path: string[]) {
   const body =
     method !== "GET" && method !== "HEAD" ? Buffer.from(await req.arrayBuffer()) : undefined;
 
-  const suffix = `/api/${path.join("/")}${req.nextUrl.search}`;
   const dns6 = await dns6Report();
   const attempts = await buildAttempts(suffix);
   const ordered =

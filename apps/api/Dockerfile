@@ -26,6 +26,10 @@ RUN corepack enable && corepack prepare pnpm@10.14.0 --activate \
   && apk add --no-cache wget
 WORKDIR /app
 ENV NODE_ENV=production
+# O bundle sobe de /opt/aion-dist, fora de qualquer node_modules. O require()
+# do CommonJS não sobe até /app, então a imagem precisa apontar o NODE_PATH
+# para o workspace pnpm. Não definir isso no host: já vem da imagem.
+ENV NODE_PATH=/app/apps/api/node_modules:/app/node_modules
 COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/.npmrc ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/shared ./packages/shared

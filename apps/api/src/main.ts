@@ -3,16 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { json, urlencoded } from "express";
 import { createServer, type Server } from "node:http";
 import { AppModule } from "./app.module";
-
-function listenPorts(): number[] {
-  return [
-    ...new Set(
-      [process.env.PORT, process.env.API_PORT, "3001"]
-        .map((v) => Number(String(v ?? "").trim() || 0))
-        .filter((p) => Number.isInteger(p) && p > 0 && p < 65536),
-    ),
-  ];
-}
+import { listenPorts } from "./listen-ports";
 
 function listenOn(server: Server, port: number, host: string, ipv6Only?: boolean) {
   return new Promise<void>((resolve, reject) => {
@@ -48,6 +39,10 @@ async function bootstrap() {
   });
 
   const ports = listenPorts();
+  if (ports.length === 0) {
+    console.error("[aion] nenhuma porta válida em PORT/API_PORT");
+    process.exit(1);
+  }
   const customHost = process.env.LISTEN_HOST?.trim();
   const ipv4Only = process.env.LISTEN_IPV4_ONLY === "1";
   const ipv6Only = process.env.LISTEN_IPV6_ONLY === "1";
