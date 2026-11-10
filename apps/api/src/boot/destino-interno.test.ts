@@ -267,6 +267,40 @@ describe("QA ciclo 1 — atalho recusado, ponto final, userinfo e https", () => 
     }
   });
 
+  it("A1a: API_INTERNAL_URL=nexo-api.railway.internal:3001 cai no legado", () => {
+    const env = { API_INTERNAL_URL: "nexo-api.railway.internal:3001" };
+    assert.equal(planejarAtalhoPrivado(env, "/api/health").acao, "legado");
+    assert.equal(urlPrivadaExplicita(env), null);
+    assert.equal(tentativaPrivadaExplicita("/api/health", env), null);
+  });
+
+  it("A1b: API_INTERNAL_HOST=nexo-api.railway.internal:3001 cai no legado", () => {
+    const env = { API_INTERNAL_HOST: "nexo-api.railway.internal:3001" };
+    assert.equal(planejarAtalhoPrivado(env, "/api/health").acao, "legado");
+    assert.equal(urlPrivadaExplicita(env), null);
+    assert.equal(tentativaPrivadaExplicita("/api/health", env), null);
+  });
+
+  it("A1c: API_INTERNAL_URL=bbec-api:3001 aceita o destino exato via http", () => {
+    const env = { API_INTERNAL_URL: "bbec-api:3001" };
+    assert.equal(urlPrivadaExplicita(env), "http://bbec-api:3001");
+    assert.equal(aceitaDestinoExplicito("bbec-api", "3001", env), true);
+    assert.equal(aceitaDestinoExplicito("bbec-api", "8080", env), false);
+    assert.deepEqual(tentativaPrivadaExplicita("/api/health", env), {
+      url: "http://bbec-api:3001/api/health",
+      host: "bbec-api",
+      port: "3001",
+    });
+  });
+
+  it("A1d: API_INTERNAL_HOST=bbec-api:3001 aceita o destino exato via http", () => {
+    const env = { API_INTERNAL_HOST: "bbec-api:3001" };
+    assert.equal(urlPrivadaExplicita(env), "http://bbec-api:3001");
+    assert.equal(aceitaDestinoExplicito("bbec-api", "3001", env), true);
+    assert.equal(aceitaDestinoExplicito("bbec-api", "8080", env), false);
+    assert.equal(planejarAtalhoPrivado(env, "/api/health").acao, "explicita");
+  });
+
   it("B5: porta inválida no host explícito responde 502 sem candidatos", () => {
     for (const port of ["abc", "0", "65536", "99999", "-1", "8080abc"]) {
       const env = { API_INTERNAL_HOST: "bbec-api", API_INTERNAL_PORT: port };

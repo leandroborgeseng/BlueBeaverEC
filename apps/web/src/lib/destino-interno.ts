@@ -153,10 +153,17 @@ function classificarDestino(env: DestinoEnv): ClasseDestino {
 
   if (!rawUrl) {
     const informado = env.API_INTERNAL_PORT?.trim() ?? "";
-    if (!informado) return { tipo: "legado" };
-    const port = portaTexto(informado);
-    if (!port) return { tipo: "recusado" };
-    return { tipo: "explicito", host, port };
+    if (informado) {
+      const port = portaTexto(informado);
+      if (!port) return { tipo: "recusado" };
+      return { tipo: "explicito", host, port };
+    }
+    if (url.port) {
+      const port = portaTexto(url.port);
+      if (!port) return { tipo: "recusado" };
+      return { tipo: "explicito", host, port };
+    }
+    return { tipo: "legado" };
   }
 
   const port = portaDaUrl(url);
@@ -164,8 +171,9 @@ function classificarDestino(env: DestinoEnv): ClasseDestino {
   return { tipo: "explicito", host, port };
 }
 
+/** Esquema só com `://`. `host:porta` sem barra não é esquema. */
 function esquemaForaDeHttp(raw: string): boolean {
-  const match = /^([a-z][a-z0-9+.-]*):/i.exec(raw.trim());
+  const match = /^([a-z][a-z0-9+.-]*):\/\//i.exec(raw.trim());
   if (!match) return false;
   const esquema = match[1].toLowerCase();
   return esquema !== "http" && esquema !== "https";
