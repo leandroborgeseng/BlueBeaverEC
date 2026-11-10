@@ -10,9 +10,11 @@
  * o caminho legado — o mesmo de quando essas variáveis não existem.
  *
  * https não entra no atalho privado: não reescrevemos `https://host` para
- * `http://host:443`. https segue no classificador público já existente.
- * URL com username ou password é recusada. O ponto final do host
- * (`localhost.`) sai antes da comparação.
+ * `http://host:443`. https com nome de host segue no caminho legado e no
+ * classificador público já existente. Esquema que não é http nem https
+ * (ftp, file, gopher) é recusado. URL com username ou password é recusada.
+ * O ponto final do host (`localhost.`) sai antes da comparação.
+ * `API_INTERNAL_HOST` com porta inválida também é recusado.
  *
  * Host que não é Railway e foi recusado (IP, localhost, metadata, userinfo)
  * não cai no legado: `planejarAtalhoPrivado` pede HTTP 502 e zero tentativas.
@@ -65,10 +67,10 @@ export function destinoExplicito(env: DestinoEnv): DestinoExplicito | null {
 }
 
 /**
- * legado: env vazia, host Railway, https público ou host válido sem porta.
+ * legado: env vazia, host Railway, https com nome de host, ou host válido sem porta.
  * explicita: http com host:porta exatos, fora do Railway.
- * recusada: host não-Railway bloqueado ou URL com userinfo. O proxy responde 502
- * e não monta tentativa nenhuma (nem o legado, nem fetch).
+ * recusada: host não-Railway bloqueado, userinfo, esquema fora de http/https,
+ * ou porta explícita inválida. O proxy responde 502 e não monta tentativa nenhuma.
  */
 export function planejarAtalhoPrivado(env: DestinoEnv, pathSuffix: string): PlanoAtalhoPrivado {
   const classe = classificarDestino(env);
@@ -132,6 +134,7 @@ function classificarDestino(env: DestinoEnv): ClasseDestino {
   const rawUrl = env.API_INTERNAL_URL?.trim() ?? "";
   const rawHost = env.API_INTERNAL_HOST?.trim() ?? "";
   if (!rawUrl && !rawHost) return { tipo: "legado" };
+  if (esquemaForaDeHttp(rawUrl || rawHost)) return { tipo: "recusado" };
 
   const bruto = rawUrl || (rawHost.includes("://") ? rawHost : `http://${rawHost}`);
   const url = parseLoose(bruto);
@@ -152,13 +155,20 @@ function classificarDestino(env: DestinoEnv): ClasseDestino {
     const informado = env.API_INTERNAL_PORT?.trim() ?? "";
     if (!informado) return { tipo: "legado" };
     const port = portaTexto(informado);
-    if (!port) return { tipo: "legado" };
+    if (!port) return { tipo: "recusado" };
     return { tipo: "explicito", host, port };
   }
 
   const port = portaDaUrl(url);
   if (!port) return { tipo: "recusado" };
   return { tipo: "explicito", host, port };
+}
+
+function esquemaForaDeHttp(raw: string): boolean {
+  const match = /^([a-z][a-z0-9+.-]*):/i.exec(raw.trim());
+  if (!match) return false;
+  const esquema = match[1].toLowerCase();
+  return esquema !== "http" && esquema !== "https";
 }
 
 function hostRailway(hostname: string): boolean {

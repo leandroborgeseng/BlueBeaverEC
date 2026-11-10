@@ -12,15 +12,10 @@ COPY apps/web/package.json ./apps/web/
 RUN pnpm install --frozen-lockfile=false
 
 FROM deps AS build
-# O padrão `node_modules` do .dockerignore não cobre apps/api/node_modules.
-# Um install local traz symlinks que quebram `nest build`. Guarda o que o
-# estágio deps instalou e recompõe depois do COPY.
-RUN cp -a /app/apps/api/node_modules /tmp/api-node_modules
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 # Mantém o workspace pnpm válido (apps/*) sem copiar o web inteiro
 COPY apps/web/package.json ./apps/web/package.json
-RUN rm -rf /app/apps/api/node_modules && cp -a /tmp/api-node_modules /app/apps/api/node_modules
 RUN pnpm --filter @aion/shared build
 WORKDIR /app/apps/api
 RUN pnpm prisma generate

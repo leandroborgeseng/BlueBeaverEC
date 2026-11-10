@@ -238,6 +238,54 @@ describe("QA ciclo 1 — atalho recusado, ponto final, userinfo e https", () => 
     assert.equal(aceitaDestinoExplicito("bbec-api", "8080", { API_INTERNAL_URL: "http://user:pass@bbec-api:8080" }), false);
   });
 
+  it("B4: ftp, file e gopher respondem 502; https continua no legado", () => {
+    for (const url of ["ftp://bbec-api:21", "file:///etc/passwd", "gopher://bbec-api:70", "FTP://bbec-api:21"]) {
+      const env = { API_INTERNAL_URL: url };
+      const plano = planejarAtalhoPrivado(env, "/api/health");
+      assert.equal(plano.acao, "recusada", url);
+      if (plano.acao === "recusada") {
+        assert.equal(plano.status, 502);
+        assert.deepEqual(plano.tentativas, []);
+      }
+      assert.equal(urlPrivadaExplicita(env), null);
+      assert.equal(destinoExplicito(env), null);
+      assert.equal(aceitaDestinoExplicito("ftp", "80", env), false);
+      assert.equal(aceitaDestinoExplicito("bbec-api", "21", env), false);
+    }
+    let fetches = 0;
+    const planoFtp = planejarAtalhoPrivado({ API_INTERNAL_URL: "ftp://bbec-api:21" }, "/api/health");
+    if (planoFtp.acao !== "recusada") fetches += 1;
+    assert.equal(fetches, 0);
+    assert.equal(JSON.stringify(planoFtp).includes("127.0.0.1"), false);
+
+    for (const url of ["https://bbec-api", "https://x.up.railway.app"]) {
+      const env = { API_INTERNAL_URL: url };
+      assert.equal(planejarAtalhoPrivado(env, "/api/health").acao, "legado");
+      assert.equal(urlPrivadaExplicita(env), null);
+      assert.equal(tentativaPrivadaExplicita("/api/health", env), null);
+      assert.equal(isPublicApiUrl(new URL(url)), true);
+    }
+  });
+
+  it("B5: porta inválida no host explícito responde 502 sem candidatos", () => {
+    for (const port of ["abc", "0", "65536", "99999", "-1", "8080abc"]) {
+      const env = { API_INTERNAL_HOST: "bbec-api", API_INTERNAL_PORT: port };
+      const plano = planejarAtalhoPrivado(env, "/api/health");
+      assert.equal(plano.acao, "recusada", port);
+      if (plano.acao === "recusada") {
+        assert.equal(plano.status, 502);
+        assert.deepEqual(plano.tentativas, []);
+      }
+      assert.equal(urlPrivadaExplicita(env), null);
+      assert.equal(JSON.stringify(plano).includes("127.0.0.1"), false);
+    }
+    assert.equal(planejarAtalhoPrivado({ API_INTERNAL_HOST: "bbec-api" }, "/api/health").acao, "legado");
+    assert.equal(
+      planejarAtalhoPrivado({ API_INTERNAL_HOST: "bbec-api", API_INTERNAL_PORT: "8080" }, "/api/health").acao,
+      "explicita",
+    );
+  });
+
   it("B3: https não entra no atalho privado e não vira http:443", () => {
     const env = { API_INTERNAL_URL: "https://bbec-api" };
     assert.equal(urlPrivadaExplicita(env), null);
