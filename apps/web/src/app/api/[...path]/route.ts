@@ -1,6 +1,12 @@
 import { resolve4, resolve6 } from "node:dns/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { Agent, fetch as undiciFetch } from "undici";
+import {
+  isPrivateRailwayHost,
+  isPublicApiUrl,
+  isSelfWebHost,
+  tentativaPrivadaExplicita,
+} from "@/lib/destino-interno";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -42,11 +48,6 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Pro
   }
 }
 
-function isSelfWebHost(hostname: string) {
-  const h = hostname.toLowerCase();
-  return h === "hef.aion.eng.br" || h === "localhost" || h === "127.0.0.1" || h === "::1";
-}
-
 function stripHost(raw: string) {
   return raw.replace(/^https?:\/\//, "").replace(/\/$/, "").split("/")[0].split(":")[0];
 }
@@ -61,17 +62,6 @@ function parseMaybeUrl(raw?: string | null): URL | null {
   } catch {
     return null;
   }
-}
-
-function isPrivateRailwayHost(hostname: string) {
-  return hostname.toLowerCase().endsWith(".railway.internal");
-}
-
-function isPublicApiUrl(url: URL) {
-  const h = url.hostname.toLowerCase();
-  if (isSelfWebHost(h) || isPrivateRailwayHost(h)) return false;
-  if (url.protocol === "https:") return true;
-  return h.endsWith(".up.railway.app") || h.endsWith(".railway.app");
 }
 
 function originOf(url: URL) {
@@ -225,6 +215,23 @@ function publicAttempts(pathSuffix: string): Attempt[] {
 }
 
 async function privateAttempts(pathSuffix: string): Promise<Attempt[]> {
+  const explicita = tentativaPrivadaExplicita(pathSuffix, {
+    API_INTERNAL_URL: process.env.API_INTERNAL_URL,
+    API_INTERNAL_HOST: process.env.API_INTERNAL_HOST,
+    API_INTERNAL_PORT: process.env.API_INTERNAL_PORT,
+  });
+  if (explicita) {
+    return [
+      {
+        label: `${explicita.host}:${explicita.port}`,
+        url: explicita.url,
+        hostHeader: explicita.host,
+        publicHttps: false,
+        timeoutMs: PRIVATE_CONNECT_MS,
+      },
+    ];
+  }
+
   const attempts: Attempt[] = [];
   const configured = privateConfiguredUrl() ?? parseConfiguredUrl();
   if (configured && isPrivateRailwayHost(configured.hostname)) {
